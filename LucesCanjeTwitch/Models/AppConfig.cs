@@ -90,6 +90,23 @@ public sealed class AppConfig
                 },
                 new EventRule
                 {
+                    Name = "Bits",
+                    EventKind = TwitchEventKind.Cheer,
+                    MinimumBits = 1,
+                    UseLights = true,
+                    PlayAudio = false,
+                    Pattern = LightPattern.Rave,
+                    TargetPins = "",
+                    PrimaryColor = "#FACC15",
+                    SecondaryColor = "#EC4899",
+                    TertiaryColor = "#00D1FF",
+                    Brightness = 170,
+                    DurationMs = 4500,
+                    CycleMs = 45,
+                    StepMs = 80
+                },
+                new EventRule
+                {
                     Name = "Canje personalizado",
                     EventKind = TwitchEventKind.ChannelPointRedemption,
                     CustomRewardTitle = "",

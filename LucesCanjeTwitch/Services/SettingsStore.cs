@@ -120,6 +120,7 @@ public sealed class SettingsStore
             rule.TertiaryColor = LightCommand.NormalizeColor(rule.TertiaryColor);
             rule.Pattern = Enum.IsDefined(rule.Pattern) ? rule.Pattern : LightPattern.Pulse;
             rule.EventKind = Enum.IsDefined(rule.EventKind) ? rule.EventKind : TwitchEventKind.Follow;
+            rule.MinimumBits = rule.MinimumBits;
             rule.Brightness = rule.Brightness;
             rule.DurationMs = rule.DurationMs;
             rule.CycleMs = rule.CycleMs;

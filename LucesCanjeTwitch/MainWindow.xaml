@@ -332,6 +332,11 @@
                                          TextChanged="RuleFieldChanged"
                                          ToolTip="Dejalo vacio para aceptar cualquier canje personalizado." />
 
+                                <TextBlock Text="Bits minimos" Foreground="#667085" />
+                                <TextBox x:Name="MinimumBitsBox"
+                                         TextChanged="RuleFieldChanged"
+                                         ToolTip="Para bits, usa el mayor umbral que sea menor o igual a la cantidad recibida." />
+
                                 <StackPanel Orientation="Horizontal" Margin="0,2,0,10">
                                     <CheckBox x:Name="UseLightsCheck"
                                               Content="Activar luces"

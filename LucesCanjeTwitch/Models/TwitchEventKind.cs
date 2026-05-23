@@ -5,6 +5,7 @@ public enum TwitchEventKind
     Follow,
     Subscription,
     Raid,
+    Cheer,
     ChannelPointRedemption,
     Test
 }

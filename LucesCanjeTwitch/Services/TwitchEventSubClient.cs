@@ -285,6 +285,13 @@ public sealed class TwitchEventSubClient : IDisposable
                     {
                         ["to_broadcaster_user_id"] = broadcasterId
                     }),
+                TwitchEventKind.Cheer => new EventSubDefinition(
+                    "channel.cheer",
+                    "1",
+                    new Dictionary<string, string>
+                    {
+                        ["broadcaster_user_id"] = broadcasterId
+                    }),
                 TwitchEventKind.ChannelPointRedemption => new EventSubDefinition(
                     "channel.channel_points_custom_reward_redemption.add",
                     "1",
@@ -344,6 +351,15 @@ public sealed class TwitchEventSubClient : IDisposable
                 ViewerCount = ReadInt(eventPayload, "viewers"),
                 Title = $"{ReadString(eventPayload, "from_broadcaster_user_name")} hizo raid con {ReadInt(eventPayload, "viewers") ?? 0} viewers"
             },
+            "channel.cheer" => new TwitchEvent
+            {
+                Kind = TwitchEventKind.Cheer,
+                RawType = type,
+                UserName = ReadString(eventPayload, "user_name"),
+                Bits = ReadInt(eventPayload, "bits"),
+                Message = ReadString(eventPayload, "message"),
+                Title = $"{ReadCheerUserName(eventPayload)} mando {ReadInt(eventPayload, "bits") ?? 0} bits"
+            },
             "channel.channel_points_custom_reward_redemption.add" => new TwitchEvent
             {
                 Kind = TwitchEventKind.ChannelPointRedemption,
@@ -364,6 +380,12 @@ public sealed class TwitchEventSubClient : IDisposable
         }
 
         return ReadString(reward, "title");
+    }
+
+    private static string ReadCheerUserName(JsonElement eventPayload)
+    {
+        var userName = ReadString(eventPayload, "user_name");
+        return string.IsNullOrWhiteSpace(userName) ? "Anonimo" : userName;
     }
 
     private static string? ReadString(JsonElement element, string propertyName)

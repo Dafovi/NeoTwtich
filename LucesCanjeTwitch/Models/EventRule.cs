@@ -9,6 +9,7 @@ public sealed class EventRule : INotifyPropertyChanged
     private bool _isEnabled = true;
     private TwitchEventKind _eventKind;
     private string _customRewardTitle = "";
+    private int _minimumBits = 1;
     private bool _useLights = true;
     private bool _playAudio;
     private string _audioPath = "";
@@ -52,6 +53,18 @@ public sealed class EventRule : INotifyPropertyChanged
     {
         get => _customRewardTitle;
         set => SetField(ref _customRewardTitle, value);
+    }
+
+    public int MinimumBits
+    {
+        get => _minimumBits;
+        set
+        {
+            if (SetField(ref _minimumBits, Math.Clamp(value, 1, 1_000_000)))
+            {
+                OnPropertyChanged(nameof(DisplayLabel));
+            }
+        }
     }
 
     public bool UseLights
@@ -126,9 +139,19 @@ public sealed class EventRule : INotifyPropertyChanged
         set => SetField(ref _stepMs, Math.Clamp(value, 10, 5000));
     }
 
-    public string DisplayLabel => string.IsNullOrWhiteSpace(Name)
-        ? DisplayNames.For(EventKind)
-        : $"{Name} - {DisplayNames.For(EventKind)}";
+    public string DisplayLabel
+    {
+        get
+        {
+            var label = string.IsNullOrWhiteSpace(Name)
+                ? DisplayNames.For(EventKind)
+                : $"{Name} - {DisplayNames.For(EventKind)}";
+
+            return EventKind == TwitchEventKind.Cheer
+                ? $"{label} >= {MinimumBits} bits"
+                : label;
+        }
+    }
 
     public event PropertyChangedEventHandler? PropertyChanged;
 
@@ -137,6 +160,11 @@ public sealed class EventRule : INotifyPropertyChanged
         if (!IsEnabled || EventKind != twitchEvent.Kind)
         {
             return false;
+        }
+
+        if (EventKind == TwitchEventKind.Cheer)
+        {
+            return twitchEvent.Bits is int bits && bits >= MinimumBits;
         }
 
         if (EventKind != TwitchEventKind.ChannelPointRedemption)
@@ -157,6 +185,7 @@ public sealed class EventRule : INotifyPropertyChanged
             IsEnabled = IsEnabled,
             EventKind = EventKind,
             CustomRewardTitle = CustomRewardTitle,
+            MinimumBits = MinimumBits,
             UseLights = UseLights,
             PlayAudio = PlayAudio,
             AudioPath = AudioPath,

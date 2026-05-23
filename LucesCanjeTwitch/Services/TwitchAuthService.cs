@@ -13,7 +13,8 @@ public sealed class TwitchAuthService
     [
         "moderator:read:followers",
         "channel:read:subscriptions",
-        "channel:read:redemptions"
+        "channel:read:redemptions",
+        "bits:read"
     ];
 
     private readonly HttpClient _http = new();
@@ -134,6 +135,17 @@ public sealed class TwitchAuthService
 
         config.Token = ToTokenInfo(token);
         log("Token de Twitch actualizado.");
+    }
+
+    public static IReadOnlyList<string> GetMissingScopes(TwitchTokenInfo token)
+    {
+        var grantedScopes = token.Scopes
+            .Where(scope => !string.IsNullOrWhiteSpace(scope))
+            .ToHashSet(StringComparer.OrdinalIgnoreCase);
+
+        return RequiredScopes
+            .Where(scope => !grantedScopes.Contains(scope))
+            .ToArray();
     }
 
     public async Task<TwitchChannelInfo> GetCurrentUserAsync(AppConfig config, CancellationToken cancellationToken)

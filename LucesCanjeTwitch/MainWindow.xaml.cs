@@ -28,6 +28,7 @@ public partial class MainWindow : Window
         new("Nuevo seguidor", TwitchEventKind.Follow),
         new("Nueva suscripcion", TwitchEventKind.Subscription),
         new("Raid recibida", TwitchEventKind.Raid),
+        new("Bits", TwitchEventKind.Cheer),
         new("Canje de puntos", TwitchEventKind.ChannelPointRedemption),
         new("Prueba manual", TwitchEventKind.Test)
     ];
@@ -120,7 +121,14 @@ public partial class MainWindow : Window
 
         if (_config.AutoConnectTwitch && _config.Token.HasToken)
         {
-            await StartTwitchAsync();
+            try
+            {
+                await StartTwitchAsync();
+            }
+            catch (Exception ex)
+            {
+                AddLog($"Twitch: {ex.Message}");
+            }
         }
     }
 
@@ -138,7 +146,7 @@ public partial class MainWindow : Window
                 return;
             }
 
-            if (!_config.Token.HasToken)
+            if (!_config.Token.HasToken || TwitchAuthService.GetMissingScopes(_config.Token).Count > 0)
             {
                 await SignInToTwitchAsync();
             }
@@ -188,6 +196,12 @@ public partial class MainWindow : Window
 
     private async Task StartTwitchAsync()
     {
+        var missingScopes = TwitchAuthService.GetMissingScopes(_config.Token);
+        if (missingScopes.Count > 0)
+        {
+            throw new InvalidOperationException($"Twitch necesita autorizar permisos nuevos: {string.Join(", ", missingScopes)}. Presiona Conectar Twitch para iniciar sesion otra vez.");
+        }
+
         await _authService.EnsureValidTokenAsync(_config, AddLog, CancellationToken.None);
 
         if (!_config.Channel.IsReady)
@@ -379,6 +393,7 @@ public partial class MainWindow : Window
         {
             Name = "Nueva regla",
             EventKind = TwitchEventKind.Follow,
+            MinimumBits = 1,
             UseLights = true,
             PlayAudio = false
         };
@@ -489,6 +504,7 @@ public partial class MainWindow : Window
         {
             Kind = rule.EventKind,
             RewardTitle = rule.CustomRewardTitle,
+            Bits = rule.EventKind == TwitchEventKind.Cheer ? rule.MinimumBits : null,
             UserName = "Prueba",
             Title = $"Prueba de {rule.Name}"
         });
@@ -658,7 +674,7 @@ public partial class MainWindow : Window
     {
         AddLog(twitchEvent.Title);
 
-        var matchingRules = _config.Rules.Where(rule => rule.Matches(twitchEvent)).ToArray();
+        var matchingRules = ResolveMatchingRules(twitchEvent);
         if (matchingRules.Length == 0)
         {
             AddLog("El evento no coincide con reglas activas.");
@@ -669,6 +685,23 @@ public partial class MainWindow : Window
         {
             await RunRuleAsync(rule, twitchEvent);
         }
+    }
+
+    private EventRule[] ResolveMatchingRules(TwitchEvent twitchEvent)
+    {
+        var matchingRules = _config.Rules
+            .Where(rule => rule.Matches(twitchEvent))
+            .ToArray();
+
+        if (twitchEvent.Kind != TwitchEventKind.Cheer || matchingRules.Length == 0)
+        {
+            return matchingRules;
+        }
+
+        var highestThreshold = matchingRules.Max(rule => rule.MinimumBits);
+        return matchingRules
+            .Where(rule => rule.MinimumBits == highestThreshold)
+            .ToArray();
     }
 
     private async Task RunRuleAsync(EventRule rule, TwitchEvent twitchEvent)
@@ -843,6 +876,7 @@ public partial class MainWindow : Window
             RuleNameBox.Text = rule.Name;
             EventKindBox.SelectedValue = rule.EventKind;
             RewardTitleBox.Text = rule.CustomRewardTitle;
+            MinimumBitsBox.Text = rule.MinimumBits.ToString();
             UseLightsCheck.IsChecked = rule.UseLights;
             PlayAudioCheck.IsChecked = rule.PlayAudio;
             AudioPathBox.Text = rule.AudioPath;
@@ -914,6 +948,7 @@ public partial class MainWindow : Window
         rule.Name = RuleNameBox.Text.Trim();
         rule.EventKind = EventKindBox.SelectedValue is TwitchEventKind kind ? kind : TwitchEventKind.Follow;
         rule.CustomRewardTitle = RewardTitleBox.Text.Trim();
+        rule.MinimumBits = ParseInt(MinimumBitsBox.Text, 1, 1, 1_000_000);
         rule.UseLights = UseLightsCheck.IsChecked == true;
         rule.PlayAudio = PlayAudioCheck.IsChecked == true;
         rule.AudioPath = AudioPathBox.Text.Trim();

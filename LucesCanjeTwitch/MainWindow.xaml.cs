@@ -70,20 +70,28 @@ public partial class MainWindow : Window
         _eventSubClient = new TwitchEventSubClient(_authService, () => _config, SaveConfig, AddLog);
         _eventSubClient.EventReceived += EventSubClient_EventReceived;
 
-        ActivityList.ItemsSource = _activity;
-        EventKindBox.ItemsSource = _eventOptions;
-        EventKindBox.DisplayMemberPath = nameof(UiOption<TwitchEventKind>.Label);
-        EventKindBox.SelectedValuePath = nameof(UiOption<TwitchEventKind>.Value);
-        PatternBox.ItemsSource = _patternOptions;
-        PatternBox.DisplayMemberPath = nameof(UiOption<LightPattern>.Label);
-        PatternBox.SelectedValuePath = nameof(UiOption<LightPattern>.Value);
-        BackgroundPatternBox.ItemsSource = _patternOptions;
-        BackgroundPatternBox.DisplayMemberPath = nameof(UiOption<LightPattern>.Label);
-        BackgroundPatternBox.SelectedValuePath = nameof(UiOption<LightPattern>.Value);
-        StripsList.ItemsSource = _config.LedStrips;
-        PortComboBox.DisplayMemberPath = nameof(SerialPortInfo.DisplayName);
-        PortComboBox.SelectedValuePath = nameof(SerialPortInfo.PortName);
-        RefreshPortList(choosePreferred: false);
+        _loadingUi = true;
+        try
+        {
+            ActivityList.ItemsSource = _activity;
+            EventKindBox.ItemsSource = _eventOptions;
+            EventKindBox.DisplayMemberPath = nameof(UiOption<TwitchEventKind>.Label);
+            EventKindBox.SelectedValuePath = nameof(UiOption<TwitchEventKind>.Value);
+            PatternBox.ItemsSource = _patternOptions;
+            PatternBox.DisplayMemberPath = nameof(UiOption<LightPattern>.Label);
+            PatternBox.SelectedValuePath = nameof(UiOption<LightPattern>.Value);
+            BackgroundPatternBox.ItemsSource = _patternOptions;
+            BackgroundPatternBox.DisplayMemberPath = nameof(UiOption<LightPattern>.Label);
+            BackgroundPatternBox.SelectedValuePath = nameof(UiOption<LightPattern>.Value);
+            StripsList.ItemsSource = _config.LedStrips;
+            PortComboBox.DisplayMemberPath = nameof(SerialPortInfo.DisplayName);
+            PortComboBox.SelectedValuePath = nameof(SerialPortInfo.PortName);
+            RefreshPortList(choosePreferred: false);
+        }
+        finally
+        {
+            _loadingUi = false;
+        }
 
         CreateTrayIcon();
         LoadConfigIntoUi();
@@ -238,6 +246,9 @@ public partial class MainWindow : Window
             await ConnectArduinoAsync();
         }
 
+        await StopLightsAsync(LightCommand.ResolveTargets(_config, ""));
+        await Task.Delay(40);
+
         var command = LightCommand.FromBackground(_config);
         await _lightController.SendAsync(command, AddLog, CancellationToken.None);
         AddLog($"Fondo aplicado: {DisplayNames.For(command.Pattern)}.");
@@ -250,6 +261,11 @@ public partial class MainWindow : Window
             return;
         }
 
+        await RestoreBackgroundStateAsync();
+    }
+
+    private async Task RestoreBackgroundStateAsync()
+    {
         if (_config.BackgroundEnabled)
         {
             await ApplyBackgroundAsync();
@@ -277,6 +293,11 @@ public partial class MainWindow : Window
             }
             catch (OperationCanceledException)
             {
+            }
+            catch (Exception ex)
+            {
+                CrashReporter.Log(ex, "No se pudo aplicar el fondo programado.");
+                AddLog($"Fondo: {ex.Message}");
             }
         });
     }
@@ -542,6 +563,7 @@ public partial class MainWindow : Window
 
         SaveCurrentStripFromFields();
         SaveConfig();
+        ScheduleBackgroundApply();
     }
 
     private void BackgroundFieldChanged(object sender, RoutedEventArgs e)
@@ -655,6 +677,7 @@ public partial class MainWindow : Window
         var effectCts = new CancellationTokenSource();
         _currentEffectCts = effectCts;
         var wasCancelled = false;
+        var shouldRestoreBackground = false;
 
         try
         {
@@ -681,6 +704,7 @@ public partial class MainWindow : Window
                 await ConnectArduinoAsync();
             }
 
+            shouldRestoreBackground = true;
             var targets = LightCommand.ResolveTargets(_config, rule.TargetPins);
             await StopLightsAsync(LightCommand.ResolveTargets(_config, ""));
             await Task.Delay(40);
@@ -704,13 +728,17 @@ public partial class MainWindow : Window
             }
 
             await StopLightsAsync(targets);
-            await ApplyBackgroundAsync();
             AddLog($"Luces: {DisplayNames.For(rule.Pattern)} por {command.DurationMs} ms para {DisplayNames.For(twitchEvent.Kind)}.");
         }
         catch (OperationCanceledException)
         {
             wasCancelled = true;
             AddLog("Prueba detenida.");
+        }
+        catch (Exception ex)
+        {
+            CrashReporter.Log(ex, $"Error ejecutando la regla '{rule.Name}'.");
+            AddLog($"Regla '{rule.Name}': {ex.Message}");
         }
         finally
         {
@@ -720,14 +748,21 @@ public partial class MainWindow : Window
                 _currentEffectCts = null;
             }
 
+            if (shouldRestoreBackground || wasCancelled)
+            {
+                try
+                {
+                    await RestoreBackgroundStateAsync();
+                }
+                catch (Exception ex)
+                {
+                    CrashReporter.Log(ex, "No se pudo restaurar el fondo despues de una regla.");
+                    AddLog($"Fondo: {ex.Message}");
+                }
+            }
+
             effectCts.Dispose();
             _effectGate.Release();
-
-            if (wasCancelled)
-            {
-                await StopLightsAsync(LightCommand.ResolveTargets(_config, ""));
-                await ApplyBackgroundStateAsync();
-            }
         }
     }
 
@@ -977,6 +1012,7 @@ public partial class MainWindow : Window
         Resources["ThemeMutedTextBrush"] = palette.MutedText;
         Resources["ThemeInputBrush"] = palette.Input;
         Resources["ThemeBorderBrush"] = palette.Border;
+        Resources["ThemeSelectionBrush"] = palette.Accent;
         ApplyThemeToElement(this, palette);
         UpdateColorButtons();
     }

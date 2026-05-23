@@ -15,6 +15,7 @@
         <SolidColorBrush x:Key="ThemeMutedTextBrush" Color="#667085" />
         <SolidColorBrush x:Key="ThemeInputBrush" Color="#FFFFFF" />
         <SolidColorBrush x:Key="ThemeBorderBrush" Color="#E4DED4" />
+        <SolidColorBrush x:Key="ThemeSelectionBrush" Color="#216869" />
 
         <Style TargetType="TextBlock">
             <Setter Property="Foreground" Value="{DynamicResource ThemeTextBrush}" />
@@ -38,6 +39,33 @@
             <Setter Property="Foreground" Value="{DynamicResource ThemeTextBrush}" />
             <Setter Property="Background" Value="{DynamicResource ThemeInputBrush}" />
             <Setter Property="BorderBrush" Value="{DynamicResource ThemeBorderBrush}" />
+            <Setter Property="Padding" Value="8,6" />
+            <Setter Property="Template">
+                <Setter.Value>
+                    <ControlTemplate TargetType="ComboBoxItem">
+                        <Border x:Name="ItemBorder"
+                                Background="{TemplateBinding Background}"
+                                BorderBrush="{TemplateBinding BorderBrush}"
+                                BorderThickness="0"
+                                Padding="{TemplateBinding Padding}">
+                            <ContentPresenter VerticalAlignment="Center" />
+                        </Border>
+                        <ControlTemplate.Triggers>
+                            <Trigger Property="IsHighlighted" Value="True">
+                                <Setter TargetName="ItemBorder" Property="Background" Value="{DynamicResource ThemeSelectionBrush}" />
+                                <Setter Property="Foreground" Value="White" />
+                            </Trigger>
+                            <Trigger Property="IsSelected" Value="True">
+                                <Setter TargetName="ItemBorder" Property="Background" Value="{DynamicResource ThemeSelectionBrush}" />
+                                <Setter Property="Foreground" Value="White" />
+                            </Trigger>
+                            <Trigger Property="IsEnabled" Value="False">
+                                <Setter Property="Opacity" Value="0.55" />
+                            </Trigger>
+                        </ControlTemplate.Triggers>
+                    </ControlTemplate>
+                </Setter.Value>
+            </Setter>
         </Style>
 
         <Style TargetType="ListBoxItem">

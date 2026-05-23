@@ -1,7 +1,7 @@
 #include <Adafruit_NeoPixel.h>
 
 #define MAX_STRIPS 6
-#define MAX_LEDS_PER_STRIP 300
+#define MAX_LEDS_PER_STRIP 600
 #define SERIAL_BAUD 115200
 
 struct LedTarget {

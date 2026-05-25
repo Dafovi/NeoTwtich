@@ -1,6 +1,19 @@
-# Luces Canje Twitch
+# Neo Twitch
 
 App de Windows en .NET/WPF para escuchar eventos de Twitch y activar audio local y tiras NeoPixel por Arduino.
+
+## Descargar
+
+La forma mas facil de usar la app es descargar el release mas reciente desde GitHub:
+
+[Descargar ultimo release](https://github.com/Dafovi/Luces-Twitch-y-Arduino/releases/latest)
+
+Despues de descargar el `.zip`:
+
+1. Descomprime la carpeta completa.
+2. Abre `LucesCanjeTwitch.exe`.
+3. No ejecutes el `.exe` directamente dentro del `.zip`.
+4. No borres los archivos que vienen junto al `.exe`.
 
 ## Que hace
 
@@ -15,6 +28,16 @@ App de Windows en .NET/WPF para escuchar eventos de Twitch y activar audio local
 - Usa un Arduino por puerto COM y permite configurar varias tiras NeoPixel en distintos pines.
 - Cuando una regla tiene audio y luces, la duracion del patron se ajusta a la duracion real del audio.
 - Al terminar un evento, la app manda `STOP` y restaura el fondo configurado.
+
+## Ejemplo rapido
+
+Esta es una regla de seguidor configurada para activar luces, reproducir audio y enviar un mensaje al chat.
+
+![Ejemplo de regla de seguidor](docs/images/muestra-seguidor.png)
+
+Y asi se ve el efecto cuando se activa en stream:
+
+![Ejemplo del efecto activado](docs/images/muestra-seguidor-activado.gif)
 
 ## Requisitos
 
@@ -74,6 +97,22 @@ La app pide los scopes minimos para los eventos implementados:
 
 Raids no requieren un scope propio, pero la conexion por WebSocket usa el token de usuario autorizado.
 
+## Conexion Arduino y NeoPixel
+
+El Arduino se comunica con la app por USB/Serial. Las tiras NeoPixel se conectan al pin configurado en la app y en el sketch. Para tiras largas o de mucho consumo, usa una fuente externa adecuada para la tira LED.
+
+![Plano de conexion Arduino y tira LED](docs/images/arduino-led-strip-wiring.jpg)
+
+Recomendaciones importantes:
+
+- Usa una fuente del mismo voltaje que la tira LED, por ejemplo 5V para tiras de 5V.
+- Conecta el GND de la fuente externa con el GND del Arduino.
+- Agrega una resistencia entre el pin de datos del Arduino y `DIN` de la tira.
+- Agrega un capacitor entre positivo y negativo de la fuente cerca del inicio de la tira.
+- Respeta la direccion de la tira LED marcada con flechas.
+
+El plano y las recomendaciones de cableado salen de la documentacion de What Make Art: [Wiring LED Strip to Arduino](https://whatmakeart.com/arduino/wiring-led-strip-to-arduino/).
+
 ## Conexion con Twitch
 
 Esta version usa OAuth Device Code Flow y EventSub WebSocket. Para una app local de Windows es una combinacion practica porque no obliga a guardar un client secret ni a publicar un servidor HTTPS.
@@ -113,3 +152,4 @@ La app envia `STOP` cuando termina el audio o cuando necesita cortar el fondo pa
 - Twitch EventSub WebSockets: https://dev.twitch.tv/docs/eventsub/handling-websocket-events/
 - Tipos EventSub y scopes: https://dev.twitch.tv/docs/eventsub/eventsub-subscription-types/
 - OAuth Device Code Flow: https://dev.twitch.tv/docs/authentication/getting-tokens-oauth/
+- Conexion Arduino y tira LED: https://whatmakeart.com/arduino/wiring-led-strip-to-arduino/

@@ -1,10 +1,15 @@
 using System.Collections.ObjectModel;
 using System.ComponentModel;
+using System.Diagnostics;
 using System.Drawing;
 using System.IO;
+using System.Runtime.InteropServices;
 using System.Windows;
 using System.Windows.Controls;
+using System.Windows.Interop;
 using System.Windows.Media;
+using System.Windows.Media.Imaging;
+using System.Windows.Threading;
 using LucesCanjeTwitch.Models;
 using LucesCanjeTwitch.Services;
 using Forms = System.Windows.Forms;
@@ -17,13 +22,19 @@ namespace LucesCanjeTwitch;
 
 public partial class MainWindow : Window
 {
+    private const int DwmWindowAttributeBorderColor = 34;
+    private const int DwmWindowAttributeCaptionColor = 35;
+    private const int DwmWindowAttributeTextColor = 36;
+    private const int AppCaptionColor = 0x00F65286;
+    private const int AppCaptionTextColor = 0x00FFFFFF;
+
     private readonly SettingsStore _settingsStore = new();
     private readonly AudioPlayerService _audioPlayer = new();
     private readonly SerialLightController _lightController = new();
     private readonly TwitchAuthService _authService = new();
     private readonly TwitchChatService _chatService = new();
     private readonly TwitchEventSubClient _eventSubClient;
-    private readonly ObservableCollection<string> _activity = [];
+    private readonly ObservableCollection<ActivityLogEntry> _activity = [];
     private readonly SemaphoreSlim _effectGate = new(1, 1);
     private IReadOnlyList<SerialPortInfo> _availablePorts = [];
     private readonly UiOption<TwitchEventKind>[] _eventOptions =
@@ -55,6 +66,7 @@ public partial class MainWindow : Window
     private CancellationTokenSource? _backgroundApplyDebounce;
     private CancellationTokenSource? _currentEffectCts;
     private AudioPlayback? _currentPlayback;
+    private TwitchStreamStatus? _streamStatus;
     private DrawingIcon? _trayIcon;
     private Forms.NotifyIcon? _notifyIcon;
 
@@ -79,6 +91,7 @@ public partial class MainWindow : Window
         try
         {
             ActivityList.ItemsSource = _activity;
+            MiniActivityList.ItemsSource = _activity;
             EventKindBox.ItemsSource = _eventOptions;
             EventKindBox.DisplayMemberPath = nameof(UiOption<TwitchEventKind>.Label);
             EventKindBox.SelectedValuePath = nameof(UiOption<TwitchEventKind>.Value);
@@ -104,6 +117,7 @@ public partial class MainWindow : Window
 
     private async void Window_Loaded(object sender, RoutedEventArgs e)
     {
+        ApplyWindowChromeColor();
         AddLog("Aplicacion lista.");
         AddLog($"Configuracion: {_settingsStore.SettingsPath}");
         AddLog($"Log de errores: {CrashReporter.PreferredLogPath}");
@@ -145,6 +159,7 @@ public partial class MainWindow : Window
             if (_eventSubClient.IsRunning)
             {
                 await _eventSubClient.StopAsync();
+                _streamStatus = null;
                 AddLog("Twitch desconectado.");
                 UpdateStatusText();
                 return;
@@ -162,6 +177,16 @@ public partial class MainWindow : Window
             AddLog($"Twitch: {ex.Message}");
             WpfMessageBox.Show(this, ex.Message, "Twitch", MessageBoxButton.OK, MessageBoxImage.Warning);
         }
+    }
+
+    private void OpenTwitchConsoleButton_Click(object sender, RoutedEventArgs e)
+    {
+        Process.Start(new ProcessStartInfo
+        {
+            FileName = "https://dev.twitch.tv/console/apps",
+            UseShellExecute = true
+        });
+        AddLog("Twitch Console abierta para revisar el Client ID.", ActivityLogKind.Twitch);
     }
 
     private async Task SignInToTwitchAsync()
@@ -215,7 +240,32 @@ public partial class MainWindow : Window
         }
 
         await _eventSubClient.StartAsync();
+        await RefreshTwitchStreamStatusAsync();
         AddLog("Twitch escuchando eventos.");
+        UpdateStatusText();
+    }
+
+    private async Task RefreshTwitchStreamStatusAsync()
+    {
+        if (!_config.Token.HasToken || !_config.Channel.IsReady)
+        {
+            _streamStatus = null;
+            UpdateStatusText();
+            return;
+        }
+
+        try
+        {
+            await _authService.EnsureValidTokenAsync(_config, AddLog, CancellationToken.None);
+            _streamStatus = await _authService.GetStreamStatusAsync(_config, CancellationToken.None);
+            SaveConfig();
+        }
+        catch (Exception ex)
+        {
+            _streamStatus = null;
+            AddLog($"Twitch estado: {ex.Message}");
+        }
+
         UpdateStatusText();
     }
 
@@ -624,7 +674,23 @@ public partial class MainWindow : Window
             return;
         }
 
-        _ = Dispatcher.BeginInvoke(ApplyTheme);
+        UpdateNavigationButtons();
+        _ = Dispatcher.BeginInvoke(ApplyTheme, DispatcherPriority.Loaded);
+        _ = Dispatcher.BeginInvoke(ApplyTheme, DispatcherPriority.ContextIdle);
+    }
+
+    private void NavButton_Click(object sender, RoutedEventArgs e)
+    {
+        if (sender is not System.Windows.Controls.Button { Tag: string tag }
+            || !int.TryParse(tag, out var selectedIndex)
+            || selectedIndex < 0
+            || selectedIndex >= MainTabs.Items.Count)
+        {
+            return;
+        }
+
+        MainTabs.SelectedIndex = selectedIndex;
+        UpdateNavigationButtons();
     }
 
     private void PrimaryColorButton_Click(object sender, RoutedEventArgs e)
@@ -683,7 +749,7 @@ public partial class MainWindow : Window
 
     private async void EventSubClient_EventReceived(TwitchEvent twitchEvent)
     {
-        AddLog(twitchEvent.Title);
+        AddLog(twitchEvent.Title, ActivityLogKind.Event);
 
         var matchingRules = ResolveMatchingRules(twitchEvent);
         if (matchingRules.Length == 0)
@@ -733,7 +799,7 @@ public partial class MainWindow : Window
             await _authService.EnsureValidTokenAsync(_config, AddLog, CancellationToken.None);
             SaveConfig();
             await _chatService.SendMessageAsync(_config, message, CancellationToken.None);
-            AddLog($"Chat enviado: {message}");
+            AddLog($"Chat enviado: {message}", ActivityLogKind.Twitch);
         }
         catch (Exception ex)
         {
@@ -1142,17 +1208,125 @@ public partial class MainWindow : Window
 
     private void UpdateStatusText()
     {
-        var channel = _config.Channel.IsReady ? _config.Channel.DisplayName : "sin login";
-        TwitchStatusText.Text = _eventSubClient.IsRunning
-            ? $"Escuchando eventos de {channel}."
-            : $"Twitch: {channel}.";
+        var channelName = _config.Channel.IsReady
+            ? FirstNonEmpty(_config.Channel.DisplayName, _config.Channel.Login, "Canal Twitch")
+            : "Sin Twitch";
+        var login = _config.Channel.IsReady && !string.IsNullOrWhiteSpace(_config.Channel.Login)
+            ? $"@{_config.Channel.Login}"
+            : "Sin login";
+
+        ChannelNameText.Text = channelName;
+        ChannelLoginText.Text = login;
+        TwitchConnectionText.Text = _eventSubClient.IsRunning
+            ? "Eventos conectados"
+            : _config.Token.HasToken
+                ? "Sesion autorizada"
+                : "Sin conectar";
+        TwitchStatusText.Text = BuildTwitchStatusText();
+        UpdateTwitchLiveIndicator();
+        UpdateChannelAvatar();
 
         var totalLeds = _config.LedStrips.Sum(strip => strip.LedCount);
+        var activeBackground = _config.BackgroundEnabled
+            ? $"{DisplayNames.For(_config.BackgroundPattern)} de fondo"
+            : "Fondo apagado";
+        ArduinoConnectionText.Text = _lightController.HasOpenPort
+            ? $"Conectado en {_lightController.CurrentPort}"
+            : "Sin conectar";
         ArduinoStatusText.Text = _lightController.HasOpenPort
-            ? $"Arduino conectado en {_lightController.CurrentPort}. Tiras: {_config.LedStrips.Count}, LEDs: {totalLeds}."
-            : $"Arduino sin conectar. Tiras: {_config.LedStrips.Count}, LEDs: {totalLeds}.";
+            ? $"{_config.BaudRate} baudios. {_config.LedStrips.Count} tiras, {totalLeds} LEDs. {activeBackground}."
+            : $"Puerto: {FirstNonEmpty(_config.SerialPort, "sin COM")}. {_config.LedStrips.Count} tiras, {totalLeds} LEDs.";
 
         TwitchButton.Content = _eventSubClient.IsRunning ? "Desconectar Twitch" : "Conectar Twitch";
+    }
+
+    private void UpdateTwitchLiveIndicator()
+    {
+        var palette = _config.DarkMode
+            ? ThemePalette.Dark
+            : ThemePalette.Light;
+
+        if (_streamStatus is { IsLive: true })
+        {
+            var liveBrush = FrozenBrushFrom("#FF2D55");
+            TwitchLiveDot.Fill = liveBrush;
+            TwitchLiveDot.Stroke = liveBrush;
+            TwitchLiveStateText.Text = "En directo";
+            TwitchLiveStateText.Foreground = liveBrush;
+            return;
+        }
+
+        TwitchLiveDot.Fill = System.Windows.Media.Brushes.Transparent;
+        TwitchLiveDot.Stroke = palette.SidebarText;
+        TwitchLiveStateText.Text = "No esta en directo";
+        TwitchLiveStateText.Foreground = palette.SidebarText;
+    }
+
+    private string BuildTwitchStatusText()
+    {
+        if (_streamStatus is { IsLive: true } live)
+        {
+            var game = string.IsNullOrWhiteSpace(live.GameName)
+                ? ""
+                : $" en {live.GameName}";
+            return $"En directo{game}. {live.ViewerCount} espectadores.";
+        }
+
+        if (_streamStatus is { IsLive: false })
+        {
+            return "Canal sin directo activo.";
+        }
+
+        return _eventSubClient.IsRunning
+            ? "Escuchando eventos. Directo sin consultar."
+            : "Listo para conectar eventos.";
+    }
+
+    private void UpdateChannelAvatar()
+    {
+        try
+        {
+            if (!string.IsNullOrWhiteSpace(_config.Channel.ProfileImageUrl))
+            {
+                ChannelAvatarImage.Source = new BitmapImage(new Uri(_config.Channel.ProfileImageUrl, UriKind.Absolute));
+                return;
+            }
+        }
+        catch
+        {
+            // Use the bundled app icon when Twitch has no image available.
+        }
+
+        ChannelAvatarImage.Source = new BitmapImage(new Uri("pack://application:,,,/Assets/AppIcon.png", UriKind.Absolute));
+    }
+
+    private void ApplyWindowChromeColor()
+    {
+        try
+        {
+            var hwnd = new WindowInteropHelper(this).Handle;
+            if (hwnd == IntPtr.Zero)
+            {
+                return;
+            }
+
+            var captionColor = AppCaptionColor;
+            var borderColor = AppCaptionColor;
+            var textColor = AppCaptionTextColor;
+            var size = Marshal.SizeOf<int>();
+            _ = DwmSetWindowAttribute(hwnd, DwmWindowAttributeCaptionColor, ref captionColor, size);
+            _ = DwmSetWindowAttribute(hwnd, DwmWindowAttributeBorderColor, ref borderColor, size);
+            _ = DwmSetWindowAttribute(hwnd, DwmWindowAttributeTextColor, ref textColor, size);
+        }
+        catch
+        {
+            // Older Windows builds ignore custom title bar colors.
+        }
+    }
+
+    private static string FirstNonEmpty(params string[] values)
+    {
+        return values.FirstOrDefault(value => !string.IsNullOrWhiteSpace(value)) ?? "";
     }
 
     private void UpdateSliderLabels()
@@ -1183,11 +1357,20 @@ public partial class MainWindow : Window
             : ThemePalette.Light;
 
         Background = palette.Window;
+        Resources["ThemeWindowBrush"] = palette.Window;
+        Resources["ThemeSidebarBrush"] = palette.Sidebar;
+        Resources["ThemeSurfaceBrush"] = palette.Surface;
+        Resources["ThemeButtonBrush"] = palette.Button;
         Resources["ThemeTextBrush"] = palette.Text;
         Resources["ThemeMutedTextBrush"] = palette.MutedText;
+        Resources["ThemeSidebarTextBrush"] = palette.SidebarText;
+        Resources["ThemeSidebarMutedTextBrush"] = palette.SidebarMutedText;
         Resources["ThemeInputBrush"] = palette.Input;
         Resources["ThemeBorderBrush"] = palette.Border;
         Resources["ThemeSelectionBrush"] = palette.Accent;
+        Resources["ThemeConsoleBrush"] = palette.Console;
+        Resources["ThemeScrollThumbBrush"] = palette.Sidebar;
+        Resources["ThemeScrollTrackBrush"] = palette.ScrollTrack;
         Resources[System.Windows.SystemColors.WindowBrushKey] = palette.Input;
         Resources[System.Windows.SystemColors.ControlBrushKey] = palette.Input;
         Resources[System.Windows.SystemColors.WindowTextBrushKey] = palette.Text;
@@ -1196,7 +1379,10 @@ public partial class MainWindow : Window
         Resources[System.Windows.SystemColors.HighlightTextBrushKey] = System.Windows.Media.Brushes.White;
         Resources[System.Windows.SystemColors.InactiveSelectionHighlightBrushKey] = palette.Accent;
         Resources[System.Windows.SystemColors.InactiveSelectionHighlightTextBrushKey] = System.Windows.Media.Brushes.White;
+        ApplyWindowChromeColor();
+        UpdateNavigationButtons();
         ApplyThemeToElement(this, palette);
+        UpdateTwitchLiveIndicator();
         UpdateColorButtons();
     }
 
@@ -1206,13 +1392,50 @@ public partial class MainWindow : Window
 
         switch (element)
         {
+            case Border border when border.TemplatedParent is not null:
+                break;
             case Border border:
                 border.BorderBrush = palette.Border;
-                border.Background = IsSidebarBorder(border)
-                    ? palette.Sidebar
-                    : palette.Surface;
+                if (IsSidebarBorder(border))
+                {
+                    border.Background = palette.Sidebar;
+                    break;
+                }
+
+                if (IsConsoleBorder(border))
+                {
+                    border.Background = palette.Console;
+                    break;
+                }
+
+                if (IsInsideNamedElement(border, "SidebarChrome"))
+                {
+                    border.Background = palette.SidebarCard;
+                    border.BorderBrush = palette.SidebarCardBorder;
+                    break;
+                }
+
+                border.Background = palette.Surface;
+                break;
+            case TextBlock textBlock when textBlock.DataContext is ActivityLogEntry:
                 break;
             case TextBlock textBlock:
+                if (IsInsideNamedElement(textBlock, "SidebarChrome"))
+                {
+                    textBlock.Foreground = textBlock.FontSize <= 12 || textBlock.Name.Contains("Status", StringComparison.OrdinalIgnoreCase)
+                        ? palette.SidebarMutedText
+                        : palette.SidebarText;
+                    break;
+                }
+
+                if (IsInsideNamedElement(textBlock, "MiniConsolePanel"))
+                {
+                    textBlock.Foreground = textBlock.FontSize <= 12
+                        ? palette.ConsoleMutedText
+                        : System.Windows.Media.Brushes.White;
+                    break;
+                }
+
                 textBlock.Foreground = textBlock.FontSize <= 12 || textBlock.Name.Contains("Status", StringComparison.OrdinalIgnoreCase)
                     ? palette.MutedText
                     : palette.Text;
@@ -1235,6 +1458,14 @@ public partial class MainWindow : Window
                 comboBox.Resources[System.Windows.SystemColors.HighlightTextBrushKey] = System.Windows.Media.Brushes.White;
                 break;
             case System.Windows.Controls.ListBox listBox:
+                if (IsInsideNamedElement(listBox, "MiniConsolePanel"))
+                {
+                    listBox.Background = System.Windows.Media.Brushes.Transparent;
+                    listBox.Foreground = System.Windows.Media.Brushes.White;
+                    listBox.BorderBrush = System.Windows.Media.Brushes.Transparent;
+                    break;
+                }
+
                 listBox.Background = palette.Input;
                 listBox.Foreground = palette.Text;
                 listBox.BorderBrush = palette.Border;
@@ -1281,6 +1512,12 @@ public partial class MainWindow : Window
 
     private void ApplyButtonTheme(System.Windows.Controls.Button button, ThemePalette palette)
     {
+        if (ReferenceEquals(button.Style, Resources["NavButton"]))
+        {
+            ApplyNavigationButtonTheme(button, palette);
+            return;
+        }
+
         if (ReferenceEquals(button.Style, Resources["PrimaryButton"]))
         {
             button.Background = palette.Accent;
@@ -1302,6 +1539,37 @@ public partial class MainWindow : Window
         button.BorderBrush = palette.Border;
     }
 
+    private void UpdateNavigationButtons()
+    {
+        if (_initializingComponent)
+        {
+            return;
+        }
+
+        var palette = _config.DarkMode
+            ? ThemePalette.Dark
+            : ThemePalette.Light;
+
+        foreach (var button in new[] { NavSettingsButton, NavRulesButton, NavStripsButton, NavActivityButton })
+        {
+            ApplyNavigationButtonTheme(button, palette);
+        }
+    }
+
+    private void ApplyNavigationButtonTheme(System.Windows.Controls.Button button, ThemePalette palette)
+    {
+        var isSelected = int.TryParse(button.Tag?.ToString(), out var index)
+            && index == MainTabs.SelectedIndex;
+
+        button.Background = isSelected
+            ? palette.NavSelected
+            : System.Windows.Media.Brushes.Transparent;
+        button.Foreground = isSelected
+            ? System.Windows.Media.Brushes.White
+            : palette.SidebarMutedText;
+        button.BorderBrush = System.Windows.Media.Brushes.Transparent;
+    }
+
     private static bool IsColorButton(System.Windows.Controls.Button button)
     {
         return !string.IsNullOrWhiteSpace(button.Name)
@@ -1310,9 +1578,26 @@ public partial class MainWindow : Window
 
     private static bool IsSidebarBorder(Border border)
     {
-        return VisualTreeHelper.GetParent(border) is Grid grid
-            && grid.ColumnDefinitions.Count == 3
-            && Grid.GetColumn(border) == 0;
+        return string.Equals(border.Name, "SidebarChrome", StringComparison.OrdinalIgnoreCase);
+    }
+
+    private static bool IsConsoleBorder(Border border)
+    {
+        return string.Equals(border.Name, "MiniConsolePanel", StringComparison.OrdinalIgnoreCase);
+    }
+
+    private static bool IsInsideNamedElement(DependencyObject element, string name)
+    {
+        for (var current = element; current is not null; current = VisualTreeHelper.GetParent(current))
+        {
+            if (current is FrameworkElement frameworkElement
+                && string.Equals(frameworkElement.Name, name, StringComparison.OrdinalIgnoreCase))
+            {
+                return true;
+            }
+        }
+
+        return false;
     }
 
     private static SolidColorBrush ToBrush(string color)
@@ -1352,7 +1637,7 @@ public partial class MainWindow : Window
         _notifyIcon = new Forms.NotifyIcon
         {
             Icon = _trayIcon,
-            Text = "Luces Canje Twitch",
+            Text = "Neo Twitch",
             Visible = true,
             ContextMenuStrip = menu
         };
@@ -1472,15 +1757,55 @@ public partial class MainWindow : Window
 
     private void AddLog(string message)
     {
+        AddLog(message, ClassifyLogMessage(message));
+    }
+
+    private void AddLog(string message, ActivityLogKind kind)
+    {
         Dispatcher.BeginInvoke(() =>
         {
-            _activity.Insert(0, $"[{DateTime.Now:HH:mm:ss}] {message}");
+            _activity.Insert(0, new ActivityLogEntry(message, kind));
 
             while (_activity.Count > 250)
             {
                 _activity.RemoveAt(_activity.Count - 1);
             }
         });
+    }
+
+    private static ActivityLogKind ClassifyLogMessage(string message)
+    {
+        var text = message.ToLowerInvariant();
+
+        if (text.Contains("error", StringComparison.Ordinal)
+            || text.Contains("fallo", StringComparison.Ordinal)
+            || text.Contains("no pude", StringComparison.Ordinal)
+            || text.Contains("no puedo", StringComparison.Ordinal)
+            || text.Contains("no hay", StringComparison.Ordinal)
+            || text.Contains("no encontre", StringComparison.Ordinal))
+        {
+            return ActivityLogKind.Important;
+        }
+
+        if (text.StartsWith("twitch", StringComparison.Ordinal)
+            || text.StartsWith("chat", StringComparison.Ordinal)
+            || text.Contains("autorizado", StringComparison.Ordinal)
+            || text.Contains("escuchando eventos", StringComparison.Ordinal))
+        {
+            return ActivityLogKind.Twitch;
+        }
+
+        if (text.Contains("siguio", StringComparison.Ordinal)
+            || text.Contains("suscribio", StringComparison.Ordinal)
+            || text.Contains("raid", StringComparison.Ordinal)
+            || text.Contains("bits", StringComparison.Ordinal)
+            || text.Contains("canjeo", StringComparison.Ordinal)
+            || text.StartsWith("prueba de", StringComparison.Ordinal))
+        {
+            return ActivityLogKind.Event;
+        }
+
+        return ActivityLogKind.Info;
     }
 
     private static string ParsePort(string text)
@@ -1525,6 +1850,61 @@ public partial class MainWindow : Window
 
     private sealed record UiOption<T>(string Label, T Value);
 
+    private enum ActivityLogKind
+    {
+        Info,
+        Twitch,
+        Event,
+        Important
+    }
+
+    private sealed class ActivityLogEntry
+    {
+        private static readonly SolidColorBrush InfoBrush = FrozenBrushFrom("#AFA4CC");
+        private static readonly SolidColorBrush TwitchBrush = FrozenBrushFrom("#9146FF");
+        private static readonly SolidColorBrush EventBrush = FrozenBrushFrom("#00C7B7");
+        private static readonly SolidColorBrush ImportantBrush = FrozenBrushFrom("#FFB020");
+
+        public ActivityLogEntry(string message, ActivityLogKind kind)
+        {
+            Time = DateTime.Now.ToString("HH:mm:ss");
+            Message = message;
+            Category = kind switch
+            {
+                ActivityLogKind.Twitch => "TWITCH",
+                ActivityLogKind.Event => "EVENTO",
+                ActivityLogKind.Important => "IMPORTANTE",
+                _ => "SISTEMA"
+            };
+            AccentBrush = kind switch
+            {
+                ActivityLogKind.Twitch => TwitchBrush,
+                ActivityLogKind.Event => EventBrush,
+                ActivityLogKind.Important => ImportantBrush,
+                _ => InfoBrush
+            };
+        }
+
+        public string Time { get; }
+        public string Message { get; }
+        public string Category { get; }
+        public SolidColorBrush AccentBrush { get; }
+    }
+
+    private static SolidColorBrush FrozenBrushFrom(string hex)
+    {
+        var brush = new SolidColorBrush((System.Windows.Media.Color)System.Windows.Media.ColorConverter.ConvertFromString(hex));
+        brush.Freeze();
+        return brush;
+    }
+
+    [DllImport("dwmapi.dll")]
+    private static extern int DwmSetWindowAttribute(
+        IntPtr hwnd,
+        int attribute,
+        ref int attributeValue,
+        int attributeSize);
+
     private sealed record ThemePalette(
         SolidColorBrush Window,
         SolidColorBrush Sidebar,
@@ -1534,35 +1914,59 @@ public partial class MainWindow : Window
         SolidColorBrush Border,
         SolidColorBrush Text,
         SolidColorBrush MutedText,
+        SolidColorBrush SidebarText,
+        SolidColorBrush SidebarMutedText,
+        SolidColorBrush SidebarCard,
+        SolidColorBrush SidebarCardBorder,
+        SolidColorBrush Console,
+        SolidColorBrush ConsoleMutedText,
+        SolidColorBrush ScrollTrack,
         SolidColorBrush Accent,
+        SolidColorBrush NavSelected,
         SolidColorBrush DangerSurface,
         SolidColorBrush DangerText,
         SolidColorBrush DangerBorder)
     {
         public static ThemePalette Light { get; } = new(
-            BrushFrom("#F7F4EF"),
-            BrushFrom("#FFFCF7"),
+            BrushFrom("#F7F4FF"),
+            BrushFrom("#8652F6"),
+            BrushFrom("#EFE8FF"),
             BrushFrom("#FFFFFF"),
-            BrushFrom("#FFFFFF"),
-            BrushFrom("#F8FAFC"),
-            BrushFrom("#E4DED4"),
-            BrushFrom("#1F2933"),
-            BrushFrom("#667085"),
-            BrushFrom("#216869"),
-            BrushFrom("#FDF2F2"),
+            BrushFrom("#F5F3FF"),
+            BrushFrom("#CDBBFF"),
+            BrushFrom("#1F2330"),
+            BrushFrom("#6B647A"),
+            BrushFrom("#1A0B2E"),
+            BrushFrom("#2E1855"),
+            BrushFrom("#38FFFFFF"),
+            BrushFrom("#4FFFFFFF"),
+            BrushFrom("#171224"),
+            BrushFrom("#AFA4CC"),
+            BrushFrom("#241A0B2E"),
+            BrushFrom("#00A7A5"),
+            BrushFrom("#6D3BDF"),
+            BrushFrom("#FFF0F1"),
             BrushFrom("#B42318"),
             BrushFrom("#F4A7A0"));
 
         public static ThemePalette Dark { get; } = new(
-            BrushFrom("#111318"),
-            BrushFrom("#171A21"),
-            BrushFrom("#1F2430"),
-            BrushFrom("#151922"),
-            BrushFrom("#242B38"),
-            BrushFrom("#354052"),
-            BrushFrom("#E7EAF0"),
-            BrushFrom("#A6AFBF"),
-            BrushFrom("#2EA3A5"),
+            BrushFrom("#14101F"),
+            BrushFrom("#8652F6"),
+            BrushFrom("#2B2140"),
+            BrushFrom("#1C1429"),
+            BrushFrom("#33264C"),
+            BrushFrom("#4B3A6D"),
+            BrushFrom("#F4F1FF"),
+            BrushFrom("#B8AECF"),
+            BrushFrom("#1A0B2E"),
+            BrushFrom("#2E1855"),
+            BrushFrom("#38FFFFFF"),
+            BrushFrom("#4FFFFFFF"),
+            BrushFrom("#100B19"),
+            BrushFrom("#B4A8D2"),
+            BrushFrom("#2F241F3B"),
+            BrushFrom("#00B6B5"),
+            BrushFrom("#6D3BDF"),
             BrushFrom("#3A1F25"),
             BrushFrom("#FFB4A8"),
             BrushFrom("#7A3D45"));

@@ -81,6 +81,7 @@ public sealed class SettingsStore
         config.Channel.UserId ??= "";
         config.Channel.Login ??= "";
         config.Channel.DisplayName ??= "";
+        config.Channel.ProfileImageUrl ??= "";
         config.SerialPort ??= "";
         config.BaudRate = Math.Clamp(config.BaudRate, 300, 921600);
         config.Rules = NormalizeRules(config.Rules, defaults.Rules);

@@ -26,8 +26,8 @@ public partial class App : System.Windows.Application
             if (!createdNew)
             {
                 System.Windows.MessageBox.Show(
-                    "Luces Canje Twitch ya esta abierta. Revisa el icono en la bandeja del sistema.",
-                    "Luces Canje Twitch",
+                    "Neo Twitch ya esta abierta. Revisa el icono en la bandeja del sistema.",
+                    "Neo Twitch",
                     MessageBoxButton.OK,
                     MessageBoxImage.Information);
                 Shutdown();
@@ -100,7 +100,7 @@ public partial class App : System.Windows.Application
     {
         System.Windows.MessageBox.Show(
             $"La app no pudo iniciar correctamente.\n\nDetalle: {detail}\n\nLog: {logPath}",
-            "Luces Canje Twitch",
+            "Neo Twitch",
             MessageBoxButton.OK,
             MessageBoxImage.Error);
     }

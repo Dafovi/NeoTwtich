@@ -174,8 +174,44 @@ public sealed class TwitchAuthService
         {
             UserId = first.GetProperty("id").GetString() ?? "",
             Login = first.GetProperty("login").GetString() ?? "",
-            DisplayName = first.GetProperty("display_name").GetString() ?? ""
+            DisplayName = first.GetProperty("display_name").GetString() ?? "",
+            ProfileImageUrl = first.TryGetProperty("profile_image_url", out var profileImageUrl)
+                ? profileImageUrl.GetString() ?? ""
+                : ""
         };
+    }
+
+    public async Task<TwitchStreamStatus> GetStreamStatusAsync(AppConfig config, CancellationToken cancellationToken)
+    {
+        if (!config.Channel.IsReady)
+        {
+            return TwitchStreamStatus.Offline;
+        }
+
+        using var request = new HttpRequestMessage(HttpMethod.Get, $"https://api.twitch.tv/helix/streams?user_id={Uri.EscapeDataString(config.Channel.UserId)}");
+        request.Headers.Authorization = new AuthenticationHeaderValue("Bearer", config.Token.AccessToken);
+        request.Headers.Add("Client-Id", config.TwitchClientId);
+
+        using var response = await _http.SendAsync(request, cancellationToken);
+        var json = await response.Content.ReadAsStringAsync(cancellationToken);
+
+        if (!response.IsSuccessStatusCode)
+        {
+            throw new InvalidOperationException($"No pude leer el directo de Twitch: {json}");
+        }
+
+        using var doc = JsonDocument.Parse(json);
+        var first = doc.RootElement.GetProperty("data").EnumerateArray().FirstOrDefault();
+        if (first.ValueKind == JsonValueKind.Undefined)
+        {
+            return TwitchStreamStatus.Offline;
+        }
+
+        return new TwitchStreamStatus(
+            true,
+            first.TryGetProperty("viewer_count", out var viewerCount) ? viewerCount.GetInt32() : 0,
+            first.TryGetProperty("title", out var title) ? title.GetString() ?? "" : "",
+            first.TryGetProperty("game_name", out var gameName) ? gameName.GetString() ?? "" : "");
     }
 
     private static TwitchTokenInfo ToTokenInfo(TokenResponse token)
@@ -242,3 +278,12 @@ public sealed record DeviceCodeSession(
     string VerificationUri,
     int ExpiresIn,
     int IntervalSeconds);
+
+public sealed record TwitchStreamStatus(
+    bool IsLive,
+    int ViewerCount,
+    string Title,
+    string GameName)
+{
+    public static TwitchStreamStatus Offline { get; } = new(false, 0, "", "");
+}

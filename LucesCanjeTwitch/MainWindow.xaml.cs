@@ -1,12 +1,14 @@
 using System.Collections.ObjectModel;
 using System.ComponentModel;
 using System.Drawing;
+using System.IO;
 using System.Windows;
 using System.Windows.Controls;
 using System.Windows.Media;
 using LucesCanjeTwitch.Models;
 using LucesCanjeTwitch.Services;
 using Forms = System.Windows.Forms;
+using DrawingIcon = System.Drawing.Icon;
 using WpfClipboard = System.Windows.Clipboard;
 using WpfMessageBox = System.Windows.MessageBox;
 using WpfOpenFileDialog = Microsoft.Win32.OpenFileDialog;
@@ -19,6 +21,7 @@ public partial class MainWindow : Window
     private readonly AudioPlayerService _audioPlayer = new();
     private readonly SerialLightController _lightController = new();
     private readonly TwitchAuthService _authService = new();
+    private readonly TwitchChatService _chatService = new();
     private readonly TwitchEventSubClient _eventSubClient;
     private readonly ObservableCollection<string> _activity = [];
     private readonly SemaphoreSlim _effectGate = new(1, 1);
@@ -52,6 +55,7 @@ public partial class MainWindow : Window
     private CancellationTokenSource? _backgroundApplyDebounce;
     private CancellationTokenSource? _currentEffectCts;
     private AudioPlayback? _currentPlayback;
+    private DrawingIcon? _trayIcon;
     private Forms.NotifyIcon? _notifyIcon;
 
     public MainWindow()
@@ -395,7 +399,8 @@ public partial class MainWindow : Window
             EventKind = TwitchEventKind.Follow,
             MinimumBits = 1,
             UseLights = true,
-            PlayAudio = false
+            PlayAudio = false,
+            ChatMessageTemplate = "Gracias @{user}!"
         };
 
         _config.Rules.Add(rule);
@@ -500,14 +505,17 @@ public partial class MainWindow : Window
 
         SaveGlobalSettingsFromFields();
         SaveCurrentRuleFromFields();
-        await RunRuleAsync(rule, new TwitchEvent
-        {
-            Kind = rule.EventKind,
-            RewardTitle = rule.CustomRewardTitle,
-            Bits = rule.EventKind == TwitchEventKind.Cheer ? rule.MinimumBits : null,
-            UserName = "Prueba",
-            Title = $"Prueba de {rule.Name}"
-        });
+        await RunRuleAsync(
+            rule,
+            new TwitchEvent
+            {
+                Kind = rule.EventKind,
+                RewardTitle = rule.CustomRewardTitle,
+                Bits = rule.EventKind == TwitchEventKind.Cheer ? rule.MinimumBits : null,
+                UserName = "Prueba",
+                Title = $"Prueba de {rule.Name}"
+            },
+            sendChatMessage: false);
     }
 
     private void BrowseAudioButton_Click(object sender, RoutedEventArgs e)
@@ -704,7 +712,34 @@ public partial class MainWindow : Window
             .ToArray();
     }
 
-    private async Task RunRuleAsync(EventRule rule, TwitchEvent twitchEvent)
+    private async Task SendRuleChatMessageAsync(EventRule rule, TwitchEvent twitchEvent)
+    {
+        if (!rule.SendChatMessage)
+        {
+            return;
+        }
+
+        var message = TwitchChatService.FormatMessage(rule.ChatMessageTemplate, twitchEvent);
+        if (string.IsNullOrWhiteSpace(message))
+        {
+            return;
+        }
+
+        try
+        {
+            await _authService.EnsureValidTokenAsync(_config, AddLog, CancellationToken.None);
+            SaveConfig();
+            await _chatService.SendMessageAsync(_config, message, CancellationToken.None);
+            AddLog($"Chat enviado: {message}");
+        }
+        catch (Exception ex)
+        {
+            CrashReporter.Log(ex, $"No se pudo enviar mensaje de chat para la regla '{rule.Name}'.");
+            AddLog($"Chat: {ex.Message}");
+        }
+    }
+
+    private async Task RunRuleAsync(EventRule rule, TwitchEvent twitchEvent, bool sendChatMessage = true)
     {
         await _effectGate.WaitAsync();
         var effectCts = new CancellationTokenSource();
@@ -714,6 +749,11 @@ public partial class MainWindow : Window
 
         try
         {
+            if (sendChatMessage)
+            {
+                _ = SendRuleChatMessageAsync(rule, twitchEvent);
+            }
+
             AudioPlayback? playback = null;
             if (rule.PlayAudio)
             {
@@ -877,6 +917,8 @@ public partial class MainWindow : Window
             EventKindBox.SelectedValue = rule.EventKind;
             RewardTitleBox.Text = rule.CustomRewardTitle;
             MinimumBitsBox.Text = rule.MinimumBits.ToString();
+            ChatMessageCheck.IsChecked = rule.SendChatMessage;
+            ChatMessageBox.Text = rule.ChatMessageTemplate;
             UseLightsCheck.IsChecked = rule.UseLights;
             PlayAudioCheck.IsChecked = rule.PlayAudio;
             AudioPathBox.Text = rule.AudioPath;
@@ -949,6 +991,8 @@ public partial class MainWindow : Window
         rule.EventKind = EventKindBox.SelectedValue is TwitchEventKind kind ? kind : TwitchEventKind.Follow;
         rule.CustomRewardTitle = RewardTitleBox.Text.Trim();
         rule.MinimumBits = ParseInt(MinimumBitsBox.Text, 1, 1, 1_000_000);
+        rule.SendChatMessage = ChatMessageCheck.IsChecked == true;
+        rule.ChatMessageTemplate = ChatMessageBox.Text.Trim();
         rule.UseLights = UseLightsCheck.IsChecked == true;
         rule.PlayAudio = PlayAudioCheck.IsChecked == true;
         rule.AudioPath = AudioPathBox.Text.Trim();
@@ -1194,15 +1238,52 @@ public partial class MainWindow : Window
         menu.Items.Add("Abrir", null, (_, _) => ShowFromTray());
         menu.Items.Add("Salir", null, async (_, _) => await ExitApplicationAsync());
 
+        _trayIcon = LoadAppIcon();
         _notifyIcon = new Forms.NotifyIcon
         {
-            Icon = SystemIcons.Application,
+            Icon = _trayIcon,
             Text = "Luces Canje Twitch",
             Visible = true,
             ContextMenuStrip = menu
         };
 
         _notifyIcon.DoubleClick += (_, _) => ShowFromTray();
+    }
+
+    private static DrawingIcon LoadAppIcon()
+    {
+        try
+        {
+            if (!string.IsNullOrWhiteSpace(Environment.ProcessPath) && File.Exists(Environment.ProcessPath))
+            {
+                var icon = DrawingIcon.ExtractAssociatedIcon(Environment.ProcessPath);
+                if (icon is not null)
+                {
+                    return icon;
+                }
+            }
+        }
+        catch
+        {
+            // Try the bundled WPF resource below.
+        }
+
+        try
+        {
+            var resource = System.Windows.Application.GetResourceStream(new Uri("Assets/AppIcon.ico", UriKind.Relative));
+            if (resource?.Stream is not null)
+            {
+                using var stream = resource.Stream;
+                using var icon = new DrawingIcon(stream);
+                return (DrawingIcon)icon.Clone();
+            }
+        }
+        catch
+        {
+            // Fall back to a generic app icon only if the bundled icon cannot be loaded.
+        }
+
+        return (DrawingIcon)SystemIcons.Application.Clone();
     }
 
     private void ShowFromTray()
@@ -1223,8 +1304,9 @@ public partial class MainWindow : Window
         _backgroundApplyDebounce?.Cancel();
         _backgroundApplyDebounce?.Dispose();
         await _eventSubClient.StopAsync();
+        _chatService.Dispose();
         _lightController.Dispose();
-        _notifyIcon?.Dispose();
+        DisposeTrayIcon();
         Close();
     }
 
@@ -1244,8 +1326,17 @@ public partial class MainWindow : Window
         }
 
         await _eventSubClient.StopAsync();
+        _chatService.Dispose();
         _lightController.Dispose();
+        DisposeTrayIcon();
+    }
+
+    private void DisposeTrayIcon()
+    {
         _notifyIcon?.Dispose();
+        _notifyIcon = null;
+        _trayIcon?.Dispose();
+        _trayIcon = null;
     }
 
     private void Window_StateChanged(object? sender, EventArgs e)

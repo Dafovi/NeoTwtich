@@ -114,6 +114,7 @@ public sealed class SettingsStore
             rule.Name ??= "";
             rule.CustomRewardTitle ??= "";
             rule.AudioPath ??= "";
+            rule.ChatMessageTemplate ??= "";
             rule.TargetPins ??= "";
             rule.PrimaryColor = LightCommand.NormalizeColor(rule.PrimaryColor);
             rule.SecondaryColor = LightCommand.NormalizeColor(rule.SecondaryColor);

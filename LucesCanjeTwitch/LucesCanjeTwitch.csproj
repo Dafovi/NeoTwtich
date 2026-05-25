@@ -8,6 +8,11 @@
     <UseWPF>true</UseWPF>
     <UseWindowsForms>true</UseWindowsForms>
     <DefaultItemExcludes>$(DefaultItemExcludes);bin\**;obj\**;artifacts\**;..\artifacts\**</DefaultItemExcludes>
+    <ApplicationIcon>Assets\AppIcon.ico</ApplicationIcon>
   </PropertyGroup>
+
+  <ItemGroup>
+    <Resource Include="Assets\AppIcon.ico" />
+  </ItemGroup>
 
 </Project>

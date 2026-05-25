@@ -13,6 +13,8 @@ public sealed class EventRule : INotifyPropertyChanged
     private bool _useLights = true;
     private bool _playAudio;
     private string _audioPath = "";
+    private bool _sendChatMessage;
+    private string _chatMessageTemplate = "";
     private LightPattern _pattern = LightPattern.Pulse;
     private string _targetPins = "";
     private string _primaryColor = "#FF2D55";
@@ -83,6 +85,18 @@ public sealed class EventRule : INotifyPropertyChanged
     {
         get => _audioPath;
         set => SetField(ref _audioPath, value);
+    }
+
+    public bool SendChatMessage
+    {
+        get => _sendChatMessage;
+        set => SetField(ref _sendChatMessage, value);
+    }
+
+    public string ChatMessageTemplate
+    {
+        get => _chatMessageTemplate;
+        set => SetField(ref _chatMessageTemplate, value);
     }
 
     public LightPattern Pattern
@@ -189,6 +203,8 @@ public sealed class EventRule : INotifyPropertyChanged
             UseLights = UseLights,
             PlayAudio = PlayAudio,
             AudioPath = AudioPath,
+            SendChatMessage = SendChatMessage,
+            ChatMessageTemplate = ChatMessageTemplate,
             Pattern = Pattern,
             TargetPins = TargetPins,
             PrimaryColor = PrimaryColor,

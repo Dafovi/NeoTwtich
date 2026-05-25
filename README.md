@@ -6,6 +6,7 @@ App de Windows en .NET/WPF para escuchar eventos de Twitch y activar audio local
 
 - Escucha EventSub por WebSocket para seguidores, suscripciones, raids, bits y canjes personalizados.
 - Permite crear reglas con luces, audio o ambos.
+- Puede enviar mensajes personalizados al chat por regla.
 - Guarda la configuracion en `%AppData%\LucesCanjeTwitch\settings.json`.
 - Se queda en segundo plano al cerrar o minimizar la ventana.
 - Incluye modo claro y modo oscuro desde el panel `Inicio`.
@@ -32,7 +33,8 @@ App de Windows en .NET/WPF para escuchar eventos de Twitch y activar audio local
 8. En `Tiras LED > Fondo`, configura si quieres un color o patron permanente mientras no haya eventos.
 9. Ajusta reglas, colores, patron, pines de salida y audio.
 10. Para bits, crea varias reglas `Bits` con distintos `Bits minimos`; si llega una cantidad alta, se usa el umbral mas alto que aplique.
-11. Usa `Probar regla` antes de salir en vivo.
+11. Si quieres chat automatico, activa `Enviar mensaje al chat` y usa variables como `{user}`, `{bits}`, `{reward}`, `{viewers}`, `{message}` o `{event}`.
+12. Usa `Probar regla` antes de salir en vivo.
 
 ## Cerrar y actualizar
 
@@ -65,6 +67,7 @@ La app pide los scopes minimos para los eventos implementados:
 - `channel:read:subscriptions` para suscripciones.
 - `channel:read:redemptions` para canjes personalizados.
 - `bits:read` para cheers/bits.
+- `user:write:chat` para enviar mensajes al chat.
 
 Raids no requieren un scope propio, pero la conexion por WebSocket usa el token de usuario autorizado.
 

@@ -14,7 +14,8 @@ public sealed class TwitchAuthService
         "moderator:read:followers",
         "channel:read:subscriptions",
         "channel:read:redemptions",
-        "bits:read"
+        "bits:read",
+        "user:write:chat"
     ];
 
     private readonly HttpClient _http = new();

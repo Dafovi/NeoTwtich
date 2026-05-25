@@ -8,6 +8,10 @@ La forma mas facil de usar la app es descargar el release mas reciente desde Git
 
 [Descargar ultimo release](https://github.com/Dafovi/Luces-Twitch-y-Arduino/releases/latest)
 
+También puedes descargar el sketch para Arduino desde aquí:
+
+[Descargar Sketch](LucesCanjeTwitch/Arduino/LucesCanjeNeoPixel/LucesCanjeNeoPixel.ino)
+
 Despues de descargar el `.zip`:
 
 1. Descomprime la carpeta completa.
@@ -38,6 +42,7 @@ Esta es una regla de seguidor configurada para activar luces, reproducir audio y
 Y asi se ve el efecto cuando se activa en stream:
 
 ![Ejemplo del efecto activado](docs/images/muestra-seguidor-activado.gif)
+[Canal de Twtich](https://www.twitch.tv/cartafilou)
 
 ## Requisitos
 

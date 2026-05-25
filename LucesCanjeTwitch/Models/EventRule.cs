@@ -10,7 +10,7 @@ public sealed class EventRule : INotifyPropertyChanged
     private TwitchEventKind _eventKind;
     private string _customRewardTitle = "";
     private int _minimumBits = 1;
-    private bool _useLights = true;
+    private bool _useLights;
     private bool _playAudio;
     private string _audioPath = "";
     private bool _sendChatMessage;

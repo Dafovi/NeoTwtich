@@ -398,8 +398,9 @@ public partial class MainWindow : Window
             Name = "Nueva regla",
             EventKind = TwitchEventKind.Follow,
             MinimumBits = 1,
-            UseLights = true,
+            UseLights = false,
             PlayAudio = false,
+            SendChatMessage = false,
             ChatMessageTemplate = "Gracias @{user}!"
         };
 
@@ -576,6 +577,7 @@ public partial class MainWindow : Window
 
         SaveCurrentRuleFromFields();
         SaveConfig();
+        UpdateRuleOptionVisibility();
     }
 
     private void StripFieldChanged(object sender, RoutedEventArgs e)
@@ -599,6 +601,7 @@ public partial class MainWindow : Window
 
         SaveBackgroundFromFields();
         SaveConfig();
+        UpdateBackgroundOptionVisibility();
         ScheduleBackgroundApply();
     }
 
@@ -890,6 +893,7 @@ public partial class MainWindow : Window
 
             LoadSelectedRuleIntoUi();
             LoadSelectedStripIntoUi();
+            UpdateBackgroundOptionVisibility();
             ApplyTheme();
             UpdateStatusText();
         }
@@ -937,6 +941,7 @@ public partial class MainWindow : Window
         finally
         {
             _loadingRule = false;
+            UpdateRuleOptionVisibility();
         }
     }
 
@@ -1008,6 +1013,7 @@ public partial class MainWindow : Window
 
         UpdateColorButtons();
         UpdateSliderLabels();
+        UpdateRuleOptionVisibility();
         RulesList.Items.Refresh();
     }
 
@@ -1025,6 +1031,7 @@ public partial class MainWindow : Window
 
         UpdateColorButtons();
         UpdateSliderLabels();
+        UpdateBackgroundOptionVisibility();
     }
 
     private void SaveCurrentStripFromFields()
@@ -1042,6 +1049,95 @@ public partial class MainWindow : Window
 
         StripsList.Items.Refresh();
         RulesList.Items.Refresh();
+    }
+
+    private void UpdateRuleOptionVisibility()
+    {
+        var kind = EventKindBox.SelectedValue is TwitchEventKind eventKind
+            ? eventKind
+            : TwitchEventKind.Follow;
+        var useLights = UseLightsCheck.IsChecked == true;
+        var playAudio = PlayAudioCheck.IsChecked == true;
+        var sendChat = ChatMessageCheck.IsChecked == true;
+        var pattern = PatternBox.SelectedValue is LightPattern selectedPattern
+            ? selectedPattern
+            : LightPattern.Pulse;
+
+        SetVisible(kind == TwitchEventKind.ChannelPointRedemption, RewardTitleLabel, RewardTitleBox);
+        SetVisible(kind == TwitchEventKind.Cheer, MinimumBitsLabel, MinimumBitsBox);
+        SetVisible(playAudio, AudioLabel, AudioPanel);
+        SetVisible(sendChat, ChatMessageLabel, ChatMessageBox);
+
+        SetVisible(useLights, LightOptionsSeparator, TargetPinsLabel, TargetPinsBox, PatternGrid);
+        SetVisible(useLights && UsesPrimaryColor(pattern), PrimaryColorPanel);
+        SetVisible(useLights && UsesSecondaryColor(pattern), SecondaryColorLabel, SecondaryColorPanel);
+        SetVisible(useLights && UsesTertiaryColor(pattern), TertiaryColorLabel, TertiaryColorPanel);
+        SetVisible(useLights && UsesBrightness(pattern), BrightnessGrid, BrightnessSlider);
+        SetVisible(useLights && !playAudio, DurationGrid, DurationSlider);
+        SetVisible(useLights && UsesCycle(pattern), CycleGrid, CycleSlider);
+        SetVisible(useLights && UsesStep(pattern), StepGrid, StepSlider);
+    }
+
+    private void UpdateBackgroundOptionVisibility()
+    {
+        var enabled = BackgroundEnabledCheck.IsChecked == true;
+        var pattern = BackgroundPatternBox.SelectedValue is LightPattern selectedPattern
+            ? selectedPattern
+            : LightPattern.Solid;
+
+        SetVisible(enabled, BackgroundPinsLabel, BackgroundPinsBox, BackgroundPatternGrid, ApplyBackgroundButton);
+        SetVisible(enabled && UsesBrightness(pattern), BackgroundBrightnessPanel);
+        SetVisible(enabled && UsesPrimaryColor(pattern), BackgroundPrimaryColorLabel, BackgroundPrimaryColorPanel);
+        SetVisible(enabled && UsesSecondaryColor(pattern), BackgroundSecondaryColorLabel, BackgroundSecondaryColorPanel);
+        SetVisible(enabled && UsesTertiaryColor(pattern), BackgroundTertiaryColorLabel, BackgroundTertiaryColorPanel);
+        SetVisible(enabled && UsesCycle(pattern), BackgroundCycleGrid, BackgroundCycleSlider);
+        SetVisible(enabled && UsesStep(pattern), BackgroundStepGrid, BackgroundStepSlider);
+    }
+
+    private static void SetVisible(bool isVisible, params UIElement[] elements)
+    {
+        var visibility = isVisible ? Visibility.Visible : Visibility.Collapsed;
+        foreach (var element in elements)
+        {
+            element.Visibility = visibility;
+        }
+    }
+
+    private static bool UsesPrimaryColor(LightPattern pattern)
+    {
+        return pattern != LightPattern.Rainbow;
+    }
+
+    private static bool UsesSecondaryColor(LightPattern pattern)
+    {
+        return pattern is LightPattern.Pulse
+            or LightPattern.Chase
+            or LightPattern.Theater
+            or LightPattern.Sparkle
+            or LightPattern.Rave;
+    }
+
+    private static bool UsesTertiaryColor(LightPattern pattern)
+    {
+        return pattern is LightPattern.Chase
+            or LightPattern.Theater
+            or LightPattern.Sparkle
+            or LightPattern.Rave;
+    }
+
+    private static bool UsesBrightness(LightPattern pattern)
+    {
+        return true;
+    }
+
+    private static bool UsesCycle(LightPattern pattern)
+    {
+        return pattern != LightPattern.Solid;
+    }
+
+    private static bool UsesStep(LightPattern pattern)
+    {
+        return pattern is LightPattern.Sparkle or LightPattern.Rave;
     }
 
     private void UpdateStatusText()
@@ -1092,6 +1188,14 @@ public partial class MainWindow : Window
         Resources["ThemeInputBrush"] = palette.Input;
         Resources["ThemeBorderBrush"] = palette.Border;
         Resources["ThemeSelectionBrush"] = palette.Accent;
+        Resources[System.Windows.SystemColors.WindowBrushKey] = palette.Input;
+        Resources[System.Windows.SystemColors.ControlBrushKey] = palette.Input;
+        Resources[System.Windows.SystemColors.WindowTextBrushKey] = palette.Text;
+        Resources[System.Windows.SystemColors.ControlTextBrushKey] = palette.Text;
+        Resources[System.Windows.SystemColors.HighlightBrushKey] = palette.Accent;
+        Resources[System.Windows.SystemColors.HighlightTextBrushKey] = System.Windows.Media.Brushes.White;
+        Resources[System.Windows.SystemColors.InactiveSelectionHighlightBrushKey] = palette.Accent;
+        Resources[System.Windows.SystemColors.InactiveSelectionHighlightTextBrushKey] = System.Windows.Media.Brushes.White;
         ApplyThemeToElement(this, palette);
         UpdateColorButtons();
     }
@@ -1123,6 +1227,12 @@ public partial class MainWindow : Window
                 comboBox.Background = palette.Input;
                 comboBox.Foreground = palette.Text;
                 comboBox.BorderBrush = palette.Border;
+                comboBox.Resources[System.Windows.SystemColors.WindowBrushKey] = palette.Input;
+                comboBox.Resources[System.Windows.SystemColors.ControlBrushKey] = palette.Input;
+                comboBox.Resources[System.Windows.SystemColors.WindowTextBrushKey] = palette.Text;
+                comboBox.Resources[System.Windows.SystemColors.ControlTextBrushKey] = palette.Text;
+                comboBox.Resources[System.Windows.SystemColors.HighlightBrushKey] = palette.Accent;
+                comboBox.Resources[System.Windows.SystemColors.HighlightTextBrushKey] = System.Windows.Media.Brushes.White;
                 break;
             case System.Windows.Controls.ListBox listBox:
                 listBox.Background = palette.Input;

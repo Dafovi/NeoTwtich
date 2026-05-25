@@ -7,6 +7,8 @@ App de Windows en .NET/WPF para escuchar eventos de Twitch y activar audio local
 - Escucha EventSub por WebSocket para seguidores, suscripciones, raids, bits y canjes personalizados.
 - Permite crear reglas con luces, audio o ambos.
 - Puede enviar mensajes personalizados al chat por regla.
+- Las reglas nuevas vienen activas, pero con luces, audio y chat desactivados para configurar solo lo necesario.
+- La interfaz oculta opciones que no aplican al evento, patron o fondo seleccionado.
 - Guarda la configuracion en `%AppData%\LucesCanjeTwitch\settings.json`.
 - Se queda en segundo plano al cerrar o minimizar la ventana.
 - Incluye modo claro y modo oscuro desde el panel `Inicio`.
@@ -31,10 +33,11 @@ App de Windows en .NET/WPF para escuchar eventos de Twitch y activar audio local
 6. En la app, usa `Detectar` o escribe el puerto COM del Arduino, por ejemplo `COM3`.
 7. En `Tiras LED`, agrega cada tira con nombre, pin de Arduino y cantidad de LEDs.
 8. En `Tiras LED > Fondo`, configura si quieres un color o patron permanente mientras no haya eventos.
-9. Ajusta reglas, colores, patron, pines de salida y audio.
-10. Para bits, crea varias reglas `Bits` con distintos `Bits minimos`; si llega una cantidad alta, se usa el umbral mas alto que aplique.
-11. Si quieres chat automatico, activa `Enviar mensaje al chat` y usa variables como `{user}`, `{bits}`, `{reward}`, `{viewers}`, `{message}` o `{event}`.
-12. Usa `Probar regla` antes de salir en vivo.
+9. Crea o edita reglas. Por defecto quedan activas, pero sin luces, audio ni chat automatico.
+10. Activa solo lo que necesites en cada regla; la app muestra los campos que aplican segun el evento, patron y opciones marcadas.
+11. Para bits, crea varias reglas `Bits` con distintos `Bits minimos`; si llega una cantidad alta, se usa el umbral mas alto que aplique.
+12. Si quieres chat automatico, activa `Enviar mensaje al chat` y usa variables como `{user}`, `{bits}`, `{reward}`, `{viewers}`, `{message}` o `{event}`.
+13. Usa `Probar regla` antes de salir en vivo.
 
 ## Cerrar y actualizar
 

@@ -34,6 +34,9 @@
             <Setter Property="MinHeight" Value="34" />
             <Setter Property="Padding" Value="8,5" />
             <Setter Property="Margin" Value="0,4,0,10" />
+            <Setter Property="Background" Value="{DynamicResource ThemeInputBrush}" />
+            <Setter Property="Foreground" Value="{DynamicResource ThemeTextBrush}" />
+            <Setter Property="BorderBrush" Value="{DynamicResource ThemeBorderBrush}" />
         </Style>
 
         <Style TargetType="ComboBoxItem">
@@ -328,12 +331,16 @@
                                     </StackPanel>
                                 </Grid>
 
-                                <TextBlock Text="Canje especifico" Foreground="#667085" />
+                                <TextBlock x:Name="RewardTitleLabel"
+                                           Text="Canje especifico"
+                                           Foreground="#667085" />
                                 <TextBox x:Name="RewardTitleBox"
                                          TextChanged="RuleFieldChanged"
                                          ToolTip="Dejalo vacio para aceptar cualquier canje personalizado." />
 
-                                <TextBlock Text="Bits minimos" Foreground="#667085" />
+                                <TextBlock x:Name="MinimumBitsLabel"
+                                           Text="Bits minimos"
+                                           Foreground="#667085" />
                                 <TextBox x:Name="MinimumBitsBox"
                                          TextChanged="RuleFieldChanged"
                                          ToolTip="Para bits, usa el mayor umbral que sea menor o igual a la cantidad recibida." />
@@ -349,8 +356,12 @@
                                               Unchecked="RuleFieldChanged" />
                                 </StackPanel>
 
-                                <TextBlock Text="Audio" Foreground="#667085" />
-                                <DockPanel LastChildFill="True" Margin="0,4,0,10">
+                                <TextBlock x:Name="AudioLabel"
+                                           Text="Audio"
+                                           Foreground="#667085" />
+                                <DockPanel x:Name="AudioPanel"
+                                           LastChildFill="True"
+                                           Margin="0,4,0,10">
                                     <Button DockPanel.Dock="Right"
                                             Content="Buscar"
                                             Margin="8,0,0,0"
@@ -364,19 +375,24 @@
                                           Content="Enviar mensaje al chat"
                                           Checked="RuleFieldChanged"
                                           Unchecked="RuleFieldChanged" />
-                                <TextBlock Text="Mensaje al chat" Foreground="#667085" />
+                                <TextBlock x:Name="ChatMessageLabel"
+                                           Text="Mensaje al chat"
+                                           Foreground="#667085" />
                                 <TextBox x:Name="ChatMessageBox"
                                          TextChanged="RuleFieldChanged"
                                          ToolTip="Variables: {user}, {bits}, {reward}, {viewers}, {message}, {event}" />
 
-                                <Separator Margin="0,8,0,16" />
+                                <Separator x:Name="LightOptionsSeparator"
+                                           Margin="0,8,0,16" />
 
-                                <TextBlock Text="Pines de salida" Foreground="#667085" />
+                                <TextBlock x:Name="TargetPinsLabel"
+                                           Text="Pines de salida"
+                                           Foreground="#667085" />
                                 <TextBox x:Name="TargetPinsBox"
                                          TextChanged="RuleFieldChanged"
                                          ToolTip="Dejalo vacio para usar todas las tiras. Ejemplo: 6, 7" />
 
-                                <Grid>
+                                <Grid x:Name="PatternGrid">
                                     <Grid.ColumnDefinitions>
                                         <ColumnDefinition Width="*" />
                                         <ColumnDefinition Width="16" />
@@ -387,7 +403,8 @@
                                         <ComboBox x:Name="PatternBox"
                                                   SelectionChanged="RuleFieldChanged" />
                                     </StackPanel>
-                                    <StackPanel Grid.Column="2">
+                                    <StackPanel x:Name="PrimaryColorPanel"
+                                                Grid.Column="2">
                                         <TextBlock Text="Color principal" Foreground="#667085" />
                                         <DockPanel LastChildFill="True" Margin="0,4,0,10">
                                             <Button x:Name="PrimaryColorButton"
@@ -403,8 +420,12 @@
                                     </StackPanel>
                                 </Grid>
 
-                                <TextBlock Text="Color secundario" Foreground="#667085" />
-                                <DockPanel LastChildFill="True" Margin="0,4,0,12">
+                                <TextBlock x:Name="SecondaryColorLabel"
+                                           Text="Color secundario"
+                                           Foreground="#667085" />
+                                <DockPanel x:Name="SecondaryColorPanel"
+                                           LastChildFill="True"
+                                           Margin="0,4,0,12">
                                     <Button x:Name="SecondaryColorButton"
                                             DockPanel.Dock="Right"
                                             Width="38"
@@ -416,8 +437,12 @@
                                              TextChanged="RuleFieldChanged" />
                                 </DockPanel>
 
-                                <TextBlock Text="Tercer color" Foreground="#667085" />
-                                <DockPanel LastChildFill="True" Margin="0,4,0,12">
+                                <TextBlock x:Name="TertiaryColorLabel"
+                                           Text="Tercer color"
+                                           Foreground="#667085" />
+                                <DockPanel x:Name="TertiaryColorPanel"
+                                           LastChildFill="True"
+                                           Margin="0,4,0,12">
                                     <Button x:Name="TertiaryColorButton"
                                             DockPanel.Dock="Right"
                                             Width="38"
@@ -429,7 +454,7 @@
                                              TextChanged="RuleFieldChanged" />
                                 </DockPanel>
 
-                                <Grid>
+                                <Grid x:Name="BrightnessGrid">
                                     <Grid.ColumnDefinitions>
                                         <ColumnDefinition Width="*" />
                                         <ColumnDefinition Width="60" />
@@ -446,7 +471,7 @@
                                         TickFrequency="1"
                                         ValueChanged="RuleFieldChanged" />
 
-                                <Grid>
+                                <Grid x:Name="DurationGrid">
                                     <Grid.ColumnDefinitions>
                                         <ColumnDefinition Width="*" />
                                         <ColumnDefinition Width="90" />
@@ -463,7 +488,7 @@
                                         TickFrequency="250"
                                         ValueChanged="RuleFieldChanged" />
 
-                                <Grid>
+                                <Grid x:Name="CycleGrid">
                                     <Grid.ColumnDefinitions>
                                         <ColumnDefinition Width="*" />
                                         <ColumnDefinition Width="90" />
@@ -480,7 +505,7 @@
                                         TickFrequency="10"
                                         ValueChanged="RuleFieldChanged" />
 
-                                <Grid>
+                                <Grid x:Name="StepGrid">
                                     <Grid.ColumnDefinitions>
                                         <ColumnDefinition Width="*" />
                                         <ColumnDefinition Width="90" />
@@ -587,12 +612,14 @@
                                       Checked="BackgroundFieldChanged"
                                       Unchecked="BackgroundFieldChanged" />
 
-                            <TextBlock Text="Pines de fondo" Foreground="#667085" />
+                            <TextBlock x:Name="BackgroundPinsLabel"
+                                       Text="Pines de fondo"
+                                       Foreground="#667085" />
                             <TextBox x:Name="BackgroundPinsBox"
                                      TextChanged="BackgroundFieldChanged"
                                      ToolTip="Dejalo vacio para usar todas las tiras." />
 
-                            <Grid>
+                            <Grid x:Name="BackgroundPatternGrid">
                                 <Grid.ColumnDefinitions>
                                     <ColumnDefinition Width="*" />
                                     <ColumnDefinition Width="16" />
@@ -603,7 +630,8 @@
                                     <ComboBox x:Name="BackgroundPatternBox"
                                               SelectionChanged="BackgroundFieldChanged" />
                                 </StackPanel>
-                                <StackPanel Grid.Column="2">
+                                <StackPanel x:Name="BackgroundBrightnessPanel"
+                                            Grid.Column="2">
                                     <TextBlock Text="Brillo de fondo" Foreground="#667085" />
                                     <TextBlock x:Name="BackgroundBrightnessValueText"
                                                HorizontalAlignment="Right"
@@ -616,8 +644,12 @@
                                 </StackPanel>
                             </Grid>
 
-                            <TextBlock Text="Color principal de fondo" Foreground="#667085" />
-                            <DockPanel LastChildFill="True" Margin="0,4,0,12">
+                            <TextBlock x:Name="BackgroundPrimaryColorLabel"
+                                       Text="Color principal de fondo"
+                                       Foreground="#667085" />
+                            <DockPanel x:Name="BackgroundPrimaryColorPanel"
+                                       LastChildFill="True"
+                                       Margin="0,4,0,12">
                                 <Button x:Name="BackgroundPrimaryColorButton"
                                         DockPanel.Dock="Right"
                                         Width="38"
@@ -629,8 +661,12 @@
                                          TextChanged="BackgroundFieldChanged" />
                             </DockPanel>
 
-                            <TextBlock Text="Color secundario de fondo" Foreground="#667085" />
-                            <DockPanel LastChildFill="True" Margin="0,4,0,12">
+                            <TextBlock x:Name="BackgroundSecondaryColorLabel"
+                                       Text="Color secundario de fondo"
+                                       Foreground="#667085" />
+                            <DockPanel x:Name="BackgroundSecondaryColorPanel"
+                                       LastChildFill="True"
+                                       Margin="0,4,0,12">
                                 <Button x:Name="BackgroundSecondaryColorButton"
                                         DockPanel.Dock="Right"
                                         Width="38"
@@ -642,8 +678,12 @@
                                          TextChanged="BackgroundFieldChanged" />
                             </DockPanel>
 
-                            <TextBlock Text="Tercer color de fondo" Foreground="#667085" />
-                            <DockPanel LastChildFill="True" Margin="0,4,0,12">
+                            <TextBlock x:Name="BackgroundTertiaryColorLabel"
+                                       Text="Tercer color de fondo"
+                                       Foreground="#667085" />
+                            <DockPanel x:Name="BackgroundTertiaryColorPanel"
+                                       LastChildFill="True"
+                                       Margin="0,4,0,12">
                                 <Button x:Name="BackgroundTertiaryColorButton"
                                         DockPanel.Dock="Right"
                                         Width="38"
@@ -655,7 +695,7 @@
                                          TextChanged="BackgroundFieldChanged" />
                             </DockPanel>
 
-                            <Grid>
+                            <Grid x:Name="BackgroundCycleGrid">
                                 <Grid.ColumnDefinitions>
                                     <ColumnDefinition Width="*" />
                                     <ColumnDefinition Width="90" />
@@ -672,7 +712,7 @@
                                     TickFrequency="10"
                                     ValueChanged="BackgroundFieldChanged" />
 
-                            <Grid>
+                            <Grid x:Name="BackgroundStepGrid">
                                 <Grid.ColumnDefinitions>
                                     <ColumnDefinition Width="*" />
                                     <ColumnDefinition Width="90" />
@@ -690,7 +730,8 @@
                                     ValueChanged="BackgroundFieldChanged" />
 
                             <WrapPanel Margin="0,8,0,0">
-                                <Button Content="Aplicar fondo"
+                                <Button x:Name="ApplyBackgroundButton"
+                                        Content="Aplicar fondo"
                                         Style="{StaticResource PrimaryButton}"
                                         Click="ApplyBackgroundButton_Click" />
                                 <Button Content="Apagar tiras"

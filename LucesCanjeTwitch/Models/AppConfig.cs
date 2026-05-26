@@ -5,8 +5,10 @@ namespace LucesCanjeTwitch.Models;
 public sealed class AppConfig
 {
     public string TwitchClientId { get; set; } = "";
+    public string TwitchClientSecret { get; set; } = "";
     public TwitchTokenInfo Token { get; set; } = new();
     public TwitchChannelInfo Channel { get; set; } = new();
+    public AlexaIntegrationConfig Alexa { get; set; } = new();
     public ObservableCollection<EventRule> Rules { get; set; } = [];
     public string SerialPort { get; set; } = "";
     public ObservableCollection<LedStripConfig> LedStrips { get; set; } = [];
@@ -16,6 +18,9 @@ public sealed class AppConfig
     public bool StartHidden { get; set; }
     public bool DarkMode { get; set; }
     public bool BackgroundEnabled { get; set; }
+    public bool BackgroundAlexaEnabled { get; set; }
+    public string BackgroundAlexaOnEventName { get; set; } = "luz_encendida";
+    public string BackgroundAlexaOffEventName { get; set; } = "luz_apagada";
     public string BackgroundTargetPins { get; set; } = "";
     public LightPattern BackgroundPattern { get; set; } = LightPattern.Solid;
     public string BackgroundPrimaryColor { get; set; } = "#141414";

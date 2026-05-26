@@ -73,6 +73,7 @@ public sealed class SettingsStore
         var defaults = AppConfig.CreateDefault();
 
         config.TwitchClientId ??= "";
+        config.TwitchClientSecret ??= "";
         config.Token ??= new TwitchTokenInfo();
         config.Token.AccessToken ??= "";
         config.Token.RefreshToken ??= "";
@@ -82,6 +83,11 @@ public sealed class SettingsStore
         config.Channel.Login ??= "";
         config.Channel.DisplayName ??= "";
         config.Channel.ProfileImageUrl ??= "";
+        config.Alexa ??= new AlexaIntegrationConfig();
+        config.Alexa.RelayUrl ??= "";
+        config.Alexa.AuthToken ??= "";
+        config.BackgroundAlexaOnEventName = NormalizeBackgroundAlexaEventName(config.BackgroundAlexaOnEventName, "luz_encendida");
+        config.BackgroundAlexaOffEventName = NormalizeBackgroundAlexaEventName(config.BackgroundAlexaOffEventName, "luz_apagada");
         config.SerialPort ??= "";
         config.BaudRate = Math.Clamp(config.BaudRate, 300, 921600);
         config.Rules = NormalizeRules(config.Rules, defaults.Rules);
@@ -100,6 +106,11 @@ public sealed class SettingsStore
         return config;
     }
 
+    private static string NormalizeBackgroundAlexaEventName(string? value, string fallback)
+    {
+        return string.IsNullOrWhiteSpace(value) ? fallback : value.Trim();
+    }
+
     private static ObservableCollection<EventRule> NormalizeRules(
         ObservableCollection<EventRule>? rules,
         ObservableCollection<EventRule> defaults)
@@ -116,6 +127,7 @@ public sealed class SettingsStore
             rule.CustomRewardTitle ??= "";
             rule.AudioPath ??= "";
             rule.ChatMessageTemplate ??= "";
+            rule.AlexaEventName ??= "";
             rule.TargetPins ??= "";
             rule.PrimaryColor = LightCommand.NormalizeColor(rule.PrimaryColor);
             rule.SecondaryColor = LightCommand.NormalizeColor(rule.SecondaryColor);

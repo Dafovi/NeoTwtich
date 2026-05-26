@@ -625,6 +625,7 @@
                             <RowDefinition Height="Auto" />
                             <RowDefinition Height="Auto" />
                             <RowDefinition Height="Auto" />
+                            <RowDefinition Height="Auto" />
                         </Grid.RowDefinitions>
                         <Grid.ColumnDefinitions>
                             <ColumnDefinition Width="*" />
@@ -654,6 +655,11 @@
                                 <TextBlock Text="Client ID"
                                            Style="{StaticResource MutedText}" />
                                 <TextBox x:Name="ClientIdBox" TextChanged="GlobalSettingsChanged" />
+                                <TextBlock Text="Client Secret opcional"
+                                           Style="{StaticResource MutedText}" />
+                                <TextBox x:Name="ClientSecretBox"
+                                         TextChanged="GlobalSettingsChanged"
+                                         ToolTip="Se usa para refrescar el token de Twitch. Si lo dejas vacio, la app puede pedir autorizar de nuevo cuando expire." />
                                 <Button x:Name="TwitchButton"
                                         Style="{StaticResource PrimaryButton}"
                                         Content="Conectar Twitch"
@@ -691,6 +697,55 @@
                         </Border>
 
                         <Border Grid.Row="2"
+                                Grid.ColumnSpan="3"
+                                Style="{StaticResource Card}"
+                                Margin="0,18,0,0">
+                            <Grid>
+                                <Grid.ColumnDefinitions>
+                                    <ColumnDefinition Width="*" />
+                                    <ColumnDefinition Width="220" />
+                                </Grid.ColumnDefinitions>
+                                <StackPanel>
+                                    <TextBlock Text="Alexa"
+                                               FontSize="18"
+                                               Style="{StaticResource TitleText}"
+                                               FontWeight="SemiBold"
+                                               Margin="0,0,0,10" />
+                                    <CheckBox x:Name="AlexaEnabledCheck"
+                                              Content="Activar integracion con Alexa"
+                                              Checked="AlexaSettingsChanged"
+                                              Unchecked="AlexaSettingsChanged" />
+                                    <TextBlock Text="URL de Skill / relay"
+                                               Style="{StaticResource MutedText}" />
+                                    <TextBox x:Name="AlexaRelayUrlBox"
+                                             TextChanged="AlexaSettingsChanged"
+                                             ToolTip="Endpoint HTTPS que recibe eventos de Neo Twitch y los envia a Alexa." />
+                                    <TextBlock Text="Token opcional"
+                                               Style="{StaticResource MutedText}" />
+                                    <TextBox x:Name="AlexaAuthTokenBox"
+                                             TextChanged="AlexaSettingsChanged"
+                                             ToolTip="Token/API key opcional para proteger el relay." />
+                                    <TextBlock x:Name="AlexaStatusText"
+                                               Style="{StaticResource MutedText}"
+                                               TextWrapping="Wrap"
+                                               Margin="0,4,0,0" />
+                                </StackPanel>
+                                <Button Grid.Column="1"
+                                        Content="Probar Alexa"
+                                        Style="{StaticResource PrimaryButton}"
+                                        HorizontalAlignment="Right"
+                                        VerticalAlignment="Top"
+                                        Click="TestAlexaButton_Click" />
+                                <Button Grid.Column="1"
+                                        Content="Abrir Alexa Console"
+                                        HorizontalAlignment="Right"
+                                        VerticalAlignment="Top"
+                                        Margin="0,44,8,4"
+                                        Click="OpenAlexaConsoleButton_Click" />
+                            </Grid>
+                        </Border>
+
+                        <Border Grid.Row="3"
                                 Grid.ColumnSpan="3"
                                 Style="{StaticResource Card}"
                                 Margin="0,18,0,0">
@@ -895,6 +950,17 @@
                                 <TextBox x:Name="ChatMessageBox"
                                          TextChanged="RuleFieldChanged"
                                          ToolTip="Variables: {user}, {bits}, {reward}, {viewers}, {message}, {event}" />
+
+                                <CheckBox x:Name="AlexaEventCheck"
+                                          Content="Enviar evento a Alexa"
+                                          Checked="RuleFieldChanged"
+                                          Unchecked="RuleFieldChanged" />
+                                <TextBlock x:Name="AlexaRuleHintText"
+                                           Text="Se enviara a Alexa el nombre de esta regla. Configuralo tambien en el relay/Lambda para que aparezca como evento de rutina."
+                                           Style="{StaticResource MutedText}"
+                                           FontSize="11"
+                                           TextWrapping="Wrap"
+                                           Margin="0,0,0,10" />
 
                                 <Separator x:Name="LightOptionsSeparator"
                                            Margin="0,8,0,16" />
@@ -1149,6 +1215,32 @@
                                           Content="Mantener luces de fondo"
                                           Checked="BackgroundFieldChanged"
                                           Unchecked="BackgroundFieldChanged" />
+                                <CheckBox x:Name="BackgroundAlexaEnabledCheck"
+                                          Content="Mantener luz de fondo con Alexa"
+                                          Checked="BackgroundFieldChanged"
+                                          Unchecked="BackgroundFieldChanged" />
+
+                                <Grid x:Name="BackgroundAlexaEventsGrid">
+                                    <Grid.ColumnDefinitions>
+                                        <ColumnDefinition Width="*" />
+                                        <ColumnDefinition Width="16" />
+                                        <ColumnDefinition Width="*" />
+                                    </Grid.ColumnDefinitions>
+                                    <StackPanel>
+                                        <TextBlock Text="Evento Alexa encendido"
+                                                   Style="{StaticResource MutedText}" />
+                                        <TextBox x:Name="BackgroundAlexaOnEventBox"
+                                                 TextChanged="BackgroundFieldChanged"
+                                                 ToolTip="Evento que recibira el relay cuando el fondo Alexa debe quedar encendido." />
+                                    </StackPanel>
+                                    <StackPanel Grid.Column="2">
+                                        <TextBlock Text="Evento Alexa apagado"
+                                                   Style="{StaticResource MutedText}" />
+                                        <TextBox x:Name="BackgroundAlexaOffEventBox"
+                                                 TextChanged="BackgroundFieldChanged"
+                                                 ToolTip="Evento que recibira el relay cuando el fondo Alexa debe quedar apagado." />
+                                    </StackPanel>
+                                </Grid>
 
                                 <TextBlock x:Name="BackgroundPinsLabel"
                                            Text="Pines de fondo"
@@ -1333,7 +1425,7 @@
                                    Foreground="White"
                                    FontWeight="SemiBold"
                                    Margin="0,0,10,0" />
-                        <TextBlock Text="importante / twitch / evento / sistema"
+                        <TextBlock Text="importante / twitch / alexa / evento / sistema"
                                    Foreground="#AFA4CC"
                                    FontSize="12" />
                     </StackPanel>

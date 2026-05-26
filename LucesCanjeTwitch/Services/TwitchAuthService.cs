@@ -116,12 +116,19 @@ public sealed class TwitchAuthService
             throw new InvalidOperationException("Twitch necesita iniciar sesion otra vez.");
         }
 
-        using var content = new FormUrlEncodedContent(new Dictionary<string, string>
+        var fields = new Dictionary<string, string>
         {
             ["client_id"] = config.TwitchClientId,
             ["grant_type"] = "refresh_token",
             ["refresh_token"] = config.Token.RefreshToken
-        });
+        };
+
+        if (!string.IsNullOrWhiteSpace(config.TwitchClientSecret))
+        {
+            fields["client_secret"] = config.TwitchClientSecret.Trim();
+        }
+
+        using var content = new FormUrlEncodedContent(fields);
 
         using var response = await _http.PostAsync("https://id.twitch.tv/oauth2/token", content, cancellationToken);
         var json = await response.Content.ReadAsStringAsync(cancellationToken);

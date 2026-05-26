@@ -15,6 +15,8 @@ public sealed class EventRule : INotifyPropertyChanged
     private string _audioPath = "";
     private bool _sendChatMessage;
     private string _chatMessageTemplate = "";
+    private bool _sendAlexaEvent;
+    private string _alexaEventName = "";
     private LightPattern _pattern = LightPattern.Pulse;
     private string _targetPins = "";
     private string _primaryColor = "#FF2D55";
@@ -97,6 +99,18 @@ public sealed class EventRule : INotifyPropertyChanged
     {
         get => _chatMessageTemplate;
         set => SetField(ref _chatMessageTemplate, value);
+    }
+
+    public bool SendAlexaEvent
+    {
+        get => _sendAlexaEvent;
+        set => SetField(ref _sendAlexaEvent, value);
+    }
+
+    public string AlexaEventName
+    {
+        get => _alexaEventName;
+        set => SetField(ref _alexaEventName, value);
     }
 
     public LightPattern Pattern
@@ -205,6 +219,8 @@ public sealed class EventRule : INotifyPropertyChanged
             AudioPath = AudioPath,
             SendChatMessage = SendChatMessage,
             ChatMessageTemplate = ChatMessageTemplate,
+            SendAlexaEvent = SendAlexaEvent,
+            AlexaEventName = AlexaEventName,
             Pattern = Pattern,
             TargetPins = TargetPins,
             PrimaryColor = PrimaryColor,

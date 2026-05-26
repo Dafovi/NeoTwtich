@@ -15,7 +15,7 @@ También puedes descargar el sketch para Arduino desde aquí:
 Despues de descargar el `.zip`:
 
 1. Descomprime la carpeta completa.
-2. Abre `LucesCanjeTwitch.exe`.
+2. Abre `NeoTwitch.exe`.
 3. No ejecutes el `.exe` directamente dentro del `.zip`.
 4. No borres los archivos que vienen junto al `.exe`.
 
@@ -24,6 +24,8 @@ Despues de descargar el `.zip`:
 - Escucha EventSub por WebSocket para seguidores, suscripciones, raids, bits y canjes personalizados.
 - Permite crear reglas con luces, audio o ambos.
 - Puede enviar mensajes personalizados al chat por regla.
+- Puede enviar eventos opcionales a una Skill/relay de Alexa para activar rutinas.
+- Puede mantener un fondo opcional con Alexa, por ejemplo enviando eventos de luz encendida o luz apagada.
 - Las reglas nuevas vienen activas, pero con luces, audio y chat desactivados para configurar solo lo necesario.
 - La interfaz oculta opciones que no aplican al evento, patron o fondo seleccionado.
 - Guarda la configuracion en `%AppData%\LucesCanjeTwitch\settings.json`.
@@ -47,7 +49,8 @@ Y asi se ve el efecto cuando se activa en stream:
 ## Requisitos
 
 - Windows con .NET Desktop Runtime compatible con el proyecto.
-- Una app creada en Twitch Developer Console para obtener el Client ID.
+- Una app creada en Twitch Developer Console para obtener el Client ID. El Client Secret es opcional, pero ayuda a refrescar la sesion sin autorizar de nuevo.
+- Opcional: una Skill/relay de Alexa con endpoint HTTPS para recibir eventos de Neo Twitch.
 - Arduino IDE con la libreria `Adafruit NeoPixel`.
 - Arduino conectado por USB y una tira NeoPixel en el pin configurado en el sketch.
 
@@ -55,17 +58,19 @@ Y asi se ve el efecto cuando se activa en stream:
 
 1. Abre la app.
 2. Consigue el Client ID siguiendo la seccion `Conseguir el Client ID de Twitch`.
-3. Escribe ese Client ID en el panel `Twitch`.
+3. Escribe ese Client ID en el panel `Twitch`. Si quieres que la app refresque la sesion automaticamente, pega tambien el Client Secret.
 4. Presiona `Conectar Twitch`, autoriza en el navegador y usa el codigo que muestra la app.
 5. Carga el sketch `LucesCanjeTwitch/Arduino/LucesCanjeNeoPixel/LucesCanjeNeoPixel.ino` en cada Arduino.
 6. En la app, usa `Detectar` o escribe el puerto COM del Arduino, por ejemplo `COM3`.
 7. En `Tiras LED`, agrega cada tira con nombre, pin de Arduino y cantidad de LEDs.
 8. En `Tiras LED > Fondo`, configura si quieres un color o patron permanente mientras no haya eventos.
+   - Si usas Alexa, tambien puedes activar un fondo Alexa con eventos de encendido/apagado.
 9. Crea o edita reglas. Por defecto quedan activas, pero sin luces, audio ni chat automatico.
 10. Activa solo lo que necesites en cada regla; la app muestra los campos que aplican segun el evento, patron y opciones marcadas.
 11. Para bits, crea varias reglas `Bits` con distintos `Bits minimos`; si llega una cantidad alta, se usa el umbral mas alto que aplique.
 12. Si quieres chat automatico, activa `Enviar mensaje al chat` y usa variables como `{user}`, `{bits}`, `{reward}`, `{viewers}`, `{message}` o `{event}`.
-13. Usa `Probar regla` antes de salir en vivo.
+13. Si tienes Alexa configurada, activa `Enviar evento a Alexa`. Neo Twitch enviara el nombre de la regla como evento.
+14. Usa `Probar regla` antes de salir en vivo. La prueba ejecuta luces, audio, chat y Alexa si estan activados en esa regla.
 
 ## Cerrar y actualizar
 
@@ -87,8 +92,9 @@ La app guarda la configuracion en cada cambio y tambien al ocultar/cerrar. Si no
 8. Marca `I'm not a robot` y crea la app.
 9. Vuelve a `Applications`, busca la app y entra en `Manage`.
 10. Copia el valor `Client ID` y pegalo en la app de Windows.
+11. Opcional: copia el `Client Secret` y pegalo en `Client Secret opcional`.
 
-No pegues ni compartas el `Client Secret`. Esta app no lo necesita.
+El `Client Secret` se guarda en tu archivo local de configuracion. Si no quieres guardarlo, puedes dejarlo vacio; cuando el token de Twitch expire, la app puede pedir autorizar otra vez.
 
 ## Permisos de Twitch usados
 
@@ -152,9 +158,40 @@ Campos:
 
 La app envia `STOP` cuando termina el audio o cuando necesita cortar el fondo para lanzar un evento.
 
+## Integracion Alexa opcional
+
+Neo Twitch puede enviar eventos a una integracion de Alexa para que tus rutinas controlen luces, enchufes, anuncios u otros dispositivos que ya tengas configurados en la app de Alexa.
+
+Importante: esta parte requiere configuracion externa en Amazon Developer Console y AWS. Neo Twitch no controla dispositivos Alexa directamente; la app manda un evento HTTP a un relay, y ese relay se encarga de avisarle a Alexa.
+
+Flujo esperado:
+
+```text
+Evento Twitch -> Regla Neo Twitch -> Skill/relay Alexa -> Rutina Alexa -> luces, enchufes, anuncios, etc.
+```
+
+Sigue la guia completa en [docs/ALEXA_SETUP.md](docs/ALEXA_SETUP.md). Ahi se explica como crear la Smart Home Skill, la Lambda, la Function URL, Account Linking con Login with Amazon, los valores exactos que van en cada campo y como configurar la regla en Neo Twitch.
+
+Resumen corto:
+
+1. Crear una Smart Home Skill con `Provision your own`.
+2. Crear una Lambda en AWS y pegar su ARN en Alexa.
+3. Crear una Function URL publica para que Neo Twitch mande eventos.
+4. Configurar Account Linking con Login with Amazon.
+5. Activar `Send Alexa Events`.
+6. Crear una rutina en la app de Alexa.
+7. En Neo Twitch, pegar la Function URL y activar `Enviar evento a Alexa` en cada regla que lo necesite.
+
 ## Documentacion oficial consultada
 
 - Twitch EventSub WebSockets: https://dev.twitch.tv/docs/eventsub/handling-websocket-events/
 - Tipos EventSub y scopes: https://dev.twitch.tv/docs/eventsub/eventsub-subscription-types/
 - OAuth Device Code Flow: https://dev.twitch.tv/docs/authentication/getting-tokens-oauth/
+- Twitch Refresh Tokens: https://dev.twitch.tv/docs/authentication/refresh-tokens/
 - Conexion Arduino y tira LED: https://whatmakeart.com/arduino/wiring-led-strip-to-arduino/
+- Crear Skills en Alexa Developer Console: https://www.developer.amazon.com/en-US/docs/alexa/devconsole/create-a-skill-and-choose-the-interaction-model.html
+- Crear una Smart Home Skill: https://www.developer.amazon.com/en-US/docs/alexa/smarthome/create-skill-tutorial.html
+- Configurar Account Linking en Alexa: https://developer.amazon.com/en-US/docs/alexa/smarthome/set-up-account-linking-tutorial.html
+- Request access to Alexa Event Gateway: https://developer.amazon.com/en-US/docs/alexa/smarthome/authenticate-a-customer-permissions.html
+- AWS Lambda Function URLs: https://docs.aws.amazon.com/lambda/latest/dg/urls-configuration.html
+- Alexa SimpleEventSource: https://developer.amazon.com/en-US/docs/alexa/device-apis/alexa-simpleeventsource.html

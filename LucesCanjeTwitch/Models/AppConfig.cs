@@ -19,6 +19,7 @@ public sealed class AppConfig
     public bool DarkMode { get; set; }
     public bool BackgroundEnabled { get; set; }
     public bool BackgroundAlexaEnabled { get; set; }
+    public bool BackgroundAlexaTurnOffAfterEvent { get; set; }
     public string BackgroundAlexaOnEventName { get; set; } = "luz_encendida";
     public string BackgroundAlexaOffEventName { get; set; } = "luz_apagada";
     public string BackgroundTargetPins { get; set; } = "";
@@ -38,7 +39,7 @@ public sealed class AppConfig
             [
                 new LedStripConfig
                 {
-                    Name = "Principal",
+                    Name = "Arduino Tira led ws2812b",
                     Pin = 6,
                     LedCount = 30
                 }
@@ -113,6 +114,25 @@ public sealed class AppConfig
                     PrimaryColor = "#FACC15",
                     SecondaryColor = "#EC4899",
                     TertiaryColor = "#00D1FF",
+                    Brightness = 170,
+                    DurationMs = 4500,
+                    CycleMs = 45,
+                    StepMs = 80
+                },
+                new EventRule
+                {
+                    Name = "Comando chat",
+                    EventKind = TwitchEventKind.ChatCommand,
+                    ChatCommand = "!baile",
+                    UseLights = false,
+                    PlayAudio = false,
+                    SendChatMessage = false,
+                    ChatMessageTemplate = "@{user} activo {message}",
+                    Pattern = LightPattern.Rave,
+                    TargetPins = "",
+                    PrimaryColor = "#FF2D55",
+                    SecondaryColor = "#00D1FF",
+                    TertiaryColor = "#FFFFFF",
                     Brightness = 170,
                     DurationMs = 4500,
                     CycleMs = 45,

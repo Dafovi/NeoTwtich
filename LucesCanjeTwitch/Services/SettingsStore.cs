@@ -125,6 +125,7 @@ public sealed class SettingsStore
             rule.Id = string.IsNullOrWhiteSpace(rule.Id) ? Guid.NewGuid().ToString("N") : rule.Id;
             rule.Name ??= "";
             rule.CustomRewardTitle ??= "";
+            rule.ChatCommand ??= "";
             rule.AudioPath ??= "";
             rule.ChatMessageTemplate ??= "";
             rule.AlexaEventName ??= "";

@@ -44,6 +44,7 @@ public partial class MainWindow : Window
         new("Nueva suscripcion", TwitchEventKind.Subscription),
         new("Raid recibida", TwitchEventKind.Raid),
         new("Bits", TwitchEventKind.Cheer),
+        new("Comando de chat", TwitchEventKind.ChatCommand),
         new("Canje de puntos", TwitchEventKind.ChannelPointRedemption),
         new("Prueba manual", TwitchEventKind.Test)
     ];
@@ -64,8 +65,15 @@ public partial class MainWindow : Window
     private bool _loadingRule;
     private bool _loadingStrip;
     private bool _isExiting;
+    private bool _showClientId;
+    private bool _showClientSecret;
+    private bool _showAlexaRelayUrl;
+    private bool _showAlexaAuthToken;
+    private BackgroundOutputMode _backgroundOutputMode = BackgroundOutputMode.Arduino;
     private CancellationTokenSource? _backgroundApplyDebounce;
+    private CancellationTokenSource? _twitchSubscriptionRefreshDebounce;
     private CancellationTokenSource? _currentEffectCts;
+    private string _eventSubscriptionSignature = "";
     private AudioPlayback? _currentPlayback;
     private TwitchStreamStatus? _streamStatus;
     private DrawingIcon? _trayIcon;
@@ -134,8 +142,17 @@ public partial class MainWindow : Window
 
         if (_config.AutoConnectArduino && !string.IsNullOrWhiteSpace(_config.SerialPort))
         {
-            await ConnectArduinoAsync();
-            await ApplyBackgroundAsync();
+            try
+            {
+                await ConnectArduinoAsync();
+                await ApplyBackgroundAsync();
+            }
+            catch (Exception ex)
+            {
+                CrashReporter.Log(ex, $"No se pudo conectar Arduino automaticamente en {_config.SerialPort}.");
+                AddLog($"Arduino: no pude conectar {_config.SerialPort}. Las luces quedan desactivadas hasta reconectar el puerto.", ActivityLogKind.Important);
+                UpdateStatusText();
+            }
         }
 
         if (_config.AutoConnectTwitch && _config.Token.HasToken)
@@ -160,6 +177,7 @@ public partial class MainWindow : Window
             if (_eventSubClient.IsRunning)
             {
                 await _eventSubClient.StopAsync();
+                _eventSubscriptionSignature = "";
                 _streamStatus = null;
                 AddLog("Twitch desconectado.");
                 UpdateStatusText();
@@ -262,8 +280,76 @@ public partial class MainWindow : Window
         }
 
         await _eventSubClient.StartAsync();
+        _eventSubscriptionSignature = BuildEventSubscriptionSignature();
         await RefreshTwitchStreamStatusAsync();
         AddLog("Twitch escuchando eventos.");
+        UpdateStatusText();
+    }
+
+    private string BuildEventSubscriptionSignature()
+    {
+        var activeKinds = _config.Rules
+            .Where(rule => rule.IsEnabled)
+            .Select(rule => rule.EventKind)
+            .Where(kind => kind != TwitchEventKind.Test)
+            .Distinct()
+            .OrderBy(kind => kind)
+            .Select(kind => kind.ToString());
+
+        return string.Join("|", activeKinds);
+    }
+
+    private void ScheduleTwitchSubscriptionRefreshIfNeeded()
+    {
+        if (_initializingComponent || _loadingRule || !_eventSubClient.IsRunning)
+        {
+            return;
+        }
+
+        var signature = BuildEventSubscriptionSignature();
+        if (string.Equals(signature, _eventSubscriptionSignature, StringComparison.Ordinal))
+        {
+            return;
+        }
+
+        _twitchSubscriptionRefreshDebounce?.Cancel();
+        _twitchSubscriptionRefreshDebounce?.Dispose();
+
+        var cts = new CancellationTokenSource();
+        _twitchSubscriptionRefreshDebounce = cts;
+
+        _ = Task.Run(async () =>
+        {
+            try
+            {
+                await Task.Delay(900, cts.Token);
+                var operation = Dispatcher.InvokeAsync(() => RefreshTwitchSubscriptionsAsync(signature));
+                await await operation.Task;
+            }
+            catch (OperationCanceledException)
+            {
+            }
+            catch (Exception ex)
+            {
+                CrashReporter.Log(ex, "No se pudieron refrescar las suscripciones de Twitch.");
+                AddLog($"Twitch: {ex.Message}", ActivityLogKind.Important);
+            }
+        });
+    }
+
+    private async Task RefreshTwitchSubscriptionsAsync(string signature)
+    {
+        if (!_eventSubClient.IsRunning)
+        {
+            _eventSubscriptionSignature = signature;
+            return;
+        }
+
+        AddLog("Twitch: actualizando suscripciones por cambios en reglas.", ActivityLogKind.Twitch);
+        await _eventSubClient.StopAsync();
+        await _eventSubClient.StartAsync();
+        _eventSubscriptionSignature = signature;
+        AddLog("Twitch: suscripciones actualizadas.", ActivityLogKind.Twitch);
         UpdateStatusText();
     }
 
@@ -334,19 +420,46 @@ public partial class MainWindow : Window
             return;
         }
 
-        if (_config.BackgroundEnabled && !_lightController.HasOpenPort)
+        if (_config.BackgroundEnabled)
+        {
+            await ApplyArduinoBackgroundAsync();
+        }
+
+        if (_config.BackgroundAlexaEnabled)
+        {
+            await SendBackgroundAlexaEventAsync(_config.BackgroundAlexaOnEventName, "Fondo Alexa encendido");
+        }
+    }
+
+    private async Task ApplyArduinoBackgroundAsync()
+    {
+        if (!_config.BackgroundEnabled)
+        {
+            return;
+        }
+
+        if (!_lightController.HasOpenPort)
         {
             if (string.IsNullOrWhiteSpace(_config.SerialPort))
             {
                 AddLog("No puedo aplicar fondo sin puerto COM.");
+                return;
             }
-            else
+
+            try
             {
                 await ConnectArduinoAsync();
             }
+            catch (Exception ex)
+            {
+                CrashReporter.Log(ex, $"No se pudo conectar Arduino para aplicar fondo en {_config.SerialPort}.");
+                AddLog($"Arduino: no pude aplicar fondo en {_config.SerialPort}. Revisa el puerto y conecta manualmente.", ActivityLogKind.Important);
+                UpdateStatusText();
+                return;
+            }
         }
 
-        if (_config.BackgroundEnabled && _lightController.HasOpenPort)
+        if (_lightController.HasOpenPort)
         {
             await StopLightsAsync(LightCommand.ResolveTargets(_config, ""));
             await Task.Delay(40);
@@ -354,11 +467,6 @@ public partial class MainWindow : Window
             var command = LightCommand.FromBackground(_config);
             await _lightController.SendAsync(command, AddLog, CancellationToken.None);
             AddLog($"Fondo aplicado: {DisplayNames.For(command.Pattern)}.");
-        }
-
-        if (_config.BackgroundAlexaEnabled)
-        {
-            await SendBackgroundAlexaEventAsync(_config.BackgroundAlexaOnEventName, "Fondo Alexa encendido");
         }
     }
 
@@ -374,19 +482,29 @@ public partial class MainWindow : Window
 
     private async Task RestoreBackgroundStateAsync()
     {
-        if (_config.BackgroundEnabled || _config.BackgroundAlexaEnabled)
+        if (_config.BackgroundEnabled)
         {
-            await ApplyBackgroundAsync();
-            return;
+            await ApplyArduinoBackgroundAsync();
+        }
+        else
+        {
+            await StopLightsAsync(LightCommand.ResolveTargets(_config, ""));
         }
 
-        await StopLightsAsync(LightCommand.ResolveTargets(_config, ""));
-        await SendBackgroundAlexaEventAsync(_config.BackgroundAlexaOffEventName, "Fondo Alexa apagado");
+        if (_config.BackgroundAlexaTurnOffAfterEvent)
+        {
+            await SendBackgroundAlexaEventAsync(_config.BackgroundAlexaOffEventName, "Fondo Alexa apagado");
+        }
+        else if (_config.BackgroundAlexaEnabled)
+        {
+            await SendBackgroundAlexaEventAsync(_config.BackgroundAlexaOnEventName, "Fondo Alexa encendido");
+        }
     }
 
-    private async Task SendBackgroundAlexaEventAsync(string eventName, string title)
+    private async Task SendBackgroundAlexaEventAsync(string eventName, string title, bool force = false)
     {
-        if (!_config.BackgroundAlexaEnabled || !_config.Alexa.IsConfigured)
+        if (!_config.Alexa.IsConfigured
+            || (!force && !_config.BackgroundAlexaEnabled && !_config.BackgroundAlexaTurnOffAfterEvent))
         {
             return;
         }
@@ -517,6 +635,7 @@ public partial class MainWindow : Window
         _config.Rules.Add(rule);
         RulesList.SelectedItem = rule;
         SaveConfig();
+        ScheduleTwitchSubscriptionRefreshIfNeeded();
     }
 
     private void AddStripButton_Click(object sender, RoutedEventArgs e)
@@ -558,7 +677,7 @@ public partial class MainWindow : Window
 
         if (_config.LedStrips.Count == 1)
         {
-            WpfMessageBox.Show(this, "Deja al menos una tira configurada.", "Tiras LED", MessageBoxButton.OK, MessageBoxImage.Information);
+            WpfMessageBox.Show(this, "Deja al menos una tira configurada.", "Luces de fondo", MessageBoxButton.OK, MessageBoxImage.Information);
             return;
         }
 
@@ -579,6 +698,7 @@ public partial class MainWindow : Window
         _config.Rules.Add(copy);
         RulesList.SelectedItem = copy;
         SaveConfig();
+        ScheduleTwitchSubscriptionRefreshIfNeeded();
     }
 
     private void RemoveRuleButton_Click(object sender, RoutedEventArgs e)
@@ -605,6 +725,7 @@ public partial class MainWindow : Window
         }
 
         SaveConfig();
+        ScheduleTwitchSubscriptionRefreshIfNeeded();
     }
 
     private async void TestRuleButton_Click(object sender, RoutedEventArgs e)
@@ -627,6 +748,7 @@ public partial class MainWindow : Window
                 Kind = rule.EventKind,
                 RewardTitle = rule.CustomRewardTitle,
                 Bits = rule.EventKind == TwitchEventKind.Cheer ? rule.MinimumBits : null,
+                Message = rule.EventKind == TwitchEventKind.ChatCommand ? FirstNonEmpty(rule.ChatCommand, "!prueba") : "Mensaje de prueba",
                 UserName = "Prueba",
                 Title = $"Prueba de {rule.Name}"
             });
@@ -705,6 +827,7 @@ public partial class MainWindow : Window
 
         SaveGlobalSettingsFromFields();
         SaveConfig();
+        UpdateSensitiveFieldVisibility();
         UpdateStatusText();
     }
 
@@ -718,6 +841,7 @@ public partial class MainWindow : Window
         SaveGlobalSettingsFromFields();
         SaveConfig();
         UpdateAlexaStatusText();
+        UpdateSensitiveFieldVisibility();
         UpdateRuleOptionVisibility();
     }
 
@@ -752,6 +876,7 @@ public partial class MainWindow : Window
         SaveCurrentRuleFromFields();
         SaveConfig();
         UpdateRuleOptionVisibility();
+        ScheduleTwitchSubscriptionRefreshIfNeeded();
     }
 
     private void StripFieldChanged(object sender, RoutedEventArgs e)
@@ -791,6 +916,30 @@ public partial class MainWindow : Window
         SaveConfig();
     }
 
+    private void ToggleClientIdVisibility_Click(object sender, RoutedEventArgs e)
+    {
+        _showClientId = !_showClientId;
+        UpdateSensitiveFieldVisibility();
+    }
+
+    private void ToggleClientSecretVisibility_Click(object sender, RoutedEventArgs e)
+    {
+        _showClientSecret = !_showClientSecret;
+        UpdateSensitiveFieldVisibility();
+    }
+
+    private void ToggleAlexaRelayUrlVisibility_Click(object sender, RoutedEventArgs e)
+    {
+        _showAlexaRelayUrl = !_showAlexaRelayUrl;
+        UpdateSensitiveFieldVisibility();
+    }
+
+    private void ToggleAlexaAuthTokenVisibility_Click(object sender, RoutedEventArgs e)
+    {
+        _showAlexaAuthToken = !_showAlexaAuthToken;
+        UpdateSensitiveFieldVisibility();
+    }
+
     private void MainTabs_SelectionChanged(object sender, SelectionChangedEventArgs e)
     {
         if (!ReferenceEquals(sender, MainTabs) || _initializingComponent)
@@ -815,6 +964,28 @@ public partial class MainWindow : Window
 
         MainTabs.SelectedIndex = selectedIndex;
         UpdateNavigationButtons();
+    }
+
+    private void ArduinoOutputButton_Click(object sender, RoutedEventArgs e)
+    {
+        _backgroundOutputMode = BackgroundOutputMode.Arduino;
+        if (StripsList.SelectedItem is null && _config.LedStrips.Count > 0)
+        {
+            StripsList.SelectedIndex = 0;
+        }
+
+        ApplyBackgroundOutputMode();
+    }
+
+    private void AlexaOutputButton_Click(object sender, RoutedEventArgs e)
+    {
+        _backgroundOutputMode = BackgroundOutputMode.Alexa;
+        ApplyBackgroundOutputMode();
+    }
+
+    private async void ExitButton_Click(object sender, RoutedEventArgs e)
+    {
+        await ExitApplicationAsync();
     }
 
     private void PrimaryColorButton_Click(object sender, RoutedEventArgs e)
@@ -847,22 +1018,41 @@ public partial class MainWindow : Window
         PickColor(BackgroundTertiaryColorBox);
     }
 
-    private async void ApplyBackgroundButton_Click(object sender, RoutedEventArgs e)
+    private async void ApplyArduinoBackgroundButton_Click(object sender, RoutedEventArgs e)
     {
         SaveGlobalSettingsFromFields();
         SaveCurrentStripFromFields();
         SaveBackgroundFromFields();
         SaveConfig();
-        await ApplyBackgroundAsync();
+        await ApplyArduinoBackgroundAsync();
     }
 
-    private async void StopLightsButton_Click(object sender, RoutedEventArgs e)
+    private async void ApplyAlexaBackgroundButton_Click(object sender, RoutedEventArgs e)
+    {
+        SaveGlobalSettingsFromFields();
+        SaveBackgroundFromFields();
+        SaveConfig();
+
+        if (_config.BackgroundAlexaEnabled)
+        {
+            await SendBackgroundAlexaEventAsync(_config.BackgroundAlexaOnEventName, "Fondo Alexa encendido", force: true);
+        }
+    }
+
+    private async void StopArduinoBackgroundButton_Click(object sender, RoutedEventArgs e)
     {
         SaveGlobalSettingsFromFields();
         SaveBackgroundFromFields();
         SaveConfig();
         await StopLightsAsync(LightCommand.ResolveTargets(_config, ""));
-        await SendBackgroundAlexaEventAsync(_config.BackgroundAlexaOffEventName, "Fondo Alexa apagado");
+    }
+
+    private async void StopAlexaBackgroundButton_Click(object sender, RoutedEventArgs e)
+    {
+        SaveGlobalSettingsFromFields();
+        SaveBackgroundFromFields();
+        SaveConfig();
+        await SendBackgroundAlexaEventAsync(_config.BackgroundAlexaOffEventName, "Fondo Alexa apagado", force: true);
     }
 
     private async void StopTestButton_Click(object sender, RoutedEventArgs e)
@@ -877,14 +1067,19 @@ public partial class MainWindow : Window
 
     private async void EventSubClient_EventReceived(TwitchEvent twitchEvent)
     {
-        AddLog(twitchEvent.Title, ActivityLogKind.Event);
-
         var matchingRules = ResolveMatchingRules(twitchEvent);
         if (matchingRules.Length == 0)
         {
-            AddLog("El evento no coincide con reglas activas.");
+            if (twitchEvent.Kind != TwitchEventKind.ChatCommand)
+            {
+                AddLog(twitchEvent.Title, ActivityLogKind.Event);
+                AddLog("El evento no coincide con reglas activas.");
+            }
+
             return;
         }
+
+        AddLog(twitchEvent.Title, ActivityLogKind.Event);
 
         foreach (var rule in matchingRules)
         {
@@ -1108,6 +1303,7 @@ public partial class MainWindow : Window
             AlexaAuthTokenBox.Text = _config.Alexa.AuthToken;
             BackgroundEnabledCheck.IsChecked = _config.BackgroundEnabled;
             BackgroundAlexaEnabledCheck.IsChecked = _config.BackgroundAlexaEnabled;
+            BackgroundAlexaTurnOffAfterEventCheck.IsChecked = _config.BackgroundAlexaTurnOffAfterEvent;
             BackgroundAlexaOnEventBox.Text = _config.BackgroundAlexaOnEventName;
             BackgroundAlexaOffEventBox.Text = _config.BackgroundAlexaOffEventName;
             BackgroundPinsBox.Text = _config.BackgroundTargetPins;
@@ -1135,7 +1331,9 @@ public partial class MainWindow : Window
             LoadSelectedRuleIntoUi();
             LoadSelectedStripIntoUi();
             UpdateBackgroundOptionVisibility();
+            ApplyBackgroundOutputMode();
             UpdateAlexaStatusText();
+            UpdateSensitiveFieldVisibility();
             ApplyTheme();
             UpdateStatusText();
         }
@@ -1162,6 +1360,7 @@ public partial class MainWindow : Window
             RuleNameBox.Text = rule.Name;
             EventKindBox.SelectedValue = rule.EventKind;
             RewardTitleBox.Text = rule.CustomRewardTitle;
+            ChatCommandBox.Text = rule.ChatCommand;
             MinimumBitsBox.Text = rule.MinimumBits.ToString();
             ChatMessageCheck.IsChecked = rule.SendChatMessage;
             ChatMessageBox.Text = rule.ChatMessageTemplate;
@@ -1242,6 +1441,7 @@ public partial class MainWindow : Window
         rule.Name = RuleNameBox.Text.Trim();
         rule.EventKind = EventKindBox.SelectedValue is TwitchEventKind kind ? kind : TwitchEventKind.Follow;
         rule.CustomRewardTitle = RewardTitleBox.Text.Trim();
+        rule.ChatCommand = ChatCommandBox.Text.Trim();
         rule.MinimumBits = ParseInt(MinimumBitsBox.Text, 1, 1, 1_000_000);
         rule.SendChatMessage = ChatMessageCheck.IsChecked == true;
         rule.ChatMessageTemplate = ChatMessageBox.Text.Trim();
@@ -1269,6 +1469,7 @@ public partial class MainWindow : Window
     {
         _config.BackgroundEnabled = BackgroundEnabledCheck.IsChecked == true;
         _config.BackgroundAlexaEnabled = BackgroundAlexaEnabledCheck.IsChecked == true;
+        _config.BackgroundAlexaTurnOffAfterEvent = BackgroundAlexaTurnOffAfterEventCheck.IsChecked == true;
         _config.BackgroundAlexaOnEventName = NormalizeEventName(BackgroundAlexaOnEventBox.Text, "luz_encendida");
         _config.BackgroundAlexaOffEventName = NormalizeEventName(BackgroundAlexaOffEventBox.Text, "luz_apagada");
         _config.BackgroundTargetPins = string.Join(", ", LightCommand.ParsePins(BackgroundPinsBox.Text));
@@ -1283,6 +1484,7 @@ public partial class MainWindow : Window
         UpdateColorButtons();
         UpdateSliderLabels();
         UpdateBackgroundOptionVisibility();
+        UpdateAlexaStatusText();
     }
 
     private void SaveCurrentStripFromFields()
@@ -1317,6 +1519,7 @@ public partial class MainWindow : Window
             : LightPattern.Pulse;
 
         SetVisible(kind == TwitchEventKind.ChannelPointRedemption, RewardTitleLabel, RewardTitleBox);
+        SetVisible(kind == TwitchEventKind.ChatCommand, ChatCommandLabel, ChatCommandBox);
         SetVisible(kind == TwitchEventKind.Cheer, MinimumBitsLabel, MinimumBitsBox);
         SetVisible(playAudio, AudioLabel, AudioPanel);
         SetVisible(sendChat, ChatMessageLabel, ChatMessageBox);
@@ -1337,20 +1540,49 @@ public partial class MainWindow : Window
     {
         var enabled = BackgroundEnabledCheck.IsChecked == true;
         var alexaEnabled = BackgroundAlexaEnabledCheck.IsChecked == true;
+        var alexaTurnOffAfterEvent = BackgroundAlexaTurnOffAfterEventCheck.IsChecked == true;
         var alexaAvailable = _config.Alexa.IsConfigured;
         var pattern = BackgroundPatternBox.SelectedValue is LightPattern selectedPattern
             ? selectedPattern
             : LightPattern.Solid;
 
-        SetVisible(alexaAvailable, BackgroundAlexaEnabledCheck);
-        SetVisible(alexaAvailable && alexaEnabled, BackgroundAlexaEventsGrid);
-        SetVisible(enabled, BackgroundPinsLabel, BackgroundPinsBox, BackgroundPatternGrid, ApplyBackgroundButton);
+        SetVisible(alexaAvailable, BackgroundAlexaEnabledCheck, BackgroundAlexaTurnOffAfterEventCheck, StopAlexaBackgroundButton);
+        SetVisible(!alexaAvailable, AlexaBackgroundUnavailableText);
+        SetVisible(alexaAvailable && (alexaEnabled || alexaTurnOffAfterEvent), BackgroundAlexaEventsGrid, ApplyAlexaBackgroundButton);
+        SetVisible(enabled, BackgroundPinsLabel, BackgroundPinsBox, BackgroundPatternGrid, ApplyArduinoBackgroundButton);
         SetVisible(enabled && UsesBrightness(pattern), BackgroundBrightnessPanel);
         SetVisible(enabled && UsesPrimaryColor(pattern), BackgroundPrimaryColorLabel, BackgroundPrimaryColorPanel);
         SetVisible(enabled && UsesSecondaryColor(pattern), BackgroundSecondaryColorLabel, BackgroundSecondaryColorPanel);
         SetVisible(enabled && UsesTertiaryColor(pattern), BackgroundTertiaryColorLabel, BackgroundTertiaryColorPanel);
         SetVisible(enabled && UsesCycle(pattern), BackgroundCycleGrid, BackgroundCycleSlider);
         SetVisible(enabled && UsesStep(pattern), BackgroundStepGrid, BackgroundStepSlider);
+    }
+
+    private void ApplyBackgroundOutputMode()
+    {
+        if (_initializingComponent)
+        {
+            return;
+        }
+
+        var showArduino = _backgroundOutputMode == BackgroundOutputMode.Arduino;
+        SetVisible(showArduino, StripActionsPanel, StripsListLabel, StripsList, ArduinoBackgroundPanel);
+        SetVisible(!showArduino, AlexaBackgroundPanel);
+
+        var palette = _config.DarkMode
+            ? ThemePalette.Dark
+            : ThemePalette.Light;
+
+        ApplyOutputButtonTheme(ArduinoOutputButton, showArduino, palette);
+        ApplyOutputButtonTheme(AlexaOutputButton, !showArduino, palette);
+        UpdateBackgroundOptionVisibility();
+    }
+
+    private static void ApplyOutputButtonTheme(System.Windows.Controls.Button button, bool selected, ThemePalette palette)
+    {
+        button.Background = selected ? palette.NavSelected : palette.Button;
+        button.Foreground = selected ? System.Windows.Media.Brushes.White : palette.Text;
+        button.BorderBrush = selected ? palette.NavSelected : palette.Border;
     }
 
     private static void SetVisible(bool isVisible, params UIElement[] elements)
@@ -1435,11 +1667,34 @@ public partial class MainWindow : Window
 
     private void UpdateAlexaStatusText()
     {
-        AlexaStatusText.Text = _config.Alexa.IsConfigured
+        var status = _config.Alexa.IsConfigured
             ? "Alexa lista. Las reglas pueden enviar eventos a la Skill/relay."
             : _config.Alexa.Enabled
                 ? "Alexa activa, falta configurar una URL valida de Skill/relay."
                 : "Alexa desactivada. Las reglas no mostraran acciones de Alexa.";
+
+        AlexaStatusText.Text = status;
+        AlexaConnectionText.Text = _config.Alexa.IsConfigured
+            ? "Relay conectado"
+            : _config.Alexa.Enabled
+                ? "Configuracion incompleta"
+                : "Sin conectar";
+        AlexaSidebarStatusText.Text = _config.Alexa.IsConfigured
+            ? BuildAlexaSidebarStatusText()
+            : status;
+    }
+
+    private string BuildAlexaSidebarStatusText()
+    {
+        var background = _config.BackgroundAlexaEnabled
+            ? $"Fondo: {_config.BackgroundAlexaOnEventName}"
+            : "Fondo sin mantener";
+
+        var endBehavior = _config.BackgroundAlexaTurnOffAfterEvent
+            ? $"Al finalizar: {_config.BackgroundAlexaOffEventName}"
+            : "Al finalizar: conserva estado";
+
+        return $"{background}. {endBehavior}.";
     }
 
     private void UpdateTwitchLiveIndicator()
@@ -1557,6 +1812,38 @@ public partial class MainWindow : Window
         BackgroundTertiaryColorButton.Background = ToBrush(BackgroundTertiaryColorBox.Text);
     }
 
+    private void UpdateSensitiveFieldVisibility()
+    {
+        if (_initializingComponent)
+        {
+            return;
+        }
+
+        UpdateSensitiveField(ClientIdBox, ClientIdMaskText, ClientIdRevealButton, _showClientId);
+        UpdateSensitiveField(ClientSecretBox, ClientSecretMaskText, ClientSecretRevealButton, _showClientSecret);
+        UpdateSensitiveField(AlexaRelayUrlBox, AlexaRelayUrlMaskText, AlexaRelayUrlRevealButton, _showAlexaRelayUrl);
+        UpdateSensitiveField(AlexaAuthTokenBox, AlexaAuthTokenMaskText, AlexaAuthTokenRevealButton, _showAlexaAuthToken);
+    }
+
+    private static void UpdateSensitiveField(
+        System.Windows.Controls.TextBox textBox,
+        TextBlock maskText,
+        System.Windows.Controls.Button revealButton,
+        bool isVisible)
+    {
+        var shouldMask = !isVisible && !string.IsNullOrWhiteSpace(textBox.Text);
+        textBox.IsHitTestVisible = !shouldMask;
+        maskText.Visibility = shouldMask ? Visibility.Visible : Visibility.Collapsed;
+        maskText.Text = shouldMask ? BuildMask(textBox.Text) : "";
+        revealButton.Content = isVisible ? "Ocultar" : "Ver";
+    }
+
+    private static string BuildMask(string value)
+    {
+        var length = Math.Clamp(value.Trim().Length, 8, 20);
+        return new string('*', length);
+    }
+
     private void ApplyTheme()
     {
         var palette = _config.DarkMode
@@ -1588,7 +1875,9 @@ public partial class MainWindow : Window
         Resources[System.Windows.SystemColors.InactiveSelectionHighlightTextBrushKey] = System.Windows.Media.Brushes.White;
         ApplyWindowChromeColor();
         UpdateNavigationButtons();
+        ApplyBackgroundOutputMode();
         ApplyThemeToElement(this, palette);
+        ApplyBackgroundOutputMode();
         UpdateTwitchLiveIndicator();
         UpdateColorButtons();
     }
@@ -1905,6 +2194,8 @@ public partial class MainWindow : Window
         SaveConfig();
         _backgroundApplyDebounce?.Cancel();
         _backgroundApplyDebounce?.Dispose();
+        _twitchSubscriptionRefreshDebounce?.Cancel();
+        _twitchSubscriptionRefreshDebounce?.Dispose();
         await _eventSubClient.StopAsync();
         _chatService.Dispose();
         _lightController.Dispose();
@@ -1922,6 +2213,7 @@ public partial class MainWindow : Window
             SaveCurrentStripFromFields();
             SaveBackgroundFromFields();
             SaveConfig();
+            _twitchSubscriptionRefreshDebounce?.Cancel();
             Hide();
             AddLog("Ventana oculta en segundo plano.");
             return;
@@ -1943,11 +2235,6 @@ public partial class MainWindow : Window
 
     private void Window_StateChanged(object? sender, EventArgs e)
     {
-        if (WindowState == WindowState.Minimized)
-        {
-            Hide();
-            AddLog("Ventana minimizada en segundo plano.");
-        }
     }
 
     private void SaveConfig()
@@ -2058,7 +2345,10 @@ public partial class MainWindow : Window
             : fallback;
     }
 
-    private sealed record UiOption<T>(string Label, T Value);
+    private sealed record UiOption<T>(string Label, T Value)
+    {
+        public override string ToString() => Label;
+    }
 
     private enum ActivityLogKind
     {
@@ -2067,6 +2357,12 @@ public partial class MainWindow : Window
         Alexa,
         Event,
         Important
+    }
+
+    private enum BackgroundOutputMode
+    {
+        Arduino,
+        Alexa
     }
 
     private sealed class ActivityLogEntry

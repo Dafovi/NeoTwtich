@@ -8,6 +8,7 @@ public static class DisplayNames
         TwitchEventKind.Subscription => "Nueva suscripcion",
         TwitchEventKind.Raid => "Raid recibida",
         TwitchEventKind.Cheer => "Bits",
+        TwitchEventKind.ChatCommand => "Comando de chat",
         TwitchEventKind.ChannelPointRedemption => "Canje de puntos",
         TwitchEventKind.Test => "Prueba manual",
         _ => kind.ToString()

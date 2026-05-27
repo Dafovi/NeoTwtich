@@ -9,6 +9,7 @@ public sealed class EventRule : INotifyPropertyChanged
     private bool _isEnabled = true;
     private TwitchEventKind _eventKind;
     private string _customRewardTitle = "";
+    private string _chatCommand = "";
     private int _minimumBits = 1;
     private bool _useLights;
     private bool _playAudio;
@@ -57,6 +58,18 @@ public sealed class EventRule : INotifyPropertyChanged
     {
         get => _customRewardTitle;
         set => SetField(ref _customRewardTitle, value);
+    }
+
+    public string ChatCommand
+    {
+        get => _chatCommand;
+        set
+        {
+            if (SetField(ref _chatCommand, NormalizeCommand(value)))
+            {
+                OnPropertyChanged(nameof(DisplayLabel));
+            }
+        }
     }
 
     public int MinimumBits
@@ -175,9 +188,12 @@ public sealed class EventRule : INotifyPropertyChanged
                 ? DisplayNames.For(EventKind)
                 : $"{Name} - {DisplayNames.For(EventKind)}";
 
-            return EventKind == TwitchEventKind.Cheer
-                ? $"{label} >= {MinimumBits} bits"
-                : label;
+            return EventKind switch
+            {
+                TwitchEventKind.Cheer => $"{label} >= {MinimumBits} bits",
+                TwitchEventKind.ChatCommand when !string.IsNullOrWhiteSpace(ChatCommand) => $"{label} ({ChatCommand})",
+                _ => label
+            };
         }
     }
 
@@ -193,6 +209,11 @@ public sealed class EventRule : INotifyPropertyChanged
         if (EventKind == TwitchEventKind.Cheer)
         {
             return twitchEvent.Bits is int bits && bits >= MinimumBits;
+        }
+
+        if (EventKind == TwitchEventKind.ChatCommand)
+        {
+            return MatchesChatCommand(twitchEvent.Message, ChatCommand);
         }
 
         if (EventKind != TwitchEventKind.ChannelPointRedemption)
@@ -213,6 +234,7 @@ public sealed class EventRule : INotifyPropertyChanged
             IsEnabled = IsEnabled,
             EventKind = EventKind,
             CustomRewardTitle = CustomRewardTitle,
+            ChatCommand = ChatCommand,
             MinimumBits = MinimumBits,
             UseLights = UseLights,
             PlayAudio = PlayAudio,
@@ -234,6 +256,25 @@ public sealed class EventRule : INotifyPropertyChanged
     }
 
     public override string ToString() => DisplayLabel;
+
+    private static bool MatchesChatCommand(string? message, string command)
+    {
+        if (string.IsNullOrWhiteSpace(command) || string.IsNullOrWhiteSpace(message))
+        {
+            return false;
+        }
+
+        var firstToken = message.Trim().Split([' ', '\t'], StringSplitOptions.RemoveEmptyEntries).FirstOrDefault();
+        return string.Equals(firstToken, NormalizeCommand(command), StringComparison.OrdinalIgnoreCase);
+    }
+
+    private static string NormalizeCommand(string? value)
+    {
+        var command = value?.Trim() ?? "";
+        return string.IsNullOrWhiteSpace(command)
+            ? ""
+            : command.StartsWith('!') ? command : $"!{command}";
+    }
 
     private bool SetField<T>(ref T field, T value, [CallerMemberName] string? propertyName = null)
     {

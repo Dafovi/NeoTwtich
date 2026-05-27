@@ -6,6 +6,7 @@ public enum TwitchEventKind
     Subscription,
     Raid,
     Cheer,
+    ChatCommand,
     ChannelPointRedemption,
     Test
 }

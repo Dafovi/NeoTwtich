@@ -21,7 +21,7 @@ Despues de descargar el `.zip`:
 
 ## Que hace
 
-- Escucha EventSub por WebSocket para seguidores, suscripciones, raids, bits y canjes personalizados.
+- Escucha EventSub por WebSocket para seguidores, suscripciones, raids, bits, comandos de chat y canjes personalizados.
 - Permite crear reglas con luces, audio o ambos.
 - Puede enviar mensajes personalizados al chat por regla.
 - Puede enviar eventos opcionales a una Skill/relay de Alexa para activar rutinas.
@@ -29,7 +29,7 @@ Despues de descargar el `.zip`:
 - Las reglas nuevas vienen activas, pero con luces, audio y chat desactivados para configurar solo lo necesario.
 - La interfaz oculta opciones que no aplican al evento, patron o fondo seleccionado.
 - Guarda la configuracion en `%AppData%\LucesCanjeTwitch\settings.json`.
-- Se queda en segundo plano al cerrar o minimizar la ventana.
+- Se queda en segundo plano al cerrar con `X`; si minimizas, queda normal en la barra de tareas.
 - Incluye modo claro y modo oscuro desde el panel `Inicio`.
 - Usa un Arduino por puerto COM y permite configurar varias tiras NeoPixel en distintos pines.
 - Cuando una regla tiene audio y luces, la duracion del patron se ajusta a la duracion real del audio.
@@ -62,15 +62,15 @@ Y asi se ve el efecto cuando se activa en stream:
 4. Presiona `Conectar Twitch`, autoriza en el navegador y usa el codigo que muestra la app.
 5. Carga el sketch `LucesCanjeTwitch/Arduino/LucesCanjeNeoPixel/LucesCanjeNeoPixel.ino` en cada Arduino.
 6. En la app, usa `Detectar` o escribe el puerto COM del Arduino, por ejemplo `COM3`.
-7. En `Tiras LED`, agrega cada tira con nombre, pin de Arduino y cantidad de LEDs.
-8. En `Tiras LED > Fondo`, configura si quieres un color o patron permanente mientras no haya eventos.
-   - Si usas Alexa, tambien puedes activar un fondo Alexa con eventos de encendido/apagado.
+7. En `Luces de fondo`, agrega cada salida Arduino con nombre, pin y cantidad de LEDs.
+8. En `Luces de fondo`, elige `Arduino Tira led ws2812b` para el fondo LED o `Alexa` para el fondo con rutinas/dispositivos Alexa.
 9. Crea o edita reglas. Por defecto quedan activas, pero sin luces, audio ni chat automatico.
 10. Activa solo lo que necesites en cada regla; la app muestra los campos que aplican segun el evento, patron y opciones marcadas.
-11. Para bits, crea varias reglas `Bits` con distintos `Bits minimos`; si llega una cantidad alta, se usa el umbral mas alto que aplique.
-12. Si quieres chat automatico, activa `Enviar mensaje al chat` y usa variables como `{user}`, `{bits}`, `{reward}`, `{viewers}`, `{message}` o `{event}`.
-13. Si tienes Alexa configurada, activa `Enviar evento a Alexa`. Neo Twitch enviara el nombre de la regla como evento.
-14. Usa `Probar regla` antes de salir en vivo. La prueba ejecuta luces, audio, chat y Alexa si estan activados en esa regla.
+11. Para comandos de chat, elige el evento `Comando de chat` y escribe el comando, por ejemplo `!baile`.
+12. Para bits, crea varias reglas `Bits` con distintos `Bits minimos`; si llega una cantidad alta, se usa el umbral mas alto que aplique.
+13. Si quieres chat automatico, activa `Enviar mensaje al chat` y usa variables como `{user}`, `{bits}`, `{reward}`, `{viewers}`, `{message}` o `{event}`.
+14. Si tienes Alexa configurada, activa `Enviar evento a Alexa`. Neo Twitch enviara el nombre de la regla como evento.
+15. Usa `Probar regla` antes de salir en vivo. La prueba ejecuta luces, audio, chat y Alexa si estan activados en esa regla.
 
 ## Cerrar y actualizar
 
@@ -104,6 +104,7 @@ La app pide los scopes minimos para los eventos implementados:
 - `channel:read:subscriptions` para suscripciones.
 - `channel:read:redemptions` para canjes personalizados.
 - `bits:read` para cheers/bits.
+- `user:read:chat` para detectar comandos de chat.
 - `user:write:chat` para enviar mensajes al chat.
 
 Raids no requieren un scope propio, pero la conexion por WebSocket usa el token de usuario autorizado.

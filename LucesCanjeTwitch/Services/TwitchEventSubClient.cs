@@ -292,6 +292,14 @@ public sealed class TwitchEventSubClient : IDisposable
                     {
                         ["broadcaster_user_id"] = broadcasterId
                     }),
+                TwitchEventKind.ChatCommand => new EventSubDefinition(
+                    "channel.chat.message",
+                    "1",
+                    new Dictionary<string, string>
+                    {
+                        ["broadcaster_user_id"] = broadcasterId,
+                        ["user_id"] = broadcasterId
+                    }),
                 TwitchEventKind.ChannelPointRedemption => new EventSubDefinition(
                     "channel.channel_points_custom_reward_redemption.add",
                     "1",
@@ -360,6 +368,14 @@ public sealed class TwitchEventSubClient : IDisposable
                 Message = ReadString(eventPayload, "message"),
                 Title = $"{ReadCheerUserName(eventPayload)} mando {ReadInt(eventPayload, "bits") ?? 0} bits"
             },
+            "channel.chat.message" => new TwitchEvent
+            {
+                Kind = TwitchEventKind.ChatCommand,
+                RawType = type,
+                UserName = ReadString(eventPayload, "chatter_user_name"),
+                Message = ReadChatMessageText(eventPayload),
+                Title = $"{ReadString(eventPayload, "chatter_user_name")} escribio {ReadChatMessageText(eventPayload)}"
+            },
             "channel.channel_points_custom_reward_redemption.add" => new TwitchEvent
             {
                 Kind = TwitchEventKind.ChannelPointRedemption,
@@ -370,6 +386,16 @@ public sealed class TwitchEventSubClient : IDisposable
             },
             _ => null
         };
+    }
+
+    private static string? ReadChatMessageText(JsonElement eventPayload)
+    {
+        if (!eventPayload.TryGetProperty("message", out var message))
+        {
+            return null;
+        }
+
+        return ReadString(message, "text");
     }
 
     private static string? ReadRewardTitle(JsonElement eventPayload)

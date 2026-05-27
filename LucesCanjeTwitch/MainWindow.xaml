@@ -505,7 +505,7 @@
                             Style="{StaticResource NavButton}"
                             Click="NavButton_Click" />
                     <Button x:Name="NavStripsButton"
-                            Content="Tiras LED"
+                            Content="Luces de fondo"
                             Tag="2"
                             Style="{StaticResource NavButton}"
                             Click="NavButton_Click" />
@@ -589,7 +589,8 @@
                             BorderBrush="#3AFFFFFF"
                             BorderThickness="1"
                             CornerRadius="8"
-                            Padding="10">
+                            Padding="10"
+                            Margin="0,0,0,10">
                         <StackPanel>
                             <TextBlock Text="Arduino"
                                        FontWeight="SemiBold"
@@ -605,6 +606,34 @@
                                        Margin="0,3,0,0" />
                         </StackPanel>
                     </Border>
+
+                    <Border x:Name="SidebarAlexaStatusCard"
+                            Background="#24FFFFFF"
+                            BorderBrush="#3AFFFFFF"
+                            BorderThickness="1"
+                            CornerRadius="8"
+                            Padding="10"
+                            Margin="0,0,0,10">
+                        <StackPanel>
+                            <TextBlock Text="Alexa"
+                                       FontWeight="SemiBold"
+                                       Foreground="{DynamicResource ThemeSidebarTextBrush}" />
+                            <TextBlock x:Name="AlexaConnectionText"
+                                       Text="Sin conectar"
+                                       FontWeight="SemiBold"
+                                       Margin="0,6,0,0"
+                                       Foreground="{DynamicResource ThemeSidebarTextBrush}" />
+                            <TextBlock x:Name="AlexaSidebarStatusText"
+                                       Foreground="{DynamicResource ThemeSidebarMutedTextBrush}"
+                                       TextWrapping="Wrap"
+                                       Margin="0,3,0,0" />
+                        </StackPanel>
+                    </Border>
+                    <Button Content="Salir por completo"
+                            Style="{StaticResource DangerButton}"
+                            HorizontalContentAlignment="Center"
+                            Margin="0,2,0,0"
+                            Click="ExitButton_Click" />
                 </StackPanel>
             </DockPanel>
         </Border>
@@ -654,12 +683,55 @@
                                            Margin="0,0,0,10" />
                                 <TextBlock Text="Client ID"
                                            Style="{StaticResource MutedText}" />
-                                <TextBox x:Name="ClientIdBox" TextChanged="GlobalSettingsChanged" />
+                                <Grid Margin="0,4,0,10">
+                                    <TextBox x:Name="ClientIdBox"
+                                             Margin="0"
+                                             Padding="10,6,76,6"
+                                             TextChanged="GlobalSettingsChanged" />
+                                    <TextBlock x:Name="ClientIdMaskText"
+                                               Margin="1,1,72,1"
+                                               Padding="9,6"
+                                               VerticalAlignment="Stretch"
+                                               Background="{DynamicResource ThemeInputBrush}"
+                                               Foreground="{DynamicResource ThemeMutedTextBrush}"
+                                               Visibility="Collapsed" />
+                                    <Button x:Name="ClientIdRevealButton"
+                                            Content="Ver"
+                                            Width="64"
+                                            MinHeight="0"
+                                            Padding="8,0"
+                                            Margin="0"
+                                            HorizontalAlignment="Right"
+                                            VerticalAlignment="Stretch"
+                                            ToolTip="Mostrar u ocultar Client ID"
+                                            Click="ToggleClientIdVisibility_Click" />
+                                </Grid>
                                 <TextBlock Text="Client Secret opcional"
                                            Style="{StaticResource MutedText}" />
-                                <TextBox x:Name="ClientSecretBox"
-                                         TextChanged="GlobalSettingsChanged"
-                                         ToolTip="Se usa para refrescar el token de Twitch. Si lo dejas vacio, la app puede pedir autorizar de nuevo cuando expire." />
+                                <Grid Margin="0,4,0,10">
+                                    <TextBox x:Name="ClientSecretBox"
+                                             Margin="0"
+                                             Padding="10,6,76,6"
+                                             TextChanged="GlobalSettingsChanged"
+                                             ToolTip="Se usa para refrescar el token de Twitch. Si lo dejas vacio, la app puede pedir autorizar de nuevo cuando expire." />
+                                    <TextBlock x:Name="ClientSecretMaskText"
+                                               Margin="1,1,72,1"
+                                               Padding="9,6"
+                                               VerticalAlignment="Stretch"
+                                               Background="{DynamicResource ThemeInputBrush}"
+                                               Foreground="{DynamicResource ThemeMutedTextBrush}"
+                                               Visibility="Collapsed" />
+                                    <Button x:Name="ClientSecretRevealButton"
+                                            Content="Ver"
+                                            Width="64"
+                                            MinHeight="0"
+                                            Padding="8,0"
+                                            Margin="0"
+                                            HorizontalAlignment="Right"
+                                            VerticalAlignment="Stretch"
+                                            ToolTip="Mostrar u ocultar Client Secret"
+                                            Click="ToggleClientSecretVisibility_Click" />
+                                </Grid>
                                 <Button x:Name="TwitchButton"
                                         Style="{StaticResource PrimaryButton}"
                                         Content="Conectar Twitch"
@@ -717,14 +789,56 @@
                                               Unchecked="AlexaSettingsChanged" />
                                     <TextBlock Text="URL de Skill / relay"
                                                Style="{StaticResource MutedText}" />
-                                    <TextBox x:Name="AlexaRelayUrlBox"
-                                             TextChanged="AlexaSettingsChanged"
-                                             ToolTip="Endpoint HTTPS que recibe eventos de Neo Twitch y los envia a Alexa." />
+                                    <Grid Margin="0,4,0,10">
+                                        <TextBox x:Name="AlexaRelayUrlBox"
+                                                 Margin="0"
+                                                 Padding="10,6,76,6"
+                                                 TextChanged="AlexaSettingsChanged"
+                                                 ToolTip="Endpoint HTTPS que recibe eventos de Neo Twitch y los envia a Alexa." />
+                                        <TextBlock x:Name="AlexaRelayUrlMaskText"
+                                                   Margin="1,1,72,1"
+                                                   Padding="9,6"
+                                                   VerticalAlignment="Stretch"
+                                                   Background="{DynamicResource ThemeInputBrush}"
+                                                   Foreground="{DynamicResource ThemeMutedTextBrush}"
+                                                   Visibility="Collapsed" />
+                                        <Button x:Name="AlexaRelayUrlRevealButton"
+                                                Content="Ver"
+                                                Width="64"
+                                                MinHeight="0"
+                                                Padding="8,0"
+                                                Margin="0"
+                                                HorizontalAlignment="Right"
+                                                VerticalAlignment="Stretch"
+                                                ToolTip="Mostrar u ocultar URL de Alexa"
+                                                Click="ToggleAlexaRelayUrlVisibility_Click" />
+                                    </Grid>
                                     <TextBlock Text="Token opcional"
                                                Style="{StaticResource MutedText}" />
-                                    <TextBox x:Name="AlexaAuthTokenBox"
-                                             TextChanged="AlexaSettingsChanged"
-                                             ToolTip="Token/API key opcional para proteger el relay." />
+                                    <Grid Margin="0,4,0,10">
+                                        <TextBox x:Name="AlexaAuthTokenBox"
+                                                 Margin="0"
+                                                 Padding="10,6,76,6"
+                                                 TextChanged="AlexaSettingsChanged"
+                                                 ToolTip="Token/API key opcional para proteger el relay." />
+                                        <TextBlock x:Name="AlexaAuthTokenMaskText"
+                                                   Margin="1,1,72,1"
+                                                   Padding="9,6"
+                                                   VerticalAlignment="Stretch"
+                                                   Background="{DynamicResource ThemeInputBrush}"
+                                                   Foreground="{DynamicResource ThemeMutedTextBrush}"
+                                                   Visibility="Collapsed" />
+                                        <Button x:Name="AlexaAuthTokenRevealButton"
+                                                Content="Ver"
+                                                Width="64"
+                                                MinHeight="0"
+                                                Padding="8,0"
+                                                Margin="0"
+                                                HorizontalAlignment="Right"
+                                                VerticalAlignment="Stretch"
+                                                ToolTip="Mostrar u ocultar token de Alexa"
+                                                Click="ToggleAlexaAuthTokenVisibility_Click" />
+                                    </Grid>
                                     <TextBlock x:Name="AlexaStatusText"
                                                Style="{StaticResource MutedText}"
                                                TextWrapping="Wrap"
@@ -906,6 +1020,13 @@
                                 <TextBox x:Name="RewardTitleBox"
                                          TextChanged="RuleFieldChanged"
                                          ToolTip="Dejalo vacio para aceptar cualquier canje personalizado." />
+
+                                <TextBlock x:Name="ChatCommandLabel"
+                                           Text="Comando de chat"
+                                           Style="{StaticResource MutedText}" />
+                                <TextBox x:Name="ChatCommandBox"
+                                         TextChanged="RuleFieldChanged"
+                                         ToolTip="Ejemplo: !baile. La regla se activa cuando el mensaje empieza con ese comando." />
 
                                 <TextBlock x:Name="MinimumBitsLabel"
                                            Text="Bits minimos"
@@ -1107,7 +1228,7 @@
                 </ScrollViewer>
             </TabItem>
 
-            <TabItem Header="Tiras LED">
+            <TabItem Header="Luces de fondo">
                 <ScrollViewer VerticalScrollBarVisibility="Auto"
                               HorizontalScrollBarVisibility="Auto">
                     <Grid Margin="24" MinWidth="840">
@@ -1122,7 +1243,7 @@
                         </Grid.ColumnDefinitions>
 
                         <StackPanel Grid.ColumnSpan="3" Margin="0,0,0,18">
-                            <TextBlock Text="Tiras LED"
+                            <TextBlock Text="Luces de fondo"
                                        FontSize="28"
                                        Style="{StaticResource TitleText}"
                                        FontWeight="SemiBold" />
@@ -1135,7 +1256,9 @@
                                 Grid.Column="0"
                                 Style="{StaticResource Card}">
                             <DockPanel>
-                                <StackPanel DockPanel.Dock="Bottom" Margin="0,12,0,0">
+                                <StackPanel x:Name="StripActionsPanel"
+                                            DockPanel.Dock="Bottom"
+                                            Margin="0,12,0,0">
                                     <WrapPanel>
                                         <Button Content="Nueva" Click="AddStripButton_Click" />
                                         <Button Content="Duplicar" Click="DuplicateStripButton_Click" />
@@ -1146,15 +1269,32 @@
                                 </StackPanel>
 
                                 <StackPanel DockPanel.Dock="Top">
-                                    <TextBlock Text="Salidas Arduino"
+                                    <TextBlock Text="Salidas"
                                                FontSize="18"
                                                Style="{StaticResource TitleText}"
                                                FontWeight="SemiBold"
                                                Margin="0,0,0,10" />
+                                    <Button x:Name="ArduinoOutputButton"
+                                            Content="Arduino Tira led ws2812b"
+                                            HorizontalContentAlignment="Left"
+                                            Margin="0,0,0,8"
+                                            ToolTip="Configura las tiras NeoPixel conectadas al Arduino."
+                                            Click="ArduinoOutputButton_Click" />
+                                    <Button x:Name="AlexaOutputButton"
+                                            Content="Alexa"
+                                            HorizontalContentAlignment="Left"
+                                            Margin="0,0,0,12"
+                                            ToolTip="Configura el fondo que se envia al relay de Alexa."
+                                            Click="AlexaOutputButton_Click" />
+                                    <TextBlock x:Name="StripsListLabel"
+                                               Text="Tiras LED"
+                                               Style="{StaticResource MutedText}"
+                                               Margin="0,0,0,6" />
                                 </StackPanel>
 
                                 <ListBox x:Name="StripsList"
                                          BorderBrush="{DynamicResource ThemeBorderBrush}"
+                                         MinHeight="220"
                                          SelectionChanged="StripsList_SelectionChanged">
                                     <ListBox.ItemTemplate>
                                         <DataTemplate>
@@ -1176,33 +1316,36 @@
                         <Border Grid.Row="1"
                                 Grid.Column="2"
                                 Style="{StaticResource Card}">
-                            <StackPanel x:Name="StripEditorPanel">
-                                <TextBlock Text="Detalle de tira"
-                                           FontSize="18"
-                                           Style="{StaticResource TitleText}"
-                                           FontWeight="SemiBold"
-                                           Margin="0,0,0,12" />
+                            <Grid>
+                                <StackPanel x:Name="ArduinoBackgroundPanel">
+                                    <StackPanel x:Name="StripEditorPanel">
+                                        <TextBlock Text="Detalle de tira"
+                                                   FontSize="18"
+                                                   Style="{StaticResource TitleText}"
+                                                   FontWeight="SemiBold"
+                                                   Margin="0,0,0,12" />
 
-                                <TextBlock Text="Nombre" Style="{StaticResource MutedText}" />
-                                <TextBox x:Name="StripNameBox" TextChanged="StripFieldChanged" />
+                                        <TextBlock Text="Nombre" Style="{StaticResource MutedText}" />
+                                        <TextBox x:Name="StripNameBox" TextChanged="StripFieldChanged" />
 
-                                <Grid>
-                                    <Grid.ColumnDefinitions>
-                                        <ColumnDefinition Width="*" />
-                                        <ColumnDefinition Width="16" />
-                                        <ColumnDefinition Width="*" />
-                                    </Grid.ColumnDefinitions>
-                                    <StackPanel>
-                                        <TextBlock Text="Pin Arduino" Style="{StaticResource MutedText}" />
-                                        <TextBox x:Name="StripPinBox"
-                                                 TextChanged="StripFieldChanged"
-                                                 ToolTip="Pin digital donde esta conectado DIN de la tira." />
+                                        <Grid>
+                                            <Grid.ColumnDefinitions>
+                                                <ColumnDefinition Width="*" />
+                                                <ColumnDefinition Width="16" />
+                                                <ColumnDefinition Width="*" />
+                                            </Grid.ColumnDefinitions>
+                                            <StackPanel>
+                                                <TextBlock Text="Pin Arduino" Style="{StaticResource MutedText}" />
+                                                <TextBox x:Name="StripPinBox"
+                                                         TextChanged="StripFieldChanged"
+                                                         ToolTip="Pin digital donde esta conectado DIN de la tira." />
+                                            </StackPanel>
+                                            <StackPanel Grid.Column="2">
+                                                <TextBlock Text="Cantidad de LEDs" Style="{StaticResource MutedText}" />
+                                                <TextBox x:Name="StripLedCountBox" TextChanged="StripFieldChanged" />
+                                            </StackPanel>
+                                        </Grid>
                                     </StackPanel>
-                                    <StackPanel Grid.Column="2">
-                                        <TextBlock Text="Cantidad de LEDs" Style="{StaticResource MutedText}" />
-                                        <TextBox x:Name="StripLedCountBox" TextChanged="StripFieldChanged" />
-                                    </StackPanel>
-                                </Grid>
 
                                 <Separator Margin="0,16,0,16" />
 
@@ -1215,32 +1358,6 @@
                                           Content="Mantener luces de fondo"
                                           Checked="BackgroundFieldChanged"
                                           Unchecked="BackgroundFieldChanged" />
-                                <CheckBox x:Name="BackgroundAlexaEnabledCheck"
-                                          Content="Mantener luz de fondo con Alexa"
-                                          Checked="BackgroundFieldChanged"
-                                          Unchecked="BackgroundFieldChanged" />
-
-                                <Grid x:Name="BackgroundAlexaEventsGrid">
-                                    <Grid.ColumnDefinitions>
-                                        <ColumnDefinition Width="*" />
-                                        <ColumnDefinition Width="16" />
-                                        <ColumnDefinition Width="*" />
-                                    </Grid.ColumnDefinitions>
-                                    <StackPanel>
-                                        <TextBlock Text="Evento Alexa encendido"
-                                                   Style="{StaticResource MutedText}" />
-                                        <TextBox x:Name="BackgroundAlexaOnEventBox"
-                                                 TextChanged="BackgroundFieldChanged"
-                                                 ToolTip="Evento que recibira el relay cuando el fondo Alexa debe quedar encendido." />
-                                    </StackPanel>
-                                    <StackPanel Grid.Column="2">
-                                        <TextBlock Text="Evento Alexa apagado"
-                                                   Style="{StaticResource MutedText}" />
-                                        <TextBox x:Name="BackgroundAlexaOffEventBox"
-                                                 TextChanged="BackgroundFieldChanged"
-                                                 ToolTip="Evento que recibira el relay cuando el fondo Alexa debe quedar apagado." />
-                                    </StackPanel>
-                                </Grid>
 
                                 <TextBlock x:Name="BackgroundPinsLabel"
                                            Text="Pines de fondo"
@@ -1360,15 +1477,75 @@
                                         ValueChanged="BackgroundFieldChanged" />
 
                                 <WrapPanel Margin="0,8,0,0">
-                                    <Button x:Name="ApplyBackgroundButton"
-                                            Content="Aplicar fondo"
+                                    <Button x:Name="ApplyArduinoBackgroundButton"
+                                            Content="Aplicar fondo LED"
                                             Style="{StaticResource PrimaryButton}"
-                                            Click="ApplyBackgroundButton_Click" />
+                                            Click="ApplyArduinoBackgroundButton_Click" />
                                     <Button Content="Apagar tiras"
                                             Style="{StaticResource DangerButton}"
-                                            Click="StopLightsButton_Click" />
+                                            Click="StopArduinoBackgroundButton_Click" />
                                 </WrapPanel>
-                            </StackPanel>
+                                </StackPanel>
+
+                                <StackPanel x:Name="AlexaBackgroundPanel"
+                                            Visibility="Collapsed">
+                                    <TextBlock Text="Fondo Alexa"
+                                               FontSize="18"
+                                               Style="{StaticResource TitleText}"
+                                               FontWeight="SemiBold"
+                                               Margin="0,0,0,12" />
+                                    <TextBlock Text="Esta salida envia eventos al relay de Alexa para controlar rutinas o dispositivos configurados en tu skill."
+                                               Style="{StaticResource MutedText}"
+                                               TextWrapping="Wrap"
+                                               Margin="0,0,0,12" />
+                                    <TextBlock x:Name="AlexaBackgroundUnavailableText"
+                                               Text="Primero activa y configura Alexa en Conexiones para usar este fondo."
+                                               Style="{StaticResource MutedText}"
+                                               TextWrapping="Wrap"
+                                               Margin="0,0,0,12" />
+                                    <CheckBox x:Name="BackgroundAlexaEnabledCheck"
+                                              Content="Mantener fondo Alexa encendido"
+                                              Checked="BackgroundFieldChanged"
+                                              Unchecked="BackgroundFieldChanged" />
+                                    <CheckBox x:Name="BackgroundAlexaTurnOffAfterEventCheck"
+                                              Content="Apagar fondo Alexa al finalizar evento"
+                                              Checked="BackgroundFieldChanged"
+                                              Unchecked="BackgroundFieldChanged" />
+
+                                    <Grid x:Name="BackgroundAlexaEventsGrid">
+                                        <Grid.ColumnDefinitions>
+                                            <ColumnDefinition Width="*" />
+                                            <ColumnDefinition Width="16" />
+                                            <ColumnDefinition Width="*" />
+                                        </Grid.ColumnDefinitions>
+                                        <StackPanel>
+                                            <TextBlock Text="Evento Alexa encendido"
+                                                       Style="{StaticResource MutedText}" />
+                                            <TextBox x:Name="BackgroundAlexaOnEventBox"
+                                                     TextChanged="BackgroundFieldChanged"
+                                                     ToolTip="Evento que recibira el relay cuando el fondo Alexa debe quedar encendido." />
+                                        </StackPanel>
+                                        <StackPanel Grid.Column="2">
+                                            <TextBlock Text="Evento Alexa apagado"
+                                                       Style="{StaticResource MutedText}" />
+                                            <TextBox x:Name="BackgroundAlexaOffEventBox"
+                                                     TextChanged="BackgroundFieldChanged"
+                                                     ToolTip="Evento que recibira el relay cuando el fondo Alexa debe quedar apagado." />
+                                        </StackPanel>
+                                    </Grid>
+
+                                    <WrapPanel Margin="0,8,0,0">
+                                        <Button x:Name="ApplyAlexaBackgroundButton"
+                                                Content="Aplicar fondo Alexa"
+                                                Style="{StaticResource PrimaryButton}"
+                                                Click="ApplyAlexaBackgroundButton_Click" />
+                                        <Button Content="Apagar fondo Alexa"
+                                                x:Name="StopAlexaBackgroundButton"
+                                                Style="{StaticResource DangerButton}"
+                                                Click="StopAlexaBackgroundButton_Click" />
+                                    </WrapPanel>
+                                </StackPanel>
+                            </Grid>
                         </Border>
                     </Grid>
                 </ScrollViewer>

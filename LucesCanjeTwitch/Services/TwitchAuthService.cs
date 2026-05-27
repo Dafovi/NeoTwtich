@@ -15,6 +15,7 @@ public sealed class TwitchAuthService
         "channel:read:subscriptions",
         "channel:read:redemptions",
         "bits:read",
+        "user:read:chat",
         "user:write:chat"
     ];
 

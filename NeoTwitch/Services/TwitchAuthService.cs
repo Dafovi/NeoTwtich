@@ -3,9 +3,9 @@ using System.Net.Http;
 using System.Net.Http.Headers;
 using System.Text.Json;
 using System.Text.Json.Serialization;
-using LucesCanjeTwitch.Models;
+using NeoTwitch.Models;
 
-namespace LucesCanjeTwitch.Services;
+namespace NeoTwitch.Services;
 
 public sealed class TwitchAuthService
 {

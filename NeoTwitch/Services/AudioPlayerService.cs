@@ -2,7 +2,7 @@ using System.IO;
 using System.Windows;
 using System.Windows.Media;
 
-namespace LucesCanjeTwitch.Services;
+namespace NeoTwitch.Services;
 
 public sealed class AudioPlayerService
 {

@@ -1,7 +1,7 @@
-﻿<Application x:Class="LucesCanjeTwitch.App"
+<Application x:Class="NeoTwitch.App"
              xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
              xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
-             xmlns:local="clr-namespace:LucesCanjeTwitch">
+             xmlns:local="clr-namespace:NeoTwitch">
     <Application.Resources>
          
     </Application.Resources>

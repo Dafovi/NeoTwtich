@@ -1,4 +1,4 @@
-namespace LucesCanjeTwitch.Models;
+namespace NeoTwitch.Models;
 
 public sealed class TwitchEvent
 {

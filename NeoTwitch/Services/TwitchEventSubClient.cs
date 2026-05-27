@@ -4,9 +4,9 @@ using System.Net.WebSockets;
 using System.IO;
 using System.Text;
 using System.Text.Json;
-using LucesCanjeTwitch.Models;
+using NeoTwitch.Models;
 
-namespace LucesCanjeTwitch.Services;
+namespace NeoTwitch.Services;
 
 public sealed class TwitchEventSubClient : IDisposable
 {

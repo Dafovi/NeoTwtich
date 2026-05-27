@@ -10,7 +10,7 @@ La forma mas facil de usar la app es descargar el release mas reciente desde Git
 
 También puedes descargar el sketch para Arduino desde aquí:
 
-[Descargar Sketch](LucesCanjeTwitch/Arduino/LucesCanjeNeoPixel/LucesCanjeNeoPixel.ino)
+[Descargar Sketch](NeoTwitch/Arduino/NeoTwitchNeoPixel/NeoTwitchNeoPixel.ino)
 
 Despues de descargar el `.zip`:
 
@@ -28,7 +28,7 @@ Despues de descargar el `.zip`:
 - Puede mantener un fondo opcional con Alexa, por ejemplo enviando eventos de luz encendida o luz apagada.
 - Las reglas nuevas vienen activas, pero con luces, audio y chat desactivados para configurar solo lo necesario.
 - La interfaz oculta opciones que no aplican al evento, patron o fondo seleccionado.
-- Guarda la configuracion en `%AppData%\LucesCanjeTwitch\settings.json`.
+- Guarda la configuracion en `%AppData%\NeoTwitch\settings.json`.
 - Se queda en segundo plano al cerrar con `X`; si minimizas, queda normal en la barra de tareas.
 - Incluye modo claro y modo oscuro desde el panel `Inicio`.
 - Usa un Arduino por puerto COM y permite configurar varias tiras NeoPixel en distintos pines.
@@ -60,7 +60,7 @@ Y asi se ve el efecto cuando se activa en stream:
 2. Consigue el Client ID siguiendo la seccion `Conseguir el Client ID de Twitch`.
 3. Escribe ese Client ID en el panel `Twitch`. Si quieres que la app refresque la sesion automaticamente, pega tambien el Client Secret.
 4. Presiona `Conectar Twitch`, autoriza en el navegador y usa el codigo que muestra la app.
-5. Carga el sketch `LucesCanjeTwitch/Arduino/LucesCanjeNeoPixel/LucesCanjeNeoPixel.ino` en cada Arduino.
+5. Carga el sketch `NeoTwitch/Arduino/NeoTwitchNeoPixel/NeoTwitchNeoPixel.ino` en cada Arduino.
 6. En la app, usa `Detectar` o escribe el puerto COM del Arduino, por ejemplo `COM3`.
 7. En `Luces de fondo`, agrega cada salida Arduino con nombre, pin y cantidad de LEDs.
 8. En `Luces de fondo`, elige `Arduino Tira led ws2812b` para el fondo LED o `Alexa` para el fondo con rutinas/dispositivos Alexa.

@@ -1,4 +1,4 @@
-namespace LucesCanjeTwitch.Models;
+namespace NeoTwitch.Models;
 
 public sealed record LightStripTarget(int Pin, int LedCount)
 {

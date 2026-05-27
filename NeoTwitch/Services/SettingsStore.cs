@@ -2,12 +2,15 @@ using System.Collections.ObjectModel;
 using System.IO;
 using System.Text.Json;
 using System.Text.Json.Serialization;
-using LucesCanjeTwitch.Models;
+using NeoTwitch.Models;
 
-namespace LucesCanjeTwitch.Services;
+namespace NeoTwitch.Services;
 
 public sealed class SettingsStore
 {
+    private const string AppFolderName = "NeoTwitch";
+    private const string LegacyAppFolderName = "LucesCanjeTwitch";
+
     private readonly JsonSerializerOptions _jsonOptions = new(JsonSerializerDefaults.Web)
     {
         WriteIndented = true
@@ -18,10 +21,9 @@ public sealed class SettingsStore
         _jsonOptions.Converters.Add(new JsonStringEnumConverter());
     }
 
-    public string SettingsPath { get; } = Path.Combine(
-        Environment.GetFolderPath(Environment.SpecialFolder.ApplicationData),
-        "LucesCanjeTwitch",
-        "settings.json");
+    public string SettingsPath { get; } = BuildSettingsPath(AppFolderName);
+
+    private string LegacySettingsPath { get; } = BuildSettingsPath(LegacyAppFolderName);
 
     public string? LastLoadError { get; private set; }
 
@@ -29,21 +31,22 @@ public sealed class SettingsStore
     {
         LastLoadError = null;
 
-        if (!File.Exists(SettingsPath))
+        var loadPath = ResolveSettingsPathForLoad();
+        if (loadPath is null)
         {
             return AppConfig.CreateDefault();
         }
 
         try
         {
-            var json = File.ReadAllText(SettingsPath);
+            var json = File.ReadAllText(loadPath);
             var config = JsonSerializer.Deserialize<AppConfig>(json, _jsonOptions) ?? AppConfig.CreateDefault();
             return NormalizeConfig(config);
         }
         catch (Exception ex)
         {
             LastLoadError = ex.Message;
-            CrashReporter.Log(ex, $"No se pudo leer la configuracion: {SettingsPath}");
+            CrashReporter.Log(ex, $"No se pudo leer la configuracion: {loadPath}");
             return AppConfig.CreateDefault();
         }
     }
@@ -66,6 +69,26 @@ public sealed class SettingsStore
 
         File.Copy(tempPath, SettingsPath, overwrite: true);
         File.Delete(tempPath);
+    }
+
+    private static string BuildSettingsPath(string appFolderName)
+    {
+        return Path.Combine(
+            Environment.GetFolderPath(Environment.SpecialFolder.ApplicationData),
+            appFolderName,
+            "settings.json");
+    }
+
+    private string? ResolveSettingsPathForLoad()
+    {
+        if (File.Exists(SettingsPath))
+        {
+            return SettingsPath;
+        }
+
+        return File.Exists(LegacySettingsPath)
+            ? LegacySettingsPath
+            : null;
     }
 
     private static AppConfig NormalizeConfig(AppConfig config)

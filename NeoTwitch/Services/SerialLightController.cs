@@ -1,11 +1,11 @@
 using System.ComponentModel;
 using System.Runtime.InteropServices;
 using System.Text;
-using LucesCanjeTwitch.Models;
+using NeoTwitch.Models;
 using Microsoft.Win32;
 using Microsoft.Win32.SafeHandles;
 
-namespace LucesCanjeTwitch.Services;
+namespace NeoTwitch.Services;
 
 public sealed class SerialLightController : IDisposable
 {

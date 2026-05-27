@@ -2,9 +2,9 @@ using System.Threading;
 using System.Threading.Tasks;
 using System.Windows;
 using System.Windows.Threading;
-using LucesCanjeTwitch.Services;
+using NeoTwitch.Services;
 
-namespace LucesCanjeTwitch;
+namespace NeoTwitch;
 
 /// <summary>
 /// Interaction logic for App.xaml
@@ -21,7 +21,7 @@ public partial class App : System.Windows.Application
 
         try
         {
-            _singleInstanceMutex = new Mutex(true, "LucesCanjeTwitch.SingleInstance", out var createdNew);
+            _singleInstanceMutex = new Mutex(true, "NeoTwitch.SingleInstance", out var createdNew);
             _ownsMutex = createdNew;
             if (!createdNew)
             {

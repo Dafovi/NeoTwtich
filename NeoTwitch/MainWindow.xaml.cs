@@ -10,15 +10,15 @@ using System.Windows.Interop;
 using System.Windows.Media;
 using System.Windows.Media.Imaging;
 using System.Windows.Threading;
-using LucesCanjeTwitch.Models;
-using LucesCanjeTwitch.Services;
+using NeoTwitch.Models;
+using NeoTwitch.Services;
 using Forms = System.Windows.Forms;
 using DrawingIcon = System.Drawing.Icon;
 using WpfClipboard = System.Windows.Clipboard;
 using WpfMessageBox = System.Windows.MessageBox;
 using WpfOpenFileDialog = Microsoft.Win32.OpenFileDialog;
 
-namespace LucesCanjeTwitch;
+namespace NeoTwitch;
 
 public partial class MainWindow : Window
 {

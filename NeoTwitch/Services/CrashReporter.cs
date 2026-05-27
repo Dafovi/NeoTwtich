@@ -1,11 +1,11 @@
 using System.IO;
 using System.Text;
 
-namespace LucesCanjeTwitch.Services;
+namespace NeoTwitch.Services;
 
 public static class CrashReporter
 {
-    private const string AppFolderName = "LucesCanjeTwitch";
+    private const string AppFolderName = "NeoTwitch";
 
     public static string PreferredLogPath => Path.Combine(
         Environment.GetFolderPath(Environment.SpecialFolder.ApplicationData),

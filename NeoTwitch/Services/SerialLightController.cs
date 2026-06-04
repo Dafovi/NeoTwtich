@@ -9,14 +9,19 @@ namespace NeoTwitch.Services;
 
 public sealed class SerialLightController : IDisposable
 {
+    private const uint GenericRead = 0x80000000;
     private const uint GenericWrite = 0x40000000;
     private const uint OpenExisting = 3;
     private const uint FileAttributeNormal = 0x80;
+    private const uint PurgeRxAbort = 0x0002;
+    private const uint PurgeRxClear = 0x0008;
+    private const int AckTimeoutMs = 650;
 
     private SafeFileHandle? _handle;
     private string _port = "";
     private readonly SemaphoreSlim _gate = new(1, 1);
     private int _baudRate = 115200;
+    private bool? _ackSupported;
 
     public bool HasOpenPort => _handle is { IsInvalid: false, IsClosed: false };
 
@@ -188,6 +193,7 @@ public sealed class SerialLightController : IDisposable
             CloseCurrentPort(log);
             _handle = OpenAndConfigure(normalizedPort, _baudRate);
             _port = normalizedPort;
+            _ackSupported = null;
             openedNewPort = true;
             log($"Arduino conectado en {_port} a {_baudRate} baudios.");
         }
@@ -225,6 +231,12 @@ public sealed class SerialLightController : IDisposable
                 return;
             }
 
+            var commandName = ResolveCommandName(line);
+            if (commandName is not null && _ackSupported != false)
+            {
+                ClearReadBuffer(_handle);
+            }
+
             var bytes = Encoding.ASCII.GetBytes(line);
             if (!WriteFile(_handle, bytes, (uint)bytes.Length, out var written, IntPtr.Zero) || written != bytes.Length)
             {
@@ -234,6 +246,10 @@ public sealed class SerialLightController : IDisposable
             else
             {
                 log($"Serial {_port}: {line.Trim()}");
+                if (commandName is not null && _ackSupported != false)
+                {
+                    WaitForAck(commandName, log, cancellationToken);
+                }
             }
         }
         finally
@@ -247,6 +263,7 @@ public sealed class SerialLightController : IDisposable
         _handle?.Dispose();
         _handle = null;
         _port = "";
+        _ackSupported = null;
         _gate.Dispose();
     }
 
@@ -261,6 +278,7 @@ public sealed class SerialLightController : IDisposable
         _handle.Dispose();
         _handle = null;
         _port = "";
+        _ackSupported = null;
 
         if (!string.IsNullOrWhiteSpace(oldPort))
         {
@@ -272,7 +290,7 @@ public sealed class SerialLightController : IDisposable
     {
         var handle = CreateFile(
             $@"\\.\{port}",
-            GenericWrite,
+            GenericRead | GenericWrite,
             0,
             IntPtr.Zero,
             OpenExisting,
@@ -307,6 +325,8 @@ public sealed class SerialLightController : IDisposable
 
         var timeouts = new CommTimeouts
         {
+            ReadIntervalTimeout = 30,
+            ReadTotalTimeoutConstant = 80,
             WriteTotalTimeoutConstant = 1000,
             WriteTotalTimeoutMultiplier = 10
         };
@@ -320,6 +340,104 @@ public sealed class SerialLightController : IDisposable
     private static string NormalizePortName(string value)
     {
         return value.Trim().ToUpperInvariant();
+    }
+
+    private void WaitForAck(string commandName, Action<string> log, CancellationToken cancellationToken)
+    {
+        if (_handle is null)
+        {
+            return;
+        }
+
+        var deadline = DateTimeOffset.UtcNow.AddMilliseconds(AckTimeoutMs);
+
+        while (DateTimeOffset.UtcNow < deadline)
+        {
+            cancellationToken.ThrowIfCancellationRequested();
+            var line = ReadLine(_handle, deadline, cancellationToken);
+            if (string.IsNullOrWhiteSpace(line))
+            {
+                continue;
+            }
+
+            if (string.Equals(line, $"ACK|{commandName}", StringComparison.OrdinalIgnoreCase))
+            {
+                _ackSupported = true;
+                log($"Arduino ACK: {commandName} confirmado.");
+                return;
+            }
+
+            if (line.StartsWith("ERR|", StringComparison.OrdinalIgnoreCase))
+            {
+                _ackSupported = true;
+                log($"Arduino reporto error: {line}.");
+                return;
+            }
+
+            log($"Arduino respuesta: {line}");
+        }
+
+        if (_ackSupported is null)
+        {
+            _ackSupported = false;
+            log("Arduino: no recibi ACK. Sigo en modo compatible; carga el sketch actualizado para confirmaciones.");
+            return;
+        }
+
+        log($"Arduino: no recibi ACK para {commandName}.");
+    }
+
+    private static string? ReadLine(SafeFileHandle handle, DateTimeOffset deadline, CancellationToken cancellationToken)
+    {
+        var buffer = new byte[1];
+        var line = new StringBuilder();
+
+        while (DateTimeOffset.UtcNow < deadline)
+        {
+            cancellationToken.ThrowIfCancellationRequested();
+            if (!ReadFile(handle, buffer, 1, out var read, IntPtr.Zero))
+            {
+                return null;
+            }
+
+            if (read == 0)
+            {
+                continue;
+            }
+
+            var character = (char)buffer[0];
+            if (character == '\n')
+            {
+                return line.ToString().Trim();
+            }
+
+            if (character != '\r')
+            {
+                line.Append(character);
+            }
+        }
+
+        return line.Length > 0 ? line.ToString().Trim() : null;
+    }
+
+    private static void ClearReadBuffer(SafeFileHandle handle)
+    {
+        _ = PurgeComm(handle, PurgeRxAbort | PurgeRxClear);
+    }
+
+    private static string? ResolveCommandName(string line)
+    {
+        if (line.StartsWith("FX|", StringComparison.OrdinalIgnoreCase))
+        {
+            return "FX";
+        }
+
+        if (line.StartsWith("STOP|", StringComparison.OrdinalIgnoreCase))
+        {
+            return "STOP";
+        }
+
+        return null;
     }
 
     [DllImport("kernel32.dll", CharSet = CharSet.Unicode, SetLastError = true)]
@@ -342,11 +460,22 @@ public sealed class SerialLightController : IDisposable
     private static extern bool SetCommTimeouts(SafeFileHandle hFile, ref CommTimeouts lpCommTimeouts);
 
     [DllImport("kernel32.dll", SetLastError = true)]
+    private static extern bool PurgeComm(SafeFileHandle hFile, uint dwFlags);
+
+    [DllImport("kernel32.dll", SetLastError = true)]
     private static extern bool WriteFile(
         SafeFileHandle hFile,
         byte[] lpBuffer,
         uint nNumberOfBytesToWrite,
         out uint lpNumberOfBytesWritten,
+        IntPtr lpOverlapped);
+
+    [DllImport("kernel32.dll", SetLastError = true)]
+    private static extern bool ReadFile(
+        SafeFileHandle hFile,
+        byte[] lpBuffer,
+        uint nNumberOfBytesToRead,
+        out uint lpNumberOfBytesRead,
         IntPtr lpOverlapped);
 
     [StructLayout(LayoutKind.Sequential)]

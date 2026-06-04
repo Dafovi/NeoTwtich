@@ -212,6 +212,16 @@ Campos:
 
 La app envia `STOP` cuando termina el audio o cuando necesita cortar el fondo para lanzar un evento.
 
+Desde la version con ACK, el sketch responde por serial para confirmar comandos recibidos:
+
+```text
+ACK|FX
+ACK|STOP
+ERR|BAD_COMMAND
+```
+
+Si la app no recibe `ACK`, sigue funcionando en modo compatible, pero es recomendable cargar el sketch actualizado para que los comandos de luces sean mas confiables.
+
 ## Integracion Alexa opcional
 
 Neo Twitch puede enviar eventos a una integracion de Alexa para que tus rutinas controlen luces, enchufes, anuncios u otros dispositivos que ya tengas configurados en la app de Alexa.

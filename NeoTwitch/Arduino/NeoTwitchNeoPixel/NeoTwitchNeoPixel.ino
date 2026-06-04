@@ -49,20 +49,33 @@ void loop() {
     LedTarget targets[MAX_STRIPS];
     int targetCount = parseTargets(line.substring(5), targets);
     clearTargets(targets, targetCount);
+    sendAck("STOP");
     return;
   }
 
   EffectCommand command;
   if (!parseCommand(line, command)) {
+    sendError("BAD_COMMAND");
     return;
   }
 
   prepareTargets(command);
+  sendAck("FX");
   bool stopped = runEffect(command);
 
   if (!stopped && command.durationMs > 0) {
     clearAll(command);
   }
+}
+
+void sendAck(const char *command) {
+  Serial.print("ACK|");
+  Serial.println(command);
+}
+
+void sendError(const char *code) {
+  Serial.print("ERR|");
+  Serial.println(code);
 }
 
 bool parseCommand(String line, EffectCommand &command) {
@@ -231,7 +244,15 @@ bool waitOrStop(unsigned long waitMs, EffectCommand command) {
       line.trim();
 
       if (line.startsWith("STOP|")) {
-        clearAll(command);
+        LedTarget targets[MAX_STRIPS];
+        int targetCount = parseTargets(line.substring(5), targets);
+        if (targetCount > 0) {
+          clearTargets(targets, targetCount);
+        } else {
+          clearAll(command);
+        }
+
+        sendAck("STOP");
         return true;
       }
     }

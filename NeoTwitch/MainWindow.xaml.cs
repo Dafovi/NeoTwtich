@@ -35,6 +35,7 @@ public partial class MainWindow : Window
     private readonly TwitchAuthService _authService = new();
     private readonly TwitchChatService _chatService = new();
     private readonly AlexaRelayService _alexaRelayService = new();
+    private readonly VersionCheckService _versionCheckService = new();
     private readonly TwitchEventSubClient _eventSubClient;
     private readonly ObservableCollection<ActivityLogEntry> _activity = [];
     private readonly SemaphoreSlim _effectGate = new(1, 1);
@@ -121,6 +122,7 @@ public partial class MainWindow : Window
             StripsList.ItemsSource = _config.LedStrips;
             PortComboBox.DisplayMemberPath = nameof(SerialPortInfo.DisplayName);
             PortComboBox.SelectedValuePath = nameof(SerialPortInfo.PortName);
+            VersionText.Text = $"V{VersionCheckService.CurrentVersionText}";
             RefreshPortList(choosePreferred: false);
         }
         finally
@@ -142,6 +144,8 @@ public partial class MainWindow : Window
         {
             AddLog($"No pude leer la configuracion anterior: {_settingsStore.LastLoadError}");
         }
+
+        _ = CheckForUpdatesAsync();
 
         if (_config.StartHidden)
         {
@@ -224,6 +228,42 @@ public partial class MainWindow : Window
             UseShellExecute = true
         });
         AddLog("Alexa Developer Console abierta.", ActivityLogKind.Alexa);
+    }
+
+    private async Task CheckForUpdatesAsync()
+    {
+        try
+        {
+            var result = await _versionCheckService.CheckLatestAsync(CancellationToken.None);
+            VersionText.Text = $"V{result.CurrentVersion}";
+
+            if (!result.IsUpdateAvailable)
+            {
+                AddLog($"Version: V{result.CurrentVersion} al dia.");
+                return;
+            }
+
+            AddLog($"Version: hay una nueva version V{result.LatestVersion}.", ActivityLogKind.Important);
+            var answer = WpfMessageBox.Show(
+                this,
+                $"Hay una nueva version de Neo Twitch.\n\nTu version: V{result.CurrentVersion}\nUltima version: V{result.LatestVersion}\n\nQuieres abrir la pagina de releases para descargarla?",
+                "Actualizacion disponible",
+                MessageBoxButton.YesNo,
+                MessageBoxImage.Information);
+
+            if (answer == MessageBoxResult.Yes)
+            {
+                Process.Start(new ProcessStartInfo
+                {
+                    FileName = result.ReleaseUrl,
+                    UseShellExecute = true
+                });
+            }
+        }
+        catch (Exception ex)
+        {
+            AddLog($"Version: no pude consultar actualizaciones ({ex.Message}).");
+        }
     }
 
     private async Task SignInToTwitchAsync()

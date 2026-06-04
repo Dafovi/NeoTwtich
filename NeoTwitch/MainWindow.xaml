@@ -635,6 +635,12 @@
                                        Margin="0,3,0,0" />
                         </StackPanel>
                     </Border>
+                    <TextBlock x:Name="VersionText"
+                               Text="V0.0.0"
+                               FontSize="11"
+                               Foreground="{DynamicResource ThemeSidebarMutedTextBrush}"
+                               HorizontalAlignment="Left"
+                               Margin="0,2,0,0" />
                 </StackPanel>
             </DockPanel>
         </Border>

@@ -6,7 +6,7 @@ App de Windows en .NET/WPF para escuchar eventos de Twitch y activar audio local
 
 La forma mas facil de usar la app es descargar el release mas reciente desde GitHub:
 
-[Descargar ultimo release](https://github.com/Dafovi/Luces-Twitch-y-Arduino/releases/latest)
+[Descargar ultimo release](https://github.com/Dafovi/NeoTwtich/releases/latest)
 
 También puedes descargar el sketch para Arduino desde aquí:
 
@@ -33,6 +33,7 @@ Despues de descargar el `.zip`:
 - Incluye volumen global para audios de alertas.
 - El cierre con `X` puede mandar la app a segundo plano o cerrar por completo, segun la configuracion.
 - Muestra una notificacion cuando queda en segundo plano.
+- Muestra la version instalada y avisa si GitHub tiene una release mas reciente.
 - Incluye modo claro y modo oscuro desde el panel `Configuracion`.
 - Usa un Arduino por puerto COM y permite configurar varias tiras NeoPixel en distintos pines.
 - Cuando una regla tiene audio y luces, la duracion del patron se ajusta a la duracion real del audio.
@@ -101,6 +102,16 @@ Si una alerta se descarta por estos limites, aparece un mensaje `Cola: descarte.
 Por defecto, la `X` de la ventana oculta la app para que siga escuchando el stream. Para cerrarla de verdad, usa el icono de la bandeja del sistema y elige `Salir`, o desactiva `Cerrar con X envia a segundo plano` en `Configuracion`.
 
 La app guarda la configuracion en cada cambio y tambien al ocultar/cerrar. Si no carga lo anterior, revisa la ruta que aparece en `Configuracion`.
+
+## Versiones y actualizaciones
+
+La version instalada aparece abajo a la izquierda como `V1.3.0`.
+
+Cada vez que se abre, Neo Twitch consulta la ultima release publicada en GitHub. Si hay una version mas reciente, muestra un aviso y puede abrir la pagina de descargas:
+
+[Releases de Neo Twitch](https://github.com/Dafovi/NeoTwtich/releases/latest)
+
+La app no se actualiza sola. Esto evita pedir permisos extra o instalar un launcher; el usuario decide si descarga el nuevo `.zip` desde GitHub.
 
 ## Conseguir el Client ID de Twitch
 

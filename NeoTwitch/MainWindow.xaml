@@ -1600,6 +1600,17 @@
                                            FontSize="11"
                                            TextWrapping="Wrap"
                                            Margin="0,8,0,0" />
+                                <TextBlock x:Name="BackupPathText"
+                                           Style="{StaticResource MutedText}"
+                                           FontSize="11"
+                                           TextWrapping="Wrap"
+                                           Margin="0,4,0,8" />
+                                <WrapPanel>
+                                    <Button Content="Exportar configuracion"
+                                            Click="ExportSettingsButton_Click" />
+                                    <Button Content="Importar configuracion"
+                                            Click="ImportSettingsButton_Click" />
+                                </WrapPanel>
                             </StackPanel>
                         </Border>
 

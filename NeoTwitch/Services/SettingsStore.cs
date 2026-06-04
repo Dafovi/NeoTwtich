@@ -10,11 +10,13 @@ public sealed class SettingsStore
 {
     private const string AppFolderName = "NeoTwitch";
     private const string LegacyAppFolderName = "LucesCanjeTwitch";
+    private const int MaxTimestampedBackups = 20;
 
     private readonly JsonSerializerOptions _jsonOptions = new(JsonSerializerDefaults.Web)
     {
         WriteIndented = true
     };
+    private bool _createdSessionBackup;
 
     public SettingsStore()
     {
@@ -22,6 +24,8 @@ public sealed class SettingsStore
     }
 
     public string SettingsPath { get; } = BuildSettingsPath(AppFolderName);
+
+    public string BackupDirectory { get; } = BuildBackupDirectory(AppFolderName);
 
     private string LegacySettingsPath { get; } = BuildSettingsPath(LegacyAppFolderName);
 
@@ -58,17 +62,35 @@ public sealed class SettingsStore
 
         var json = JsonSerializer.Serialize(config, _jsonOptions);
         var tempPath = Path.Combine(directory, "settings.tmp");
-        var backupPath = Path.Combine(directory, "settings.backup.json");
 
         File.WriteAllText(tempPath, json);
 
-        if (File.Exists(SettingsPath))
-        {
-            File.Copy(SettingsPath, backupPath, overwrite: true);
-        }
+        BackupCurrentSettings(directory);
 
         File.Copy(tempPath, SettingsPath, overwrite: true);
         File.Delete(tempPath);
+    }
+
+    public void Export(AppConfig config, string destinationPath)
+    {
+        var directory = Path.GetDirectoryName(destinationPath);
+        if (!string.IsNullOrWhiteSpace(directory))
+        {
+            Directory.CreateDirectory(directory);
+        }
+
+        var json = JsonSerializer.Serialize(config, _jsonOptions);
+        File.WriteAllText(destinationPath, json);
+    }
+
+    public AppConfig Import(string sourcePath)
+    {
+        var json = File.ReadAllText(sourcePath);
+        var config = JsonSerializer.Deserialize<AppConfig>(json, _jsonOptions)
+            ?? throw new InvalidOperationException("El archivo no contiene una configuracion valida.");
+        var normalized = NormalizeConfig(config);
+        Save(normalized);
+        return normalized;
     }
 
     private static string BuildSettingsPath(string appFolderName)
@@ -77,6 +99,58 @@ public sealed class SettingsStore
             Environment.GetFolderPath(Environment.SpecialFolder.ApplicationData),
             appFolderName,
             "settings.json");
+    }
+
+    private static string BuildBackupDirectory(string appFolderName)
+    {
+        return Path.Combine(
+            Environment.GetFolderPath(Environment.SpecialFolder.ApplicationData),
+            appFolderName,
+            "backups");
+    }
+
+    private void BackupCurrentSettings(string directory)
+    {
+        if (!File.Exists(SettingsPath))
+        {
+            return;
+        }
+
+        Directory.CreateDirectory(BackupDirectory);
+
+        var latestBackupPath = Path.Combine(directory, "settings.backup.json");
+        File.Copy(SettingsPath, latestBackupPath, overwrite: true);
+
+        if (_createdSessionBackup)
+        {
+            return;
+        }
+
+        var timestamp = DateTime.Now.ToString("yyyyMMdd-HHmmss");
+        var timestampedBackupPath = Path.Combine(BackupDirectory, $"settings-{timestamp}.json");
+        File.Copy(SettingsPath, timestampedBackupPath, overwrite: true);
+        _createdSessionBackup = true;
+        PruneTimestampedBackups();
+    }
+
+    private void PruneTimestampedBackups()
+    {
+        var backups = Directory.GetFiles(BackupDirectory, "settings-*.json")
+            .OrderByDescending(File.GetCreationTimeUtc)
+            .Skip(MaxTimestampedBackups)
+            .ToArray();
+
+        foreach (var backup in backups)
+        {
+            try
+            {
+                File.Delete(backup);
+            }
+            catch (Exception ex)
+            {
+                CrashReporter.Log(ex, $"No se pudo borrar backup antiguo: {backup}");
+            }
+        }
     }
 
     private string? ResolveSettingsPathForLoad()

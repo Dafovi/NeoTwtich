@@ -29,6 +29,8 @@ Despues de descargar el `.zip`:
 - Las reglas nuevas vienen activas, pero con luces, audio y chat desactivados para configurar solo lo necesario.
 - La interfaz oculta opciones que no aplican al evento, patron o fondo seleccionado.
 - Guarda la configuracion en `%AppData%\NeoTwitch\settings.json`.
+- Permite exportar e importar la configuracion en un archivo `.json`.
+- Crea backups automaticos antes de sobrescribir la configuracion.
 - Permite configurar cola de alertas para evitar que muchas alertas se acumulen sin control.
 - Incluye volumen global para audios de alertas.
 - El cierre con `X` puede mandar la app a segundo plano o cerrar por completo, segun la configuracion.
@@ -85,6 +87,22 @@ La seccion `Configuracion` concentra opciones que no dependen de Twitch, Arduino
 - `Cerrar con X envia a segundo plano`: si esta activo, la `X` oculta la ventana y la app sigue escuchando eventos en la bandeja del sistema. Si esta apagado, la `X` cierra la app por completo.
 - `Modo oscuro`: cambia el tema visual.
 - `Volumen de alertas`: controla el volumen global de los audios reproducidos por reglas.
+- `Exportar configuracion`: guarda una copia manual del `settings.json` para moverla a otro PC o conservar un respaldo.
+- `Importar configuracion`: reemplaza la configuracion actual con un archivo exportado.
+
+El archivo exportado puede incluir tokens, URLs y secretos privados. Guardalo en un lugar seguro y no lo publiques.
+
+Neo Twitch tambien crea backups automaticos en:
+
+```text
+%AppData%\NeoTwitch\backups
+```
+
+Ademas mantiene un backup rapido en:
+
+```text
+%AppData%\NeoTwitch\settings.backup.json
+```
 
 ### Cola de alertas
 
@@ -105,7 +123,7 @@ La app guarda la configuracion en cada cambio y tambien al ocultar/cerrar. Si no
 
 ## Versiones y actualizaciones
 
-La version instalada aparece abajo a la izquierda como `V1.3.0`.
+La version instalada aparece abajo a la izquierda como `V1.3.1`.
 
 Cada vez que se abre, Neo Twitch consulta la ultima release publicada en GitHub. Si hay una version mas reciente, muestra un aviso y puede abrir la pagina de descargas:
 

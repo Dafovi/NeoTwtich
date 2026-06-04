@@ -17,6 +17,7 @@ using DrawingIcon = System.Drawing.Icon;
 using WpfClipboard = System.Windows.Clipboard;
 using WpfMessageBox = System.Windows.MessageBox;
 using WpfOpenFileDialog = Microsoft.Win32.OpenFileDialog;
+using WpfSaveFileDialog = Microsoft.Win32.SaveFileDialog;
 
 namespace NeoTwitch;
 
@@ -680,6 +681,101 @@ public partial class MainWindow : Window
         SaveConfig();
         await ApplyBackgroundStateAsync();
         AddLog("Configuracion guardada.");
+    }
+
+    private void ExportSettingsButton_Click(object sender, RoutedEventArgs e)
+    {
+        try
+        {
+            SaveGlobalSettingsFromFields();
+            SaveCurrentRuleFromFields();
+            SaveCurrentStripFromFields();
+            SaveBackgroundFromFields();
+            SaveConfig();
+
+            var dialog = new WpfSaveFileDialog
+            {
+                Title = "Exportar configuracion",
+                FileName = $"NeoTwitch-config-{DateTime.Now:yyyyMMdd-HHmmss}.json",
+                Filter = "Configuracion Neo Twitch (*.json)|*.json|Todos los archivos (*.*)|*.*",
+                AddExtension = true,
+                DefaultExt = ".json",
+                OverwritePrompt = true
+            };
+
+            if (dialog.ShowDialog(this) != true)
+            {
+                return;
+            }
+
+            _settingsStore.Export(_config, dialog.FileName);
+            AddLog($"Configuracion exportada: {dialog.FileName}");
+            WpfMessageBox.Show(
+                this,
+                "Configuracion exportada correctamente.\n\nEste archivo puede incluir tokens, URLs o secretos privados. Guardalo en un lugar seguro.",
+                "Configuracion",
+                MessageBoxButton.OK,
+                MessageBoxImage.Information);
+        }
+        catch (Exception ex)
+        {
+            CrashReporter.Log(ex, "No se pudo exportar la configuracion.");
+            AddLog($"Configuracion: no pude exportar ({ex.Message}).", ActivityLogKind.Important);
+            WpfMessageBox.Show(this, ex.Message, "Exportar configuracion", MessageBoxButton.OK, MessageBoxImage.Warning);
+        }
+    }
+
+    private async void ImportSettingsButton_Click(object sender, RoutedEventArgs e)
+    {
+        var dialog = new WpfOpenFileDialog
+        {
+            Title = "Importar configuracion",
+            Filter = "Configuracion Neo Twitch (*.json)|*.json|Todos los archivos (*.*)|*.*",
+            CheckFileExists = true
+        };
+
+        if (dialog.ShowDialog(this) != true)
+        {
+            return;
+        }
+
+        var confirm = WpfMessageBox.Show(
+            this,
+            "Importar esta configuracion reemplazara la configuracion actual. Se creara un backup automatico antes de guardar.\n\nQuieres continuar?",
+            "Importar configuracion",
+            MessageBoxButton.YesNo,
+            MessageBoxImage.Question);
+
+        if (confirm != MessageBoxResult.Yes)
+        {
+            return;
+        }
+
+        try
+        {
+            if (_eventSubClient.IsRunning)
+            {
+                await _eventSubClient.StopAsync();
+                _eventSubscriptionSignature = "";
+                _streamStatus = null;
+            }
+
+            _config = _settingsStore.Import(dialog.FileName);
+            LoadConfigIntoUi();
+            AddLog($"Configuracion importada: {dialog.FileName}", ActivityLogKind.Important);
+            WpfMessageBox.Show(
+                this,
+                "Configuracion importada correctamente. Revisa Twitch, Arduino y Alexa antes de salir en vivo.",
+                "Importar configuracion",
+                MessageBoxButton.OK,
+                MessageBoxImage.Information);
+        }
+        catch (Exception ex)
+        {
+            CrashReporter.Log(ex, "No se pudo importar la configuracion.");
+            AddLog($"Configuracion: no pude importar ({ex.Message}).", ActivityLogKind.Important);
+            WpfMessageBox.Show(this, ex.Message, "Importar configuracion", MessageBoxButton.OK, MessageBoxImage.Warning);
+        }
     }
 
     private void AddRuleButton_Click(object sender, RoutedEventArgs e)
@@ -1504,6 +1600,7 @@ public partial class MainWindow : Window
             RulesList.ItemsSource = _config.Rules;
             StripsList.ItemsSource = _config.LedStrips;
             SettingsPathText.Text = _settingsStore.SettingsPath;
+            BackupPathText.Text = $"Backups automaticos: {_settingsStore.BackupDirectory}";
 
             if (_config.Rules.Count > 0)
             {

@@ -17,6 +17,12 @@ public sealed class AppConfig
     public bool AutoConnectArduino { get; set; } = true;
     public bool StartHidden { get; set; }
     public bool DarkMode { get; set; }
+    public bool CloseToTray { get; set; } = true;
+    public int AlertVolumePercent { get; set; } = 100;
+    public int MaxQueuedSameRuleAlerts { get; set; } = 1;
+    public int SameRuleQueueCooldownMs { get; set; }
+    public int MaxQueuedDifferentRuleAlerts { get; set; } = 3;
+    public int DifferentRuleQueueCooldownMs { get; set; }
     public bool BackgroundEnabled { get; set; }
     public bool BackgroundAlexaEnabled { get; set; }
     public bool BackgroundAlexaTurnOffAfterEvent { get; set; }

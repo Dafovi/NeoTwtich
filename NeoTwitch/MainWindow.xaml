@@ -629,11 +629,12 @@
                                        Margin="0,3,0,0" />
                         </StackPanel>
                     </Border>
-                    <Button Content="Salir por completo"
-                            Style="{StaticResource DangerButton}"
-                            HorizontalContentAlignment="Center"
-                            Margin="0,2,0,0"
-                            Click="ExitButton_Click" />
+                    <Button x:Name="NavPreferencesButton"
+                            Content="Configuracion"
+                            Tag="4"
+                            Style="{StaticResource NavButton}"
+                            ToolTip="Preferencias generales de la app"
+                            Click="NavButton_Click" />
                 </StackPanel>
             </DockPanel>
         </Border>
@@ -869,7 +870,7 @@
                                     <ColumnDefinition Width="220" />
                                 </Grid.ColumnDefinitions>
                                 <StackPanel>
-                                    <TextBlock Text="Inicio y apariencia"
+                                    <TextBlock Text="Conexion automatica"
                                                FontSize="18"
                                                Style="{StaticResource TitleText}"
                                                FontWeight="SemiBold"
@@ -883,18 +884,9 @@
                                                   Content="Conectar Arduino al abrir"
                                                   Checked="GlobalSettingsChanged"
                                                   Unchecked="GlobalSettingsChanged" />
-                                        <CheckBox x:Name="StartHiddenCheck"
-                                                  Content="Abrir minimizada"
-                                                  Checked="GlobalSettingsChanged"
-                                                  Unchecked="GlobalSettingsChanged" />
-                                        <CheckBox x:Name="DarkModeCheck"
-                                                  Content="Modo oscuro"
-                                                  Checked="ThemeModeChanged"
-                                                  Unchecked="ThemeModeChanged" />
                                     </WrapPanel>
-                                    <TextBlock x:Name="SettingsPathText"
+                                    <TextBlock Text="Estas opciones intentan conectar los servicios apenas abre Neo Twitch."
                                                Style="{StaticResource MutedText}"
-                                               FontSize="11"
                                                TextWrapping="Wrap"
                                                Margin="0,8,0,0" />
                                 </StackPanel>
@@ -1581,6 +1573,147 @@
                         </DockPanel>
                     </Border>
                 </Grid>
+            </TabItem>
+
+            <TabItem Header="Configuracion">
+                <ScrollViewer VerticalScrollBarVisibility="Auto"
+                              HorizontalScrollBarVisibility="Auto">
+                    <Grid Margin="24" MinWidth="780">
+                        <Grid.RowDefinitions>
+                            <RowDefinition Height="Auto" />
+                            <RowDefinition Height="Auto" />
+                            <RowDefinition Height="Auto" />
+                        </Grid.RowDefinitions>
+                        <Grid.ColumnDefinitions>
+                            <ColumnDefinition Width="*" />
+                            <ColumnDefinition Width="18" />
+                            <ColumnDefinition Width="*" />
+                        </Grid.ColumnDefinitions>
+
+                        <StackPanel Grid.ColumnSpan="3" Margin="0,0,0,18">
+                            <TextBlock Text="Configuracion"
+                                       FontSize="28"
+                                       Style="{StaticResource TitleText}"
+                                       FontWeight="SemiBold" />
+                            <TextBlock Text="Ajusta el comportamiento general, audio y cola de alertas."
+                                       Style="{StaticResource MutedText}"
+                                       Margin="0,4,0,0" />
+                        </StackPanel>
+
+                        <Border Grid.Row="1"
+                                Grid.Column="0"
+                                Style="{StaticResource Card}">
+                            <StackPanel>
+                                <TextBlock Text="Ventana y apariencia"
+                                           FontSize="18"
+                                           Style="{StaticResource TitleText}"
+                                           FontWeight="SemiBold"
+                                           Margin="0,0,0,10" />
+                                <CheckBox x:Name="StartHiddenCheck"
+                                          Content="Abrir minimizada"
+                                          Checked="GlobalSettingsChanged"
+                                          Unchecked="GlobalSettingsChanged" />
+                                <CheckBox x:Name="CloseToTrayCheck"
+                                          Content="Cerrar con X envia a segundo plano"
+                                          Checked="GlobalSettingsChanged"
+                                          Unchecked="GlobalSettingsChanged" />
+                                <CheckBox x:Name="DarkModeCheck"
+                                          Content="Modo oscuro"
+                                          Checked="ThemeModeChanged"
+                                          Unchecked="ThemeModeChanged" />
+                                <TextBlock x:Name="SettingsPathText"
+                                           Style="{StaticResource MutedText}"
+                                           FontSize="11"
+                                           TextWrapping="Wrap"
+                                           Margin="0,8,0,0" />
+                            </StackPanel>
+                        </Border>
+
+                        <Border Grid.Row="1"
+                                Grid.Column="2"
+                                Style="{StaticResource Card}">
+                            <StackPanel>
+                                <TextBlock Text="Audio"
+                                           FontSize="18"
+                                           Style="{StaticResource TitleText}"
+                                           FontWeight="SemiBold"
+                                           Margin="0,0,0,10" />
+                                <Grid>
+                                    <Grid.ColumnDefinitions>
+                                        <ColumnDefinition Width="*" />
+                                        <ColumnDefinition Width="70" />
+                                    </Grid.ColumnDefinitions>
+                                    <TextBlock Text="Volumen de alertas" Style="{StaticResource MutedText}" />
+                                    <TextBlock x:Name="AlertVolumeValueText"
+                                               Grid.Column="1"
+                                               HorizontalAlignment="Right"
+                                               Style="{StaticResource MutedText}" />
+                                </Grid>
+                                <Slider x:Name="AlertVolumeSlider"
+                                        Minimum="0"
+                                        Maximum="100"
+                                        TickFrequency="1"
+                                        ValueChanged="GlobalSettingsChanged" />
+                                <TextBlock Text="Este volumen se aplica a todos los audios reproducidos por las reglas."
+                                           Style="{StaticResource MutedText}"
+                                           TextWrapping="Wrap" />
+                            </StackPanel>
+                        </Border>
+
+                        <Border Grid.Row="2"
+                                Grid.ColumnSpan="3"
+                                Style="{StaticResource Card}"
+                                Margin="0,18,0,0">
+                            <StackPanel>
+                                <TextBlock Text="Cola de alertas"
+                                           FontSize="18"
+                                           Style="{StaticResource TitleText}"
+                                           FontWeight="SemiBold"
+                                           Margin="0,0,0,10" />
+                                <TextBlock Text="Controla cuantas alertas se acumulan cuando Twitch manda muchas seguidas."
+                                           Style="{StaticResource MutedText}"
+                                           TextWrapping="Wrap"
+                                           Margin="0,0,0,12" />
+
+                                <Grid>
+                                    <Grid.ColumnDefinitions>
+                                        <ColumnDefinition Width="*" />
+                                        <ColumnDefinition Width="16" />
+                                        <ColumnDefinition Width="*" />
+                                    </Grid.ColumnDefinitions>
+
+                                    <StackPanel>
+                                        <TextBlock Text="Repetidas maximas en cola"
+                                                   Style="{StaticResource MutedText}" />
+                                        <TextBox x:Name="MaxQueuedSameRuleAlertsBox"
+                                                 TextChanged="GlobalSettingsChanged"
+                                                 ToolTip="Cuantas alertas de la misma regla pueden esperar mientras otra se reproduce. 1 es el valor recomendado." />
+
+                                        <TextBlock Text="Tiempo minimo para repetir"
+                                                   Style="{StaticResource MutedText}" />
+                                        <TextBox x:Name="SameRuleQueueCooldownBox"
+                                                 TextChanged="GlobalSettingsChanged"
+                                                 ToolTip="Milisegundos desde que empezo una regla antes de permitir otra igual. Usa 0 para desactivar este filtro." />
+                                    </StackPanel>
+
+                                    <StackPanel Grid.Column="2">
+                                        <TextBlock Text="Distintas maximas en cola"
+                                                   Style="{StaticResource MutedText}" />
+                                        <TextBox x:Name="MaxQueuedDifferentRuleAlertsBox"
+                                                 TextChanged="GlobalSettingsChanged"
+                                                 ToolTip="Cuantas alertas de reglas distintas pueden esperar mientras otra se reproduce." />
+
+                                        <TextBlock Text="Tiempo minimo para distintas"
+                                                   Style="{StaticResource MutedText}" />
+                                        <TextBox x:Name="DifferentRuleQueueCooldownBox"
+                                                 TextChanged="GlobalSettingsChanged"
+                                                 ToolTip="Milisegundos desde que empezo una regla antes de permitir otra distinta. Usa 0 para desactivar este filtro." />
+                                    </StackPanel>
+                                </Grid>
+                            </StackPanel>
+                        </Border>
+                    </Grid>
+                </ScrollViewer>
             </TabItem>
         </TabControl>
 

@@ -27,6 +27,7 @@ public partial class MainWindow : Window
     private const int DwmWindowAttributeTextColor = 36;
     private const int AppCaptionColor = 0x00F65286;
     private const int AppCaptionTextColor = 0x00FFFFFF;
+    private const int LightStopSettleMs = 120;
 
     private readonly SettingsStore _settingsStore = new();
     private readonly AudioPlayerService _audioPlayer = new();
@@ -37,6 +38,9 @@ public partial class MainWindow : Window
     private readonly TwitchEventSubClient _eventSubClient;
     private readonly ObservableCollection<ActivityLogEntry> _activity = [];
     private readonly SemaphoreSlim _effectGate = new(1, 1);
+    private readonly object _alertQueueSync = new();
+    private readonly List<QueuedAlertSlot> _pendingAlertSlots = [];
+    private readonly Dictionary<string, DateTimeOffset> _lastRuleStartTimes = new(StringComparer.OrdinalIgnoreCase);
     private IReadOnlyList<SerialPortInfo> _availablePorts = [];
     private readonly UiOption<TwitchEventKind>[] _eventOptions =
     [
@@ -74,6 +78,10 @@ public partial class MainWindow : Window
     private CancellationTokenSource? _twitchSubscriptionRefreshDebounce;
     private CancellationTokenSource? _currentEffectCts;
     private string _eventSubscriptionSignature = "";
+    private string _runningRuleId = "";
+    private string _lastStartedRuleId = "";
+    private DateTimeOffset _lastAlertStartAt = DateTimeOffset.MinValue;
+    private bool _hasShownTrayNotice;
     private AudioPlayback? _currentPlayback;
     private TwitchStreamStatus? _streamStatus;
     private DrawingIcon? _trayIcon;
@@ -462,7 +470,7 @@ public partial class MainWindow : Window
         if (_lightController.HasOpenPort)
         {
             await StopLightsAsync(LightCommand.ResolveTargets(_config, ""));
-            await Task.Delay(40);
+            await Task.Delay(LightStopSettleMs);
 
             var command = LightCommand.FromBackground(_config);
             await _lightController.SendAsync(command, AddLog, CancellationToken.None);
@@ -477,19 +485,12 @@ public partial class MainWindow : Window
             return;
         }
 
-        await RestoreBackgroundStateAsync();
+        await RestoreBackgroundStateAsync(retryArduino: false);
     }
 
-    private async Task RestoreBackgroundStateAsync()
+    private async Task RestoreBackgroundStateAsync(bool retryArduino = true)
     {
-        if (_config.BackgroundEnabled)
-        {
-            await ApplyArduinoBackgroundAsync();
-        }
-        else
-        {
-            await StopLightsAsync(LightCommand.ResolveTargets(_config, ""));
-        }
+        await RestoreArduinoBackgroundStateWithRetriesAsync(retryArduino);
 
         if (_config.BackgroundAlexaTurnOffAfterEvent)
         {
@@ -498,6 +499,28 @@ public partial class MainWindow : Window
         else if (_config.BackgroundAlexaEnabled)
         {
             await SendBackgroundAlexaEventAsync(_config.BackgroundAlexaOnEventName, "Fondo Alexa encendido");
+        }
+    }
+
+    private async Task RestoreArduinoBackgroundStateWithRetriesAsync(bool retryArduino)
+    {
+        var attempts = _config.BackgroundEnabled && retryArduino ? 2 : 1;
+
+        for (var attempt = 1; attempt <= attempts; attempt++)
+        {
+            if (_config.BackgroundEnabled)
+            {
+                await ApplyArduinoBackgroundAsync();
+            }
+            else
+            {
+                await StopLightsAsync(LightCommand.ResolveTargets(_config, ""));
+            }
+
+            if (attempt < attempts)
+            {
+                await Task.Delay(180);
+            }
         }
     }
 
@@ -1083,7 +1106,118 @@ public partial class MainWindow : Window
 
         foreach (var rule in matchingRules)
         {
-            await RunRuleAsync(rule, twitchEvent);
+            await QueueAndRunRuleAsync(rule, twitchEvent);
+        }
+    }
+
+    private async Task QueueAndRunRuleAsync(EventRule rule, TwitchEvent twitchEvent)
+    {
+        var slot = TryReserveAlertSlot(rule, twitchEvent, out var reason);
+        if (slot is null)
+        {
+            AddLog($"Cola: descarte '{rule.Name}'. {reason}", ActivityLogKind.Important);
+            return;
+        }
+
+        await RunRuleAsync(rule, twitchEvent, queueSlot: slot);
+    }
+
+    private QueuedAlertSlot? TryReserveAlertSlot(EventRule rule, TwitchEvent twitchEvent, out string reason)
+    {
+        lock (_alertQueueSync)
+        {
+            var now = DateTimeOffset.UtcNow;
+            var busy = _effectGate.CurrentCount == 0 || _pendingAlertSlots.Count > 0;
+            var samePending = _pendingAlertSlots.Count(slot => string.Equals(slot.RuleId, rule.Id, StringComparison.OrdinalIgnoreCase));
+            var sameLimit = Math.Clamp(_config.MaxQueuedSameRuleAlerts, 0, 100);
+            var differentLimit = Math.Clamp(_config.MaxQueuedDifferentRuleAlerts, 0, 100);
+
+            if (busy)
+            {
+                if (samePending >= sameLimit)
+                {
+                    reason = sameLimit == 0
+                        ? "No se permite acumular alertas repetidas."
+                        : $"Ya hay {samePending} alerta(s) repetida(s) esperando.";
+                    return null;
+                }
+
+                var isDifferentFromRunning = !string.IsNullOrWhiteSpace(_runningRuleId)
+                    && !string.Equals(_runningRuleId, rule.Id, StringComparison.OrdinalIgnoreCase);
+                var isDifferentWhileManualIsRunning = string.IsNullOrWhiteSpace(_runningRuleId)
+                    && _effectGate.CurrentCount == 0;
+                var isDifferentWhileQueueIsWaiting = string.IsNullOrWhiteSpace(_runningRuleId)
+                    && _pendingAlertSlots.Count > 0;
+                var differentPending = _pendingAlertSlots.Count(slot => !string.Equals(slot.RuleId, rule.Id, StringComparison.OrdinalIgnoreCase));
+
+                if ((isDifferentFromRunning || isDifferentWhileManualIsRunning || isDifferentWhileQueueIsWaiting) && differentPending >= differentLimit)
+                {
+                    reason = differentLimit == 0
+                        ? "No se permite acumular alertas distintas mientras otra esta activa."
+                        : $"Ya hay {differentPending} alerta(s) distinta(s) esperando.";
+                    return null;
+                }
+            }
+
+            var sameCooldownMs = Math.Clamp(_config.SameRuleQueueCooldownMs, 0, 600000);
+            if (sameCooldownMs > 0
+                && _lastRuleStartTimes.TryGetValue(rule.Id, out var lastSameStart)
+                && now - lastSameStart < TimeSpan.FromMilliseconds(sameCooldownMs))
+            {
+                var remainingMs = sameCooldownMs - (int)(now - lastSameStart).TotalMilliseconds;
+                reason = $"Repetida en enfriamiento por {Math.Max(0, remainingMs)} ms.";
+                return null;
+            }
+
+            var differentCooldownMs = Math.Clamp(_config.DifferentRuleQueueCooldownMs, 0, 600000);
+            if (differentCooldownMs > 0
+                && !string.IsNullOrWhiteSpace(_lastStartedRuleId)
+                && !string.Equals(_lastStartedRuleId, rule.Id, StringComparison.OrdinalIgnoreCase)
+                && now - _lastAlertStartAt < TimeSpan.FromMilliseconds(differentCooldownMs))
+            {
+                var remainingMs = differentCooldownMs - (int)(now - _lastAlertStartAt).TotalMilliseconds;
+                reason = $"Distinta en enfriamiento por {Math.Max(0, remainingMs)} ms.";
+                return null;
+            }
+
+            var slot = new QueuedAlertSlot(Guid.NewGuid().ToString("N"), rule.Id, rule.Name, twitchEvent.Kind);
+            _pendingAlertSlots.Add(slot);
+            reason = "";
+            return slot;
+        }
+    }
+
+    private void MarkQueuedAlertStarted(QueuedAlertSlot? slot)
+    {
+        if (slot is null)
+        {
+            return;
+        }
+
+        lock (_alertQueueSync)
+        {
+            _pendingAlertSlots.RemoveAll(candidate => string.Equals(candidate.Id, slot.Id, StringComparison.OrdinalIgnoreCase));
+            var now = DateTimeOffset.UtcNow;
+            _runningRuleId = slot.RuleId;
+            _lastStartedRuleId = slot.RuleId;
+            _lastAlertStartAt = now;
+            _lastRuleStartTimes[slot.RuleId] = now;
+        }
+    }
+
+    private void MarkQueuedAlertFinished(QueuedAlertSlot? slot)
+    {
+        if (slot is null)
+        {
+            return;
+        }
+
+        lock (_alertQueueSync)
+        {
+            if (string.Equals(_runningRuleId, slot.RuleId, StringComparison.OrdinalIgnoreCase))
+            {
+                _runningRuleId = "";
+            }
         }
     }
 
@@ -1150,9 +1284,15 @@ public partial class MainWindow : Window
         }
     }
 
-    private async Task RunRuleAsync(EventRule rule, TwitchEvent twitchEvent, bool sendChatMessage = true, bool sendAlexaEvent = true)
+    private async Task RunRuleAsync(
+        EventRule rule,
+        TwitchEvent twitchEvent,
+        bool sendChatMessage = true,
+        bool sendAlexaEvent = true,
+        QueuedAlertSlot? queueSlot = null)
     {
         await _effectGate.WaitAsync();
+        MarkQueuedAlertStarted(queueSlot);
         var effectCts = new CancellationTokenSource();
         _currentEffectCts = effectCts;
         var wasCancelled = false;
@@ -1173,7 +1313,7 @@ public partial class MainWindow : Window
             AudioPlayback? playback = null;
             if (rule.PlayAudio)
             {
-                playback = await _audioPlayer.PrepareAsync(rule.AudioPath, AddLog);
+                playback = await _audioPlayer.PrepareAsync(rule.AudioPath, _config.AlertVolumePercent, AddLog);
                 _currentPlayback = playback;
             }
 
@@ -1198,7 +1338,7 @@ public partial class MainWindow : Window
             if (rule.UseLights)
             {
                 await StopLightsAsync(LightCommand.ResolveTargets(_config, ""));
-                await Task.Delay(40);
+                await Task.Delay(LightStopSettleMs);
             }
 
             var audioDuration = playback?.Duration;
@@ -1266,6 +1406,7 @@ public partial class MainWindow : Window
             }
 
             effectCts.Dispose();
+            MarkQueuedAlertFinished(queueSlot);
             _effectGate.Release();
         }
     }
@@ -1298,6 +1439,12 @@ public partial class MainWindow : Window
             AutoArduinoCheck.IsChecked = _config.AutoConnectArduino;
             StartHiddenCheck.IsChecked = _config.StartHidden;
             DarkModeCheck.IsChecked = _config.DarkMode;
+            CloseToTrayCheck.IsChecked = _config.CloseToTray;
+            AlertVolumeSlider.Value = _config.AlertVolumePercent;
+            MaxQueuedSameRuleAlertsBox.Text = _config.MaxQueuedSameRuleAlerts.ToString();
+            SameRuleQueueCooldownBox.Text = _config.SameRuleQueueCooldownMs.ToString();
+            MaxQueuedDifferentRuleAlertsBox.Text = _config.MaxQueuedDifferentRuleAlerts.ToString();
+            DifferentRuleQueueCooldownBox.Text = _config.DifferentRuleQueueCooldownMs.ToString();
             AlexaEnabledCheck.IsChecked = _config.Alexa.Enabled;
             AlexaRelayUrlBox.Text = _config.Alexa.RelayUrl;
             AlexaAuthTokenBox.Text = _config.Alexa.AuthToken;
@@ -1425,6 +1572,12 @@ public partial class MainWindow : Window
         _config.AutoConnectArduino = AutoArduinoCheck.IsChecked == true;
         _config.StartHidden = StartHiddenCheck.IsChecked == true;
         _config.DarkMode = DarkModeCheck.IsChecked == true;
+        _config.CloseToTray = CloseToTrayCheck.IsChecked == true;
+        _config.AlertVolumePercent = (int)Math.Round(AlertVolumeSlider.Value);
+        _config.MaxQueuedSameRuleAlerts = ParseInt(MaxQueuedSameRuleAlertsBox.Text, 1, 0, 100);
+        _config.SameRuleQueueCooldownMs = ParseInt(SameRuleQueueCooldownBox.Text, 0, 0, 600000);
+        _config.MaxQueuedDifferentRuleAlerts = ParseInt(MaxQueuedDifferentRuleAlertsBox.Text, 3, 0, 100);
+        _config.DifferentRuleQueueCooldownMs = ParseInt(DifferentRuleQueueCooldownBox.Text, 0, 0, 600000);
         _config.Alexa.Enabled = AlexaEnabledCheck.IsChecked == true;
         _config.Alexa.RelayUrl = AlexaRelayUrlBox.Text.Trim();
         _config.Alexa.AuthToken = AlexaAuthTokenBox.Text.Trim();
@@ -1800,6 +1953,7 @@ public partial class MainWindow : Window
         BackgroundBrightnessValueText.Text = ((int)Math.Round(BackgroundBrightnessSlider.Value)).ToString();
         BackgroundCycleValueText.Text = $"{(int)Math.Round(BackgroundCycleSlider.Value)} ms";
         BackgroundStepValueText.Text = $"{(int)Math.Round(BackgroundStepSlider.Value)} ms";
+        AlertVolumeValueText.Text = $"{(int)Math.Round(AlertVolumeSlider.Value)}%";
     }
 
     private void UpdateColorButtons()
@@ -2046,7 +2200,7 @@ public partial class MainWindow : Window
             ? ThemePalette.Dark
             : ThemePalette.Light;
 
-        foreach (var button in new[] { NavSettingsButton, NavRulesButton, NavStripsButton, NavActivityButton })
+        foreach (var button in new[] { NavSettingsButton, NavRulesButton, NavStripsButton, NavActivityButton, NavPreferencesButton })
         {
             ApplyNavigationButtonTheme(button, palette);
         }
@@ -2207,22 +2361,50 @@ public partial class MainWindow : Window
     {
         if (!_isExiting)
         {
-            e.Cancel = true;
             SaveGlobalSettingsFromFields();
             SaveCurrentRuleFromFields();
             SaveCurrentStripFromFields();
             SaveBackgroundFromFields();
             SaveConfig();
-            _twitchSubscriptionRefreshDebounce?.Cancel();
-            Hide();
-            AddLog("Ventana oculta en segundo plano.");
-            return;
+
+            if (_config.CloseToTray)
+            {
+                e.Cancel = true;
+                _twitchSubscriptionRefreshDebounce?.Cancel();
+                Hide();
+                ShowTrayBackgroundNotice();
+                AddLog("Ventana oculta en segundo plano.");
+                return;
+            }
+
+            _isExiting = true;
         }
 
         await _eventSubClient.StopAsync();
         _chatService.Dispose();
         _lightController.Dispose();
         DisposeTrayIcon();
+    }
+
+    private void ShowTrayBackgroundNotice()
+    {
+        if (_notifyIcon is null)
+        {
+            return;
+        }
+
+        try
+        {
+            _notifyIcon.BalloonTipTitle = "Neo Twitch sigue activo";
+            _notifyIcon.BalloonTipText = "La app quedo en segundo plano. Abrela desde el icono de la bandeja cuando la necesites.";
+            _notifyIcon.BalloonTipIcon = Forms.ToolTipIcon.Info;
+            _notifyIcon.ShowBalloonTip(_hasShownTrayNotice ? 2500 : 4000);
+            _hasShownTrayNotice = true;
+        }
+        catch
+        {
+            // Windows can suppress tray notifications; the app still remains available in the tray.
+        }
     }
 
     private void DisposeTrayIcon()
@@ -2364,6 +2546,8 @@ public partial class MainWindow : Window
         Arduino,
         Alexa
     }
+
+    private sealed record QueuedAlertSlot(string Id, string RuleId, string RuleName, TwitchEventKind EventKind);
 
     private sealed class ActivityLogEntry
     {

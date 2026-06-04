@@ -113,6 +113,11 @@ public sealed class SettingsStore
         config.BackgroundAlexaOffEventName = NormalizeBackgroundAlexaEventName(config.BackgroundAlexaOffEventName, "luz_apagada");
         config.SerialPort ??= "";
         config.BaudRate = Math.Clamp(config.BaudRate, 300, 921600);
+        config.AlertVolumePercent = Math.Clamp(config.AlertVolumePercent, 0, 100);
+        config.MaxQueuedSameRuleAlerts = Math.Clamp(config.MaxQueuedSameRuleAlerts, 0, 100);
+        config.SameRuleQueueCooldownMs = Math.Clamp(config.SameRuleQueueCooldownMs, 0, 600000);
+        config.MaxQueuedDifferentRuleAlerts = Math.Clamp(config.MaxQueuedDifferentRuleAlerts, 0, 100);
+        config.DifferentRuleQueueCooldownMs = Math.Clamp(config.DifferentRuleQueueCooldownMs, 0, 600000);
         config.Rules = NormalizeRules(config.Rules, defaults.Rules);
         config.LedStrips = NormalizeStrips(config.LedStrips, defaults.LedStrips);
         config.BackgroundTargetPins ??= "";

@@ -8,7 +8,7 @@ public sealed class AudioPlayerService
 {
     private readonly List<MediaPlayer> _players = [];
 
-    public async Task<AudioPlayback?> PrepareAsync(string? audioPath, Action<string> log)
+    public async Task<AudioPlayback?> PrepareAsync(string? audioPath, int volumePercent, Action<string> log)
     {
         if (string.IsNullOrWhiteSpace(audioPath))
         {
@@ -63,7 +63,7 @@ public sealed class AudioPlayerService
             player.MediaEnded += Ended;
             player.MediaFailed += Failed;
             player.Open(new Uri(audioPath, UriKind.Absolute));
-            player.Volume = 1;
+            player.Volume = Math.Clamp(volumePercent, 0, 100) / 100d;
         });
 
         try

@@ -29,8 +29,11 @@ Despues de descargar el `.zip`:
 - Las reglas nuevas vienen activas, pero con luces, audio y chat desactivados para configurar solo lo necesario.
 - La interfaz oculta opciones que no aplican al evento, patron o fondo seleccionado.
 - Guarda la configuracion en `%AppData%\NeoTwitch\settings.json`.
-- Se queda en segundo plano al cerrar con `X`; si minimizas, queda normal en la barra de tareas.
-- Incluye modo claro y modo oscuro desde el panel `Inicio`.
+- Permite configurar cola de alertas para evitar que muchas alertas se acumulen sin control.
+- Incluye volumen global para audios de alertas.
+- El cierre con `X` puede mandar la app a segundo plano o cerrar por completo, segun la configuracion.
+- Muestra una notificacion cuando queda en segundo plano.
+- Incluye modo claro y modo oscuro desde el panel `Configuracion`.
 - Usa un Arduino por puerto COM y permite configurar varias tiras NeoPixel en distintos pines.
 - Cuando una regla tiene audio y luces, la duracion del patron se ajusta a la duracion real del audio.
 - Al terminar un evento, la app manda `STOP` y restaura el fondo configurado.
@@ -71,12 +74,33 @@ Y asi se ve el efecto cuando se activa en stream:
 13. Si quieres chat automatico, activa `Enviar mensaje al chat` y usa variables como `{user}`, `{bits}`, `{reward}`, `{viewers}`, `{message}` o `{event}`.
 14. Si tienes Alexa configurada, activa `Enviar evento a Alexa`. Neo Twitch enviara el nombre de la regla como evento.
 15. Usa `Probar regla` antes de salir en vivo. La prueba ejecuta luces, audio, chat y Alexa si estan activados en esa regla.
+16. En `Configuracion`, ajusta volumen, modo oscuro, comportamiento de cierre y cola de alertas.
+
+## Configuracion general
+
+La seccion `Configuracion` concentra opciones que no dependen de Twitch, Arduino o Alexa:
+
+- `Abrir minimizada`: inicia Neo Twitch sin mostrar la ventana principal.
+- `Cerrar con X envia a segundo plano`: si esta activo, la `X` oculta la ventana y la app sigue escuchando eventos en la bandeja del sistema. Si esta apagado, la `X` cierra la app por completo.
+- `Modo oscuro`: cambia el tema visual.
+- `Volumen de alertas`: controla el volumen global de los audios reproducidos por reglas.
+
+### Cola de alertas
+
+Cuando Twitch manda muchos eventos seguidos, Neo Twitch ejecuta una alerta a la vez para evitar que audio y luces se superpongan. La cola configurable decide que se acepta y que se descarta mientras una alerta esta sonando.
+
+- `Repetidas maximas en cola`: cuantas alertas de la misma regla pueden esperar. El valor recomendado por defecto es `1`.
+- `Tiempo minimo para repetir`: milisegundos que deben pasar desde que empieza una regla antes de permitir otra igual. Usa `0` para desactivar ese filtro.
+- `Distintas maximas en cola`: cuantas alertas de reglas diferentes pueden esperar.
+- `Tiempo minimo para distintas`: milisegundos que deben pasar desde que empieza una regla antes de permitir otra diferente. Usa `0` para desactivar ese filtro.
+
+Si una alerta se descarta por estos limites, aparece un mensaje `Cola: descarte...` en la consola en vivo.
 
 ## Cerrar y actualizar
 
-La `X` de la ventana oculta la app para que siga escuchando el stream. Para cerrarla de verdad, usa el icono de la bandeja del sistema y elige `Salir`.
+Por defecto, la `X` de la ventana oculta la app para que siga escuchando el stream. Para cerrarla de verdad, usa el icono de la bandeja del sistema y elige `Salir`, o desactiva `Cerrar con X envia a segundo plano` en `Configuracion`.
 
-La app guarda la configuracion en cada cambio y tambien al ocultar/cerrar. Si no carga lo anterior, revisa la ruta que aparece al fondo del panel izquierdo.
+La app guarda la configuracion en cada cambio y tambien al ocultar/cerrar. Si no carga lo anterior, revisa la ruta que aparece en `Configuracion`.
 
 ## Conseguir el Client ID de Twitch
 

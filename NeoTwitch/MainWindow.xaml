@@ -509,9 +509,15 @@
                             Tag="2"
                             Style="{StaticResource NavButton}"
                             Click="NavButton_Click" />
+                    <Button x:Name="NavPreferencesButton"
+                            Content="Configuracion"
+                            Tag="3"
+                            Style="{StaticResource NavButton}"
+                            ToolTip="Preferencias generales de la app"
+                            Click="NavButton_Click" />
                     <Button x:Name="NavActivityButton"
                             Content="Actividad"
-                            Tag="3"
+                            Tag="4"
                             Style="{StaticResource NavButton}"
                             Click="NavButton_Click" />
                 </StackPanel>
@@ -629,12 +635,6 @@
                                        Margin="0,3,0,0" />
                         </StackPanel>
                     </Border>
-                    <Button x:Name="NavPreferencesButton"
-                            Content="Configuracion"
-                            Tag="4"
-                            Style="{StaticResource NavButton}"
-                            ToolTip="Preferencias generales de la app"
-                            Click="NavButton_Click" />
                 </StackPanel>
             </DockPanel>
         </Border>
@@ -1543,38 +1543,6 @@
                 </ScrollViewer>
             </TabItem>
 
-            <TabItem Header="Actividad">
-                <Grid Margin="24">
-                    <Grid.RowDefinitions>
-                        <RowDefinition Height="Auto" />
-                        <RowDefinition Height="*" />
-                    </Grid.RowDefinitions>
-
-                    <StackPanel Margin="0,0,0,18">
-                        <TextBlock Text="Actividad"
-                                   FontSize="28"
-                                   Style="{StaticResource TitleText}"
-                                   FontWeight="SemiBold" />
-                        <TextBlock Text="Historial completo de conexiones, eventos, pruebas y avisos."
-                                   Style="{StaticResource MutedText}"
-                                   Margin="0,4,0,0" />
-                    </StackPanel>
-
-                    <Border Grid.Row="1"
-                            Style="{StaticResource Card}">
-                        <DockPanel>
-                            <Button DockPanel.Dock="Top"
-                                    HorizontalAlignment="Left"
-                                    Content="Limpiar actividad"
-                                    Click="ClearLogButton_Click" />
-                            <ListBox x:Name="ActivityList"
-                                     BorderBrush="{DynamicResource ThemeBorderBrush}"
-                                     ItemTemplate="{StaticResource ActivityTemplate}" />
-                        </DockPanel>
-                    </Border>
-                </Grid>
-            </TabItem>
-
             <TabItem Header="Configuracion">
                 <ScrollViewer VerticalScrollBarVisibility="Auto"
                               HorizontalScrollBarVisibility="Auto">
@@ -1714,6 +1682,38 @@
                         </Border>
                     </Grid>
                 </ScrollViewer>
+            </TabItem>
+
+            <TabItem Header="Actividad">
+                <Grid Margin="24">
+                    <Grid.RowDefinitions>
+                        <RowDefinition Height="Auto" />
+                        <RowDefinition Height="*" />
+                    </Grid.RowDefinitions>
+
+                    <StackPanel Margin="0,0,0,18">
+                        <TextBlock Text="Actividad"
+                                   FontSize="28"
+                                   Style="{StaticResource TitleText}"
+                                   FontWeight="SemiBold" />
+                        <TextBlock Text="Historial completo de conexiones, eventos, pruebas y avisos."
+                                   Style="{StaticResource MutedText}"
+                                   Margin="0,4,0,0" />
+                    </StackPanel>
+
+                    <Border Grid.Row="1"
+                            Style="{StaticResource Card}">
+                        <DockPanel>
+                            <Button DockPanel.Dock="Top"
+                                    HorizontalAlignment="Left"
+                                    Content="Limpiar actividad"
+                                    Click="ClearLogButton_Click" />
+                            <ListBox x:Name="ActivityList"
+                                     BorderBrush="{DynamicResource ThemeBorderBrush}"
+                                     ItemTemplate="{StaticResource ActivityTemplate}" />
+                        </DockPanel>
+                    </Border>
+                </Grid>
             </TabItem>
         </TabControl>
 

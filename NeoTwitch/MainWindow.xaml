@@ -13,20 +13,20 @@
         Closing="Window_Closing"
         StateChanged="Window_StateChanged">
     <Window.Resources>
-        <SolidColorBrush x:Key="ThemeWindowBrush" Color="#F7F4FF" />
-        <SolidColorBrush x:Key="ThemeSidebarBrush" Color="#8652F6" />
-        <SolidColorBrush x:Key="ThemeSurfaceBrush" Color="#EFE8FF" />
-        <SolidColorBrush x:Key="ThemeInputBrush" Color="#FFFFFF" />
-        <SolidColorBrush x:Key="ThemeButtonBrush" Color="#F5F3FF" />
-        <SolidColorBrush x:Key="ThemeBorderBrush" Color="#CDBBFF" />
-        <SolidColorBrush x:Key="ThemeTextBrush" Color="#1F2330" />
-        <SolidColorBrush x:Key="ThemeMutedTextBrush" Color="#6B647A" />
-        <SolidColorBrush x:Key="ThemeSidebarTextBrush" Color="#1A0B2E" />
-        <SolidColorBrush x:Key="ThemeSidebarMutedTextBrush" Color="#2E1855" />
-        <SolidColorBrush x:Key="ThemeSelectionBrush" Color="#00A7A5" />
-        <SolidColorBrush x:Key="ThemeConsoleBrush" Color="#171224" />
-        <SolidColorBrush x:Key="ThemeScrollThumbBrush" Color="#8652F6" />
-        <SolidColorBrush x:Key="ThemeScrollTrackBrush" Color="#1A0B2E20" />
+        <SolidColorBrush x:Key="ThemeWindowBrush" Color="#F7FAFC" />
+        <SolidColorBrush x:Key="ThemeSidebarBrush" Color="#FFFFFF" />
+        <SolidColorBrush x:Key="ThemeSurfaceBrush" Color="#FFFFFF" />
+        <SolidColorBrush x:Key="ThemeInputBrush" Color="#F8FAFC" />
+        <SolidColorBrush x:Key="ThemeButtonBrush" Color="#EEF2F6" />
+        <SolidColorBrush x:Key="ThemeBorderBrush" Color="#E2E8F0" />
+        <SolidColorBrush x:Key="ThemeTextBrush" Color="#0B1117" />
+        <SolidColorBrush x:Key="ThemeMutedTextBrush" Color="#475569" />
+        <SolidColorBrush x:Key="ThemeSidebarTextBrush" Color="#0B1117" />
+        <SolidColorBrush x:Key="ThemeSidebarMutedTextBrush" Color="#64748B" />
+        <SolidColorBrush x:Key="ThemeSelectionBrush" Color="#14B8A6" />
+        <SolidColorBrush x:Key="ThemeConsoleBrush" Color="#0B1117" />
+        <SolidColorBrush x:Key="ThemeScrollThumbBrush" Color="#14B8A6" />
+        <SolidColorBrush x:Key="ThemeScrollTrackBrush" Color="#E2E8F0" />
 
         <Style TargetType="TextBlock">
             <Setter Property="Foreground" Value="{DynamicResource ThemeTextBrush}" />
@@ -262,19 +262,21 @@
         </Style>
 
         <Style x:Key="NavButton" TargetType="Button" BasedOn="{StaticResource {x:Type Button}}">
-            <Setter Property="HorizontalContentAlignment" Value="Left" />
-            <Setter Property="MinHeight" Value="42" />
-            <Setter Property="Margin" Value="0,4,0,4" />
-            <Setter Property="Padding" Value="14,10" />
+            <Setter Property="HorizontalContentAlignment" Value="Center" />
+            <Setter Property="MinHeight" Value="50" />
+            <Setter Property="Width" Value="50" />
+            <Setter Property="Margin" Value="0,5,0,5" />
+            <Setter Property="Padding" Value="0" />
             <Setter Property="BorderThickness" Value="0" />
             <Setter Property="FontWeight" Value="SemiBold" />
+            <Setter Property="FontSize" Value="19" />
         </Style>
 
         <Style x:Key="Card" TargetType="Border">
             <Setter Property="Background" Value="{DynamicResource ThemeSurfaceBrush}" />
             <Setter Property="BorderBrush" Value="{DynamicResource ThemeBorderBrush}" />
             <Setter Property="BorderThickness" Value="1" />
-            <Setter Property="CornerRadius" Value="8" />
+            <Setter Property="CornerRadius" Value="14" />
             <Setter Property="Padding" Value="18" />
         </Style>
 
@@ -465,7 +467,7 @@
             <RowDefinition Height="166" />
         </Grid.RowDefinitions>
         <Grid.ColumnDefinitions>
-            <ColumnDefinition Width="224" />
+            <ColumnDefinition Width="84" />
             <ColumnDefinition Width="*" />
         </Grid.ColumnDefinitions>
 
@@ -473,173 +475,78 @@
                 Grid.RowSpan="2"
                 Grid.Column="0"
                 Background="{DynamicResource ThemeSidebarBrush}"
-                Padding="18">
+                Padding="10">
             <DockPanel LastChildFill="True">
-                <StackPanel DockPanel.Dock="Top">
+                <StackPanel DockPanel.Dock="Top"
+                            HorizontalAlignment="Center">
                     <Image Source="Assets/AppIcon.png"
-                           Width="66"
-                           Height="66"
+                           Width="52"
+                           Height="52"
                            HorizontalAlignment="Center"
-                           Margin="0,0,0,10" />
-                    <TextBlock Text="NeoTwitch"
-                               FontSize="24"
-                               Style="{StaticResource TitleText}"
-                               HorizontalAlignment="Center"
-                               Foreground="{DynamicResource ThemeSidebarTextBrush}" />
-                    <TextBlock Text="Arduino + stream"
-                               HorizontalAlignment="Center"
-                               Foreground="{DynamicResource ThemeSidebarMutedTextBrush}"
-                               Margin="0,2,0,18" />
+                           Margin="0,0,0,14"
+                           ToolTip="Neo Twitch" />
                     <Rectangle Height="1"
+                               Width="42"
                                Fill="#331A0B2E"
-                               Margin="0,0,0,14" />
+                               Margin="0,0,0,12" />
 
                     <Button x:Name="NavSettingsButton"
-                            Content="Conexiones"
                             Tag="0"
                             Style="{StaticResource NavButton}"
+                            ToolTip="Twitch y conexiones"
                             Click="NavButton_Click" />
                     <Button x:Name="NavRulesButton"
-                            Content="Reglas"
                             Tag="1"
                             Style="{StaticResource NavButton}"
+                            ToolTip="Reglas"
                             Click="NavButton_Click" />
                     <Button x:Name="NavStripsButton"
-                            Content="Luces de fondo"
                             Tag="2"
                             Style="{StaticResource NavButton}"
+                            ToolTip="Luces de fondo"
                             Click="NavButton_Click" />
                     <Button x:Name="NavPreferencesButton"
-                            Content="Configuracion"
                             Tag="3"
                             Style="{StaticResource NavButton}"
-                            ToolTip="Preferencias generales de la app"
+                            ToolTip="Configuracion"
                             Click="NavButton_Click" />
                     <Button x:Name="NavActivityButton"
-                            Content="Actividad"
                             Tag="4"
                             Style="{StaticResource NavButton}"
+                            ToolTip="Actividad"
                             Click="NavButton_Click" />
                 </StackPanel>
 
-                <StackPanel DockPanel.Dock="Bottom">
+                <StackPanel DockPanel.Dock="Bottom"
+                            HorizontalAlignment="Center">
                     <Rectangle Height="1"
+                               Width="42"
                                Fill="#331A0B2E"
                                Margin="0,0,0,12" />
-                    <TextBlock Text="Estado"
-                               FontWeight="SemiBold"
-                               Foreground="{DynamicResource ThemeSidebarTextBrush}"
-                               Margin="0,0,0,8" />
-                    <Border x:Name="SidebarTwitchStatusCard"
-                            Background="#24FFFFFF"
-                            BorderBrush="#3AFFFFFF"
-                            BorderThickness="1"
-                            CornerRadius="8"
-                            Padding="10"
-                            Margin="0,0,0,10">
-                        <StackPanel>
-                            <Grid Margin="0,0,0,8">
-                                <Grid.ColumnDefinitions>
-                                    <ColumnDefinition Width="42" />
-                                    <ColumnDefinition Width="*" />
-                                </Grid.ColumnDefinitions>
-                                <Border Width="36"
-                                        Height="36"
-                                        CornerRadius="8"
-                                        Background="#2BFFFFFF"
-                                        HorizontalAlignment="Left"
-                                        VerticalAlignment="Top">
-                                    <Image x:Name="ChannelAvatarImage"
-                                           Source="Assets/AppIcon.png"
-                                           Stretch="UniformToFill" />
-                                </Border>
-                                <StackPanel Grid.Column="1">
-                                    <TextBlock x:Name="ChannelNameText"
-                                               Text="Sin Twitch"
-                                               FontWeight="SemiBold"
-                                               TextTrimming="CharacterEllipsis"
-                                               Foreground="{DynamicResource ThemeSidebarTextBrush}" />
-                                    <TextBlock x:Name="ChannelLoginText"
-                                               Text="Sin login"
-                                               FontSize="11"
-                                               TextTrimming="CharacterEllipsis"
-                                               Foreground="{DynamicResource ThemeSidebarMutedTextBrush}" />
-                                </StackPanel>
-                            </Grid>
-                            <TextBlock x:Name="TwitchConnectionText"
-                                       Text="Sin conectar"
-                                       FontWeight="SemiBold"
-                                       Foreground="{DynamicResource ThemeSidebarTextBrush}" />
-                            <StackPanel Orientation="Horizontal"
-                                        Margin="0,8,0,0">
-                                <Ellipse x:Name="TwitchLiveDot"
-                                         Width="10"
-                                         Height="10"
-                                         StrokeThickness="1.5"
-                                         VerticalAlignment="Center"
-                                         Margin="0,0,7,0" />
-                                <TextBlock x:Name="TwitchLiveStateText"
-                                           Text="No esta en directo"
-                                           FontWeight="SemiBold"
-                                           Foreground="{DynamicResource ThemeSidebarTextBrush}" />
-                            </StackPanel>
-                            <TextBlock x:Name="TwitchStatusText"
-                                       Foreground="{DynamicResource ThemeSidebarMutedTextBrush}"
-                                       TextWrapping="Wrap"
-                                       Margin="0,3,0,0" />
-                        </StackPanel>
-                    </Border>
-
-                    <Border x:Name="SidebarArduinoStatusCard"
-                            Background="#24FFFFFF"
-                            BorderBrush="#3AFFFFFF"
-                            BorderThickness="1"
-                            CornerRadius="8"
-                            Padding="10"
-                            Margin="0,0,0,10">
-                        <StackPanel>
-                            <TextBlock Text="Arduino"
-                                       FontWeight="SemiBold"
-                                       Foreground="{DynamicResource ThemeSidebarTextBrush}" />
-                            <TextBlock x:Name="ArduinoConnectionText"
-                                       Text="Sin conectar"
-                                       FontWeight="SemiBold"
-                                       Margin="0,6,0,0"
-                                       Foreground="{DynamicResource ThemeSidebarTextBrush}" />
-                            <TextBlock x:Name="ArduinoStatusText"
-                                       Foreground="{DynamicResource ThemeSidebarMutedTextBrush}"
-                                       TextWrapping="Wrap"
-                                       Margin="0,3,0,0" />
-                        </StackPanel>
-                    </Border>
-
-                    <Border x:Name="SidebarAlexaStatusCard"
-                            Background="#24FFFFFF"
-                            BorderBrush="#3AFFFFFF"
-                            BorderThickness="1"
-                            CornerRadius="8"
-                            Padding="10"
-                            Margin="0,0,0,10">
-                        <StackPanel>
-                            <TextBlock Text="Alexa"
-                                       FontWeight="SemiBold"
-                                       Foreground="{DynamicResource ThemeSidebarTextBrush}" />
-                            <TextBlock x:Name="AlexaConnectionText"
-                                       Text="Sin conectar"
-                                       FontWeight="SemiBold"
-                                       Margin="0,6,0,0"
-                                       Foreground="{DynamicResource ThemeSidebarTextBrush}" />
-                            <TextBlock x:Name="AlexaSidebarStatusText"
-                                       Foreground="{DynamicResource ThemeSidebarMutedTextBrush}"
-                                       TextWrapping="Wrap"
-                                       Margin="0,3,0,0" />
-                        </StackPanel>
-                    </Border>
+                    <Ellipse x:Name="TwitchLiveDot"
+                             Width="12"
+                             Height="12"
+                             StrokeThickness="1.5"
+                             Margin="0,0,0,10"
+                             ToolTip="Estado del directo" />
+                    <Grid Visibility="Collapsed">
+                        <Image x:Name="ChannelAvatarImage"
+                               Source="Assets/AppIcon.png" />
+                        <TextBlock x:Name="ChannelNameText" Text="Sin Twitch" />
+                        <TextBlock x:Name="ChannelLoginText" Text="Sin login" />
+                        <TextBlock x:Name="TwitchConnectionText" Text="Sin conectar" />
+                        <TextBlock x:Name="TwitchLiveStateText" Text="No esta en directo" />
+                        <TextBlock x:Name="TwitchStatusText" />
+                        <TextBlock x:Name="ArduinoConnectionText" Text="Sin conectar" />
+                        <TextBlock x:Name="ArduinoStatusText" />
+                        <TextBlock x:Name="AlexaConnectionText" Text="Sin conectar" />
+                        <TextBlock x:Name="AlexaSidebarStatusText" />
+                    </Grid>
                     <TextBlock x:Name="VersionText"
                                Text="V0.0.0"
                                FontSize="11"
                                Foreground="{DynamicResource ThemeSidebarMutedTextBrush}"
-                               HorizontalAlignment="Left"
+                               HorizontalAlignment="Center"
                                Margin="0,2,0,0" />
                 </StackPanel>
             </DockPanel>
@@ -1592,10 +1499,10 @@
                                           Content="Cerrar con X envia a segundo plano"
                                           Checked="GlobalSettingsChanged"
                                           Unchecked="GlobalSettingsChanged" />
-                                <CheckBox x:Name="DarkModeCheck"
-                                          Content="Modo oscuro"
-                                          Checked="ThemeModeChanged"
-                                          Unchecked="ThemeModeChanged" />
+                                <TextBlock Text="Tema"
+                                           Style="{StaticResource MutedText}" />
+                                <ComboBox x:Name="ThemeModeBox"
+                                          SelectionChanged="ThemeModeChanged" />
                                 <TextBlock x:Name="SettingsPathText"
                                            Style="{StaticResource MutedText}"
                                            FontSize="11"

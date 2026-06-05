@@ -7,9 +7,11 @@ using System.Runtime.InteropServices;
 using System.Text;
 using System.Windows;
 using System.Windows.Controls;
+using System.Windows.Data;
 using System.Windows.Interop;
 using System.Windows.Media;
 using System.Windows.Media.Imaging;
+using System.Windows.Shapes;
 using System.Windows.Threading;
 using NeoTwitch.Models;
 using NeoTwitch.Services;
@@ -27,7 +29,7 @@ public partial class MainWindow : Window
     private const int DwmWindowAttributeBorderColor = 34;
     private const int DwmWindowAttributeCaptionColor = 35;
     private const int DwmWindowAttributeTextColor = 36;
-    private const int AppCaptionColor = 0x00F65286;
+    private const int AppCaptionColor = 0x0017110B;
     private const int AppCaptionTextColor = 0x00FFFFFF;
     private const int LightStopSettleMs = 120;
 
@@ -65,6 +67,12 @@ public partial class MainWindow : Window
         new("Destellos", LightPattern.Sparkle),
         new("Rave", LightPattern.Rave)
     ];
+    private readonly UiOption<string>[] _themeModeOptions =
+    [
+        new("Seguir Windows", "System"),
+        new("Claro", "Light"),
+        new("Oscuro", "Dark")
+    ];
 
     private AppConfig _config = AppConfig.CreateDefault();
     private bool _initializingComponent;
@@ -93,6 +101,8 @@ public partial class MainWindow : Window
     public MainWindow()
     {
         _config = _settingsStore.Load();
+        _config.ThemeMode = NormalizeThemeMode(_config.ThemeMode);
+        _config.DarkMode = ResolveDarkMode(_config.ThemeMode);
 
         try
         {
@@ -121,10 +131,14 @@ public partial class MainWindow : Window
             BackgroundPatternBox.ItemsSource = _patternOptions;
             BackgroundPatternBox.DisplayMemberPath = nameof(UiOption<LightPattern>.Label);
             BackgroundPatternBox.SelectedValuePath = nameof(UiOption<LightPattern>.Value);
+            ThemeModeBox.ItemsSource = _themeModeOptions;
+            ThemeModeBox.DisplayMemberPath = nameof(UiOption<string>.Label);
+            ThemeModeBox.SelectedValuePath = nameof(UiOption<string>.Value);
             StripsList.ItemsSource = _config.LedStrips;
             PortComboBox.DisplayMemberPath = nameof(SerialPortInfo.DisplayName);
             PortComboBox.SelectedValuePath = nameof(SerialPortInfo.PortName);
             VersionText.Text = $"V{VersionCheckService.CurrentVersionText}";
+            ConfigureNavigationIcons();
             RefreshPortList(choosePreferred: false);
         }
         finally
@@ -134,6 +148,39 @@ public partial class MainWindow : Window
 
         CreateTrayIcon();
         LoadConfigIntoUi();
+    }
+
+    private void ConfigureNavigationIcons()
+    {
+        NavSettingsButton.Content = CreateNavigationIcon("M8,3 L8,9 M16,3 L16,9 M6,9 L18,9 L18,13 C18,16 16,18 13,18 L13,22 M10,22 L10,18 C7,18 5,16 5,13 L5,9");
+        NavRulesButton.Content = CreateNavigationIcon("M13,2 L4,14 L11,14 L9,22 L20,10 L13,10 Z");
+        NavStripsButton.Content = CreateNavigationIcon("M12,7 A5,5 0 1 1 12,17 A5,5 0 1 1 12,7 M12,1 L12,4 M12,20 L12,23 M4.2,4.2 L6.3,6.3 M17.7,17.7 L19.8,19.8 M1,12 L4,12 M20,12 L23,12 M4.2,19.8 L6.3,17.7 M17.7,6.3 L19.8,4.2");
+        NavPreferencesButton.Content = CreateNavigationIcon("M12,8 A4,4 0 1 1 12,16 A4,4 0 1 1 12,8 M12,2 L12,5 M12,19 L12,22 M4.9,4.9 L7,7 M17,17 L19.1,19.1 M2,12 L5,12 M19,12 L22,12 M4.9,19.1 L7,17 M17,7 L19.1,4.9");
+        NavActivityButton.Content = CreateNavigationIcon("M3,12 L7,12 L10,5 L14,19 L17,12 L21,12");
+    }
+
+    private static System.Windows.Shapes.Path CreateNavigationIcon(string data)
+    {
+        var path = new System.Windows.Shapes.Path
+        {
+            Data = Geometry.Parse(data),
+            Width = 24,
+            Height = 24,
+            Stretch = Stretch.Uniform,
+            StrokeThickness = 2,
+            StrokeStartLineCap = PenLineCap.Round,
+            StrokeEndLineCap = PenLineCap.Round,
+            StrokeLineJoin = PenLineJoin.Round
+        };
+
+        path.SetBinding(
+            Shape.StrokeProperty,
+            new System.Windows.Data.Binding("Foreground")
+            {
+                RelativeSource = new RelativeSource(RelativeSourceMode.FindAncestor, typeof(System.Windows.Controls.Button), 1)
+            });
+
+        return path;
     }
 
     private async void Window_Loaded(object sender, RoutedEventArgs e)
@@ -1423,7 +1470,7 @@ public partial class MainWindow : Window
         ScheduleBackgroundApply();
     }
 
-    private void ThemeModeChanged(object sender, RoutedEventArgs e)
+    private void ThemeModeChanged(object sender, SelectionChangedEventArgs e)
     {
         if (_initializingComponent || _loadingUi)
         {
@@ -1934,7 +1981,7 @@ public partial class MainWindow : Window
             AutoTwitchCheck.IsChecked = _config.AutoConnectTwitch;
             AutoArduinoCheck.IsChecked = _config.AutoConnectArduino;
             StartHiddenCheck.IsChecked = _config.StartHidden;
-            DarkModeCheck.IsChecked = _config.DarkMode;
+            ThemeModeBox.SelectedValue = _config.ThemeMode;
             CloseToTrayCheck.IsChecked = _config.CloseToTray;
             AlertVolumeSlider.Value = _config.AlertVolumePercent;
             MaxQueuedSameRuleAlertsBox.Text = _config.MaxQueuedSameRuleAlerts.ToString();
@@ -2068,7 +2115,8 @@ public partial class MainWindow : Window
         _config.AutoConnectTwitch = AutoTwitchCheck.IsChecked == true;
         _config.AutoConnectArduino = AutoArduinoCheck.IsChecked == true;
         _config.StartHidden = StartHiddenCheck.IsChecked == true;
-        _config.DarkMode = DarkModeCheck.IsChecked == true;
+        _config.ThemeMode = NormalizeThemeMode(ThemeModeBox.SelectedValue as string ?? _config.ThemeMode);
+        _config.DarkMode = ResolveDarkMode(_config.ThemeMode);
         _config.CloseToTray = CloseToTrayCheck.IsChecked == true;
         _config.AlertVolumePercent = (int)Math.Round(AlertVolumeSlider.Value);
         _config.MaxQueuedSameRuleAlerts = ParseInt(MaxQueuedSameRuleAlertsBox.Text, 1, 0, 100);
@@ -2450,6 +2498,40 @@ public partial class MainWindow : Window
         return remaining > 0 ? $"{text} y {remaining} mas" : text;
     }
 
+    private static string NormalizeThemeMode(string? value)
+    {
+        return value?.Trim().ToLowerInvariant() switch
+        {
+            "light" => "Light",
+            "dark" => "Dark",
+            _ => "System"
+        };
+    }
+
+    private static bool ResolveDarkMode(string? themeMode)
+    {
+        return NormalizeThemeMode(themeMode) switch
+        {
+            "Dark" => true,
+            "Light" => false,
+            _ => IsWindowsAppsDarkMode()
+        };
+    }
+
+    private static bool IsWindowsAppsDarkMode()
+    {
+        try
+        {
+            using var key = Microsoft.Win32.Registry.CurrentUser.OpenSubKey(
+                @"Software\Microsoft\Windows\CurrentVersion\Themes\Personalize");
+            return key?.GetValue("AppsUseLightTheme") is int value && value == 0;
+        }
+        catch
+        {
+            return false;
+        }
+    }
+
     private static string NormalizeEventName(string text, string fallback)
     {
         return string.IsNullOrWhiteSpace(text) ? fallback : text.Trim();
@@ -2511,6 +2593,7 @@ public partial class MainWindow : Window
 
     private void ApplyTheme()
     {
+        _config.DarkMode = ResolveDarkMode(_config.ThemeMode);
         var palette = _config.DarkMode
             ? ThemePalette.Dark
             : ThemePalette.Light;
@@ -2528,7 +2611,7 @@ public partial class MainWindow : Window
         Resources["ThemeBorderBrush"] = palette.Border;
         Resources["ThemeSelectionBrush"] = palette.Accent;
         Resources["ThemeConsoleBrush"] = palette.Console;
-        Resources["ThemeScrollThumbBrush"] = palette.Sidebar;
+        Resources["ThemeScrollThumbBrush"] = palette.Accent;
         Resources["ThemeScrollTrackBrush"] = palette.ScrollTrack;
         Resources[System.Windows.SystemColors.WindowBrushKey] = palette.Input;
         Resources[System.Windows.SystemColors.ControlBrushKey] = palette.Input;
@@ -3135,48 +3218,48 @@ public partial class MainWindow : Window
         SolidColorBrush DangerBorder)
     {
         public static ThemePalette Light { get; } = new(
-            BrushFrom("#F7F4FF"),
-            BrushFrom("#8652F6"),
-            BrushFrom("#EFE8FF"),
+            BrushFrom("#F7FAFC"),
             BrushFrom("#FFFFFF"),
-            BrushFrom("#F5F3FF"),
-            BrushFrom("#CDBBFF"),
-            BrushFrom("#1F2330"),
-            BrushFrom("#6B647A"),
-            BrushFrom("#1A0B2E"),
-            BrushFrom("#2E1855"),
-            BrushFrom("#38FFFFFF"),
-            BrushFrom("#4FFFFFFF"),
-            BrushFrom("#171224"),
-            BrushFrom("#AFA4CC"),
-            BrushFrom("#241A0B2E"),
-            BrushFrom("#00A7A5"),
-            BrushFrom("#6D3BDF"),
-            BrushFrom("#FFF0F1"),
-            BrushFrom("#B42318"),
-            BrushFrom("#F4A7A0"));
+            BrushFrom("#FFFFFF"),
+            BrushFrom("#F8FAFC"),
+            BrushFrom("#EEF2F6"),
+            BrushFrom("#E2E8F0"),
+            BrushFrom("#0B1117"),
+            BrushFrom("#475569"),
+            BrushFrom("#0B1117"),
+            BrushFrom("#64748B"),
+            BrushFrom("#F8FAFC"),
+            BrushFrom("#E2E8F0"),
+            BrushFrom("#0B1117"),
+            BrushFrom("#94A3B8"),
+            BrushFrom("#E2E8F0"),
+            BrushFrom("#14B8A6"),
+            BrushFrom("#14B8A6"),
+            BrushFrom("#FFF1F2"),
+            BrushFrom("#B91C1C"),
+            BrushFrom("#FDA4AF"));
 
         public static ThemePalette Dark { get; } = new(
-            BrushFrom("#14101F"),
-            BrushFrom("#8652F6"),
-            BrushFrom("#2B2140"),
-            BrushFrom("#1C1429"),
-            BrushFrom("#33264C"),
-            BrushFrom("#4B3A6D"),
-            BrushFrom("#F4F1FF"),
-            BrushFrom("#B8AECF"),
-            BrushFrom("#1A0B2E"),
-            BrushFrom("#2E1855"),
-            BrushFrom("#38FFFFFF"),
-            BrushFrom("#4FFFFFFF"),
-            BrushFrom("#100B19"),
-            BrushFrom("#B4A8D2"),
-            BrushFrom("#2F241F3B"),
-            BrushFrom("#00B6B5"),
-            BrushFrom("#6D3BDF"),
-            BrushFrom("#3A1F25"),
-            BrushFrom("#FFB4A8"),
-            BrushFrom("#7A3D45"));
+            BrushFrom("#081117"),
+            BrushFrom("#0F1822"),
+            BrushFrom("#121A24"),
+            BrushFrom("#0F1822"),
+            BrushFrom("#162231"),
+            BrushFrom("#233142"),
+            BrushFrom("#E6EEF2"),
+            BrushFrom("#A7B4BE"),
+            BrushFrom("#E6EEF2"),
+            BrushFrom("#A7B4BE"),
+            BrushFrom("#162231"),
+            BrushFrom("#233142"),
+            BrushFrom("#050A0E"),
+            BrushFrom("#64748B"),
+            BrushFrom("#132330"),
+            BrushFrom("#14B8A6"),
+            BrushFrom("#092C2D"),
+            BrushFrom("#3A1418"),
+            BrushFrom("#FDA4AF"),
+            BrushFrom("#7F1D1D"));
 
         private static SolidColorBrush BrushFrom(string hex)
         {

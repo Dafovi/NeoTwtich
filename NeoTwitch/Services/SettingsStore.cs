@@ -186,6 +186,7 @@ public sealed class SettingsStore
         config.BackgroundAlexaOnEventName = NormalizeBackgroundAlexaEventName(config.BackgroundAlexaOnEventName, "luz_encendida");
         config.BackgroundAlexaOffEventName = NormalizeBackgroundAlexaEventName(config.BackgroundAlexaOffEventName, "luz_apagada");
         config.SerialPort ??= "";
+        config.ThemeMode = NormalizeThemeMode(config.ThemeMode);
         config.BaudRate = Math.Clamp(config.BaudRate, 300, 921600);
         config.AlertVolumePercent = Math.Clamp(config.AlertVolumePercent, 0, 100);
         config.MaxQueuedSameRuleAlerts = Math.Clamp(config.MaxQueuedSameRuleAlerts, 0, 100);
@@ -211,6 +212,16 @@ public sealed class SettingsStore
     private static string NormalizeBackgroundAlexaEventName(string? value, string fallback)
     {
         return string.IsNullOrWhiteSpace(value) ? fallback : value.Trim();
+    }
+
+    private static string NormalizeThemeMode(string? value)
+    {
+        return value?.Trim().ToLowerInvariant() switch
+        {
+            "light" => "Light",
+            "dark" => "Dark",
+            _ => "System"
+        };
     }
 
     private static ObservableCollection<EventRule> NormalizeRules(

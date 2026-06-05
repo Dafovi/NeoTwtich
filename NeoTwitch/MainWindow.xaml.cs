@@ -139,6 +139,7 @@ public partial class MainWindow : Window
             PortComboBox.SelectedValuePath = nameof(SerialPortInfo.PortName);
             VersionText.Text = $"V{VersionCheckService.CurrentVersionText}";
             ConfigureNavigationIcons();
+            ConfigureActionIcons();
             RefreshPortList(choosePreferred: false);
         }
         finally
@@ -152,22 +153,90 @@ public partial class MainWindow : Window
 
     private void ConfigureNavigationIcons()
     {
-        NavSettingsButton.Content = CreateNavigationIcon("M8,3 L8,9 M16,3 L16,9 M6,9 L18,9 L18,13 C18,16 16,18 13,18 L13,22 M10,22 L10,18 C7,18 5,16 5,13 L5,9");
-        NavRulesButton.Content = CreateNavigationIcon("M13,2 L4,14 L11,14 L9,22 L20,10 L13,10 Z");
-        NavStripsButton.Content = CreateNavigationIcon("M12,7 A5,5 0 1 1 12,17 A5,5 0 1 1 12,7 M12,1 L12,4 M12,20 L12,23 M4.2,4.2 L6.3,6.3 M17.7,17.7 L19.8,19.8 M1,12 L4,12 M20,12 L23,12 M4.2,19.8 L6.3,17.7 M17.7,6.3 L19.8,4.2");
-        NavPreferencesButton.Content = CreateNavigationIcon("M12,8 A4,4 0 1 1 12,16 A4,4 0 1 1 12,8 M12,2 L12,5 M12,19 L12,22 M4.9,4.9 L7,7 M17,17 L19.1,19.1 M2,12 L5,12 M19,12 L22,12 M4.9,19.1 L7,17 M17,7 L19.1,4.9");
-        NavActivityButton.Content = CreateNavigationIcon("M3,12 L7,12 L10,5 L14,19 L17,12 L21,12");
+        NavSettingsButton.Content = CreateNavigationIcon(IconData("Plug"));
+        NavRulesButton.Content = CreateNavigationIcon(IconData("Zap"));
+        NavStripsButton.Content = CreateNavigationIcon(IconData("Sun"));
+        NavPreferencesButton.Content = CreateNavigationIcon(IconData("Settings"));
+        NavActivityButton.Content = CreateNavigationIcon(IconData("Activity"));
     }
 
     private static System.Windows.Shapes.Path CreateNavigationIcon(string data)
     {
+        return CreateIconPath(data, 24, 2);
+    }
+
+    private void ConfigureActionIcons()
+    {
+        var labels = new Dictionary<string, string>(StringComparer.OrdinalIgnoreCase)
+        {
+            ["Abrir Twitch Console"] = "ExternalLink",
+            ["Detectar"] = "Search",
+            ["Conectar"] = "Plug",
+            ["Probar Alexa"] = "Play",
+            ["Abrir Alexa Console"] = "ExternalLink",
+            ["Guardar configuracion"] = "Save",
+            ["Nueva"] = "Plus",
+            ["Duplicar"] = "Copy",
+            ["Eliminar"] = "Trash",
+            ["Probar regla"] = "Play",
+            ["Parar prueba"] = "Square",
+            ["Buscar"] = "Search",
+            ["Arduino Tira led ws2812b"] = "Arduino",
+            ["Alexa"] = "Alexa",
+            ["Aplicar fondo LED"] = "Sun",
+            ["Apagar tiras"] = "Power",
+            ["Aplicar fondo Alexa"] = "Alexa",
+            ["Apagar fondo Alexa"] = "Power",
+            ["Exportar configuracion"] = "Upload",
+            ["Importar configuracion"] = "Download",
+            ["Ejecutar diagnostico"] = "MonitorCheck",
+            ["Limpiar actividad"] = "Trash",
+            ["Limpiar"] = "Trash"
+        };
+
+        foreach (var button in FindVisualChildren<System.Windows.Controls.Button>(this))
+        {
+            if (IsColorButton(button) || button.Content is not string label)
+            {
+                continue;
+            }
+
+            if (labels.TryGetValue(label.Trim(), out var iconKey))
+            {
+                SetButtonIcon(button, label.Trim(), iconKey);
+            }
+        }
+    }
+
+    private static void SetButtonIcon(System.Windows.Controls.Button button, string label, string iconKey)
+    {
+        var panel = new StackPanel
+        {
+            Orientation = System.Windows.Controls.Orientation.Horizontal,
+            HorizontalAlignment = System.Windows.HorizontalAlignment.Center,
+            VerticalAlignment = VerticalAlignment.Center
+        };
+
+        panel.Children.Add(CreateIconPath(IconData(iconKey), 15, 1.9));
+        panel.Children.Add(new TextBlock
+        {
+            Text = label,
+            Margin = new Thickness(7, 0, 0, 0),
+            VerticalAlignment = VerticalAlignment.Center
+        });
+
+        button.Content = panel;
+    }
+
+    private static System.Windows.Shapes.Path CreateIconPath(string data, double size, double strokeThickness)
+    {
         var path = new System.Windows.Shapes.Path
         {
             Data = Geometry.Parse(data),
-            Width = 24,
-            Height = 24,
+            Width = size,
+            Height = size,
             Stretch = Stretch.Uniform,
-            StrokeThickness = 2,
+            StrokeThickness = strokeThickness,
             StrokeStartLineCap = PenLineCap.Round,
             StrokeEndLineCap = PenLineCap.Round,
             StrokeLineJoin = PenLineJoin.Round
@@ -183,9 +252,55 @@ public partial class MainWindow : Window
         return path;
     }
 
+    private static IEnumerable<T> FindVisualChildren<T>(DependencyObject parent)
+        where T : DependencyObject
+    {
+        for (var index = 0; index < VisualTreeHelper.GetChildrenCount(parent); index++)
+        {
+            var child = VisualTreeHelper.GetChild(parent, index);
+            if (child is T typedChild)
+            {
+                yield return typedChild;
+            }
+
+            foreach (var descendant in FindVisualChildren<T>(child))
+            {
+                yield return descendant;
+            }
+        }
+    }
+
+    private static string IconData(string key)
+    {
+        return key switch
+        {
+            "Activity" => "M3,12 L7,12 L10,5 L14,19 L17,12 L21,12",
+            "Alexa" => "M12,4 A8,8 0 1 1 12,20 A8,8 0 1 1 12,4 M12,8 A4,4 0 1 1 12,16 A4,4 0 1 1 12,8",
+            "Arduino" => "M7,8 C4,8 2,10 2,12 C2,14 4,16 7,16 C9,16 10,14 12,12 C14,10 15,8 17,8 C20,8 22,10 22,12 C22,14 20,16 17,16 C15,16 14,14 12,12 C10,10 9,8 7,8 M5,12 L9,12 M17,10 L17,14 M15,12 L19,12",
+            "Copy" => "M8,8 L19,8 L19,19 L8,19 Z M5,15 L4,15 L4,4 L15,4 L15,5",
+            "Download" => "M12,3 L12,15 M7,10 L12,15 L17,10 M5,20 L19,20",
+            "ExternalLink" => "M14,4 L20,4 L20,10 M20,4 L11,13 M19,14 L19,20 L5,20 L5,6 L11,6",
+            "MonitorCheck" => "M4,5 L20,5 L20,16 L4,16 Z M9,21 L15,21 M12,16 L12,21 M8,10 L11,13 L16,8",
+            "Play" => "M8,5 L19,12 L8,19 Z",
+            "Plug" => "M8,3 L8,9 M16,3 L16,9 M6,9 L18,9 L18,13 C18,16 16,18 13,18 L13,22 M10,22 L10,18 C7,18 5,16 5,13 L5,9",
+            "Plus" => "M12,5 L12,19 M5,12 L19,12",
+            "Power" => "M12,3 L12,11 M7,6 C5,8 4,10 4,13 C4,17 8,21 12,21 C16,21 20,17 20,13 C20,10 19,8 17,6",
+            "Save" => "M5,4 L17,4 L20,7 L20,20 L4,20 L4,4 Z M8,4 L8,10 L16,10 L16,4 M8,20 L8,14 L16,14 L16,20",
+            "Search" => "M10.5,5 A5.5,5.5 0 1 1 10.5,16 A5.5,5.5 0 1 1 10.5,5 M15,15 L21,21",
+            "Settings" => "M12,8 A4,4 0 1 1 12,16 A4,4 0 1 1 12,8 M12,2 L12,5 M12,19 L12,22 M4.9,4.9 L7,7 M17,17 L19.1,19.1 M2,12 L5,12 M19,12 L22,12 M4.9,19.1 L7,17 M17,7 L19.1,4.9",
+            "Square" => "M7,7 L17,7 L17,17 L7,17 Z",
+            "Sun" => "M12,7 A5,5 0 1 1 12,17 A5,5 0 1 1 12,7 M12,1 L12,4 M12,20 L12,23 M4.2,4.2 L6.3,6.3 M17.7,17.7 L19.8,19.8 M1,12 L4,12 M20,12 L23,12 M4.2,19.8 L6.3,17.7 M17.7,6.3 L19.8,4.2",
+            "Trash" => "M4,7 L20,7 M9,7 L9,5 L15,5 L15,7 M7,7 L8,21 L16,21 L17,7 M10,11 L10,18 M14,11 L14,18",
+            "Upload" => "M12,15 L12,3 M7,8 L12,3 L17,8 M5,20 L19,20",
+            "Zap" => "M13,2 L4,14 L11,14 L9,22 L20,10 L13,10 Z",
+            _ => "M12,5 L12,19 M5,12 L19,12"
+        };
+    }
+
     private async void Window_Loaded(object sender, RoutedEventArgs e)
     {
         ApplyWindowChromeColor();
+        ConfigureActionIcons();
         AddLog("Aplicacion lista.");
         AddLog($"Configuracion: {_settingsStore.SettingsPath}");
         AddLog($"Log de errores: {CrashReporter.PreferredLogPath}");
@@ -1514,6 +1629,7 @@ public partial class MainWindow : Window
         }
 
         UpdateNavigationButtons();
+        ConfigureActionIcons();
         _ = Dispatcher.BeginInvoke(ApplyTheme, DispatcherPriority.Loaded);
         _ = Dispatcher.BeginInvoke(ApplyTheme, DispatcherPriority.ContextIdle);
     }
@@ -2360,7 +2476,10 @@ public partial class MainWindow : Window
             ? $"{_config.BaudRate} baudios. {_config.LedStrips.Count} tiras, {totalLeds} LEDs. {activeBackground}."
             : $"Puerto: {FirstNonEmpty(_config.SerialPort, "sin COM")}. {_config.LedStrips.Count} tiras, {totalLeds} LEDs.";
 
-        TwitchButton.Content = _eventSubClient.IsRunning ? "Desconectar Twitch" : "Conectar Twitch";
+        SetButtonIcon(
+            TwitchButton,
+            _eventSubClient.IsRunning ? "Desconectar Twitch" : "Conectar Twitch",
+            _eventSubClient.IsRunning ? "Power" : "Plug");
     }
 
     private void UpdateAlexaStatusText()

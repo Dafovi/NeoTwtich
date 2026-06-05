@@ -130,6 +130,7 @@ public partial class MainWindow : Window
         try
         {
             ActivityList.ItemsSource = _activity;
+            DashboardActivityList.ItemsSource = _activity;
             MiniActivityList.ItemsSource = _activity;
             EventKindBox.ItemsSource = _eventOptions;
             EventKindBox.DisplayMemberPath = nameof(UiOption<TwitchEventKind>.Label);
@@ -165,7 +166,7 @@ public partial class MainWindow : Window
 
     private void ConfigureNavigationIcons()
     {
-        NavSettingsButton.Content = CreateNavigationIcon(IconData("Plug"));
+        NavSettingsButton.Content = CreateNavigationIcon(IconData("Home"));
         NavRulesButton.Content = CreateNavigationIcon(IconData("Zap"));
         NavStripsButton.Content = CreateNavigationIcon(IconData("Sun"));
         NavPreferencesButton.Content = CreateNavigationIcon(IconData("Settings"));
@@ -187,6 +188,7 @@ public partial class MainWindow : Window
             ["Probar Alexa"] = "Play",
             ["Abrir Alexa Console"] = "ExternalLink",
             ["Guardar configuracion"] = "Save",
+            ["Ir a actividad"] = "Activity",
             ["Nueva"] = "Plus",
             ["Duplicar"] = "Copy",
             ["Eliminar"] = "Trash",
@@ -292,6 +294,7 @@ public partial class MainWindow : Window
             "Copy" => "M8,8 L19,8 L19,19 L8,19 Z M5,15 L4,15 L4,4 L15,4 L15,5",
             "Download" => "M12,3 L12,15 M7,10 L12,15 L17,10 M5,20 L19,20",
             "ExternalLink" => "M14,4 L20,4 L20,10 M20,4 L11,13 M19,14 L19,20 L5,20 L5,6 L11,6",
+            "Home" => "M3,11 L12,3 L21,11 M5,10 L5,21 L10,21 L10,15 L14,15 L14,21 L19,21 L19,10",
             "MonitorCheck" => "M4,5 L20,5 L20,16 L4,16 Z M9,21 L15,21 M12,16 L12,21 M8,10 L11,13 L16,8",
             "Play" => "M8,5 L19,12 L8,19 Z",
             "Plug" => "M8,3 L8,9 M16,3 L16,9 M6,9 L18,9 L18,13 C18,16 16,18 13,18 L13,22 M10,22 L10,18 C7,18 5,16 5,13 L5,9",
@@ -1763,6 +1766,12 @@ public partial class MainWindow : Window
         UpdateNavigationButtons();
     }
 
+    private void GoToActivityButton_Click(object sender, RoutedEventArgs e)
+    {
+        MainTabs.SelectedIndex = 4;
+        UpdateNavigationButtons();
+    }
+
     private void ArduinoOutputButton_Click(object sender, RoutedEventArgs e)
     {
         _backgroundOutputMode = BackgroundOutputMode.Arduino;
@@ -2587,6 +2596,11 @@ public partial class MainWindow : Window
                 ? "Sesion autorizada"
                 : "Sin conectar";
         TwitchStatusText.Text = BuildTwitchStatusText();
+        DashboardTwitchStateText.Text = TwitchConnectionText.Text;
+        DashboardTwitchDetailText.Text = _config.Channel.IsReady
+            ? $"Cuenta: {channelName}{(login.StartsWith('@') ? $" {login}" : "")}"
+            : "Cuenta: sin autorizar";
+        DashboardTwitchLiveText.Text = BuildTwitchStatusText();
         UpdateTwitchLiveIndicator();
         UpdateChannelAvatar();
 
@@ -2600,6 +2614,14 @@ public partial class MainWindow : Window
         ArduinoStatusText.Text = _lightController.HasOpenPort
             ? $"{_config.BaudRate} baudios. {_config.LedStrips.Count} tiras, {totalLeds} LEDs. {activeBackground}."
             : $"Puerto: {FirstNonEmpty(_config.SerialPort, "sin COM")}. {_config.LedStrips.Count} tiras, {totalLeds} LEDs.";
+        DashboardArduinoStateText.Text = _lightController.HasOpenPort
+            ? "Conectado"
+            : "Sin conectar";
+        DashboardArduinoDetailText.Text = _lightController.HasOpenPort
+            ? $"Puerto: {_lightController.CurrentPort} · {_config.BaudRate}"
+            : $"Puerto: {FirstNonEmpty(_config.SerialPort, "sin COM")}";
+        DashboardArduinoLedText.Text = $"{_config.LedStrips.Count} salida(s), {totalLeds} LED(s)";
+        UpdateDashboardSummary();
 
         SetButtonIcon(
             TwitchButton,
@@ -2624,6 +2646,16 @@ public partial class MainWindow : Window
         AlexaSidebarStatusText.Text = _config.Alexa.IsConfigured
             ? BuildAlexaSidebarStatusText()
             : status;
+        DashboardAlexaStateText.Text = AlexaConnectionText.Text;
+        DashboardAlexaDetailText.Text = _config.Alexa.IsConfigured
+            ? "Relay configurado y listo para reglas."
+            : _config.Alexa.Enabled
+                ? "Falta URL valida de relay."
+                : "Integracion desactivada.";
+        DashboardAlexaBackgroundText.Text = _config.Alexa.IsConfigured
+            ? BuildAlexaSidebarStatusText()
+            : "Fondo Alexa inactivo.";
+        UpdateDashboardSummary();
     }
 
     private string BuildAlexaSidebarStatusText()
@@ -2639,6 +2671,28 @@ public partial class MainWindow : Window
         return $"{background}. {endBehavior}.";
     }
 
+    private void UpdateDashboardSummary()
+    {
+        var activeRules = _config.Rules.Count(rule => rule.IsEnabled);
+        var activeActions = _config.Rules.Count(rule =>
+            rule.IsEnabled
+            && (rule.UseLights || rule.PlayAudio || rule.SendChatMessage || rule.SendAlexaEvent));
+        var rulesWithAudio = _config.Rules.Count(rule => rule.IsEnabled && rule.PlayAudio);
+        var totalLeds = _config.LedStrips.Sum(strip => strip.LedCount);
+        var hasBackground = _config.BackgroundEnabled || _config.BackgroundAlexaEnabled;
+
+        DashboardRulesSummaryText.Text = activeRules.ToString();
+        DashboardActionsSummaryText.Text = activeActions.ToString();
+        DashboardLedSummaryText.Text = totalLeds.ToString();
+        DashboardBackgroundSummaryText.Text = hasBackground ? "ON" : "OFF";
+        DashboardLightsChipText.Text = _config.BackgroundEnabled ? "ON" : "OFF";
+        DashboardAlexaChipText.Text = _config.BackgroundAlexaEnabled ? "ON" : "OFF";
+        DashboardAudioChipText.Text = _config.AlertVolumePercent > 0 ? "ON" : "OFF";
+        DashboardAudioStateText.Text = $"Volumen {_config.AlertVolumePercent}%";
+        DashboardAudioDetailText.Text = $"{rulesWithAudio} regla(s) con audio";
+        DashboardQueueText.Text = $"Cola: {_config.MaxQueuedSameRuleAlerts} misma / {_config.MaxQueuedDifferentRuleAlerts} distintas";
+    }
+
     private void UpdateTwitchLiveIndicator()
     {
         var palette = _config.DarkMode
@@ -2652,6 +2706,10 @@ public partial class MainWindow : Window
             TwitchLiveDot.Stroke = liveBrush;
             TwitchLiveStateText.Text = "En directo";
             TwitchLiveStateText.Foreground = liveBrush;
+            DashboardTwitchLiveText.Text = BuildTwitchStatusText();
+            DashboardTwitchLiveText.Foreground = liveBrush;
+            DashboardStreamChipText.Text = "ON";
+            DashboardStreamChipText.Foreground = liveBrush;
             return;
         }
 
@@ -2659,6 +2717,10 @@ public partial class MainWindow : Window
         TwitchLiveDot.Stroke = palette.SidebarText;
         TwitchLiveStateText.Text = "No esta en directo";
         TwitchLiveStateText.Foreground = palette.SidebarText;
+        DashboardTwitchLiveText.Text = BuildTwitchStatusText();
+        DashboardTwitchLiveText.Foreground = palette.MutedText;
+        DashboardStreamChipText.Text = "OFF";
+        DashboardStreamChipText.Foreground = palette.Accent;
     }
 
     private string BuildTwitchStatusText()
@@ -2906,6 +2968,12 @@ public partial class MainWindow : Window
                 border.Background = palette.Surface;
                 break;
             case TextBlock textBlock when textBlock.DataContext is ActivityLogEntry:
+                break;
+            case TextBlock textBlock when string.Equals(textBlock.Tag?.ToString(), "Accent", StringComparison.OrdinalIgnoreCase):
+                textBlock.Foreground = palette.Accent;
+                break;
+            case TextBlock textBlock when string.Equals(textBlock.Tag?.ToString(), "Success", StringComparison.OrdinalIgnoreCase):
+                textBlock.Foreground = FrozenBrushFrom("#22C55E");
                 break;
             case TextBlock textBlock:
                 if (IsInsideNamedElement(textBlock, "SidebarChrome"))
@@ -3262,6 +3330,17 @@ public partial class MainWindow : Window
         try
         {
             _settingsStore.Save(_config);
+            if (!_initializingComponent)
+            {
+                if (Dispatcher.CheckAccess())
+                {
+                    UpdateDashboardSummary();
+                }
+                else
+                {
+                    _ = Dispatcher.BeginInvoke(UpdateDashboardSummary, DispatcherPriority.Background);
+                }
+            }
         }
         catch (Exception ex)
         {

@@ -493,7 +493,7 @@
                     <Button x:Name="NavSettingsButton"
                             Tag="0"
                             Style="{StaticResource NavButton}"
-                            ToolTip="Twitch y conexiones"
+                            ToolTip="Panel principal"
                             Click="NavButton_Click" />
                     <Button x:Name="NavRulesButton"
                             Tag="1"
@@ -560,35 +560,401 @@
                     BorderThickness="0"
                     Padding="0"
                     SelectionChanged="MainTabs_SelectionChanged">
-            <TabItem Header="Conexiones">
+            <TabItem Header="Panel">
                 <ScrollViewer VerticalScrollBarVisibility="Auto"
                               HorizontalScrollBarVisibility="Auto">
-                    <Grid Margin="24" MinWidth="780">
+                    <Grid Margin="24" MinWidth="980">
                         <Grid.RowDefinitions>
                             <RowDefinition Height="Auto" />
                             <RowDefinition Height="Auto" />
                             <RowDefinition Height="Auto" />
                             <RowDefinition Height="Auto" />
                         </Grid.RowDefinitions>
-                        <Grid.ColumnDefinitions>
-                            <ColumnDefinition Width="*" />
-                            <ColumnDefinition Width="18" />
-                            <ColumnDefinition Width="*" />
-                        </Grid.ColumnDefinitions>
 
-                        <StackPanel Grid.ColumnSpan="3" Margin="0,0,0,18">
-                            <TextBlock Text="Centro de control"
-                                       FontSize="28"
+                        <StackPanel Margin="0,0,0,18">
+                            <TextBlock Text="¡Todo listo para tu stream!"
+                                       FontSize="30"
                                        Style="{StaticResource TitleText}"
                                        FontWeight="SemiBold" />
-                            <TextBlock Text="Conecta Twitch, Arduino y deja lista la app para el stream."
+                            <TextBlock Text="Estado general, resumen de Twitch, actividad y una vista rapida de tu estudio."
                                        Style="{StaticResource MutedText}"
                                        Margin="0,4,0,0" />
                         </StackPanel>
 
-                        <Border Grid.Row="1"
-                                Grid.Column="0"
-                                Style="{StaticResource Card}">
+                        <Grid Grid.Row="1" Margin="0,0,0,16">
+                            <Grid.ColumnDefinitions>
+                                <ColumnDefinition Width="*" />
+                                <ColumnDefinition Width="12" />
+                                <ColumnDefinition Width="*" />
+                                <ColumnDefinition Width="12" />
+                                <ColumnDefinition Width="*" />
+                                <ColumnDefinition Width="12" />
+                                <ColumnDefinition Width="*" />
+                            </Grid.ColumnDefinitions>
+
+                            <Border Grid.Column="0" Style="{StaticResource Card}">
+                                <StackPanel>
+                                    <TextBlock Text="Twitch"
+                                               FontSize="16"
+                                               Style="{StaticResource TitleText}"
+                                               FontWeight="SemiBold" />
+                                    <TextBlock x:Name="DashboardTwitchStateText"
+                                               Text="Sin conectar"
+                                               Tag="Accent"
+                                               FontWeight="SemiBold"
+                                               Margin="0,10,0,0" />
+                                    <TextBlock x:Name="DashboardTwitchDetailText"
+                                               Text="Cuenta: sin autorizar"
+                                               Style="{StaticResource MutedText}"
+                                               TextWrapping="Wrap"
+                                               Margin="0,6,0,0" />
+                                    <TextBlock x:Name="DashboardTwitchLiveText"
+                                               Text="Listo para conectar eventos."
+                                               Style="{StaticResource MutedText}"
+                                               TextWrapping="Wrap"
+                                               Margin="0,4,0,0" />
+                                </StackPanel>
+                            </Border>
+
+                            <Border Grid.Column="2" Style="{StaticResource Card}">
+                                <StackPanel>
+                                    <TextBlock Text="Arduino"
+                                               FontSize="16"
+                                               Style="{StaticResource TitleText}"
+                                               FontWeight="SemiBold" />
+                                    <TextBlock x:Name="DashboardArduinoStateText"
+                                               Text="Sin conectar"
+                                               Tag="Accent"
+                                               FontWeight="SemiBold"
+                                               Margin="0,10,0,0" />
+                                    <TextBlock x:Name="DashboardArduinoDetailText"
+                                               Text="Puerto: sin COM"
+                                               Style="{StaticResource MutedText}"
+                                               TextWrapping="Wrap"
+                                               Margin="0,6,0,0" />
+                                    <TextBlock x:Name="DashboardArduinoLedText"
+                                               Text="0 LEDs configurados"
+                                               Style="{StaticResource MutedText}"
+                                               TextWrapping="Wrap"
+                                               Margin="0,4,0,0" />
+                                </StackPanel>
+                            </Border>
+
+                            <Border Grid.Column="4" Style="{StaticResource Card}">
+                                <StackPanel>
+                                    <TextBlock Text="Alexa"
+                                               FontSize="16"
+                                               Style="{StaticResource TitleText}"
+                                               FontWeight="SemiBold" />
+                                    <TextBlock x:Name="DashboardAlexaStateText"
+                                               Text="Sin conectar"
+                                               Tag="Accent"
+                                               FontWeight="SemiBold"
+                                               Margin="0,10,0,0" />
+                                    <TextBlock x:Name="DashboardAlexaDetailText"
+                                               Text="Integracion desactivada"
+                                               Style="{StaticResource MutedText}"
+                                               TextWrapping="Wrap"
+                                               Margin="0,6,0,0" />
+                                    <TextBlock x:Name="DashboardAlexaBackgroundText"
+                                               Text="Fondo Alexa inactivo"
+                                               Style="{StaticResource MutedText}"
+                                               TextWrapping="Wrap"
+                                               Margin="0,4,0,0" />
+                                </StackPanel>
+                            </Border>
+
+                            <Border Grid.Column="6" Style="{StaticResource Card}">
+                                <StackPanel>
+                                    <TextBlock Text="Audio"
+                                               FontSize="16"
+                                               Style="{StaticResource TitleText}"
+                                               FontWeight="SemiBold" />
+                                    <TextBlock x:Name="DashboardAudioStateText"
+                                               Text="Volumen 100%"
+                                               Tag="Accent"
+                                               FontWeight="SemiBold"
+                                               Margin="0,10,0,0" />
+                                    <TextBlock x:Name="DashboardAudioDetailText"
+                                               Text="0 reglas con audio"
+                                               Style="{StaticResource MutedText}"
+                                               TextWrapping="Wrap"
+                                               Margin="0,6,0,0" />
+                                    <TextBlock x:Name="DashboardQueueText"
+                                               Text="Cola lista"
+                                               Style="{StaticResource MutedText}"
+                                               TextWrapping="Wrap"
+                                               Margin="0,4,0,0" />
+                                </StackPanel>
+                            </Border>
+                        </Grid>
+
+                        <Grid Grid.Row="2" Margin="0,0,0,16">
+                            <Grid.ColumnDefinitions>
+                                <ColumnDefinition Width="*" />
+                                <ColumnDefinition Width="16" />
+                                <ColumnDefinition Width="340" />
+                            </Grid.ColumnDefinitions>
+                            <StackPanel Grid.Column="0">
+                                <TextBlock Text="Resumen rapido"
+                                           FontSize="18"
+                                           Style="{StaticResource TitleText}"
+                                           FontWeight="SemiBold"
+                                           Margin="0,0,0,10" />
+                                <Grid Margin="0,0,0,16">
+                                    <Grid.ColumnDefinitions>
+                                        <ColumnDefinition Width="*" />
+                                        <ColumnDefinition Width="10" />
+                                        <ColumnDefinition Width="*" />
+                                        <ColumnDefinition Width="10" />
+                                        <ColumnDefinition Width="*" />
+                                        <ColumnDefinition Width="10" />
+                                        <ColumnDefinition Width="*" />
+                                    </Grid.ColumnDefinitions>
+                                    <Border Grid.Column="0"
+                                            Style="{StaticResource Card}"
+                                            Padding="14">
+                                        <StackPanel>
+                                            <TextBlock Text="Reglas activas"
+                                                       Style="{StaticResource MutedText}"
+                                                       FontSize="12" />
+                                            <TextBlock x:Name="DashboardRulesSummaryText"
+                                                       Text="0"
+                                                       Tag="Accent"
+                                                       FontSize="26"
+                                                       FontWeight="SemiBold"
+                                                       Margin="0,6,0,0" />
+                                        </StackPanel>
+                                    </Border>
+                                    <Border Grid.Column="2"
+                                            Style="{StaticResource Card}"
+                                            Padding="14">
+                                        <StackPanel>
+                                            <TextBlock Text="Acciones"
+                                                       Style="{StaticResource MutedText}"
+                                                       FontSize="12" />
+                                            <TextBlock x:Name="DashboardActionsSummaryText"
+                                                       Text="0"
+                                                       Tag="Accent"
+                                                       FontSize="26"
+                                                       FontWeight="SemiBold"
+                                                       Margin="0,6,0,0" />
+                                        </StackPanel>
+                                    </Border>
+                                    <Border Grid.Column="4"
+                                            Style="{StaticResource Card}"
+                                            Padding="14">
+                                        <StackPanel>
+                                            <TextBlock Text="LEDs"
+                                                       Style="{StaticResource MutedText}"
+                                                       FontSize="12" />
+                                            <TextBlock x:Name="DashboardLedSummaryText"
+                                                       Text="0"
+                                                       Tag="Accent"
+                                                       FontSize="26"
+                                                       FontWeight="SemiBold"
+                                                       Margin="0,6,0,0" />
+                                        </StackPanel>
+                                    </Border>
+                                    <Border Grid.Column="6"
+                                            Style="{StaticResource Card}"
+                                            Padding="14">
+                                        <StackPanel>
+                                            <TextBlock Text="Fondo"
+                                                       Style="{StaticResource MutedText}"
+                                                       FontSize="12" />
+                                            <TextBlock x:Name="DashboardBackgroundSummaryText"
+                                                       Text="OFF"
+                                                       Tag="Accent"
+                                                       FontSize="26"
+                                                       FontWeight="SemiBold"
+                                                       Margin="0,6,0,0" />
+                                        </StackPanel>
+                                    </Border>
+                                </Grid>
+
+                                <Border Style="{StaticResource Card}">
+                                    <StackPanel>
+                                        <TextBlock Text="Vista de estudio"
+                                                   FontSize="18"
+                                                   Style="{StaticResource TitleText}"
+                                                   FontWeight="SemiBold"
+                                                   Margin="0,0,0,10" />
+                                        <Grid Height="230" ClipToBounds="True">
+                                            <Grid.Background>
+                                                <LinearGradientBrush StartPoint="0,0" EndPoint="1,1">
+                                                    <GradientStop Color="#0B1117" Offset="0" />
+                                                    <GradientStop Color="#061D24" Offset="0.55" />
+                                                    <GradientStop Color="#0F1B2E" Offset="1" />
+                                                </LinearGradientBrush>
+                                            </Grid.Background>
+                                            <Rectangle Height="82"
+                                                       VerticalAlignment="Bottom"
+                                                       Fill="#AA050A10" />
+                                            <Rectangle Width="3"
+                                                       Height="170"
+                                                       HorizontalAlignment="Left"
+                                                       Margin="34,26,0,0"
+                                                       Fill="#148A86" />
+                                            <Rectangle Width="3"
+                                                       Height="176"
+                                                       HorizontalAlignment="Right"
+                                                       Margin="0,20,34,0"
+                                                       Fill="#148A86" />
+                                            <Rectangle Width="180"
+                                                       Height="96"
+                                                       RadiusX="8"
+                                                       RadiusY="8"
+                                                       HorizontalAlignment="Center"
+                                                       VerticalAlignment="Center"
+                                                       Stroke="#14B8A6"
+                                                       StrokeThickness="1.5"
+                                                       Fill="#BB0B1117" />
+                                            <TextBlock Text="LIVE ON"
+                                                       Tag="Accent"
+                                                       FontSize="26"
+                                                       FontWeight="SemiBold"
+                                                       HorizontalAlignment="Center"
+                                                       VerticalAlignment="Center" />
+                                            <Rectangle Width="70"
+                                                       Height="42"
+                                                       RadiusX="4"
+                                                       RadiusY="4"
+                                                       HorizontalAlignment="Left"
+                                                       VerticalAlignment="Bottom"
+                                                       Margin="86,0,0,42"
+                                                       Stroke="#233142"
+                                                       Fill="#CC121A24" />
+                                            <Rectangle Width="70"
+                                                       Height="42"
+                                                       RadiusX="4"
+                                                       RadiusY="4"
+                                                       HorizontalAlignment="Right"
+                                                       VerticalAlignment="Bottom"
+                                                       Margin="0,0,86,42"
+                                                       Stroke="#233142"
+                                                       Fill="#CC121A24" />
+                                            <Path Data="M180,168 C240,116 316,202 392,132 C444,86 520,134 574,84"
+                                                  Stroke="#22C55E"
+                                                  StrokeThickness="3"
+                                                  StrokeStartLineCap="Round"
+                                                  StrokeEndLineCap="Round"
+                                                  Opacity="0.75" />
+                                            <Path Data="M42,196 L150,112 M628,196 L514,108"
+                                                  Stroke="#00D1FF"
+                                                  StrokeThickness="2"
+                                                  Opacity="0.65" />
+                                        </Grid>
+                                        <WrapPanel Margin="0,12,0,0">
+                                            <Border BorderBrush="{DynamicResource ThemeBorderBrush}"
+                                                    BorderThickness="1"
+                                                    CornerRadius="7"
+                                                    Padding="10,7"
+                                                    Margin="0,0,8,8">
+                                                <StackPanel Orientation="Horizontal">
+                                                    <TextBlock Text="Luces" FontSize="12" Style="{StaticResource MutedText}" />
+                                                    <TextBlock x:Name="DashboardLightsChipText"
+                                                               Text="OFF"
+                                                               Tag="Accent"
+                                                               FontSize="12"
+                                                               FontWeight="SemiBold"
+                                                               Margin="8,0,0,0" />
+                                                </StackPanel>
+                                            </Border>
+                                            <Border BorderBrush="{DynamicResource ThemeBorderBrush}"
+                                                    BorderThickness="1"
+                                                    CornerRadius="7"
+                                                    Padding="10,7"
+                                                    Margin="0,0,8,8">
+                                                <StackPanel Orientation="Horizontal">
+                                                    <TextBlock Text="Alexa" FontSize="12" Style="{StaticResource MutedText}" />
+                                                    <TextBlock x:Name="DashboardAlexaChipText"
+                                                               Text="OFF"
+                                                               Tag="Accent"
+                                                               FontSize="12"
+                                                               FontWeight="SemiBold"
+                                                               Margin="8,0,0,0" />
+                                                </StackPanel>
+                                            </Border>
+                                            <Border BorderBrush="{DynamicResource ThemeBorderBrush}"
+                                                    BorderThickness="1"
+                                                    CornerRadius="7"
+                                                    Padding="10,7"
+                                                    Margin="0,0,8,8">
+                                                <StackPanel Orientation="Horizontal">
+                                                    <TextBlock Text="Sonido" FontSize="12" Style="{StaticResource MutedText}" />
+                                                    <TextBlock x:Name="DashboardAudioChipText"
+                                                               Text="ON"
+                                                               Tag="Accent"
+                                                               FontSize="12"
+                                                               FontWeight="SemiBold"
+                                                               Margin="8,0,0,0" />
+                                                </StackPanel>
+                                            </Border>
+                                            <Border BorderBrush="{DynamicResource ThemeBorderBrush}"
+                                                    BorderThickness="1"
+                                                    CornerRadius="7"
+                                                    Padding="10,7"
+                                                    Margin="0,0,8,8">
+                                                <StackPanel Orientation="Horizontal">
+                                                    <TextBlock Text="Stream" FontSize="12" Style="{StaticResource MutedText}" />
+                                                    <TextBlock x:Name="DashboardStreamChipText"
+                                                               Text="OFF"
+                                                               Tag="Accent"
+                                                               FontSize="12"
+                                                               FontWeight="SemiBold"
+                                                               Margin="8,0,0,0" />
+                                                </StackPanel>
+                                            </Border>
+                                        </WrapPanel>
+                                    </StackPanel>
+                                </Border>
+                            </StackPanel>
+
+                            <Border Grid.Column="2"
+                                    Style="{StaticResource Card}">
+                                <DockPanel>
+                                    <StackPanel DockPanel.Dock="Top" Margin="0,0,0,8">
+                                        <TextBlock Text="Actividad reciente"
+                                                   FontSize="18"
+                                                   Style="{StaticResource TitleText}"
+                                                   FontWeight="SemiBold" />
+                                        <TextBlock Text="Mensajes importantes, Twitch, Alexa y sistema."
+                                                   Style="{StaticResource MutedText}"
+                                                   TextWrapping="Wrap"
+                                                   Margin="0,4,0,0" />
+                                    </StackPanel>
+                                    <Button DockPanel.Dock="Bottom"
+                                            Content="Ir a actividad"
+                                            HorizontalAlignment="Stretch"
+                                            Click="GoToActivityButton_Click" />
+                                    <ListBox x:Name="DashboardActivityList"
+                                             BorderThickness="0"
+                                             Background="Transparent"
+                                             ItemTemplate="{StaticResource ActivityTemplate}" />
+                                </DockPanel>
+                            </Border>
+                        </Grid>
+
+                        <Expander Grid.Row="3"
+                                  Header="Configurar conexiones y datos tecnicos"
+                                  Foreground="{DynamicResource ThemeTextBrush}"
+                                  Margin="0,0,0,12">
+                            <Grid Margin="0,12,0,0">
+                                <Grid.RowDefinitions>
+                                    <RowDefinition Height="Auto" />
+                                    <RowDefinition Height="Auto" />
+                                    <RowDefinition Height="Auto" />
+                                </Grid.RowDefinitions>
+                                <Grid.ColumnDefinitions>
+                                    <ColumnDefinition Width="*" />
+                                    <ColumnDefinition Width="18" />
+                                    <ColumnDefinition Width="*" />
+                                </Grid.ColumnDefinitions>
+
+                                <Border Grid.Row="0"
+                                        Grid.Column="0"
+                                        Style="{StaticResource Card}">
                             <StackPanel>
                                 <TextBlock Text="Twitch"
                                            FontSize="18"
@@ -653,11 +1019,11 @@
                                 <Button Content="Abrir Twitch Console"
                                         Click="OpenTwitchConsoleButton_Click" />
                             </StackPanel>
-                        </Border>
+                                </Border>
 
-                        <Border Grid.Row="1"
-                                Grid.Column="2"
-                                Style="{StaticResource Card}">
+                                <Border Grid.Row="0"
+                                        Grid.Column="2"
+                                        Style="{StaticResource Card}">
                             <StackPanel>
                                 <TextBlock Text="Arduino"
                                            FontSize="18"
@@ -680,12 +1046,12 @@
                                            Margin="0,8,0,0" />
                                 <TextBox x:Name="BaudRateBox" TextChanged="GlobalSettingsChanged" />
                             </StackPanel>
-                        </Border>
+                                </Border>
 
-                        <Border Grid.Row="2"
-                                Grid.ColumnSpan="3"
-                                Style="{StaticResource Card}"
-                                Margin="0,18,0,0">
+                                <Border Grid.Row="1"
+                                        Grid.ColumnSpan="3"
+                                        Style="{StaticResource Card}"
+                                        Margin="0,18,0,0">
                             <Grid>
                                 <Grid.ColumnDefinitions>
                                     <ColumnDefinition Width="*" />
@@ -771,12 +1137,12 @@
                                         Margin="0,44,8,4"
                                         Click="OpenAlexaConsoleButton_Click" />
                             </Grid>
-                        </Border>
+                                </Border>
 
-                        <Border Grid.Row="3"
-                                Grid.ColumnSpan="3"
-                                Style="{StaticResource Card}"
-                                Margin="0,18,0,0">
+                                <Border Grid.Row="2"
+                                        Grid.ColumnSpan="3"
+                                        Style="{StaticResource Card}"
+                                        Margin="0,18,0,0">
                             <Grid>
                                 <Grid.ColumnDefinitions>
                                     <ColumnDefinition Width="*" />
@@ -810,7 +1176,9 @@
                                         VerticalAlignment="Top"
                                         Click="SaveButton_Click" />
                             </Grid>
-                        </Border>
+                                </Border>
+                            </Grid>
+                        </Expander>
                     </Grid>
                 </ScrollViewer>
             </TabItem>

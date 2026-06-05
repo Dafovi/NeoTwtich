@@ -9,6 +9,7 @@ using System.Windows;
 using System.Windows.Controls;
 using System.Windows.Data;
 using System.Windows.Interop;
+using System.Windows.Input;
 using System.Windows.Media;
 using System.Windows.Media.Imaging;
 using System.Windows.Shapes;
@@ -93,6 +94,7 @@ public partial class MainWindow : Window
     private bool _showClientSecret;
     private bool _showAlexaRelayUrl;
     private bool _showAlexaAuthToken;
+    private bool _alexaRelayConnected;
     private BackgroundOutputMode _backgroundOutputMode = BackgroundOutputMode.Arduino;
     private CancellationTokenSource? _backgroundApplyDebounce;
     private CancellationTokenSource? _twitchSubscriptionRefreshDebounce;
@@ -102,6 +104,11 @@ public partial class MainWindow : Window
     private string _lastStartedRuleId = "";
     private DateTimeOffset _lastAlertStartAt = DateTimeOffset.MinValue;
     private bool _hasShownTrayNotice;
+    private int _dashboardFollowersToday;
+    private int _dashboardSubscriptionsToday;
+    private int _dashboardBitsToday;
+    private int _dashboardChatMessagesToday;
+    private int _dashboardEventsToday;
     private AudioPlayback? _currentPlayback;
     private TwitchStreamStatus? _streamStatus;
     private DrawingIcon? _trayIcon;
@@ -131,7 +138,6 @@ public partial class MainWindow : Window
         {
             ActivityList.ItemsSource = _activity;
             DashboardActivityList.ItemsSource = _activity;
-            MiniActivityList.ItemsSource = _activity;
             EventKindBox.ItemsSource = _eventOptions;
             EventKindBox.DisplayMemberPath = nameof(UiOption<TwitchEventKind>.Label);
             EventKindBox.SelectedValuePath = nameof(UiOption<TwitchEventKind>.Value);
@@ -166,16 +172,42 @@ public partial class MainWindow : Window
 
     private void ConfigureNavigationIcons()
     {
-        NavSettingsButton.Content = CreateNavigationIcon(IconData("Home"));
-        NavRulesButton.Content = CreateNavigationIcon(IconData("Zap"));
-        NavStripsButton.Content = CreateNavigationIcon(IconData("Sun"));
-        NavPreferencesButton.Content = CreateNavigationIcon(IconData("Settings"));
-        NavActivityButton.Content = CreateNavigationIcon(IconData("Activity"));
+        NavSettingsButton.Content = CreateNavigationItem("Home", "Panel");
+        NavConnectionsButton.Content = CreateNavigationItem("Plug", "Conexiones");
+        NavRulesButton.Content = CreateNavigationItem("Zap", "Reglas");
+        NavStripsButton.Content = CreateNavigationItem("Sun", "Luces");
+        NavPreferencesButton.Content = CreateNavigationItem("Settings", "Configuracion");
+        NavActivityButton.Content = CreateNavigationItem("Activity", "Actividad");
     }
 
     private static System.Windows.Shapes.Path CreateNavigationIcon(string data)
     {
         return CreateIconPath(data, 24, 2);
+    }
+
+    private static StackPanel CreateNavigationItem(string iconKey, string label)
+    {
+        var panel = new StackPanel
+        {
+            Orientation = System.Windows.Controls.Orientation.Horizontal,
+            VerticalAlignment = VerticalAlignment.Center
+        };
+        panel.Children.Add(CreateIconPath(IconData(iconKey), 18, 2));
+        var text = new TextBlock
+        {
+            Text = label,
+            Margin = new Thickness(10, 0, 0, 0),
+            VerticalAlignment = VerticalAlignment.Center,
+            FontWeight = FontWeights.SemiBold
+        };
+        text.SetBinding(
+            TextBlock.ForegroundProperty,
+            new System.Windows.Data.Binding("Foreground")
+            {
+                RelativeSource = new RelativeSource(RelativeSourceMode.FindAncestor, typeof(System.Windows.Controls.Button), 1)
+            });
+        panel.Children.Add(text);
+        return panel;
     }
 
     private void ConfigureActionIcons()
@@ -232,12 +264,19 @@ public partial class MainWindow : Window
         };
 
         panel.Children.Add(CreateIconPath(IconData(iconKey), 15, 1.9));
-        panel.Children.Add(new TextBlock
+        var text = new TextBlock
         {
             Text = label,
             Margin = new Thickness(7, 0, 0, 0),
             VerticalAlignment = VerticalAlignment.Center
-        });
+        };
+        text.SetBinding(
+            TextBlock.ForegroundProperty,
+            new System.Windows.Data.Binding("Foreground")
+            {
+                RelativeSource = new RelativeSource(RelativeSourceMode.FindAncestor, typeof(System.Windows.Controls.Button), 1)
+            });
+        panel.Children.Add(text);
 
         button.Content = panel;
     }
@@ -302,7 +341,7 @@ public partial class MainWindow : Window
             "Power" => "M12,3 L12,11 M7,6 C5,8 4,10 4,13 C4,17 8,21 12,21 C16,21 20,17 20,13 C20,10 19,8 17,6",
             "Save" => "M5,4 L17,4 L20,7 L20,20 L4,20 L4,4 Z M8,4 L8,10 L16,10 L16,4 M8,20 L8,14 L16,14 L16,20",
             "Search" => "M10.5,5 A5.5,5.5 0 1 1 10.5,16 A5.5,5.5 0 1 1 10.5,5 M15,15 L21,21",
-            "Settings" => "M12,8 A4,4 0 1 1 12,16 A4,4 0 1 1 12,8 M12,2 L12,5 M12,19 L12,22 M4.9,4.9 L7,7 M17,17 L19.1,19.1 M2,12 L5,12 M19,12 L22,12 M4.9,19.1 L7,17 M17,7 L19.1,4.9",
+            "Settings" => "M12,8 A4,4 0 1 1 12,16 A4,4 0 1 1 12,8 M12,2 L14,2 L15,5 L18,4 L20,6 L19,9 L22,11 L22,13 L19,15 L20,18 L18,20 L15,19 L14,22 L10,22 L9,19 L6,20 L4,18 L5,15 L2,13 L2,11 L5,9 L4,6 L6,4 L9,5 L10,2 Z",
             "Square" => "M7,7 L17,7 L17,17 L7,17 Z",
             "Sun" => "M12,7 A5,5 0 1 1 12,17 A5,5 0 1 1 12,7 M12,1 L12,4 M12,20 L12,23 M4.2,4.2 L6.3,6.3 M17.7,17.7 L19.8,19.8 M1,12 L4,12 M20,12 L23,12 M4.2,19.8 L6.3,17.7 M17.7,6.3 L19.8,4.2",
             "Trash" => "M4,7 L20,7 M9,7 L9,5 L15,5 L15,7 M7,7 L8,21 L16,21 L17,7 M10,11 L10,18 M14,11 L14,18",
@@ -397,6 +436,31 @@ public partial class MainWindow : Window
             UseShellExecute = true
         });
         AddLog("Twitch Console abierta para revisar el Client ID.", ActivityLogKind.Twitch);
+    }
+
+    private void OpenTwitchProfileButton_Click(object sender, RoutedEventArgs e)
+    {
+        var channel = FirstNonEmpty(_config.Channel.Login, _config.Channel.DisplayName)
+            .Trim()
+            .TrimStart('@');
+
+        if (string.IsNullOrWhiteSpace(channel))
+        {
+            WpfMessageBox.Show(
+                this,
+                "Conecta Twitch primero para abrir el perfil del canal.",
+                "Twitch",
+                MessageBoxButton.OK,
+                MessageBoxImage.Information);
+            return;
+        }
+
+        Process.Start(new ProcessStartInfo
+        {
+            FileName = $"https://www.twitch.tv/{Uri.EscapeDataString(channel)}",
+            UseShellExecute = true
+        });
+        AddLog($"Twitch: abriendo perfil de {channel}.", ActivityLogKind.Twitch);
     }
 
     private void OpenAlexaConsoleButton_Click(object sender, RoutedEventArgs e)
@@ -693,6 +757,7 @@ public partial class MainWindow : Window
 
             var command = LightCommand.FromBackground(_config);
             await _lightController.SendAsync(command, AddLog, CancellationToken.None);
+            UpdateStatusText();
             AddLog($"Fondo aplicado: {DisplayNames.For(command.Pattern)}.");
         }
     }
@@ -754,12 +819,18 @@ public partial class MainWindow : Window
         try
         {
             await _alexaRelayService.SendBackgroundEventAsync(_config, eventName, title, CancellationToken.None);
+            _alexaRelayConnected = true;
             AddLog($"Alexa fondo: {eventName}.", ActivityLogKind.Alexa);
         }
         catch (Exception ex)
         {
+            _alexaRelayConnected = false;
             CrashReporter.Log(ex, $"No se pudo enviar fondo Alexa '{eventName}'.");
             AddLog($"Alexa fondo: {ex.Message}", ActivityLogKind.Important);
+        }
+        finally
+        {
+            UpdateAlexaStatusText();
         }
     }
 
@@ -831,6 +902,7 @@ public partial class MainWindow : Window
         }
 
         await _lightController.StopAsync(targets, AddLog, CancellationToken.None);
+        UpdateStatusText();
     }
 
     private void DetectPortsButton_Click(object sender, RoutedEventArgs e)
@@ -1638,6 +1710,7 @@ public partial class MainWindow : Window
         }
 
         SaveGlobalSettingsFromFields();
+        _alexaRelayConnected = false;
         SaveConfig();
         UpdateAlexaStatusText();
         UpdateSensitiveFieldVisibility();
@@ -1651,10 +1724,12 @@ public partial class MainWindow : Window
             SaveGlobalSettingsFromFields();
             SaveConfig();
             await _alexaRelayService.SendTestEventAsync(_config, CancellationToken.None);
+            _alexaRelayConnected = true;
             AddLog("Alexa: evento de prueba enviado.", ActivityLogKind.Alexa);
         }
         catch (Exception ex)
         {
+            _alexaRelayConnected = false;
             CrashReporter.Log(ex, "No se pudo enviar la prueba de Alexa.");
             AddLog($"Alexa: {ex.Message}", ActivityLogKind.Important);
             WpfMessageBox.Show(this, ex.Message, "Alexa", MessageBoxButton.OK, MessageBoxImage.Warning);
@@ -1768,7 +1843,7 @@ public partial class MainWindow : Window
 
     private void GoToActivityButton_Click(object sender, RoutedEventArgs e)
     {
-        MainTabs.SelectedIndex = 4;
+        MainTabs.SelectedIndex = 5;
         UpdateNavigationButtons();
     }
 
@@ -1873,6 +1948,7 @@ public partial class MainWindow : Window
 
     private async void EventSubClient_EventReceived(TwitchEvent twitchEvent)
     {
+        RegisterDashboardTwitchEvent(twitchEvent);
         var matchingRules = ResolveMatchingRules(twitchEvent);
         if (matchingRules.Length == 0)
         {
@@ -1886,11 +1962,34 @@ public partial class MainWindow : Window
         }
 
         AddLog(twitchEvent.Title, ActivityLogKind.Event);
+        _dashboardEventsToday += matchingRules.Length;
+        UpdateDashboardSummary();
 
         foreach (var rule in matchingRules)
         {
             await QueueAndRunRuleAsync(rule, twitchEvent);
         }
+    }
+
+    private void RegisterDashboardTwitchEvent(TwitchEvent twitchEvent)
+    {
+        switch (twitchEvent.Kind)
+        {
+            case TwitchEventKind.Follow:
+                _dashboardFollowersToday++;
+                break;
+            case TwitchEventKind.Subscription:
+                _dashboardSubscriptionsToday++;
+                break;
+            case TwitchEventKind.Cheer:
+                _dashboardBitsToday += Math.Max(0, twitchEvent.Bits ?? 0);
+                break;
+            case TwitchEventKind.ChatCommand:
+                _dashboardChatMessagesToday++;
+                break;
+        }
+
+        UpdateDashboardSummary();
     }
 
     private async Task QueueAndRunRuleAsync(EventRule rule, TwitchEvent twitchEvent)
@@ -2058,12 +2157,18 @@ public partial class MainWindow : Window
         try
         {
             await _alexaRelayService.SendRuleEventAsync(_config, rule, twitchEvent, CancellationToken.None);
+            _alexaRelayConnected = true;
             AddLog($"Alexa: evento enviado para '{rule.Name}'.", ActivityLogKind.Alexa);
         }
         catch (Exception ex)
         {
+            _alexaRelayConnected = false;
             CrashReporter.Log(ex, $"No se pudo enviar evento Alexa para la regla '{rule.Name}'.");
             AddLog($"Alexa: {ex.Message}", ActivityLogKind.Important);
+        }
+        finally
+        {
+            UpdateAlexaStatusText();
         }
     }
 
@@ -2134,6 +2239,7 @@ public partial class MainWindow : Window
             {
                 command = LightCommand.FromRule(rule, _config, syncedDurationMs);
                 await _lightController.SendAsync(command, AddLog, CancellationToken.None);
+                UpdateStatusText();
             }
 
             playback?.Play();
@@ -2596,11 +2702,6 @@ public partial class MainWindow : Window
                 ? "Sesion autorizada"
                 : "Sin conectar";
         TwitchStatusText.Text = BuildTwitchStatusText();
-        DashboardTwitchStateText.Text = TwitchConnectionText.Text;
-        DashboardTwitchDetailText.Text = _config.Channel.IsReady
-            ? $"Cuenta: {channelName}{(login.StartsWith('@') ? $" {login}" : "")}"
-            : "Cuenta: sin autorizar";
-        DashboardTwitchLiveText.Text = BuildTwitchStatusText();
         UpdateTwitchLiveIndicator();
         UpdateChannelAvatar();
 
@@ -2614,13 +2715,7 @@ public partial class MainWindow : Window
         ArduinoStatusText.Text = _lightController.HasOpenPort
             ? $"{_config.BaudRate} baudios. {_config.LedStrips.Count} tiras, {totalLeds} LEDs. {activeBackground}."
             : $"Puerto: {FirstNonEmpty(_config.SerialPort, "sin COM")}. {_config.LedStrips.Count} tiras, {totalLeds} LEDs.";
-        DashboardArduinoStateText.Text = _lightController.HasOpenPort
-            ? "Conectado"
-            : "Sin conectar";
-        DashboardArduinoDetailText.Text = _lightController.HasOpenPort
-            ? $"Puerto: {_lightController.CurrentPort} · {_config.BaudRate}"
-            : $"Puerto: {FirstNonEmpty(_config.SerialPort, "sin COM")}";
-        DashboardArduinoLedText.Text = $"{_config.LedStrips.Count} salida(s), {totalLeds} LED(s)";
+        RefreshDashboardConnectionStates();
         UpdateDashboardSummary();
 
         SetButtonIcon(
@@ -2646,15 +2741,7 @@ public partial class MainWindow : Window
         AlexaSidebarStatusText.Text = _config.Alexa.IsConfigured
             ? BuildAlexaSidebarStatusText()
             : status;
-        DashboardAlexaStateText.Text = AlexaConnectionText.Text;
-        DashboardAlexaDetailText.Text = _config.Alexa.IsConfigured
-            ? "Relay configurado y listo para reglas."
-            : _config.Alexa.Enabled
-                ? "Falta URL valida de relay."
-                : "Integracion desactivada.";
-        DashboardAlexaBackgroundText.Text = _config.Alexa.IsConfigured
-            ? BuildAlexaSidebarStatusText()
-            : "Fondo Alexa inactivo.";
+        RefreshDashboardConnectionStates();
         UpdateDashboardSummary();
     }
 
@@ -2673,24 +2760,135 @@ public partial class MainWindow : Window
 
     private void UpdateDashboardSummary()
     {
-        var activeRules = _config.Rules.Count(rule => rule.IsEnabled);
-        var activeActions = _config.Rules.Count(rule =>
-            rule.IsEnabled
-            && (rule.UseLights || rule.PlayAudio || rule.SendChatMessage || rule.SendAlexaEvent));
-        var rulesWithAudio = _config.Rules.Count(rule => rule.IsEnabled && rule.PlayAudio);
-        var totalLeds = _config.LedStrips.Sum(strip => strip.LedCount);
-        var hasBackground = _config.BackgroundEnabled || _config.BackgroundAlexaEnabled;
+        DashboardFollowersSummaryText.Text = $"+{_dashboardFollowersToday}";
+        DashboardSubsSummaryText.Text = $"+{_dashboardSubscriptionsToday}";
+        DashboardBitsSummaryText.Text = $"+{_dashboardBitsToday}";
+        DashboardChatSummaryText.Text = _dashboardChatMessagesToday.ToString();
+        DashboardEventsSummaryText.Text = _dashboardEventsToday.ToString();
 
-        DashboardRulesSummaryText.Text = activeRules.ToString();
-        DashboardActionsSummaryText.Text = activeActions.ToString();
-        DashboardLedSummaryText.Text = totalLeds.ToString();
-        DashboardBackgroundSummaryText.Text = hasBackground ? "ON" : "OFF";
-        DashboardLightsChipText.Text = _config.BackgroundEnabled ? "ON" : "OFF";
-        DashboardAlexaChipText.Text = _config.BackgroundAlexaEnabled ? "ON" : "OFF";
-        DashboardAudioChipText.Text = _config.AlertVolumePercent > 0 ? "ON" : "OFF";
-        DashboardAudioStateText.Text = $"Volumen {_config.AlertVolumePercent}%";
-        DashboardAudioDetailText.Text = $"{rulesWithAudio} regla(s) con audio";
-        DashboardQueueText.Text = $"Cola: {_config.MaxQueuedSameRuleAlerts} misma / {_config.MaxQueuedDifferentRuleAlerts} distintas";
+        DashboardFollowersSummaryText.Foreground = FrozenBrushFrom("#14B8A6");
+        DashboardSubsSummaryText.Foreground = FrozenBrushFrom("#B56CFF");
+        DashboardBitsSummaryText.Foreground = FrozenBrushFrom("#37C7F3");
+        DashboardChatSummaryText.Foreground = FrozenBrushFrom("#22C55E");
+        DashboardEventsSummaryText.Foreground = FrozenBrushFrom("#84CC16");
+
+        RefreshDashboardConnectionStates();
+        UpdateStudioStatusCards();
+    }
+
+    private void RefreshDashboardConnectionStates()
+    {
+        SetDashboardConnectionState(
+            DashboardTwitchStateText,
+            DashboardTwitchCheckFrame,
+            DashboardTwitchCheckIcon,
+            _config.Token.HasToken);
+        SetDashboardConnectionState(
+            DashboardArduinoStateText,
+            DashboardArduinoCheckFrame,
+            DashboardArduinoCheckIcon,
+            _lightController.HasConfirmedAck);
+        SetDashboardConnectionState(
+            DashboardAlexaStateText,
+            DashboardAlexaCheckFrame,
+            DashboardAlexaCheckIcon,
+            _config.Alexa.Enabled && _config.Alexa.IsConfigured && _alexaRelayConnected);
+        SetDashboardConnectionState(
+            DashboardAudioStateText,
+            DashboardAudioCheckFrame,
+            DashboardAudioCheckIcon,
+            _config.AlertVolumePercent > 0,
+            $"{_config.AlertVolumePercent}%",
+            "Desactivado");
+    }
+
+    private static void SetDashboardConnectionState(
+        TextBlock stateText,
+        Border checkFrame,
+        System.Windows.Shapes.Path checkIcon,
+        bool connected,
+        string connectedText = "Conectado",
+        string disconnectedText = "Desconectado")
+    {
+        var successBrush = FrozenBrushFrom("#22C55E");
+        var dangerBrush = FrozenBrushFrom("#F43F5E");
+        var inactiveBrush = FrozenBrushFrom("#64748B");
+
+        stateText.Text = connected ? connectedText : disconnectedText;
+        stateText.Foreground = connected ? successBrush : dangerBrush;
+        checkFrame.Background = connected ? successBrush : System.Windows.Media.Brushes.Transparent;
+        checkFrame.BorderBrush = connected ? successBrush : inactiveBrush;
+        checkIcon.Visibility = connected ? Visibility.Visible : Visibility.Collapsed;
+    }
+
+    private void UpdateStudioStatusCards()
+    {
+        var hasAudioAlerts = _config.AlertVolumePercent > 0
+            && _config.Rules.Any(rule => rule.IsEnabled && rule.PlayAudio);
+
+        UpdateStudioStatusCard(
+            StudioLightsCard,
+            StudioLightsIcon,
+            StudioLightsStateText,
+            _config.BackgroundEnabled,
+            "Encendidas",
+            "Apagadas",
+            "#14B8A6");
+        UpdateStudioStatusCard(
+            StudioAlexaCard,
+            StudioAlexaIcon,
+            StudioAlexaStateText,
+            _config.BackgroundAlexaEnabled,
+            "Encendida",
+            "Apagada",
+            "#2FB4E9");
+        UpdateStudioStatusCard(
+            StudioAudioCard,
+            StudioAudioIcon,
+            StudioAudioStateText,
+            hasAudioAlerts,
+            "Listo",
+            "Sin alertas",
+            "#B56CFF");
+        UpdateStudioStatusCard(
+            StudioStreamCard,
+            StudioStreamIcon,
+            StudioStreamStateText,
+            _streamStatus is { IsLive: true },
+            "En vivo",
+            "Offline",
+            "#FF2D55");
+    }
+
+    private void UpdateStudioStatusCard(
+        Border card,
+        System.Windows.Shapes.Path icon,
+        TextBlock stateText,
+        bool active,
+        string activeText,
+        string inactiveText,
+        string accentColor)
+    {
+        var palette = _config.DarkMode
+            ? ThemePalette.Dark
+            : ThemePalette.Light;
+        var accent = FrozenBrushFrom(accentColor);
+
+        card.Background = active ? FrozenBrushFrom("#14148A86") : palette.Input;
+        card.BorderBrush = active ? accent : palette.Border;
+        card.Effect = active
+            ? new System.Windows.Media.Effects.DropShadowEffect
+            {
+                Color = ((SolidColorBrush)accent).Color,
+                BlurRadius = 18,
+                ShadowDepth = 0,
+                Opacity = 0.34
+            }
+            : null;
+        icon.Stroke = active ? accent : palette.MutedText;
+        icon.Opacity = active ? 1 : 0.55;
+        stateText.Text = active ? activeText : inactiveText;
+        stateText.Foreground = active ? accent : palette.MutedText;
     }
 
     private void UpdateTwitchLiveIndicator()
@@ -2706,10 +2904,9 @@ public partial class MainWindow : Window
             TwitchLiveDot.Stroke = liveBrush;
             TwitchLiveStateText.Text = "En directo";
             TwitchLiveStateText.Foreground = liveBrush;
-            DashboardTwitchLiveText.Text = BuildTwitchStatusText();
-            DashboardTwitchLiveText.Foreground = liveBrush;
-            DashboardStreamChipText.Text = "ON";
-            DashboardStreamChipText.Foreground = liveBrush;
+            TopProfileText.Text = "Perfil";
+            TopProfileText.Foreground = palette.Text;
+            UpdateStudioStatusCards();
             return;
         }
 
@@ -2717,10 +2914,9 @@ public partial class MainWindow : Window
         TwitchLiveDot.Stroke = palette.SidebarText;
         TwitchLiveStateText.Text = "No esta en directo";
         TwitchLiveStateText.Foreground = palette.SidebarText;
-        DashboardTwitchLiveText.Text = BuildTwitchStatusText();
-        DashboardTwitchLiveText.Foreground = palette.MutedText;
-        DashboardStreamChipText.Text = "OFF";
-        DashboardStreamChipText.Foreground = palette.Accent;
+        TopProfileText.Text = "Perfil";
+        TopProfileText.Foreground = palette.Text;
+        UpdateStudioStatusCards();
     }
 
     private string BuildTwitchStatusText()
@@ -2933,6 +3129,7 @@ public partial class MainWindow : Window
         ApplyThemeToElement(this, palette);
         ApplyBackgroundOutputMode();
         UpdateTwitchLiveIndicator();
+        UpdateDashboardSummary();
         UpdateColorButtons();
     }
 
@@ -2949,6 +3146,13 @@ public partial class MainWindow : Window
                 if (IsSidebarBorder(border))
                 {
                     border.Background = palette.Sidebar;
+                    break;
+                }
+
+                if (IsTitleBarBorder(border))
+                {
+                    border.Background = palette.Window;
+                    border.BorderBrush = palette.Border;
                     break;
                 }
 
@@ -3074,6 +3278,14 @@ public partial class MainWindow : Window
             return;
         }
 
+        if (IsWindowControlButton(button))
+        {
+            button.Background = System.Windows.Media.Brushes.Transparent;
+            button.Foreground = palette.MutedText;
+            button.BorderBrush = System.Windows.Media.Brushes.Transparent;
+            return;
+        }
+
         if (ReferenceEquals(button.Style, Resources["PrimaryButton"]))
         {
             button.Background = palette.Accent;
@@ -3106,7 +3318,7 @@ public partial class MainWindow : Window
             ? ThemePalette.Dark
             : ThemePalette.Light;
 
-        foreach (var button in new[] { NavSettingsButton, NavRulesButton, NavStripsButton, NavPreferencesButton, NavActivityButton })
+        foreach (var button in new[] { NavSettingsButton, NavConnectionsButton, NavRulesButton, NavStripsButton, NavPreferencesButton, NavActivityButton })
         {
             ApplyNavigationButtonTheme(button, palette);
         }
@@ -3132,9 +3344,21 @@ public partial class MainWindow : Window
             && button.Name.EndsWith("ColorButton", StringComparison.OrdinalIgnoreCase);
     }
 
+    private static bool IsWindowControlButton(System.Windows.Controls.Button button)
+    {
+        return string.Equals(button.Name, "MinimizeWindowButton", StringComparison.OrdinalIgnoreCase)
+            || string.Equals(button.Name, "MaximizeWindowButton", StringComparison.OrdinalIgnoreCase)
+            || string.Equals(button.Name, "CloseWindowButton", StringComparison.OrdinalIgnoreCase);
+    }
+
     private static bool IsSidebarBorder(Border border)
     {
         return string.Equals(border.Name, "SidebarChrome", StringComparison.OrdinalIgnoreCase);
+    }
+
+    private static bool IsTitleBarBorder(Border border)
+    {
+        return string.Equals(border.Name, "TitleBarChrome", StringComparison.OrdinalIgnoreCase);
     }
 
     private static bool IsConsoleBorder(Border border)
@@ -3323,6 +3547,64 @@ public partial class MainWindow : Window
 
     private void Window_StateChanged(object? sender, EventArgs e)
     {
+    }
+
+    private void CustomTitleDragArea_MouseLeftButtonDown(object sender, MouseButtonEventArgs e)
+    {
+        if (IsInsideButton(e.OriginalSource as DependencyObject))
+        {
+            return;
+        }
+
+        if (e.ClickCount >= 2)
+        {
+            ToggleWindowState();
+            return;
+        }
+
+        try
+        {
+            DragMove();
+        }
+        catch
+        {
+            // DragMove can throw if the pointer is released before the drag starts.
+        }
+    }
+
+    private void MinimizeWindowButton_Click(object sender, RoutedEventArgs e)
+    {
+        WindowState = WindowState.Minimized;
+    }
+
+    private void MaximizeWindowButton_Click(object sender, RoutedEventArgs e)
+    {
+        ToggleWindowState();
+    }
+
+    private void CloseWindowButton_Click(object sender, RoutedEventArgs e)
+    {
+        Close();
+    }
+
+    private void ToggleWindowState()
+    {
+        WindowState = WindowState == WindowState.Maximized
+            ? WindowState.Normal
+            : WindowState.Maximized;
+    }
+
+    private static bool IsInsideButton(DependencyObject? source)
+    {
+        for (var current = source; current is not null; current = VisualTreeHelper.GetParent(current))
+        {
+            if (current is System.Windows.Controls.Button)
+            {
+                return true;
+            }
+        }
+
+        return false;
     }
 
     private void SaveConfig()

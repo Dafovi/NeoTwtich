@@ -3,6 +3,8 @@
         xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
         Title="Neo Twitch"
         Icon="Assets/AppIcon.ico"
+        WindowStyle="None"
+        ResizeMode="CanResize"
         Height="800"
         Width="1220"
         MinHeight="620"
@@ -262,14 +264,13 @@
         </Style>
 
         <Style x:Key="NavButton" TargetType="Button" BasedOn="{StaticResource {x:Type Button}}">
-            <Setter Property="HorizontalContentAlignment" Value="Center" />
-            <Setter Property="MinHeight" Value="50" />
-            <Setter Property="Width" Value="50" />
-            <Setter Property="Margin" Value="0,5,0,5" />
-            <Setter Property="Padding" Value="0" />
+            <Setter Property="HorizontalContentAlignment" Value="Stretch" />
+            <Setter Property="MinHeight" Value="42" />
+            <Setter Property="Margin" Value="0,4,0,4" />
+            <Setter Property="Padding" Value="12,8" />
             <Setter Property="BorderThickness" Value="0" />
             <Setter Property="FontWeight" Value="SemiBold" />
-            <Setter Property="FontSize" Value="19" />
+            <Setter Property="FontSize" Value="13" />
         </Style>
 
         <Style x:Key="Card" TargetType="Border">
@@ -463,30 +464,109 @@
 
     <Grid Background="{DynamicResource ThemeWindowBrush}">
         <Grid.RowDefinitions>
+            <RowDefinition Height="44" />
             <RowDefinition Height="*" />
-            <RowDefinition Height="166" />
         </Grid.RowDefinitions>
         <Grid.ColumnDefinitions>
-            <ColumnDefinition Width="84" />
+            <ColumnDefinition Width="214" />
             <ColumnDefinition Width="*" />
         </Grid.ColumnDefinitions>
 
+        <Border x:Name="TitleBarChrome"
+                Grid.Row="0"
+                Grid.ColumnSpan="2"
+                Background="{DynamicResource ThemeSidebarBrush}"
+                BorderBrush="{DynamicResource ThemeBorderBrush}"
+                BorderThickness="0,0,0,1"
+                Padding="14,0,10,0"
+                MouseLeftButtonDown="CustomTitleDragArea_MouseLeftButtonDown">
+            <Grid>
+                <Grid.ColumnDefinitions>
+                    <ColumnDefinition Width="*" />
+                    <ColumnDefinition Width="Auto" />
+                    <ColumnDefinition Width="Auto" />
+                </Grid.ColumnDefinitions>
+                <StackPanel Orientation="Horizontal"
+                            VerticalAlignment="Center">
+                    <Image Source="Assets/AppIcon.png"
+                           Width="26"
+                           Height="26"
+                           Margin="0,0,10,0" />
+                    <TextBlock Text="Neo Twitch"
+                               Style="{StaticResource TitleText}"
+                               FontSize="15"
+                               FontWeight="SemiBold"
+                               VerticalAlignment="Center" />
+                </StackPanel>
+                <Button x:Name="TopProfileButton"
+                        Grid.Column="1"
+                        Padding="12,5"
+                        Margin="0,0,12,0"
+                        MinHeight="28"
+                        VerticalAlignment="Center"
+                        ToolTip="Abrir perfil de Twitch"
+                        Click="OpenTwitchProfileButton_Click">
+                    <StackPanel Orientation="Horizontal">
+                        <Image Source="Assets/ServiceTwitch.png"
+                               Width="14"
+                               Height="14"
+                               Margin="0,0,7,0"
+                               VerticalAlignment="Center" />
+                        <TextBlock x:Name="TopProfileText"
+                                   Text="Perfil"
+                                   FontSize="12"
+                                   FontWeight="SemiBold"
+                                   Foreground="{Binding Foreground, RelativeSource={RelativeSource AncestorType=Button}}"
+                                   VerticalAlignment="Center" />
+                    </StackPanel>
+                </Button>
+                <StackPanel Grid.Column="2"
+                            Orientation="Horizontal"
+                            VerticalAlignment="Center">
+                    <Button x:Name="MinimizeWindowButton"
+                            Content="&#xE921;"
+                            Width="38"
+                            MinHeight="30"
+                            Padding="0"
+                            Margin="0"
+                            FontFamily="Segoe MDL2 Assets"
+                            FontSize="11"
+                            ToolTip="Minimizar"
+                            Click="MinimizeWindowButton_Click" />
+                    <Button x:Name="MaximizeWindowButton"
+                            Content="&#xE922;"
+                            Width="38"
+                            MinHeight="30"
+                            Padding="0"
+                            Margin="0"
+                            FontFamily="Segoe MDL2 Assets"
+                            FontSize="11"
+                            ToolTip="Maximizar o restaurar"
+                            Click="MaximizeWindowButton_Click" />
+                    <Button x:Name="CloseWindowButton"
+                            Content="&#xE8BB;"
+                            Width="38"
+                            MinHeight="30"
+                            Padding="0"
+                            Margin="0"
+                            FontFamily="Segoe MDL2 Assets"
+                            FontSize="11"
+                            ToolTip="Cerrar"
+                            Click="CloseWindowButton_Click" />
+                </StackPanel>
+            </Grid>
+        </Border>
+
         <Border x:Name="SidebarChrome"
-                Grid.RowSpan="2"
+                Grid.Row="1"
                 Grid.Column="0"
                 Background="{DynamicResource ThemeSidebarBrush}"
                 Padding="10">
-            <DockPanel LastChildFill="True">
+            <DockPanel LastChildFill="False">
                 <StackPanel DockPanel.Dock="Top"
-                            HorizontalAlignment="Center">
-                    <Image Source="Assets/AppIcon.png"
-                           Width="52"
-                           Height="52"
-                           HorizontalAlignment="Center"
-                           Margin="0,0,0,14"
-                           ToolTip="Neo Twitch" />
+                            HorizontalAlignment="Stretch"
+                            Margin="0,8,0,0">
                     <Rectangle Height="1"
-                               Width="42"
                                Fill="#331A0B2E"
                                Margin="0,0,0,12" />
 
@@ -495,47 +575,83 @@
                             Style="{StaticResource NavButton}"
                             ToolTip="Panel principal"
                             Click="NavButton_Click" />
-                    <Button x:Name="NavRulesButton"
+                    <Button x:Name="NavConnectionsButton"
                             Tag="1"
+                            Style="{StaticResource NavButton}"
+                            ToolTip="Conexiones"
+                            Click="NavButton_Click" />
+                    <Button x:Name="NavRulesButton"
+                            Tag="2"
                             Style="{StaticResource NavButton}"
                             ToolTip="Reglas"
                             Click="NavButton_Click" />
                     <Button x:Name="NavStripsButton"
-                            Tag="2"
+                            Tag="3"
                             Style="{StaticResource NavButton}"
                             ToolTip="Luces de fondo"
                             Click="NavButton_Click" />
                     <Button x:Name="NavPreferencesButton"
-                            Tag="3"
+                            Tag="4"
                             Style="{StaticResource NavButton}"
                             ToolTip="Configuracion"
                             Click="NavButton_Click" />
                     <Button x:Name="NavActivityButton"
-                            Tag="4"
+                            Tag="5"
                             Style="{StaticResource NavButton}"
                             ToolTip="Actividad"
                             Click="NavButton_Click" />
                 </StackPanel>
 
                 <StackPanel DockPanel.Dock="Bottom"
-                            HorizontalAlignment="Center">
+                            HorizontalAlignment="Stretch">
                     <Rectangle Height="1"
-                               Width="42"
                                Fill="#331A0B2E"
                                Margin="0,0,0,12" />
-                    <Ellipse x:Name="TwitchLiveDot"
-                             Width="12"
-                             Height="12"
-                             StrokeThickness="1.5"
-                             Margin="0,0,0,10"
-                             ToolTip="Estado del directo" />
+                    <Border BorderBrush="{DynamicResource ThemeBorderBrush}"
+                            BorderThickness="1"
+                            CornerRadius="12"
+                            Padding="10"
+                            Margin="0,0,0,8">
+                        <Grid>
+                            <Grid.ColumnDefinitions>
+                                <ColumnDefinition Width="42" />
+                                <ColumnDefinition Width="*" />
+                            </Grid.ColumnDefinitions>
+                            <Border Width="34"
+                                    Height="34"
+                                    CornerRadius="17"
+                                    ClipToBounds="True"
+                                    HorizontalAlignment="Left">
+                                <Image x:Name="ChannelAvatarImage"
+                                       Source="Assets/AppIcon.png"
+                                       Stretch="UniformToFill" />
+                            </Border>
+                            <StackPanel Grid.Column="1">
+                                <TextBlock x:Name="ChannelNameText"
+                                           Text="Sin Twitch"
+                                           FontWeight="SemiBold"
+                                           TextTrimming="CharacterEllipsis" />
+                                <TextBlock x:Name="ChannelLoginText"
+                                           Text="Sin login"
+                                           Style="{StaticResource MutedText}"
+                                           FontSize="11"
+                                           TextTrimming="CharacterEllipsis" />
+                                <StackPanel Orientation="Horizontal" Margin="0,5,0,0">
+                                    <Ellipse x:Name="TwitchLiveDot"
+                                             Width="9"
+                                             Height="9"
+                                             StrokeThickness="1.5"
+                                             Margin="0,2,6,0"
+                                             ToolTip="Estado del directo" />
+                                    <TextBlock x:Name="TwitchLiveStateText"
+                                               Text="No esta en directo"
+                                               FontSize="11" />
+                                </StackPanel>
+                            </StackPanel>
+                        </Grid>
+                    </Border>
                     <Grid Visibility="Collapsed">
-                        <Image x:Name="ChannelAvatarImage"
-                               Source="Assets/AppIcon.png" />
-                        <TextBlock x:Name="ChannelNameText" Text="Sin Twitch" />
-                        <TextBlock x:Name="ChannelLoginText" Text="Sin login" />
                         <TextBlock x:Name="TwitchConnectionText" Text="Sin conectar" />
-                        <TextBlock x:Name="TwitchLiveStateText" Text="No esta en directo" />
                         <TextBlock x:Name="TwitchStatusText" />
                         <TextBlock x:Name="ArduinoConnectionText" Text="Sin conectar" />
                         <TextBlock x:Name="ArduinoStatusText" />
@@ -546,13 +662,13 @@
                                Text="V0.0.0"
                                FontSize="11"
                                Foreground="{DynamicResource ThemeSidebarMutedTextBrush}"
-                               HorizontalAlignment="Center"
-                               Margin="0,2,0,0" />
+                               HorizontalAlignment="Left"
+                               Margin="4,0,0,0" />
                 </StackPanel>
             </DockPanel>
         </Border>
 
-        <TabControl Grid.Row="0"
+        <TabControl Grid.Row="1"
                     Grid.Column="1"
                     x:Name="MainTabs"
                     ItemContainerStyle="{StaticResource HiddenTabItem}"
@@ -593,99 +709,179 @@
                             </Grid.ColumnDefinitions>
 
                             <Border Grid.Column="0" Style="{StaticResource Card}">
-                                <StackPanel>
-                                    <TextBlock Text="Twitch"
-                                               FontSize="16"
-                                               Style="{StaticResource TitleText}"
-                                               FontWeight="SemiBold" />
-                                    <TextBlock x:Name="DashboardTwitchStateText"
-                                               Text="Sin conectar"
-                                               Tag="Accent"
-                                               FontWeight="SemiBold"
-                                               Margin="0,10,0,0" />
-                                    <TextBlock x:Name="DashboardTwitchDetailText"
-                                               Text="Cuenta: sin autorizar"
-                                               Style="{StaticResource MutedText}"
-                                               TextWrapping="Wrap"
-                                               Margin="0,6,0,0" />
-                                    <TextBlock x:Name="DashboardTwitchLiveText"
-                                               Text="Listo para conectar eventos."
-                                               Style="{StaticResource MutedText}"
-                                               TextWrapping="Wrap"
-                                               Margin="0,4,0,0" />
-                                </StackPanel>
+                                <Grid>
+                                    <Grid.ColumnDefinitions>
+                                        <ColumnDefinition Width="46" />
+                                        <ColumnDefinition Width="*" />
+                                        <ColumnDefinition Width="26" />
+                                    </Grid.ColumnDefinitions>
+                                    <Border Width="40"
+                                            Height="40"
+                                            CornerRadius="12"
+                                            Background="#1A9146FF"
+                                            HorizontalAlignment="Left">
+                                        <Image Source="Assets/ServiceTwitch.png"
+                                               Stretch="Uniform"
+                                               Margin="7" />
+                                    </Border>
+                                    <StackPanel Grid.Column="1" VerticalAlignment="Center">
+                                        <TextBlock Text="Twitch"
+                                                   FontSize="16"
+                                                   Style="{StaticResource TitleText}"
+                                                   FontWeight="SemiBold" />
+                                        <TextBlock x:Name="DashboardTwitchStateText"
+                                                   Text="Desconectado"
+                                                   FontWeight="SemiBold"
+                                                   Margin="0,5,0,0" />
+                                    </StackPanel>
+                                    <Border x:Name="DashboardTwitchCheckFrame"
+                                            Grid.Column="2"
+                                            Width="22"
+                                            Height="22"
+                                            CornerRadius="11"
+                                            BorderThickness="1.5"
+                                            VerticalAlignment="Top">
+                                        <Path x:Name="DashboardTwitchCheckIcon"
+                                              Data="M5,11 L9,15 L17,6"
+                                              Stroke="White"
+                                              StrokeThickness="2"
+                                              StrokeStartLineCap="Round"
+                                              StrokeEndLineCap="Round"
+                                              Visibility="Collapsed" />
+                                    </Border>
+                                </Grid>
                             </Border>
 
                             <Border Grid.Column="2" Style="{StaticResource Card}">
-                                <StackPanel>
-                                    <TextBlock Text="Arduino"
-                                               FontSize="16"
-                                               Style="{StaticResource TitleText}"
-                                               FontWeight="SemiBold" />
-                                    <TextBlock x:Name="DashboardArduinoStateText"
-                                               Text="Sin conectar"
-                                               Tag="Accent"
-                                               FontWeight="SemiBold"
-                                               Margin="0,10,0,0" />
-                                    <TextBlock x:Name="DashboardArduinoDetailText"
-                                               Text="Puerto: sin COM"
-                                               Style="{StaticResource MutedText}"
-                                               TextWrapping="Wrap"
-                                               Margin="0,6,0,0" />
-                                    <TextBlock x:Name="DashboardArduinoLedText"
-                                               Text="0 LEDs configurados"
-                                               Style="{StaticResource MutedText}"
-                                               TextWrapping="Wrap"
-                                               Margin="0,4,0,0" />
-                                </StackPanel>
+                                <Grid>
+                                    <Grid.ColumnDefinitions>
+                                        <ColumnDefinition Width="46" />
+                                        <ColumnDefinition Width="*" />
+                                        <ColumnDefinition Width="26" />
+                                    </Grid.ColumnDefinitions>
+                                    <Border Width="40"
+                                            Height="40"
+                                            CornerRadius="12"
+                                            Background="#1A148A86"
+                                            HorizontalAlignment="Left">
+                                        <Image Source="Assets/ServiceArduino.png"
+                                               Stretch="Uniform"
+                                               Margin="6" />
+                                    </Border>
+                                    <StackPanel Grid.Column="1" VerticalAlignment="Center">
+                                        <TextBlock Text="Arduino"
+                                                   FontSize="16"
+                                                   Style="{StaticResource TitleText}"
+                                                   FontWeight="SemiBold" />
+                                        <TextBlock x:Name="DashboardArduinoStateText"
+                                                   Text="Desconectado"
+                                                   FontWeight="SemiBold"
+                                                   Margin="0,5,0,0" />
+                                    </StackPanel>
+                                    <Border x:Name="DashboardArduinoCheckFrame"
+                                            Grid.Column="2"
+                                            Width="22"
+                                            Height="22"
+                                            CornerRadius="11"
+                                            BorderThickness="1.5"
+                                            VerticalAlignment="Top">
+                                        <Path x:Name="DashboardArduinoCheckIcon"
+                                              Data="M5,11 L9,15 L17,6"
+                                              Stroke="White"
+                                              StrokeThickness="2"
+                                              StrokeStartLineCap="Round"
+                                              StrokeEndLineCap="Round"
+                                              Visibility="Collapsed" />
+                                    </Border>
+                                </Grid>
                             </Border>
 
                             <Border Grid.Column="4" Style="{StaticResource Card}">
-                                <StackPanel>
-                                    <TextBlock Text="Alexa"
-                                               FontSize="16"
-                                               Style="{StaticResource TitleText}"
-                                               FontWeight="SemiBold" />
-                                    <TextBlock x:Name="DashboardAlexaStateText"
-                                               Text="Sin conectar"
-                                               Tag="Accent"
-                                               FontWeight="SemiBold"
-                                               Margin="0,10,0,0" />
-                                    <TextBlock x:Name="DashboardAlexaDetailText"
-                                               Text="Integracion desactivada"
-                                               Style="{StaticResource MutedText}"
-                                               TextWrapping="Wrap"
-                                               Margin="0,6,0,0" />
-                                    <TextBlock x:Name="DashboardAlexaBackgroundText"
-                                               Text="Fondo Alexa inactivo"
-                                               Style="{StaticResource MutedText}"
-                                               TextWrapping="Wrap"
-                                               Margin="0,4,0,0" />
-                                </StackPanel>
+                                <Grid>
+                                    <Grid.ColumnDefinitions>
+                                        <ColumnDefinition Width="46" />
+                                        <ColumnDefinition Width="*" />
+                                        <ColumnDefinition Width="26" />
+                                    </Grid.ColumnDefinitions>
+                                    <Border Width="40"
+                                            Height="40"
+                                            CornerRadius="12"
+                                            Background="#1A2FB4E9"
+                                            HorizontalAlignment="Left">
+                                        <Image Source="Assets/ServiceAlexa.png"
+                                               Stretch="Uniform"
+                                               Margin="7" />
+                                    </Border>
+                                    <StackPanel Grid.Column="1" VerticalAlignment="Center">
+                                        <TextBlock Text="Alexa"
+                                                   FontSize="16"
+                                                   Style="{StaticResource TitleText}"
+                                                   FontWeight="SemiBold" />
+                                        <TextBlock x:Name="DashboardAlexaStateText"
+                                                   Text="Desconectado"
+                                                   FontWeight="SemiBold"
+                                                   Margin="0,5,0,0" />
+                                    </StackPanel>
+                                    <Border x:Name="DashboardAlexaCheckFrame"
+                                            Grid.Column="2"
+                                            Width="22"
+                                            Height="22"
+                                            CornerRadius="11"
+                                            BorderThickness="1.5"
+                                            VerticalAlignment="Top">
+                                        <Path x:Name="DashboardAlexaCheckIcon"
+                                              Data="M5,11 L9,15 L17,6"
+                                              Stroke="White"
+                                              StrokeThickness="2"
+                                              StrokeStartLineCap="Round"
+                                              StrokeEndLineCap="Round"
+                                              Visibility="Collapsed" />
+                                    </Border>
+                                </Grid>
                             </Border>
 
                             <Border Grid.Column="6" Style="{StaticResource Card}">
-                                <StackPanel>
-                                    <TextBlock Text="Audio"
-                                               FontSize="16"
-                                               Style="{StaticResource TitleText}"
-                                               FontWeight="SemiBold" />
-                                    <TextBlock x:Name="DashboardAudioStateText"
-                                               Text="Volumen 100%"
-                                               Tag="Accent"
-                                               FontWeight="SemiBold"
-                                               Margin="0,10,0,0" />
-                                    <TextBlock x:Name="DashboardAudioDetailText"
-                                               Text="0 reglas con audio"
-                                               Style="{StaticResource MutedText}"
-                                               TextWrapping="Wrap"
-                                               Margin="0,6,0,0" />
-                                    <TextBlock x:Name="DashboardQueueText"
-                                               Text="Cola lista"
-                                               Style="{StaticResource MutedText}"
-                                               TextWrapping="Wrap"
-                                               Margin="0,4,0,0" />
-                                </StackPanel>
+                                <Grid>
+                                    <Grid.ColumnDefinitions>
+                                        <ColumnDefinition Width="46" />
+                                        <ColumnDefinition Width="*" />
+                                        <ColumnDefinition Width="26" />
+                                    </Grid.ColumnDefinitions>
+                                    <Border Width="40"
+                                            Height="40"
+                                            CornerRadius="12"
+                                            Background="#1AB56CFF"
+                                            HorizontalAlignment="Left">
+                                        <Image Source="Assets/ServiceAudio.png"
+                                               Stretch="Uniform"
+                                               Margin="6" />
+                                    </Border>
+                                    <StackPanel Grid.Column="1" VerticalAlignment="Center">
+                                        <TextBlock Text="Audio"
+                                                   FontSize="16"
+                                                   Style="{StaticResource TitleText}"
+                                                   FontWeight="SemiBold" />
+                                        <TextBlock x:Name="DashboardAudioStateText"
+                                                   Text="Desconectado"
+                                                   FontWeight="SemiBold"
+                                                   Margin="0,5,0,0" />
+                                    </StackPanel>
+                                    <Border x:Name="DashboardAudioCheckFrame"
+                                            Grid.Column="2"
+                                            Width="22"
+                                            Height="22"
+                                            CornerRadius="11"
+                                            BorderThickness="1.5"
+                                            VerticalAlignment="Top">
+                                        <Path x:Name="DashboardAudioCheckIcon"
+                                              Data="M5,11 L9,15 L17,6"
+                                              Stroke="White"
+                                              StrokeThickness="2"
+                                              StrokeStartLineCap="Round"
+                                              StrokeEndLineCap="Round"
+                                              Visibility="Collapsed" />
+                                    </Border>
+                                </Grid>
                             </Border>
                         </Grid>
 
@@ -710,65 +906,142 @@
                                         <ColumnDefinition Width="*" />
                                         <ColumnDefinition Width="10" />
                                         <ColumnDefinition Width="*" />
+                                        <ColumnDefinition Width="10" />
+                                        <ColumnDefinition Width="*" />
                                     </Grid.ColumnDefinitions>
                                     <Border Grid.Column="0"
                                             Style="{StaticResource Card}"
                                             Padding="14">
                                         <StackPanel>
-                                            <TextBlock Text="Reglas activas"
+                                            <Viewbox Width="22" Height="22" HorizontalAlignment="Left">
+                                                <Path Data="M4,7 C4,4 6,2 9,2 C12,2 14,4 14,7 C14,10 12,12 9,12 C6,12 4,10 4,7 M2,22 C3,17 6,15 9,15 C12,15 15,17 16,22"
+                                                      Stroke="#14B8A6"
+                                                      StrokeThickness="2"
+                                                      StrokeStartLineCap="Round"
+                                                      StrokeEndLineCap="Round"
+                                                      StrokeLineJoin="Round" />
+                                            </Viewbox>
+                                            <TextBlock Text="Nuevos seguidores"
                                                        Style="{StaticResource MutedText}"
-                                                       FontSize="12" />
-                                            <TextBlock x:Name="DashboardRulesSummaryText"
-                                                       Text="0"
-                                                       Tag="Accent"
-                                                       FontSize="26"
+                                                       FontSize="12"
+                                                       Margin="0,9,0,0" />
+                                            <TextBlock x:Name="DashboardFollowersSummaryText"
+                                                       Text="+0"
+                                                       Foreground="#14B8A6"
+                                                       FontSize="24"
                                                        FontWeight="SemiBold"
-                                                       Margin="0,6,0,0" />
+                                                       Margin="0,5,0,0" />
+                                            <TextBlock Text="Hoy"
+                                                       Style="{StaticResource MutedText}"
+                                                       FontSize="11" />
                                         </StackPanel>
                                     </Border>
                                     <Border Grid.Column="2"
                                             Style="{StaticResource Card}"
                                             Padding="14">
                                         <StackPanel>
-                                            <TextBlock Text="Acciones"
+                                            <Viewbox Width="22" Height="22" HorizontalAlignment="Left">
+                                                <Path Data="M12,3 L14.7,8.5 L21,9.2 L16.4,13.5 L17.8,20 L12,16.7 L6.2,20 L7.6,13.5 L3,9.2 L9.3,8.5 Z"
+                                                      Stroke="#B56CFF"
+                                                      StrokeThickness="2"
+                                                      StrokeStartLineCap="Round"
+                                                      StrokeEndLineCap="Round"
+                                                      StrokeLineJoin="Round" />
+                                            </Viewbox>
+                                            <TextBlock Text="Suscripciones"
                                                        Style="{StaticResource MutedText}"
-                                                       FontSize="12" />
-                                            <TextBlock x:Name="DashboardActionsSummaryText"
-                                                       Text="0"
-                                                       Tag="Accent"
-                                                       FontSize="26"
+                                                       FontSize="12"
+                                                       Margin="0,9,0,0" />
+                                            <TextBlock x:Name="DashboardSubsSummaryText"
+                                                       Text="+0"
+                                                       Foreground="#B56CFF"
+                                                       FontSize="24"
                                                        FontWeight="SemiBold"
-                                                       Margin="0,6,0,0" />
+                                                       Margin="0,5,0,0" />
+                                            <TextBlock Text="Hoy"
+                                                       Style="{StaticResource MutedText}"
+                                                       FontSize="11" />
                                         </StackPanel>
                                     </Border>
                                     <Border Grid.Column="4"
                                             Style="{StaticResource Card}"
                                             Padding="14">
                                         <StackPanel>
-                                            <TextBlock Text="LEDs"
+                                            <Viewbox Width="22" Height="22" HorizontalAlignment="Left">
+                                                <Path Data="M12,3 L19,12 L12,21 L5,12 Z M12,7 L12,17 M9,12 L15,12"
+                                                      Stroke="#37C7F3"
+                                                      StrokeThickness="2"
+                                                      StrokeStartLineCap="Round"
+                                                      StrokeEndLineCap="Round"
+                                                      StrokeLineJoin="Round" />
+                                            </Viewbox>
+                                            <TextBlock Text="Bits recibidos"
                                                        Style="{StaticResource MutedText}"
-                                                       FontSize="12" />
-                                            <TextBlock x:Name="DashboardLedSummaryText"
-                                                       Text="0"
-                                                       Tag="Accent"
-                                                       FontSize="26"
+                                                       FontSize="12"
+                                                       Margin="0,9,0,0" />
+                                            <TextBlock x:Name="DashboardBitsSummaryText"
+                                                       Text="+0"
+                                                       Foreground="#37C7F3"
+                                                       FontSize="24"
                                                        FontWeight="SemiBold"
-                                                       Margin="0,6,0,0" />
+                                                       Margin="0,5,0,0" />
+                                            <TextBlock Text="Hoy"
+                                                       Style="{StaticResource MutedText}"
+                                                       FontSize="11" />
                                         </StackPanel>
                                     </Border>
                                     <Border Grid.Column="6"
                                             Style="{StaticResource Card}"
                                             Padding="14">
                                         <StackPanel>
-                                            <TextBlock Text="Fondo"
+                                            <Viewbox Width="22" Height="22" HorizontalAlignment="Left">
+                                                <Path Data="M4,5 L20,5 L20,16 L9,16 L5,20 L5,16 L4,16 Z M8,9 L16,9 M8,12 L13,12"
+                                                      Stroke="#22C55E"
+                                                      StrokeThickness="2"
+                                                      StrokeStartLineCap="Round"
+                                                      StrokeEndLineCap="Round"
+                                                      StrokeLineJoin="Round" />
+                                            </Viewbox>
+                                            <TextBlock Text="Mensajes en chat"
                                                        Style="{StaticResource MutedText}"
-                                                       FontSize="12" />
-                                            <TextBlock x:Name="DashboardBackgroundSummaryText"
-                                                       Text="OFF"
-                                                       Tag="Accent"
-                                                       FontSize="26"
+                                                       FontSize="12"
+                                                       Margin="0,9,0,0" />
+                                            <TextBlock x:Name="DashboardChatSummaryText"
+                                                       Text="0"
+                                                       Foreground="#22C55E"
+                                                       FontSize="24"
                                                        FontWeight="SemiBold"
-                                                       Margin="0,6,0,0" />
+                                                       Margin="0,5,0,0" />
+                                            <TextBlock Text="Hoy"
+                                                       Style="{StaticResource MutedText}"
+                                                       FontSize="11" />
+                                        </StackPanel>
+                                    </Border>
+                                    <Border Grid.Column="8"
+                                            Style="{StaticResource Card}"
+                                            Padding="14">
+                                        <StackPanel>
+                                            <Viewbox Width="22" Height="22" HorizontalAlignment="Left">
+                                                <Path Data="M13,2 L4,14 L11,14 L9,22 L20,10 L13,10 Z"
+                                                      Stroke="#84CC16"
+                                                      StrokeThickness="2"
+                                                      StrokeStartLineCap="Round"
+                                                      StrokeEndLineCap="Round"
+                                                      StrokeLineJoin="Round" />
+                                            </Viewbox>
+                                            <TextBlock Text="Eventos activados"
+                                                       Style="{StaticResource MutedText}"
+                                                       FontSize="12"
+                                                       Margin="0,9,0,0" />
+                                            <TextBlock x:Name="DashboardEventsSummaryText"
+                                                       Text="0"
+                                                       Foreground="#84CC16"
+                                                       FontSize="24"
+                                                       FontWeight="SemiBold"
+                                                       Margin="0,5,0,0" />
+                                            <TextBlock Text="Hoy"
+                                                       Style="{StaticResource MutedText}"
+                                                       FontSize="11" />
                                         </StackPanel>
                                     </Border>
                                 </Grid>
@@ -780,133 +1053,105 @@
                                                    Style="{StaticResource TitleText}"
                                                    FontWeight="SemiBold"
                                                    Margin="0,0,0,10" />
-                                        <Grid Height="230" ClipToBounds="True">
-                                            <Grid.Background>
-                                                <LinearGradientBrush StartPoint="0,0" EndPoint="1,1">
-                                                    <GradientStop Color="#0B1117" Offset="0" />
-                                                    <GradientStop Color="#061D24" Offset="0.55" />
-                                                    <GradientStop Color="#0F1B2E" Offset="1" />
-                                                </LinearGradientBrush>
-                                            </Grid.Background>
-                                            <Rectangle Height="82"
-                                                       VerticalAlignment="Bottom"
-                                                       Fill="#AA050A10" />
-                                            <Rectangle Width="3"
-                                                       Height="170"
-                                                       HorizontalAlignment="Left"
-                                                       Margin="34,26,0,0"
-                                                       Fill="#148A86" />
-                                            <Rectangle Width="3"
-                                                       Height="176"
-                                                       HorizontalAlignment="Right"
-                                                       Margin="0,20,34,0"
-                                                       Fill="#148A86" />
-                                            <Rectangle Width="180"
-                                                       Height="96"
-                                                       RadiusX="8"
-                                                       RadiusY="8"
-                                                       HorizontalAlignment="Center"
-                                                       VerticalAlignment="Center"
-                                                       Stroke="#14B8A6"
-                                                       StrokeThickness="1.5"
-                                                       Fill="#BB0B1117" />
-                                            <TextBlock Text="LIVE ON"
-                                                       Tag="Accent"
-                                                       FontSize="26"
-                                                       FontWeight="SemiBold"
-                                                       HorizontalAlignment="Center"
-                                                       VerticalAlignment="Center" />
-                                            <Rectangle Width="70"
-                                                       Height="42"
-                                                       RadiusX="4"
-                                                       RadiusY="4"
-                                                       HorizontalAlignment="Left"
-                                                       VerticalAlignment="Bottom"
-                                                       Margin="86,0,0,42"
-                                                       Stroke="#233142"
-                                                       Fill="#CC121A24" />
-                                            <Rectangle Width="70"
-                                                       Height="42"
-                                                       RadiusX="4"
-                                                       RadiusY="4"
-                                                       HorizontalAlignment="Right"
-                                                       VerticalAlignment="Bottom"
-                                                       Margin="0,0,86,42"
-                                                       Stroke="#233142"
-                                                       Fill="#CC121A24" />
-                                            <Path Data="M180,168 C240,116 316,202 392,132 C444,86 520,134 574,84"
-                                                  Stroke="#22C55E"
-                                                  StrokeThickness="3"
-                                                  StrokeStartLineCap="Round"
-                                                  StrokeEndLineCap="Round"
-                                                  Opacity="0.75" />
-                                            <Path Data="M42,196 L150,112 M628,196 L514,108"
-                                                  Stroke="#00D1FF"
-                                                  StrokeThickness="2"
-                                                  Opacity="0.65" />
-                                        </Grid>
-                                        <WrapPanel Margin="0,12,0,0">
-                                            <Border BorderBrush="{DynamicResource ThemeBorderBrush}"
+                                        <UniformGrid Columns="4">
+                                            <Border x:Name="StudioLightsCard"
                                                     BorderThickness="1"
-                                                    CornerRadius="7"
-                                                    Padding="10,7"
-                                                    Margin="0,0,8,8">
-                                                <StackPanel Orientation="Horizontal">
-                                                    <TextBlock Text="Luces" FontSize="12" Style="{StaticResource MutedText}" />
-                                                    <TextBlock x:Name="DashboardLightsChipText"
-                                                               Text="OFF"
-                                                               Tag="Accent"
-                                                               FontSize="12"
+                                                    CornerRadius="12"
+                                                    Padding="14"
+                                                    Margin="0,0,10,0">
+                                                <StackPanel HorizontalAlignment="Center">
+                                                    <Viewbox Width="44" Height="44">
+                                                        <Path x:Name="StudioLightsIcon"
+                                                              Data="M12,3 L12,6 M12,18 L12,21 M5.6,5.6 L7.7,7.7 M16.3,16.3 L18.4,18.4 M3,12 L6,12 M18,12 L21,12 M5.6,18.4 L7.7,16.3 M16.3,7.7 L18.4,5.6 M8,12 A4,4 0 1 1 16,12 A4,4 0 1 1 8,12"
+                                                              StrokeThickness="2.2"
+                                                              StrokeStartLineCap="Round"
+                                                              StrokeEndLineCap="Round" />
+                                                    </Viewbox>
+                                                    <TextBlock Text="Luces LED"
                                                                FontWeight="SemiBold"
-                                                               Margin="8,0,0,0" />
+                                                               HorizontalAlignment="Center"
+                                                               Margin="0,10,0,0" />
+                                                    <TextBlock x:Name="StudioLightsStateText"
+                                                               Text="Apagadas"
+                                                               Style="{StaticResource MutedText}"
+                                                               HorizontalAlignment="Center"
+                                                               FontSize="12" />
                                                 </StackPanel>
                                             </Border>
-                                            <Border BorderBrush="{DynamicResource ThemeBorderBrush}"
+                                            <Border x:Name="StudioAlexaCard"
                                                     BorderThickness="1"
-                                                    CornerRadius="7"
-                                                    Padding="10,7"
-                                                    Margin="0,0,8,8">
-                                                <StackPanel Orientation="Horizontal">
-                                                    <TextBlock Text="Alexa" FontSize="12" Style="{StaticResource MutedText}" />
-                                                    <TextBlock x:Name="DashboardAlexaChipText"
-                                                               Text="OFF"
-                                                               Tag="Accent"
-                                                               FontSize="12"
+                                                    CornerRadius="12"
+                                                    Padding="14"
+                                                    Margin="0,0,10,0">
+                                                <StackPanel HorizontalAlignment="Center">
+                                                    <Viewbox Width="44" Height="44">
+                                                        <Path x:Name="StudioAlexaIcon"
+                                                              Data="M12,4 A8,8 0 1 1 12,20 A8,8 0 1 1 12,4 M12,20 C9,19 8,17 8,15"
+                                                              StrokeThickness="2.2"
+                                                              StrokeStartLineCap="Round"
+                                                              StrokeEndLineCap="Round" />
+                                                    </Viewbox>
+                                                    <TextBlock Text="Alexa"
                                                                FontWeight="SemiBold"
-                                                               Margin="8,0,0,0" />
+                                                               HorizontalAlignment="Center"
+                                                               Margin="0,10,0,0" />
+                                                    <TextBlock x:Name="StudioAlexaStateText"
+                                                               Text="Apagada"
+                                                               Style="{StaticResource MutedText}"
+                                                               HorizontalAlignment="Center"
+                                                               FontSize="12" />
                                                 </StackPanel>
                                             </Border>
-                                            <Border BorderBrush="{DynamicResource ThemeBorderBrush}"
+                                            <Border x:Name="StudioAudioCard"
                                                     BorderThickness="1"
-                                                    CornerRadius="7"
-                                                    Padding="10,7"
-                                                    Margin="0,0,8,8">
-                                                <StackPanel Orientation="Horizontal">
-                                                    <TextBlock Text="Sonido" FontSize="12" Style="{StaticResource MutedText}" />
-                                                    <TextBlock x:Name="DashboardAudioChipText"
-                                                               Text="ON"
-                                                               Tag="Accent"
-                                                               FontSize="12"
+                                                    CornerRadius="12"
+                                                    Padding="14"
+                                                    Margin="0,0,10,0">
+                                                <StackPanel HorizontalAlignment="Center">
+                                                    <Viewbox Width="44" Height="44">
+                                                        <Path x:Name="StudioAudioIcon"
+                                                              Data="M5,10 L9,10 L14,6 L14,18 L9,14 L5,14 Z M17,9 C19,11 19,13 17,15 M20,7 C23,10 23,14 20,17"
+                                                              StrokeThickness="2.2"
+                                                              StrokeStartLineCap="Round"
+                                                              StrokeEndLineCap="Round"
+                                                              StrokeLineJoin="Round" />
+                                                    </Viewbox>
+                                                    <TextBlock Text="Audio"
                                                                FontWeight="SemiBold"
-                                                               Margin="8,0,0,0" />
+                                                               HorizontalAlignment="Center"
+                                                               Margin="0,10,0,0" />
+                                                    <TextBlock x:Name="StudioAudioStateText"
+                                                               Text="Sin alertas"
+                                                               Style="{StaticResource MutedText}"
+                                                               HorizontalAlignment="Center"
+                                                               FontSize="12" />
                                                 </StackPanel>
                                             </Border>
-                                            <Border BorderBrush="{DynamicResource ThemeBorderBrush}"
+                                            <Border x:Name="StudioStreamCard"
                                                     BorderThickness="1"
-                                                    CornerRadius="7"
-                                                    Padding="10,7"
-                                                    Margin="0,0,8,8">
-                                                <StackPanel Orientation="Horizontal">
-                                                    <TextBlock Text="Stream" FontSize="12" Style="{StaticResource MutedText}" />
-                                                    <TextBlock x:Name="DashboardStreamChipText"
-                                                               Text="OFF"
-                                                               Tag="Accent"
-                                                               FontSize="12"
+                                                    CornerRadius="12"
+                                                    Padding="14">
+                                                <StackPanel HorizontalAlignment="Center">
+                                                    <Viewbox Width="44" Height="44">
+                                                        <Path x:Name="StudioStreamIcon"
+                                                              Data="M4,5 L19,5 L19,16 L13,16 L9,20 L9,16 L4,16 Z M8,9 L8,13 M13,9 L13,13"
+                                                              StrokeThickness="2.2"
+                                                              StrokeStartLineCap="Round"
+                                                              StrokeEndLineCap="Round"
+                                                              StrokeLineJoin="Round" />
+                                                    </Viewbox>
+                                                    <TextBlock Text="Directo"
                                                                FontWeight="SemiBold"
-                                                               Margin="8,0,0,0" />
+                                                               HorizontalAlignment="Center"
+                                                               Margin="0,10,0,0" />
+                                                    <TextBlock x:Name="StudioStreamStateText"
+                                                               Text="Offline"
+                                                               Style="{StaticResource MutedText}"
+                                                               HorizontalAlignment="Center"
+                                                               FontSize="12" />
                                                 </StackPanel>
                                             </Border>
-                                        </WrapPanel>
+                                        </UniformGrid>
                                     </StackPanel>
                                 </Border>
                             </StackPanel>
@@ -936,12 +1181,16 @@
                             </Border>
                         </Grid>
 
-                        <Expander Grid.Row="3"
-                                  Header="Configurar conexiones y datos tecnicos"
-                                  Foreground="{DynamicResource ThemeTextBrush}"
-                                  Margin="0,0,0,12">
-                            <Grid Margin="0,12,0,0">
+                    </Grid>
+                </ScrollViewer>
+            </TabItem>
+
+            <TabItem Header="Conexiones">
+                <ScrollViewer VerticalScrollBarVisibility="Auto"
+                              HorizontalScrollBarVisibility="Auto">
+                    <Grid Margin="24" MinWidth="840">
                                 <Grid.RowDefinitions>
+                                    <RowDefinition Height="Auto" />
                                     <RowDefinition Height="Auto" />
                                     <RowDefinition Height="Auto" />
                                     <RowDefinition Height="Auto" />
@@ -952,7 +1201,19 @@
                                     <ColumnDefinition Width="*" />
                                 </Grid.ColumnDefinitions>
 
-                                <Border Grid.Row="0"
+                                <StackPanel Grid.Row="0"
+                                            Grid.ColumnSpan="3"
+                                            Margin="0,0,0,18">
+                                    <TextBlock Text="Conexiones"
+                                               FontSize="28"
+                                               Style="{StaticResource TitleText}"
+                                               FontWeight="SemiBold" />
+                                    <TextBlock Text="Configura Twitch, Arduino, Alexa y la conexion automatica."
+                                               Style="{StaticResource MutedText}"
+                                               Margin="0,4,0,0" />
+                                </StackPanel>
+
+                                <Border Grid.Row="1"
                                         Grid.Column="0"
                                         Style="{StaticResource Card}">
                             <StackPanel>
@@ -1021,7 +1282,7 @@
                             </StackPanel>
                                 </Border>
 
-                                <Border Grid.Row="0"
+                                <Border Grid.Row="1"
                                         Grid.Column="2"
                                         Style="{StaticResource Card}">
                             <StackPanel>
@@ -1048,7 +1309,7 @@
                             </StackPanel>
                                 </Border>
 
-                                <Border Grid.Row="1"
+                                <Border Grid.Row="2"
                                         Grid.ColumnSpan="3"
                                         Style="{StaticResource Card}"
                                         Margin="0,18,0,0">
@@ -1139,7 +1400,7 @@
                             </Grid>
                                 </Border>
 
-                                <Border Grid.Row="2"
+                                <Border Grid.Row="3"
                                         Grid.ColumnSpan="3"
                                         Style="{StaticResource Card}"
                                         Margin="0,18,0,0">
@@ -1178,8 +1439,6 @@
                             </Grid>
                                 </Border>
                             </Grid>
-                        </Expander>
-                    </Grid>
                 </ScrollViewer>
             </TabItem>
 
@@ -2084,41 +2343,5 @@
             </TabItem>
         </TabControl>
 
-        <Border x:Name="MiniConsolePanel"
-                Grid.Row="1"
-                Grid.Column="1"
-                Background="{DynamicResource ThemeConsoleBrush}"
-                BorderBrush="{DynamicResource ThemeBorderBrush}"
-                BorderThickness="1,1,0,0"
-                Padding="14,10">
-            <DockPanel>
-                <Grid DockPanel.Dock="Top" Margin="0,0,0,8">
-                    <Grid.ColumnDefinitions>
-                        <ColumnDefinition Width="*" />
-                        <ColumnDefinition Width="Auto" />
-                    </Grid.ColumnDefinitions>
-                    <StackPanel Orientation="Horizontal">
-                        <TextBlock Text="Consola en vivo"
-                                   Foreground="White"
-                                   FontWeight="SemiBold"
-                                   Margin="0,0,10,0" />
-                        <TextBlock Text="importante / twitch / alexa / evento / sistema"
-                                   Foreground="#AFA4CC"
-                                   FontSize="12" />
-                    </StackPanel>
-                    <Button Grid.Column="1"
-                            Content="Limpiar"
-                            MinHeight="26"
-                            Padding="10,3"
-                            Margin="8,0,0,0"
-                            Click="ClearLogButton_Click" />
-                </Grid>
-
-                <ListBox x:Name="MiniActivityList"
-                         Background="Transparent"
-                         BorderThickness="0"
-                         ItemTemplate="{StaticResource MiniActivityTemplate}" />
-            </DockPanel>
-        </Border>
     </Grid>
 </Window>

@@ -844,6 +844,52 @@
                                 Style="{StaticResource Card}">
                             <DockPanel>
                                 <StackPanel DockPanel.Dock="Bottom" Margin="0,12,0,0">
+                                    <Expander Header="Simulador de prueba"
+                                              IsExpanded="False"
+                                              Margin="0,0,0,10"
+                                              Foreground="{DynamicResource ThemeTextBrush}">
+                                        <StackPanel Margin="0,8,0,0">
+                                            <TextBlock Text="Evento a simular"
+                                                       Style="{StaticResource MutedText}" />
+                                            <ComboBox x:Name="SimulatorEventKindBox" />
+
+                                            <TextBlock Text="Usuario"
+                                                       Style="{StaticResource MutedText}" />
+                                            <TextBox x:Name="SimulatorUserBox"
+                                                     Text="Prueba" />
+
+                                            <Grid>
+                                                <Grid.ColumnDefinitions>
+                                                    <ColumnDefinition Width="*" />
+                                                    <ColumnDefinition Width="10" />
+                                                    <ColumnDefinition Width="*" />
+                                                </Grid.ColumnDefinitions>
+                                                <StackPanel>
+                                                    <TextBlock Text="Bits"
+                                                               Style="{StaticResource MutedText}" />
+                                                    <TextBox x:Name="SimulatorBitsBox"
+                                                             Text="100" />
+                                                </StackPanel>
+                                                <StackPanel Grid.Column="2">
+                                                    <TextBlock Text="Viewers raid"
+                                                               Style="{StaticResource MutedText}" />
+                                                    <TextBox x:Name="SimulatorViewersBox"
+                                                             Text="18" />
+                                                </StackPanel>
+                                            </Grid>
+
+                                            <TextBlock Text="Canje"
+                                                       Style="{StaticResource MutedText}" />
+                                            <TextBox x:Name="SimulatorRewardBox"
+                                                     ToolTip="Nombre del canje que quieres simular." />
+
+                                            <TextBlock Text="Mensaje"
+                                                       Style="{StaticResource MutedText}" />
+                                            <TextBox x:Name="SimulatorMessageBox"
+                                                     Text="!baile mensaje de prueba"
+                                                     ToolTip="Para comandos de chat, el mensaje debe empezar con el comando." />
+                                        </StackPanel>
+                                    </Expander>
                                     <WrapPanel>
                                         <Button Content="Nueva" Click="AddRuleButton_Click" />
                                         <Button Content="Duplicar" Click="DuplicateRuleButton_Click" />

@@ -57,6 +57,15 @@ public partial class MainWindow : Window
         new("Canje de puntos", TwitchEventKind.ChannelPointRedemption),
         new("Prueba manual", TwitchEventKind.Test)
     ];
+    private readonly UiOption<TwitchEventKind>[] _simulatorEventOptions =
+    [
+        new("Nuevo seguidor", TwitchEventKind.Follow),
+        new("Nueva suscripcion", TwitchEventKind.Subscription),
+        new("Raid recibida", TwitchEventKind.Raid),
+        new("Bits", TwitchEventKind.Cheer),
+        new("Comando de chat", TwitchEventKind.ChatCommand),
+        new("Canje de puntos", TwitchEventKind.ChannelPointRedemption)
+    ];
     private readonly UiOption<LightPattern>[] _patternOptions =
     [
         new("Color fijo", LightPattern.Solid),
@@ -125,6 +134,9 @@ public partial class MainWindow : Window
             EventKindBox.ItemsSource = _eventOptions;
             EventKindBox.DisplayMemberPath = nameof(UiOption<TwitchEventKind>.Label);
             EventKindBox.SelectedValuePath = nameof(UiOption<TwitchEventKind>.Value);
+            SimulatorEventKindBox.ItemsSource = _simulatorEventOptions;
+            SimulatorEventKindBox.DisplayMemberPath = nameof(UiOption<TwitchEventKind>.Label);
+            SimulatorEventKindBox.SelectedValuePath = nameof(UiOption<TwitchEventKind>.Value);
             PatternBox.ItemsSource = _patternOptions;
             PatternBox.DisplayMemberPath = nameof(UiOption<LightPattern>.Label);
             PatternBox.SelectedValuePath = nameof(UiOption<LightPattern>.Value);
@@ -1418,21 +1430,124 @@ public partial class MainWindow : Window
 
         SaveGlobalSettingsFromFields();
         SaveCurrentRuleFromFields();
+        var simulatedEvent = BuildSimulatedEvent(rule);
+
+        if (!rule.Matches(simulatedEvent))
+        {
+            var message = $"La regla '{rule.Name}' no se ejecutaria con esta simulacion. Regla: {DisplayNames.For(rule.EventKind)}. Simulacion: {DisplayNames.For(simulatedEvent.Kind)}.";
+            AddLog($"Simulador: {message}", ActivityLogKind.Important);
+            WpfMessageBox.Show(this, message, "Simulador de eventos", MessageBoxButton.OK, MessageBoxImage.Warning);
+            return;
+        }
+
+        if (!ValidateSimulatedRun(rule, simulatedEvent))
+        {
+            return;
+        }
         AddLog(
-            $"Probando regla '{rule.Name}' como {DisplayNames.For(rule.EventKind)}. Acciones: {DescribeRuleActions(rule)}.",
+            $"Simulando {DescribeSimulatedEvent(simulatedEvent)} para regla '{rule.Name}'. Acciones: {DescribeRuleActions(rule)}.",
             ActivityLogKind.Event);
 
-        await RunRuleAsync(
-            rule,
-            new TwitchEvent
-            {
-                Kind = rule.EventKind,
-                RewardTitle = rule.CustomRewardTitle,
-                Bits = rule.EventKind == TwitchEventKind.Cheer ? rule.MinimumBits : null,
-                Message = rule.EventKind == TwitchEventKind.ChatCommand ? FirstNonEmpty(rule.ChatCommand, "!prueba") : "Mensaje de prueba",
-                UserName = "Prueba",
-                Title = $"Prueba de {rule.Name}"
-            });
+        await RunRuleAsync(rule, simulatedEvent);
+    }
+
+    private TwitchEvent BuildSimulatedEvent(EventRule rule)
+    {
+        var kind = SimulatorEventKindBox.SelectedValue is TwitchEventKind selectedKind
+            ? selectedKind
+            : rule.EventKind == TwitchEventKind.Test
+                ? TwitchEventKind.Follow
+                : rule.EventKind;
+        var userName = FirstNonEmpty(SimulatorUserBox.Text.Trim(), "Prueba");
+        var bits = ParseInt(SimulatorBitsBox.Text, Math.Max(1, rule.MinimumBits), 1, 1_000_000);
+        var viewers = ParseInt(SimulatorViewersBox.Text, 18, 1, 1_000_000);
+        var rewardTitle = FirstNonEmpty(SimulatorRewardBox.Text.Trim(), rule.CustomRewardTitle, "Canje de prueba");
+        var message = FirstNonEmpty(SimulatorMessageBox.Text.Trim(), rule.ChatCommand, "!baile mensaje de prueba");
+
+        return new TwitchEvent
+        {
+            Kind = kind,
+            UserName = userName,
+            RewardTitle = kind == TwitchEventKind.ChannelPointRedemption ? rewardTitle : null,
+            Bits = kind == TwitchEventKind.Cheer ? bits : null,
+            ViewerCount = kind == TwitchEventKind.Raid ? viewers : null,
+            Message = kind == TwitchEventKind.ChatCommand ? message : "Mensaje de prueba",
+            RawType = "simulator",
+            Title = $"Simulacion: {DisplayNames.For(kind)} de {userName}"
+        };
+    }
+
+    private bool ValidateSimulatedRun(EventRule rule, TwitchEvent twitchEvent)
+    {
+        if (rule.PlayAudio && (string.IsNullOrWhiteSpace(rule.AudioPath) || !File.Exists(rule.AudioPath)))
+        {
+            var message = $"El audio de '{rule.Name}' no existe o no esta configurado.";
+            AddLog($"Simulador: {message}", ActivityLogKind.Important);
+            WpfMessageBox.Show(this, message, "Simulador de eventos", MessageBoxButton.OK, MessageBoxImage.Warning);
+            return false;
+        }
+
+        if (rule.UseLights && !_lightController.HasOpenPort)
+        {
+            AddLog(
+                string.IsNullOrWhiteSpace(_config.SerialPort)
+                    ? "Simulador: la regla usa luces, pero no hay puerto COM configurado."
+                    : $"Simulador: la regla usa luces, pero Arduino no esta conectado ahora ({_config.SerialPort}).",
+                ActivityLogKind.Important);
+        }
+
+        if (rule.UseLights && !string.IsNullOrWhiteSpace(rule.TargetPins) && LightCommand.ParsePins(rule.TargetPins).Count == 0)
+        {
+            AddLog($"Simulador: los pines de la regla '{rule.Name}' no son validos.", ActivityLogKind.Important);
+        }
+
+        if (rule.SendAlexaEvent && !_config.Alexa.IsConfigured)
+        {
+            AddLog("Simulador: Alexa esta activada en la regla, pero el relay no esta configurado.", ActivityLogKind.Important);
+        }
+
+        if (rule.EventKind == TwitchEventKind.ChatCommand
+            && !EventRuleMatchesChatCommand(rule, twitchEvent.Message))
+        {
+            AddLog("Simulador: el mensaje no empieza con el comando configurado.", ActivityLogKind.Important);
+        }
+
+        return true;
+    }
+
+    private static bool EventRuleMatchesChatCommand(EventRule rule, string? message)
+    {
+        if (rule.EventKind != TwitchEventKind.ChatCommand)
+        {
+            return true;
+        }
+
+        var command = rule.ChatCommand.Trim();
+        if (string.IsNullOrWhiteSpace(command))
+        {
+            return false;
+        }
+
+        if (!command.StartsWith('!'))
+        {
+            command = $"!{command}";
+        }
+
+        var firstToken = message?.Trim().Split([' ', '\t'], StringSplitOptions.RemoveEmptyEntries).FirstOrDefault();
+        return string.Equals(firstToken, command, StringComparison.OrdinalIgnoreCase);
+    }
+
+    private static string DescribeSimulatedEvent(TwitchEvent twitchEvent)
+    {
+        var user = FirstNonEmpty(twitchEvent.UserName ?? "", "Prueba");
+        return twitchEvent.Kind switch
+        {
+            TwitchEventKind.Cheer => $"{twitchEvent.Bits ?? 0} bits de {user}",
+            TwitchEventKind.Raid => $"raid de {user} con {twitchEvent.ViewerCount ?? 0} viewers",
+            TwitchEventKind.ChannelPointRedemption => $"canje '{FirstNonEmpty(twitchEvent.RewardTitle ?? "", "Canje de prueba")}' de {user}",
+            TwitchEventKind.ChatCommand => $"comando de chat de {user}: {FirstNonEmpty(twitchEvent.Message ?? "", "sin mensaje")}",
+            _ => $"{DisplayNames.For(twitchEvent.Kind)} de {user}"
+        };
     }
 
     private static string DescribeRuleActions(EventRule rule)
@@ -2166,6 +2281,16 @@ public partial class MainWindow : Window
             RuleEnabledCheck.IsChecked = rule.IsEnabled;
             RuleNameBox.Text = rule.Name;
             EventKindBox.SelectedValue = rule.EventKind;
+            SimulatorEventKindBox.SelectedValue = rule.EventKind == TwitchEventKind.Test
+                ? TwitchEventKind.Follow
+                : rule.EventKind;
+            SimulatorUserBox.Text = FirstNonEmpty(SimulatorUserBox.Text, "Prueba");
+            SimulatorBitsBox.Text = Math.Max(1, rule.MinimumBits).ToString();
+            SimulatorViewersBox.Text = FirstNonEmpty(SimulatorViewersBox.Text, "18");
+            SimulatorRewardBox.Text = FirstNonEmpty(rule.CustomRewardTitle, SimulatorRewardBox.Text, "Canje de prueba");
+            SimulatorMessageBox.Text = rule.EventKind == TwitchEventKind.ChatCommand
+                ? FirstNonEmpty(rule.ChatCommand, SimulatorMessageBox.Text, "!baile mensaje de prueba")
+                : FirstNonEmpty(SimulatorMessageBox.Text, "Mensaje de prueba");
             RewardTitleBox.Text = rule.CustomRewardTitle;
             ChatCommandBox.Text = rule.ChatCommand;
             MinimumBitsBox.Text = rule.MinimumBits.ToString();

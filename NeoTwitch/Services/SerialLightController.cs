@@ -27,6 +27,13 @@ public sealed class SerialLightController : IDisposable
 
     public string CurrentPort => _port;
 
+    public string AckStatusText => _ackSupported switch
+    {
+        true => "ACK activo",
+        false => "modo compatible sin ACK",
+        _ => "ACK sin confirmar"
+    };
+
     public static IReadOnlyList<SerialPortInfo> GetAvailablePortInfos()
     {
         Dictionary<string, string> friendlyNames;

@@ -1557,6 +1557,7 @@
                             <RowDefinition Height="Auto" />
                             <RowDefinition Height="Auto" />
                             <RowDefinition Height="Auto" />
+                            <RowDefinition Height="Auto" />
                         </Grid.RowDefinitions>
                         <Grid.ColumnDefinitions>
                             <ColumnDefinition Width="*" />
@@ -1696,6 +1697,34 @@
                                     </StackPanel>
                                 </Grid>
                             </StackPanel>
+                        </Border>
+
+                        <Border Grid.Row="3"
+                                Grid.ColumnSpan="3"
+                                Style="{StaticResource Card}"
+                                Margin="0,18,0,0">
+                            <Grid>
+                                <Grid.ColumnDefinitions>
+                                    <ColumnDefinition Width="*" />
+                                    <ColumnDefinition Width="220" />
+                                </Grid.ColumnDefinitions>
+                                <StackPanel>
+                                    <TextBlock Text="Diagnostico"
+                                               FontSize="18"
+                                               Style="{StaticResource TitleText}"
+                                               FontWeight="SemiBold"
+                                               Margin="0,0,0,10" />
+                                    <TextBlock Text="Revisa configuracion, conexiones, reglas, audios y version sin ejecutar alertas."
+                                               Style="{StaticResource MutedText}"
+                                               TextWrapping="Wrap" />
+                                </StackPanel>
+                                <Button Grid.Column="1"
+                                        Content="Ejecutar diagnostico"
+                                        Style="{StaticResource PrimaryButton}"
+                                        HorizontalAlignment="Right"
+                                        VerticalAlignment="Top"
+                                        Click="RunDiagnosticsButton_Click" />
+                            </Grid>
                         </Border>
                     </Grid>
                 </ScrollViewer>

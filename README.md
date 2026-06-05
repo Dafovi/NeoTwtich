@@ -89,6 +89,7 @@ La seccion `Configuracion` concentra opciones que no dependen de Twitch, Arduino
 - `Volumen de alertas`: controla el volumen global de los audios reproducidos por reglas.
 - `Exportar configuracion`: guarda una copia manual del `settings.json` para moverla a otro PC o conservar un respaldo.
 - `Importar configuracion`: reemplaza la configuracion actual con un archivo exportado.
+- `Ejecutar diagnostico`: genera un reporte de version, archivos, Twitch, Arduino, Alexa, reglas, audios, fondo y cola sin disparar eventos.
 
 El archivo exportado puede incluir tokens, URLs y secretos privados. Guardalo en un lugar seguro y no lo publiques.
 

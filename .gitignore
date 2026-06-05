@@ -6,3 +6,4 @@ obj/
 *.log
 *.tmp
 artifacts/
+Release/

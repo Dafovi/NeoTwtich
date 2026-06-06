@@ -7,6 +7,7 @@ using System.Runtime.InteropServices;
 using System.Text;
 using System.Windows;
 using System.Windows.Controls;
+using System.Windows.Controls.Primitives;
 using System.Windows.Data;
 using System.Windows.Interop;
 using System.Windows.Input;
@@ -43,11 +44,22 @@ public partial class MainWindow : Window
     private readonly VersionCheckService _versionCheckService = new();
     private readonly TwitchEventSubClient _eventSubClient;
     private readonly ObservableCollection<ActivityLogEntry> _activity = [];
+    private readonly CollectionViewSource _activityViewSource = new();
     private readonly SemaphoreSlim _effectGate = new(1, 1);
     private readonly object _alertQueueSync = new();
     private readonly List<QueuedAlertSlot> _pendingAlertSlots = [];
     private readonly Dictionary<string, DateTimeOffset> _lastRuleStartTimes = new(StringComparer.OrdinalIgnoreCase);
     private IReadOnlyList<SerialPortInfo> _availablePorts = [];
+    private readonly HashSet<string> _activityEnabledFilters = new(StringComparer.OrdinalIgnoreCase)
+    {
+        "TWITCH",
+        "ARDUINO",
+        "ALEXA",
+        "AUDIO",
+        "EVENTO",
+        "SISTEMA",
+        "IMPORTANTE"
+    };
     private readonly UiOption<TwitchEventKind>[] _eventOptions =
     [
         new("Nuevo seguidor", TwitchEventKind.Follow),
@@ -95,6 +107,7 @@ public partial class MainWindow : Window
     private bool _showAlexaRelayUrl;
     private bool _showAlexaAuthToken;
     private bool _alexaRelayConnected;
+    private string _activitySearchText = "";
     private BackgroundOutputMode _backgroundOutputMode = BackgroundOutputMode.Arduino;
     private CancellationTokenSource? _backgroundApplyDebounce;
     private CancellationTokenSource? _twitchSubscriptionRefreshDebounce;
@@ -136,7 +149,9 @@ public partial class MainWindow : Window
         _loadingUi = true;
         try
         {
-            ActivityList.ItemsSource = _activity;
+            _activityViewSource.Source = _activity;
+            _activityViewSource.Filter += ActivityViewSource_Filter;
+            ActivityList.ItemsSource = _activityViewSource.View;
             DashboardActivityList.ItemsSource = _activity;
             EventKindBox.ItemsSource = _eventOptions;
             EventKindBox.DisplayMemberPath = nameof(UiOption<TwitchEventKind>.Label);
@@ -172,12 +187,12 @@ public partial class MainWindow : Window
 
     private void ConfigureNavigationIcons()
     {
-        NavSettingsButton.Content = CreateNavigationItem("Home", "Panel");
-        NavConnectionsButton.Content = CreateNavigationItem("Plug", "Conexiones");
-        NavRulesButton.Content = CreateNavigationItem("Zap", "Reglas");
-        NavStripsButton.Content = CreateNavigationItem("Sun", "Luces");
-        NavPreferencesButton.Content = CreateNavigationItem("Settings", "Configuracion");
-        NavActivityButton.Content = CreateNavigationItem("Activity", "Actividad");
+        NavSettingsButton.Content = CreateNavigationItem("Assets/Icons/nav_panel.png", "Panel");
+        NavConnectionsButton.Content = CreateNavigationItem("Assets/Icons/nav_connections.png", "Conexiones");
+        NavRulesButton.Content = CreateNavigationItem("Assets/Icons/nav_rules.png", "Reglas");
+        NavStripsButton.Content = CreateNavigationItem("Assets/Icons/nav_lights.png", "Luces");
+        NavPreferencesButton.Content = CreateNavigationItem("Assets/Icons/nav_settings.png", "Configuracion");
+        NavActivityButton.Content = CreateNavigationItem("Assets/Icons/nav_activity.png", "Actividad");
     }
 
     private static System.Windows.Shapes.Path CreateNavigationIcon(string data)
@@ -185,14 +200,14 @@ public partial class MainWindow : Window
         return CreateIconPath(data, 24, 2);
     }
 
-    private static StackPanel CreateNavigationItem(string iconKey, string label)
+    private static StackPanel CreateNavigationItem(string iconPath, string label)
     {
         var panel = new StackPanel
         {
             Orientation = System.Windows.Controls.Orientation.Horizontal,
             VerticalAlignment = VerticalAlignment.Center
         };
-        panel.Children.Add(CreateIconPath(IconData(iconKey), 18, 2));
+        panel.Children.Add(CreateTintedImageIcon(iconPath, 18));
         var text = new TextBlock
         {
             Text = label,
@@ -208,6 +223,30 @@ public partial class MainWindow : Window
             });
         panel.Children.Add(text);
         return panel;
+    }
+
+    private static Border CreateTintedImageIcon(string iconPath, double size)
+    {
+        var icon = new Border
+        {
+            Width = size,
+            Height = size,
+            Background = System.Windows.Media.Brushes.White,
+            OpacityMask = new ImageBrush
+            {
+                ImageSource = LoadPackImage(iconPath),
+                Stretch = Stretch.Uniform
+            }
+        };
+
+        icon.SetBinding(
+            Border.BackgroundProperty,
+            new System.Windows.Data.Binding("Foreground")
+            {
+                RelativeSource = new RelativeSource(RelativeSourceMode.FindAncestor, typeof(System.Windows.Controls.Button), 1)
+            });
+
+        return icon;
     }
 
     private void ConfigureActionIcons()
@@ -237,6 +276,7 @@ public partial class MainWindow : Window
             ["Importar configuracion"] = "Download",
             ["Ejecutar diagnostico"] = "MonitorCheck",
             ["Limpiar actividad"] = "Trash",
+            ["Limpiar filtros"] = "Search",
             ["Limpiar"] = "Trash"
         };
 
@@ -330,8 +370,11 @@ public partial class MainWindow : Window
             "Activity" => "M3,12 L7,12 L10,5 L14,19 L17,12 L21,12",
             "Alexa" => "M12,4 A8,8 0 1 1 12,20 A8,8 0 1 1 12,4 M12,8 A4,4 0 1 1 12,16 A4,4 0 1 1 12,8",
             "Arduino" => "M7,8 C4,8 2,10 2,12 C2,14 4,16 7,16 C9,16 10,14 12,12 C14,10 15,8 17,8 C20,8 22,10 22,12 C22,14 20,16 17,16 C15,16 14,14 12,12 C10,10 9,8 7,8 M5,12 L9,12 M17,10 L17,14 M15,12 L19,12",
+            "Bits" => "M12,2 L20,9 L12,22 L4,9 Z M12,2 L12,22 M4,9 L20,9",
+            "Chat" => "M4,5 L20,5 L20,16 L9,16 L5,20 L5,16 L4,16 Z M8,10 L16,10 M8,13 L13,13",
             "Copy" => "M8,8 L19,8 L19,19 L8,19 Z M5,15 L4,15 L4,4 L15,4 L15,5",
             "Download" => "M12,3 L12,15 M7,10 L12,15 L17,10 M5,20 L19,20",
+            "Event" => "M12,3 L14.5,9 L21,9 L15.5,13 L17.5,21 L12,16.5 L6.5,21 L8.5,13 L3,9 L9.5,9 Z",
             "ExternalLink" => "M14,4 L20,4 L20,10 M20,4 L11,13 M19,14 L19,20 L5,20 L5,6 L11,6",
             "Home" => "M3,11 L12,3 L21,11 M5,10 L5,21 L10,21 L10,15 L14,15 L14,21 L19,21 L19,10",
             "MonitorCheck" => "M4,5 L20,5 L20,16 L4,16 Z M9,21 L15,21 M12,16 L12,21 M8,10 L11,13 L16,8",
@@ -343,9 +386,13 @@ public partial class MainWindow : Window
             "Search" => "M10.5,5 A5.5,5.5 0 1 1 10.5,16 A5.5,5.5 0 1 1 10.5,5 M15,15 L21,21",
             "Settings" => "M12,8 A4,4 0 1 1 12,16 A4,4 0 1 1 12,8 M12,2 L14,2 L15,5 L18,4 L20,6 L19,9 L22,11 L22,13 L19,15 L20,18 L18,20 L15,19 L14,22 L10,22 L9,19 L6,20 L4,18 L5,15 L2,13 L2,11 L5,9 L4,6 L6,4 L9,5 L10,2 Z",
             "Square" => "M7,7 L17,7 L17,17 L7,17 Z",
+            "Star" => "M12,3 L14.6,8.6 L20.8,9.3 L16.2,13.5 L17.5,19.8 L12,16.6 L6.5,19.8 L7.8,13.5 L3.2,9.3 L9.4,8.6 Z",
             "Sun" => "M12,7 A5,5 0 1 1 12,17 A5,5 0 1 1 12,7 M12,1 L12,4 M12,20 L12,23 M4.2,4.2 L6.3,6.3 M17.7,17.7 L19.8,19.8 M1,12 L4,12 M20,12 L23,12 M4.2,19.8 L6.3,17.7 M17.7,6.3 L19.8,4.2",
             "Trash" => "M4,7 L20,7 M9,7 L9,5 L15,5 L15,7 M7,7 L8,21 L16,21 L17,7 M10,11 L10,18 M14,11 L14,18",
+            "Twitch" => "M4,5 L20,5 L20,16 L13,16 L9,20 L9,16 L4,16 Z M8,9 L8,13 M13,9 L13,13",
             "Upload" => "M12,15 L12,3 M7,8 L12,3 L17,8 M5,20 L19,20",
+            "Users" => "M8,11 A4,4 0 1 1 8,3 A4,4 0 1 1 8,11 M2,21 C2,16 5,14 8,14 C11,14 14,16 14,21 M17,10 A3,3 0 1 1 17,4 A3,3 0 1 1 17,10 M15,14 C18,14 21,16 21,20",
+            "Warning" => "M12,3 L22,20 L2,20 Z M12,8 L12,13 M12,17 L12.1,17",
             "Zap" => "M13,2 L4,14 L11,14 L9,22 L20,10 L13,10 Z",
             _ => "M12,5 L12,19 M5,12 L19,12"
         };
@@ -1946,6 +1993,74 @@ public partial class MainWindow : Window
         _activity.Clear();
     }
 
+    private void ActivityFilterButton_CheckedChanged(object sender, RoutedEventArgs e)
+    {
+        if (_initializingComponent || sender is not ToggleButton button)
+        {
+            return;
+        }
+
+        var filter = button.Tag?.ToString() ?? "";
+        if (string.IsNullOrWhiteSpace(filter))
+        {
+            return;
+        }
+
+        if (button.IsChecked == true)
+        {
+            _activityEnabledFilters.Add(filter);
+        }
+        else
+        {
+            _activityEnabledFilters.Remove(filter);
+        }
+
+        ApplyActivityFilterButtonTheme(button, _config.DarkMode ? ThemePalette.Dark : ThemePalette.Light);
+        _activityViewSource.View?.Refresh();
+    }
+
+    private void ActivitySearchBox_TextChanged(object sender, TextChangedEventArgs e)
+    {
+        if (_loadingUi || sender is not System.Windows.Controls.TextBox textBox)
+        {
+            return;
+        }
+
+        _activitySearchText = textBox.Text.Trim();
+        _activityViewSource.View?.Refresh();
+    }
+
+    private void ClearActivityFiltersButton_Click(object sender, RoutedEventArgs e)
+    {
+        _activityEnabledFilters.Clear();
+        foreach (var button in ActivityFilterButtons())
+        {
+            var filter = button.Tag?.ToString() ?? "";
+            if (!string.IsNullOrWhiteSpace(filter))
+            {
+                _activityEnabledFilters.Add(filter);
+            }
+
+            button.IsChecked = true;
+            ApplyActivityFilterButtonTheme(button, _config.DarkMode ? ThemePalette.Dark : ThemePalette.Light);
+        }
+
+        ActivitySearchBox.Text = "";
+        _activitySearchText = "";
+        _activityViewSource.View?.Refresh();
+    }
+
+    private void ActivityViewSource_Filter(object sender, FilterEventArgs e)
+    {
+        if (e.Item is not ActivityLogEntry entry)
+        {
+            e.Accepted = false;
+            return;
+        }
+
+        e.Accepted = entry.MatchesFilter(_activityEnabledFilters, _activitySearchText);
+    }
+
     private async void EventSubClient_EventReceived(TwitchEvent twitchEvent)
     {
         RegisterDashboardTwitchEvent(twitchEvent);
@@ -2773,30 +2888,25 @@ public partial class MainWindow : Window
         DashboardEventsSummaryText.Foreground = FrozenBrushFrom("#84CC16");
 
         RefreshDashboardConnectionStates();
-        UpdateStudioStatusCards();
     }
 
     private void RefreshDashboardConnectionStates()
     {
         SetDashboardConnectionState(
             DashboardTwitchStateText,
-            DashboardTwitchCheckFrame,
-            DashboardTwitchCheckIcon,
+            DashboardTwitchStatusIcon,
             _config.Token.HasToken);
         SetDashboardConnectionState(
             DashboardArduinoStateText,
-            DashboardArduinoCheckFrame,
-            DashboardArduinoCheckIcon,
+            DashboardArduinoStatusIcon,
             _lightController.HasConfirmedAck);
         SetDashboardConnectionState(
             DashboardAlexaStateText,
-            DashboardAlexaCheckFrame,
-            DashboardAlexaCheckIcon,
+            DashboardAlexaStatusIcon,
             _config.Alexa.Enabled && _config.Alexa.IsConfigured && _alexaRelayConnected);
         SetDashboardConnectionState(
             DashboardAudioStateText,
-            DashboardAudioCheckFrame,
-            DashboardAudioCheckIcon,
+            DashboardAudioStatusIcon,
             _config.AlertVolumePercent > 0,
             $"{_config.AlertVolumePercent}%",
             "Desactivado");
@@ -2804,91 +2914,46 @@ public partial class MainWindow : Window
 
     private static void SetDashboardConnectionState(
         TextBlock stateText,
-        Border checkFrame,
-        System.Windows.Shapes.Path checkIcon,
+        Border statusIcon,
         bool connected,
         string connectedText = "Conectado",
         string disconnectedText = "Desconectado")
     {
         var successBrush = FrozenBrushFrom("#22C55E");
         var dangerBrush = FrozenBrushFrom("#F43F5E");
-        var inactiveBrush = FrozenBrushFrom("#64748B");
 
         stateText.Text = connected ? connectedText : disconnectedText;
         stateText.Foreground = connected ? successBrush : dangerBrush;
-        checkFrame.Background = connected ? successBrush : System.Windows.Media.Brushes.Transparent;
-        checkFrame.BorderBrush = connected ? successBrush : inactiveBrush;
-        checkIcon.Visibility = connected ? Visibility.Visible : Visibility.Collapsed;
+        statusIcon.Background = connected ? successBrush : dangerBrush;
+        statusIcon.OpacityMask = new ImageBrush
+        {
+            ImageSource = LoadPackImage(connected ? "Assets/Icons/status_ok.png" : "Assets/Icons/status_error.png"),
+            Stretch = Stretch.Uniform
+        };
+        statusIcon.ToolTip = connected ? connectedText : disconnectedText;
     }
 
-    private void UpdateStudioStatusCards()
+    private static ImageSource? LoadPackImage(string path)
     {
-        var hasAudioAlerts = _config.AlertVolumePercent > 0
-            && _config.Rules.Any(rule => rule.IsEnabled && rule.PlayAudio);
-
-        UpdateStudioStatusCard(
-            StudioLightsCard,
-            StudioLightsIcon,
-            StudioLightsStateText,
-            _config.BackgroundEnabled,
-            "Encendidas",
-            "Apagadas",
-            "#14B8A6");
-        UpdateStudioStatusCard(
-            StudioAlexaCard,
-            StudioAlexaIcon,
-            StudioAlexaStateText,
-            _config.BackgroundAlexaEnabled,
-            "Encendida",
-            "Apagada",
-            "#2FB4E9");
-        UpdateStudioStatusCard(
-            StudioAudioCard,
-            StudioAudioIcon,
-            StudioAudioStateText,
-            hasAudioAlerts,
-            "Listo",
-            "Sin alertas",
-            "#B56CFF");
-        UpdateStudioStatusCard(
-            StudioStreamCard,
-            StudioStreamIcon,
-            StudioStreamStateText,
-            _streamStatus is { IsLive: true },
-            "En vivo",
-            "Offline",
-            "#FF2D55");
-    }
-
-    private void UpdateStudioStatusCard(
-        Border card,
-        System.Windows.Shapes.Path icon,
-        TextBlock stateText,
-        bool active,
-        string activeText,
-        string inactiveText,
-        string accentColor)
-    {
-        var palette = _config.DarkMode
-            ? ThemePalette.Dark
-            : ThemePalette.Light;
-        var accent = FrozenBrushFrom(accentColor);
-
-        card.Background = active ? FrozenBrushFrom("#14148A86") : palette.Input;
-        card.BorderBrush = active ? accent : palette.Border;
-        card.Effect = active
-            ? new System.Windows.Media.Effects.DropShadowEffect
+        foreach (var uri in new[]
+        {
+            $"pack://application:,,,/NeoTwitch;component/{path}",
+            $"pack://application:,,,/{path}"
+        })
+        {
+            try
             {
-                Color = ((SolidColorBrush)accent).Color,
-                BlurRadius = 18,
-                ShadowDepth = 0,
-                Opacity = 0.34
+                var image = new BitmapImage(new Uri(uri, UriKind.Absolute));
+                image.Freeze();
+                return image;
             }
-            : null;
-        icon.Stroke = active ? accent : palette.MutedText;
-        icon.Opacity = active ? 1 : 0.55;
-        stateText.Text = active ? activeText : inactiveText;
-        stateText.Foreground = active ? accent : palette.MutedText;
+            catch
+            {
+                // Some WPF resource contexts prefer the assembly-qualified URI, others the app-root URI.
+            }
+        }
+
+        return null;
     }
 
     private void UpdateTwitchLiveIndicator()
@@ -2906,7 +2971,6 @@ public partial class MainWindow : Window
             TwitchLiveStateText.Foreground = liveBrush;
             TopProfileText.Text = "Perfil";
             TopProfileText.Foreground = palette.Text;
-            UpdateStudioStatusCards();
             return;
         }
 
@@ -2916,7 +2980,6 @@ public partial class MainWindow : Window
         TwitchLiveStateText.Foreground = palette.SidebarText;
         TopProfileText.Text = "Perfil";
         TopProfileText.Foreground = palette.Text;
-        UpdateStudioStatusCards();
     }
 
     private string BuildTwitchStatusText()
@@ -3141,6 +3204,8 @@ public partial class MainWindow : Window
         {
             case Border border when border.TemplatedParent is not null:
                 break;
+            case Border border when border.DataContext is ActivityLogEntry:
+                break;
             case Border border:
                 border.BorderBrush = palette.Border;
                 if (IsSidebarBorder(border))
@@ -3226,6 +3291,14 @@ public partial class MainWindow : Window
                     break;
                 }
 
+                if (IsActivityFeedListBox(listBox))
+                {
+                    listBox.Background = System.Windows.Media.Brushes.Transparent;
+                    listBox.Foreground = palette.Text;
+                    listBox.BorderBrush = System.Windows.Media.Brushes.Transparent;
+                    break;
+                }
+
                 listBox.Background = palette.Input;
                 listBox.Foreground = palette.Text;
                 listBox.BorderBrush = palette.Border;
@@ -3251,6 +3324,10 @@ public partial class MainWindow : Window
                 break;
             case System.Windows.Controls.Button button when IsColorButton(button):
                 button.BorderBrush = palette.Border;
+                skipChildren = true;
+                break;
+            case ToggleButton toggleButton:
+                ApplyActivityFilterButtonTheme(toggleButton, palette);
                 skipChildren = true;
                 break;
             case System.Windows.Controls.Button button:
@@ -3307,6 +3384,24 @@ public partial class MainWindow : Window
         button.BorderBrush = palette.Border;
     }
 
+    private void ApplyActivityFilterButtonTheme(ToggleButton button, ThemePalette palette)
+    {
+        var filter = button.Tag?.ToString() ?? "";
+        var accentColor = ActivityFilterAccent(filter);
+        var accent = FrozenBrushFrom(accentColor);
+        var active = button.IsChecked == true;
+
+        button.Background = active
+            ? TranslucentBrushFrom(accentColor)
+            : palette.Input;
+        button.Foreground = active
+            ? accent
+            : palette.MutedText;
+        button.BorderBrush = active
+            ? accent
+            : palette.Border;
+    }
+
     private void UpdateNavigationButtons()
     {
         if (_initializingComponent)
@@ -3342,6 +3437,48 @@ public partial class MainWindow : Window
     {
         return !string.IsNullOrWhiteSpace(button.Name)
             && button.Name.EndsWith("ColorButton", StringComparison.OrdinalIgnoreCase);
+    }
+
+    private IEnumerable<ToggleButton> ActivityFilterButtons()
+    {
+        return
+        [
+            ActivityFilterTwitchButton,
+            ActivityFilterArduinoButton,
+            ActivityFilterAlexaButton,
+            ActivityFilterAudioButton,
+            ActivityFilterEventButton,
+            ActivityFilterSystemButton,
+            ActivityFilterImportantButton
+        ];
+    }
+
+    private static string ActivityFilterAccent(string filter)
+    {
+        return filter.ToUpperInvariant() switch
+        {
+            "TWITCH" => "#9146FF",
+            "ARDUINO" => "#00878F",
+            "ALEXA" => "#2FB4E9",
+            "AUDIO" => "#B56CFF",
+            "EVENTO" => "#22C55E",
+            "SISTEMA" => "#94A3B8",
+            "IMPORTANTE" => "#FFB020",
+            _ => "#14B8A6"
+        };
+    }
+
+    private static SolidColorBrush TranslucentBrushFrom(string accentColor)
+    {
+        return accentColor.StartsWith('#') && accentColor.Length == 7
+            ? FrozenBrushFrom($"#22{accentColor[1..]}")
+            : FrozenBrushFrom("#2200C7B7");
+    }
+
+    private static bool IsActivityFeedListBox(System.Windows.Controls.ListBox listBox)
+    {
+        return string.Equals(listBox.Name, "ActivityList", StringComparison.OrdinalIgnoreCase)
+            || string.Equals(listBox.Name, "DashboardActivityList", StringComparison.OrdinalIgnoreCase);
     }
 
     private static bool IsWindowControlButton(System.Windows.Controls.Button button)
@@ -3652,25 +3789,33 @@ public partial class MainWindow : Window
     {
         var text = message.ToLowerInvariant();
 
-        if (text.Contains("error", StringComparison.Ordinal)
-            || text.Contains("fallo", StringComparison.Ordinal)
-            || text.Contains("no pude", StringComparison.Ordinal)
-            || text.Contains("no puedo", StringComparison.Ordinal)
-            || text.Contains("no hay", StringComparison.Ordinal)
-            || text.Contains("no encontre", StringComparison.Ordinal))
-        {
-            return ActivityLogKind.Important;
-        }
-
         if (text.StartsWith("twitch", StringComparison.Ordinal)
-            || text.StartsWith("alexa", StringComparison.Ordinal)
             || text.StartsWith("chat", StringComparison.Ordinal)
             || text.Contains("autorizado", StringComparison.Ordinal)
             || text.Contains("escuchando eventos", StringComparison.Ordinal))
         {
-            return text.StartsWith("alexa", StringComparison.Ordinal)
-                ? ActivityLogKind.Alexa
-                : ActivityLogKind.Twitch;
+            return ActivityLogKind.Twitch;
+        }
+
+        if (text.StartsWith("alexa", StringComparison.Ordinal))
+        {
+            return ActivityLogKind.Alexa;
+        }
+
+        if (text.StartsWith("arduino", StringComparison.Ordinal)
+            || text.StartsWith("serial", StringComparison.Ordinal)
+            || text.StartsWith("fondo", StringComparison.Ordinal)
+            || text.StartsWith("luces", StringComparison.Ordinal)
+            || text.Contains("puerto com", StringComparison.Ordinal)
+            || text.Contains("puertos com", StringComparison.Ordinal))
+        {
+            return ActivityLogKind.Arduino;
+        }
+
+        if (text.StartsWith("audio", StringComparison.Ordinal)
+            || text.StartsWith("sonido", StringComparison.Ordinal))
+        {
+            return ActivityLogKind.Audio;
         }
 
         if (text.Contains("siguio", StringComparison.Ordinal)
@@ -3681,6 +3826,16 @@ public partial class MainWindow : Window
             || text.StartsWith("prueba de", StringComparison.Ordinal))
         {
             return ActivityLogKind.Event;
+        }
+
+        if (text.Contains("error", StringComparison.Ordinal)
+            || text.Contains("fallo", StringComparison.Ordinal)
+            || text.Contains("no pude", StringComparison.Ordinal)
+            || text.Contains("no puedo", StringComparison.Ordinal)
+            || text.Contains("no hay", StringComparison.Ordinal)
+            || text.Contains("no encontre", StringComparison.Ordinal))
+        {
+            return ActivityLogKind.Important;
         }
 
         return ActivityLogKind.Info;
@@ -3737,7 +3892,9 @@ public partial class MainWindow : Window
     {
         Info,
         Twitch,
+        Arduino,
         Alexa,
+        Audio,
         Event,
         Important
     }
@@ -3752,38 +3909,634 @@ public partial class MainWindow : Window
 
     private sealed class ActivityLogEntry
     {
-        private static readonly SolidColorBrush InfoBrush = FrozenBrushFrom("#AFA4CC");
-        private static readonly SolidColorBrush TwitchBrush = FrozenBrushFrom("#9146FF");
-        private static readonly SolidColorBrush AlexaBrush = FrozenBrushFrom("#00A7CE");
-        private static readonly SolidColorBrush EventBrush = FrozenBrushFrom("#00C7B7");
-        private static readonly SolidColorBrush ImportantBrush = FrozenBrushFrom("#FFB020");
-
         public ActivityLogEntry(string message, ActivityLogKind kind)
         {
-            Time = DateTime.Now.ToString("HH:mm:ss");
+            Kind = kind;
+            Time = DateTime.Now.ToString("HH:mm");
             Message = message;
-            Category = kind switch
+            SourceKey = ChooseSourceKey(message, kind);
+            FilterKey = SourceKey;
+            SourceName = SourceDisplayName(SourceKey);
+            Category = BuildCategory(message, kind);
+            Title = BuildTitle(message, kind);
+            Description = BuildDescription(message, Title);
+            var accentColor = ChooseAccentColor(message, kind);
+            var sourceAccentColor = ActivityFilterAccent(SourceKey);
+            SourceBrush = FrozenBrushFrom(sourceAccentColor);
+            SourceBackgroundBrush = TranslucentBrushFrom(sourceAccentColor);
+            SourceIconImageSource = LoadActivityIcon(ChooseServiceIconPath(SourceKey));
+            SourceImageVisibility = SourceIconImageSource is null
+                ? Visibility.Collapsed
+                : Visibility.Visible;
+            SourceVectorVisibility = SourceIconImageSource is null
+                ? Visibility.Visible
+                : Visibility.Collapsed;
+            SourceIconGeometry = Geometry.Parse(IconData(ChooseSourceIconKey(SourceKey)));
+            StatusText = ChooseStatusText(message, kind);
+            IsImportant = kind == ActivityLogKind.Important || !string.Equals(StatusText, "OK", StringComparison.OrdinalIgnoreCase);
+            var statusAccentColor = StatusAccent(StatusText);
+            StatusBrush = FrozenBrushFrom(statusAccentColor);
+            StatusBackgroundBrush = TranslucentBrushFrom(statusAccentColor);
+            StatusIconImageSource = LoadActivityIcon(ChooseStatusIconPath(StatusText, FilterKey));
+
+            AccentBrush = FrozenBrushFrom(accentColor);
+            IconBackgroundBrush = BackgroundBrushFrom(accentColor);
+            var activityIconPath = ChooseActivityIconPath(message, kind, SourceKey);
+            IconImageSource = LoadActivityIcon(activityIconPath);
+            ImageIconVisibility = IconImageSource is null
+                ? Visibility.Collapsed
+                : Visibility.Visible;
+            OriginalImageIconVisibility = IsServiceIconPath(activityIconPath) && IconImageSource is not null
+                ? Visibility.Visible
+                : Visibility.Collapsed;
+            TintedImageIconVisibility = !IsServiceIconPath(activityIconPath) && IconImageSource is not null
+                ? Visibility.Visible
+                : Visibility.Collapsed;
+            VectorIconVisibility = IconImageSource is null
+                ? Visibility.Visible
+                : Visibility.Collapsed;
+            IconGeometry = Geometry.Parse(IconData(ChooseIconKey(message, kind)));
+        }
+
+        public ActivityLogKind Kind { get; }
+        public string Time { get; }
+        public string Message { get; }
+        public string SourceKey { get; }
+        public string FilterKey { get; }
+        public bool IsImportant { get; }
+        public string SourceName { get; }
+        public string Category { get; }
+        public string Title { get; }
+        public string Description { get; }
+        public Geometry IconGeometry { get; }
+        public ImageSource? IconImageSource { get; }
+        public Visibility ImageIconVisibility { get; }
+        public Visibility OriginalImageIconVisibility { get; }
+        public Visibility TintedImageIconVisibility { get; }
+        public Visibility VectorIconVisibility { get; }
+        public SolidColorBrush AccentBrush { get; }
+        public SolidColorBrush IconBackgroundBrush { get; }
+        public Geometry SourceIconGeometry { get; }
+        public ImageSource? SourceIconImageSource { get; }
+        public Visibility SourceImageVisibility { get; }
+        public Visibility SourceVectorVisibility { get; }
+        public SolidColorBrush SourceBrush { get; }
+        public SolidColorBrush SourceBackgroundBrush { get; }
+        public string StatusText { get; }
+        public ImageSource? StatusIconImageSource { get; }
+        public SolidColorBrush StatusBrush { get; }
+        public SolidColorBrush StatusBackgroundBrush { get; }
+
+        public bool MatchesFilter(IReadOnlySet<string> enabledFilters, string searchText)
+        {
+            var sourceEnabled = enabledFilters.Contains(FilterKey);
+            var importantEnabled = enabledFilters.Contains("IMPORTANTE");
+            var hasAnySourceEnabled = enabledFilters.Any(filter => !string.Equals(filter, "IMPORTANTE", StringComparison.OrdinalIgnoreCase));
+
+            if (IsImportant)
             {
-                ActivityLogKind.Twitch => "TWITCH",
-                ActivityLogKind.Alexa => "ALEXA",
-                ActivityLogKind.Event => "EVENTO",
-                ActivityLogKind.Important => "IMPORTANTE",
-                _ => "SISTEMA"
-            };
-            AccentBrush = kind switch
+                if (!importantEnabled)
+                {
+                    return false;
+                }
+
+                if (hasAnySourceEnabled && !sourceEnabled)
+                {
+                    return false;
+                }
+            }
+            else if (!sourceEnabled)
             {
-                ActivityLogKind.Twitch => TwitchBrush,
-                ActivityLogKind.Alexa => AlexaBrush,
-                ActivityLogKind.Event => EventBrush,
-                ActivityLogKind.Important => ImportantBrush,
-                _ => InfoBrush
+                return false;
+            }
+
+            if (string.IsNullOrWhiteSpace(searchText))
+            {
+                return true;
+            }
+
+            return Message.Contains(searchText, StringComparison.OrdinalIgnoreCase)
+                || Title.Contains(searchText, StringComparison.OrdinalIgnoreCase)
+                || Description.Contains(searchText, StringComparison.OrdinalIgnoreCase)
+                || SourceName.Contains(searchText, StringComparison.OrdinalIgnoreCase)
+                || Category.Contains(searchText, StringComparison.OrdinalIgnoreCase)
+                || StatusText.Contains(searchText, StringComparison.OrdinalIgnoreCase);
+        }
+
+        private static string ChooseSourceKey(string message, ActivityLogKind kind)
+        {
+            var text = message.ToLowerInvariant();
+
+            if (kind == ActivityLogKind.Event)
+            {
+                return "EVENTO";
+            }
+
+            if (IsTwitchMessage(text, kind)
+                || text.StartsWith("chat", StringComparison.Ordinal)
+                || text.Contains("autorizado", StringComparison.Ordinal)
+                || text.Contains("escuchando eventos", StringComparison.Ordinal))
+            {
+                return "TWITCH";
+            }
+
+            if (IsArduinoMessage(text, kind)
+                || text.StartsWith("fondo", StringComparison.Ordinal)
+                || text.StartsWith("luces", StringComparison.Ordinal))
+            {
+                return "ARDUINO";
+            }
+
+            if (IsAlexaMessage(text, kind))
+            {
+                return "ALEXA";
+            }
+
+            if (IsAudioMessage(text, kind))
+            {
+                return "AUDIO";
+            }
+
+            return "SISTEMA";
+        }
+
+        private static string SourceDisplayName(string sourceKey)
+        {
+            return sourceKey switch
+            {
+                "TWITCH" => "Twitch",
+                "ARDUINO" => "Arduino",
+                "ALEXA" => "Alexa",
+                "AUDIO" => "Audio",
+                "EVENTO" => "Evento",
+                "IMPORTANTE" => "Importante",
+                _ => "Sistema"
             };
         }
 
-        public string Time { get; }
-        public string Message { get; }
-        public string Category { get; }
-        public SolidColorBrush AccentBrush { get; }
+        private static string BuildCategory(string message, ActivityLogKind kind)
+        {
+            var text = message.ToLowerInvariant();
+
+            if (kind == ActivityLogKind.Event)
+            {
+                if (text.Contains("bits", StringComparison.Ordinal))
+                {
+                    return "BITS";
+                }
+
+                if (text.Contains("suscripcion", StringComparison.Ordinal) || text.Contains("suscribio", StringComparison.Ordinal))
+                {
+                    return "SUB";
+                }
+
+                if (text.Contains("siguio", StringComparison.Ordinal) || text.Contains("seguidor", StringComparison.Ordinal))
+                {
+                    return "SEGUIDOR";
+                }
+
+                if (text.Contains("chat", StringComparison.Ordinal) || text.Contains("comando", StringComparison.Ordinal))
+                {
+                    return "CHAT";
+                }
+
+                if (text.Contains("raid", StringComparison.Ordinal))
+                {
+                    return "RAID";
+                }
+
+                if (text.Contains("canje", StringComparison.Ordinal))
+                {
+                    return "CANJE";
+                }
+
+                return "EVENTO";
+            }
+
+            if (IsTwitchMessage(text, kind))
+            {
+                return "TWITCH";
+            }
+
+            if (IsArduinoMessage(text, kind))
+            {
+                return "ARDUINO";
+            }
+
+            if (IsAlexaMessage(text, kind))
+            {
+                return "ALEXA";
+            }
+
+            if (IsAudioMessage(text, kind))
+            {
+                return "AUDIO";
+            }
+
+            return kind == ActivityLogKind.Important ? "IMPORTANTE" : "SISTEMA";
+        }
+
+        private static string BuildTitle(string message, ActivityLogKind kind)
+        {
+            var text = message.ToLowerInvariant();
+
+            if (kind == ActivityLogKind.Event)
+            {
+                if (text.Contains("bits", StringComparison.Ordinal))
+                {
+                    return "Bits recibidos";
+                }
+
+                if (text.Contains("suscripcion", StringComparison.Ordinal) || text.Contains("suscribio", StringComparison.Ordinal))
+                {
+                    return "Suscripcion";
+                }
+
+                if (text.Contains("raid", StringComparison.Ordinal))
+                {
+                    return "Raid recibida";
+                }
+
+                if (text.Contains("siguio", StringComparison.Ordinal) || text.Contains("seguidor", StringComparison.Ordinal))
+                {
+                    return "Nuevo seguidor";
+                }
+
+                if (text.Contains("canje", StringComparison.Ordinal))
+                {
+                    return "Canje activado";
+                }
+
+                if (text.Contains("comando", StringComparison.Ordinal) || text.Contains("chat", StringComparison.Ordinal))
+                {
+                    return "Comando de chat";
+                }
+
+                if (text.Contains("prueba", StringComparison.Ordinal))
+                {
+                    return "Prueba de alerta";
+                }
+
+                return "Alerta activada";
+            }
+
+            if (IsTwitchMessage(text, kind))
+            {
+                return kind == ActivityLogKind.Important ? "Aviso de Twitch" : "Twitch";
+            }
+
+            if (IsArduinoMessage(text, kind))
+            {
+                return kind == ActivityLogKind.Important ? "Aviso de Arduino" : "Arduino";
+            }
+
+            if (IsAlexaMessage(text, kind))
+            {
+                return text.Contains("fondo", StringComparison.Ordinal) ? "Rutina Alexa" : kind == ActivityLogKind.Important ? "Aviso de Alexa" : "Alexa";
+            }
+
+            if (IsAudioMessage(text, kind))
+            {
+                return kind == ActivityLogKind.Important ? "Aviso de audio" : "Audio";
+            }
+
+            if (kind == ActivityLogKind.Important)
+            {
+                return "Aviso importante";
+            }
+
+            if (text.StartsWith("fondo", StringComparison.Ordinal) || text.StartsWith("luces", StringComparison.Ordinal))
+            {
+                return "Luces";
+            }
+
+            if (text.StartsWith("configuracion", StringComparison.Ordinal))
+            {
+                return "Configuracion";
+            }
+
+            if (text.StartsWith("version", StringComparison.Ordinal))
+            {
+                return "Version";
+            }
+
+            if (text.StartsWith("simulador", StringComparison.Ordinal))
+            {
+                return "Simulador";
+            }
+
+            return "Sistema";
+        }
+
+        private static string BuildDescription(string message, string title)
+        {
+            var clean = message.Trim();
+            var separator = clean.IndexOf(':', StringComparison.Ordinal);
+            if (separator > 0 && separator < clean.Length - 1)
+            {
+                var prefix = clean[..separator].Trim();
+                if (string.Equals(prefix, title, StringComparison.OrdinalIgnoreCase)
+                    || string.Equals(prefix, "Twitch", StringComparison.OrdinalIgnoreCase)
+                    || string.Equals(prefix, "Alexa", StringComparison.OrdinalIgnoreCase)
+                    || string.Equals(prefix, "Arduino", StringComparison.OrdinalIgnoreCase)
+                    || string.Equals(prefix, "Audio", StringComparison.OrdinalIgnoreCase)
+                    || string.Equals(prefix, "Chat", StringComparison.OrdinalIgnoreCase)
+                    || string.Equals(prefix, "Fondo", StringComparison.OrdinalIgnoreCase)
+                    || string.Equals(prefix, "Luces", StringComparison.OrdinalIgnoreCase)
+                    || string.Equals(prefix, "Version", StringComparison.OrdinalIgnoreCase)
+                    || string.Equals(prefix, "Configuracion", StringComparison.OrdinalIgnoreCase)
+                    || string.Equals(prefix, "Simulador", StringComparison.OrdinalIgnoreCase))
+                {
+                    clean = clean[(separator + 1)..].Trim();
+                }
+            }
+
+            return string.IsNullOrWhiteSpace(clean)
+                ? message
+                : clean;
+        }
+
+        private static string ChooseAccentColor(string message, ActivityLogKind kind)
+        {
+            var text = message.ToLowerInvariant();
+
+            if (kind == ActivityLogKind.Event)
+            {
+                if (text.Contains("bits", StringComparison.Ordinal))
+                {
+                    return "#37C7F3";
+                }
+
+                if (text.Contains("suscripcion", StringComparison.Ordinal) || text.Contains("suscribio", StringComparison.Ordinal))
+                {
+                    return "#B56CFF";
+                }
+
+                if (text.Contains("siguio", StringComparison.Ordinal) || text.Contains("seguidor", StringComparison.Ordinal))
+                {
+                    return "#14B8A6";
+                }
+
+                if (text.Contains("chat", StringComparison.Ordinal) || text.Contains("comando", StringComparison.Ordinal))
+                {
+                    return "#22C55E";
+                }
+
+                if (text.Contains("raid", StringComparison.Ordinal))
+                {
+                    return "#F59E0B";
+                }
+
+                return "#00C7B7";
+            }
+
+            if (IsTwitchMessage(text, kind))
+            {
+                return "#9146FF";
+            }
+
+            if (IsArduinoMessage(text, kind))
+            {
+                return "#00878F";
+            }
+
+            if (IsAlexaMessage(text, kind))
+            {
+                return "#2FB4E9";
+            }
+
+            if (IsAudioMessage(text, kind))
+            {
+                return "#B56CFF";
+            }
+
+            return kind == ActivityLogKind.Important ? "#FFB020" : "#AFA4CC";
+        }
+
+        private static string ChooseServiceIconPath(string sourceKey)
+        {
+            return sourceKey switch
+            {
+                "TWITCH" => "Assets/Icons/service_twitch.png",
+                "ARDUINO" => "Assets/Icons/service_arduino.png",
+                "ALEXA" => "Assets/Icons/service_alexa.png",
+                "AUDIO" => "Assets/Icons/service_audio.png",
+                _ => ""
+            };
+        }
+
+        private static string ChooseActivityIconPath(string message, ActivityLogKind kind, string sourceKey)
+        {
+            var text = message.ToLowerInvariant();
+
+            if (kind == ActivityLogKind.Event)
+            {
+                if (text.Contains("bits", StringComparison.Ordinal))
+                {
+                    return "Assets/Icons/action_bits.png";
+                }
+
+                if (text.Contains("suscripcion", StringComparison.Ordinal) || text.Contains("suscribio", StringComparison.Ordinal))
+                {
+                    return "Assets/Icons/action_subscription.png";
+                }
+
+                if (text.Contains("siguio", StringComparison.Ordinal) || text.Contains("seguidor", StringComparison.Ordinal))
+                {
+                    return "Assets/Icons/action_follower.png";
+                }
+
+                if (text.Contains("chat", StringComparison.Ordinal) || text.Contains("comando", StringComparison.Ordinal))
+                {
+                    return "Assets/Icons/action_message.png";
+                }
+
+                return "Assets/Icons/activity_notification.png";
+            }
+
+            if (kind == ActivityLogKind.Important)
+            {
+                return "Assets/Icons/status_important.png";
+            }
+
+            return ChooseServiceIconPath(sourceKey);
+        }
+
+        private static bool IsServiceIconPath(string iconPath)
+        {
+            return iconPath.Contains("/service_", StringComparison.OrdinalIgnoreCase)
+                || iconPath.Contains("\\service_", StringComparison.OrdinalIgnoreCase);
+        }
+
+        private static string ChooseSourceIconKey(string sourceKey)
+        {
+            return sourceKey switch
+            {
+                "EVENTO" => "Event",
+                "IMPORTANTE" => "Warning",
+                "SISTEMA" => "Settings",
+                _ => "Activity"
+            };
+        }
+
+        private static string ChooseStatusText(string message, ActivityLogKind kind)
+        {
+            var text = message.ToLowerInvariant();
+            if (text.Contains("error", StringComparison.Ordinal)
+                || text.Contains("fallo", StringComparison.Ordinal)
+                || text.Contains("no pude", StringComparison.Ordinal)
+                || text.Contains("no puedo", StringComparison.Ordinal)
+                || text.Contains("no hay", StringComparison.Ordinal)
+                || text.Contains("no encontre", StringComparison.Ordinal)
+                || text.Contains("no se pudo", StringComparison.Ordinal)
+                || text.Contains("tardo demasiado", StringComparison.Ordinal))
+            {
+                return "Error";
+            }
+
+            if (kind == ActivityLogKind.Important
+                || text.Contains("advertencia", StringComparison.Ordinal)
+                || text.Contains("aviso", StringComparison.Ordinal)
+                || text.Contains("descart", StringComparison.Ordinal)
+                || text.Contains("no coincide", StringComparison.Ordinal))
+            {
+                return "Aviso";
+            }
+
+            return "OK";
+        }
+
+        private static string StatusAccent(string statusText)
+        {
+            return statusText switch
+            {
+                "Error" => "#F43F5E",
+                "Aviso" => "#FFB020",
+                _ => "#22C55E"
+            };
+        }
+
+        private static string ChooseStatusIconPath(string statusText, string filterKey)
+        {
+            return statusText switch
+            {
+                "Error" => "Assets/Icons/status_error.png",
+                "Aviso" when string.Equals(filterKey, "IMPORTANTE", StringComparison.OrdinalIgnoreCase) => "Assets/Icons/status_important.png",
+                "Aviso" => "Assets/Icons/status_warning.png",
+                _ => "Assets/Icons/status_ok.png"
+            };
+        }
+
+        private static string ChooseIconKey(string message, ActivityLogKind kind)
+        {
+            var text = message.ToLowerInvariant();
+
+            if (kind == ActivityLogKind.Important)
+            {
+                return "Warning";
+            }
+
+            if (kind == ActivityLogKind.Event)
+            {
+                if (text.Contains("bits", StringComparison.Ordinal))
+                {
+                    return "Bits";
+                }
+
+                if (text.Contains("suscripcion", StringComparison.Ordinal) || text.Contains("suscribio", StringComparison.Ordinal))
+                {
+                    return "Star";
+                }
+
+                if (text.Contains("siguio", StringComparison.Ordinal) || text.Contains("seguidor", StringComparison.Ordinal))
+                {
+                    return "Users";
+                }
+
+                if (text.Contains("chat", StringComparison.Ordinal) || text.Contains("comando", StringComparison.Ordinal))
+                {
+                    return "Chat";
+                }
+
+                if (text.Contains("raid", StringComparison.Ordinal))
+                {
+                    return "Zap";
+                }
+
+                return "Event";
+            }
+
+            if (text.StartsWith("arduino", StringComparison.Ordinal))
+            {
+                return "Arduino";
+            }
+
+            if (text.StartsWith("fondo", StringComparison.Ordinal) || text.StartsWith("luces", StringComparison.Ordinal))
+            {
+                return "Sun";
+            }
+
+            return "Activity";
+        }
+
+        private static bool IsTwitchMessage(string text, ActivityLogKind kind)
+        {
+            return kind == ActivityLogKind.Twitch || text.StartsWith("twitch", StringComparison.Ordinal);
+        }
+
+        private static bool IsArduinoMessage(string text, ActivityLogKind kind)
+        {
+            return kind == ActivityLogKind.Arduino
+                || text.StartsWith("arduino", StringComparison.Ordinal)
+                || text.StartsWith("serial", StringComparison.Ordinal);
+        }
+
+        private static bool IsAlexaMessage(string text, ActivityLogKind kind)
+        {
+            return kind == ActivityLogKind.Alexa || text.StartsWith("alexa", StringComparison.Ordinal);
+        }
+
+        private static bool IsAudioMessage(string text, ActivityLogKind kind)
+        {
+            return kind == ActivityLogKind.Audio
+                || text.Contains("audio", StringComparison.Ordinal)
+                || text.Contains("sonido", StringComparison.Ordinal);
+        }
+
+        private static SolidColorBrush BackgroundBrushFrom(string accentColor)
+        {
+            return accentColor.StartsWith('#') && accentColor.Length == 7
+                ? FrozenBrushFrom($"#22{accentColor[1..]}")
+                : FrozenBrushFrom("#2200C7B7");
+        }
+
+        private static ImageSource? LoadActivityIcon(string path)
+        {
+            if (string.IsNullOrWhiteSpace(path))
+            {
+                return null;
+            }
+
+            foreach (var uri in new[]
+            {
+                $"pack://application:,,,/NeoTwitch;component/{path}",
+                $"pack://application:,,,/{path}"
+            })
+            {
+                try
+                {
+                    var image = new BitmapImage(new Uri(uri, UriKind.Absolute));
+                    image.Freeze();
+                    return image;
+                }
+                catch
+                {
+                    // Try the next pack URI format.
+                }
+            }
+
+            return null;
+        }
     }
 
     private static SolidColorBrush FrozenBrushFrom(string hex)

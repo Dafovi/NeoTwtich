@@ -22,6 +22,7 @@
     <Resource Include="Assets\ServiceArduino.png" />
     <Resource Include="Assets\ServiceAudio.png" />
     <Resource Include="Assets\ServiceTwitch.png" />
+    <Resource Include="Assets\Icons\*.png" />
   </ItemGroup>
 
 </Project>

@@ -417,7 +417,7 @@ public partial class MainWindow : Window
             Hide();
         }
 
-        if (_config.AutoConnectArduino && !string.IsNullOrWhiteSpace(_config.SerialPort))
+        if (_config.ArduinoEnabled && _config.AutoConnectArduino && !string.IsNullOrWhiteSpace(_config.SerialPort))
         {
             try
             {
@@ -741,6 +741,13 @@ public partial class MainWindow : Window
 
     private async Task ConnectArduinoAsync()
     {
+        if (!_config.ArduinoEnabled)
+        {
+            AddLog("Arduino esta desactivado en Conexiones.");
+            UpdateStatusText();
+            return;
+        }
+
         if (string.IsNullOrWhiteSpace(_config.SerialPort))
         {
             AddLog("No hay puerto COM configurado.");
@@ -758,7 +765,7 @@ public partial class MainWindow : Window
             return;
         }
 
-        if (_config.BackgroundEnabled)
+        if (_config.ArduinoEnabled && _config.BackgroundEnabled)
         {
             await ApplyArduinoBackgroundAsync();
         }
@@ -771,7 +778,7 @@ public partial class MainWindow : Window
 
     private async Task ApplyArduinoBackgroundAsync()
     {
-        if (!_config.BackgroundEnabled)
+        if (!_config.ArduinoEnabled || !_config.BackgroundEnabled)
         {
             return;
         }
@@ -835,15 +842,15 @@ public partial class MainWindow : Window
 
     private async Task RestoreArduinoBackgroundStateWithRetriesAsync(bool retryArduino)
     {
-        var attempts = _config.BackgroundEnabled && retryArduino ? 2 : 1;
+        var attempts = _config.ArduinoEnabled && _config.BackgroundEnabled && retryArduino ? 2 : 1;
 
         for (var attempt = 1; attempt <= attempts; attempt++)
         {
-            if (_config.BackgroundEnabled)
+            if (_config.ArduinoEnabled && _config.BackgroundEnabled)
             {
                 await ApplyArduinoBackgroundAsync();
             }
-            else
+            else if (_config.ArduinoEnabled)
             {
                 await StopLightsAsync(LightCommand.ResolveTargets(_config, ""));
             }
@@ -943,7 +950,7 @@ public partial class MainWindow : Window
 
     private async Task StopLightsAsync(IReadOnlyList<LightStripTarget> targets)
     {
-        if (!_lightController.HasOpenPort)
+        if (!_config.ArduinoEnabled || !_lightController.HasOpenPort)
         {
             return;
         }
@@ -1311,33 +1318,40 @@ public partial class MainWindow : Window
         }
 
         Section("Arduino");
-        var ports = SerialLightController.GetAvailablePortInfos();
-        if (ports.Count == 0)
+        if (!_config.ArduinoEnabled)
         {
-            Warn("No encontre puertos COM disponibles.");
+            Info("Arduino esta desactivado en Conexiones.");
         }
         else
         {
-            Info($"Puertos detectados: {string.Join(", ", ports.Select(port => port.DisplayName))}.");
-        }
+            var ports = SerialLightController.GetAvailablePortInfos();
+            if (ports.Count == 0)
+            {
+                Warn("No encontre puertos COM disponibles.");
+            }
+            else
+            {
+                Info($"Puertos detectados: {string.Join(", ", ports.Select(port => port.DisplayName))}.");
+            }
 
-        if (string.IsNullOrWhiteSpace(_config.SerialPort))
-        {
-            Warn("No hay puerto COM configurado para Arduino.");
-        }
-        else if (ports.Any(port => string.Equals(port.PortName, _config.SerialPort, StringComparison.OrdinalIgnoreCase)))
-        {
-            Ok($"Puerto configurado disponible: {_config.SerialPort}.");
-        }
-        else
-        {
-            Warn($"El puerto configurado {_config.SerialPort} no aparece conectado ahora.");
-        }
+            if (string.IsNullOrWhiteSpace(_config.SerialPort))
+            {
+                Warn("No hay puerto COM configurado para Arduino.");
+            }
+            else if (ports.Any(port => string.Equals(port.PortName, _config.SerialPort, StringComparison.OrdinalIgnoreCase)))
+            {
+                Ok($"Puerto configurado disponible: {_config.SerialPort}.");
+            }
+            else
+            {
+                Warn($"El puerto configurado {_config.SerialPort} no aparece conectado ahora.");
+            }
 
-        Info(_lightController.HasOpenPort
-            ? $"Arduino conectado en {_lightController.CurrentPort}. {_lightController.AckStatusText}."
-            : "Arduino no esta conectado desde la app.");
-        Ok($"{_config.LedStrips.Count} salida(s) LED configurada(s), {_config.LedStrips.Sum(strip => strip.LedCount)} LEDs en total.");
+            Info(_lightController.HasOpenPort
+                ? $"Arduino conectado en {_lightController.CurrentPort}. {_lightController.AckStatusText}."
+                : "Arduino no esta conectado desde la app.");
+            Ok($"{_config.LedStrips.Count} salida(s) LED configurada(s), {_config.LedStrips.Sum(strip => strip.LedCount)} LEDs en total.");
+        }
 
         Section("Alexa");
         if (!_config.Alexa.Enabled)
@@ -1609,7 +1623,7 @@ public partial class MainWindow : Window
             return false;
         }
 
-        if (rule.UseLights && !_lightController.HasOpenPort)
+        if (_config.ArduinoEnabled && rule.UseLights && !_lightController.HasOpenPort)
         {
             AddLog(
                 string.IsNullOrWhiteSpace(_config.SerialPort)
@@ -1618,7 +1632,7 @@ public partial class MainWindow : Window
                 ActivityLogKind.Important);
         }
 
-        if (rule.UseLights && !string.IsNullOrWhiteSpace(rule.TargetPins) && LightCommand.ParsePins(rule.TargetPins).Count == 0)
+        if (_config.ArduinoEnabled && rule.UseLights && !string.IsNullOrWhiteSpace(rule.TargetPins) && LightCommand.ParsePins(rule.TargetPins).Count == 0)
         {
             AddLog($"Simulador: los pines de la regla '{rule.Name}' no son validos.", ActivityLogKind.Important);
         }
@@ -1747,6 +1761,8 @@ public partial class MainWindow : Window
         SaveConfig();
         UpdateSensitiveFieldVisibility();
         UpdateStatusText();
+        UpdateRuleOptionVisibility();
+        ApplyBackgroundOutputMode();
     }
 
     private void AlexaSettingsChanged(object sender, RoutedEventArgs e)
@@ -1896,6 +1912,13 @@ public partial class MainWindow : Window
 
     private void ArduinoOutputButton_Click(object sender, RoutedEventArgs e)
     {
+        if (!_config.ArduinoEnabled)
+        {
+            _backgroundOutputMode = BackgroundOutputMode.Alexa;
+            ApplyBackgroundOutputMode();
+            return;
+        }
+
         _backgroundOutputMode = BackgroundOutputMode.Arduino;
         if (StripsList.SelectedItem is null && _config.LedStrips.Count > 0)
         {
@@ -2320,7 +2343,9 @@ public partial class MainWindow : Window
                 _currentPlayback = playback;
             }
 
-            if (!rule.UseLights)
+            var useLights = _config.ArduinoEnabled && rule.UseLights;
+
+            if (!useLights)
             {
                 playback?.Play();
                 if (playback is not null)
@@ -2331,14 +2356,14 @@ public partial class MainWindow : Window
                 return;
             }
 
-            if (rule.UseLights && !_lightController.HasOpenPort && !string.IsNullOrWhiteSpace(_config.SerialPort))
+            if (useLights && !_lightController.HasOpenPort && !string.IsNullOrWhiteSpace(_config.SerialPort))
             {
                 await ConnectArduinoAsync();
             }
 
             shouldRestoreBackground = true;
             var targets = LightCommand.ResolveTargets(_config, rule.TargetPins);
-            if (rule.UseLights)
+            if (useLights)
             {
                 await StopLightsAsync(LightCommand.ResolveTargets(_config, ""));
                 await Task.Delay(LightStopSettleMs);
@@ -2350,7 +2375,7 @@ public partial class MainWindow : Window
                 : (int?)null;
 
             LightCommand? command = null;
-            if (rule.UseLights)
+            if (useLights)
             {
                 command = LightCommand.FromRule(rule, _config, syncedDurationMs);
                 await _lightController.SendAsync(command, AddLog, CancellationToken.None);
@@ -2439,6 +2464,7 @@ public partial class MainWindow : Window
             PortComboBox.SelectedValue = _config.SerialPort;
             PortComboBox.Text = _config.SerialPort;
             BaudRateBox.Text = _config.BaudRate.ToString();
+            ArduinoEnabledCheck.IsChecked = _config.ArduinoEnabled;
             AutoTwitchCheck.IsChecked = _config.AutoConnectTwitch;
             AutoArduinoCheck.IsChecked = _config.AutoConnectArduino;
             StartHiddenCheck.IsChecked = _config.StartHidden;
@@ -2583,6 +2609,7 @@ public partial class MainWindow : Window
         _config.TwitchClientSecret = ClientSecretBox.Text.Trim();
         _config.SerialPort = ParsePort(PortComboBox.SelectedValue as string ?? PortComboBox.Text);
         _config.BaudRate = ParseInt(BaudRateBox.Text, 115200, 300, 921600);
+        _config.ArduinoEnabled = ArduinoEnabledCheck.IsChecked == true;
         _config.AutoConnectTwitch = AutoTwitchCheck.IsChecked == true;
         _config.AutoConnectArduino = AutoArduinoCheck.IsChecked == true;
         _config.StartHidden = StartHiddenCheck.IsChecked == true;
@@ -2678,7 +2705,8 @@ public partial class MainWindow : Window
         var kind = EventKindBox.SelectedValue is TwitchEventKind eventKind
             ? eventKind
             : TwitchEventKind.Follow;
-        var useLights = UseLightsCheck.IsChecked == true;
+        var arduinoAvailable = _config.ArduinoEnabled;
+        var useLights = arduinoAvailable && UseLightsCheck.IsChecked == true;
         var playAudio = PlayAudioCheck.IsChecked == true;
         var sendChat = ChatMessageCheck.IsChecked == true;
         var alexaAvailable = _config.Alexa.IsConfigured;
@@ -2692,6 +2720,7 @@ public partial class MainWindow : Window
         SetVisible(kind == TwitchEventKind.Cheer, MinimumBitsLabel, MinimumBitsBox);
         SetVisible(playAudio, AudioLabel, AudioPanel);
         SetVisible(sendChat, ChatMessageLabel, ChatMessageBox);
+        SetVisible(arduinoAvailable, UseLightsCheck);
         SetVisible(alexaAvailable, AlexaEventCheck);
         SetVisible(alexaAvailable && sendAlexa, AlexaRuleHintText);
 
@@ -2707,7 +2736,8 @@ public partial class MainWindow : Window
 
     private void UpdateBackgroundOptionVisibility()
     {
-        var enabled = BackgroundEnabledCheck.IsChecked == true;
+        var arduinoAvailable = _config.ArduinoEnabled;
+        var enabled = arduinoAvailable && BackgroundEnabledCheck.IsChecked == true;
         var alexaEnabled = BackgroundAlexaEnabledCheck.IsChecked == true;
         var alexaTurnOffAfterEvent = BackgroundAlexaTurnOffAfterEventCheck.IsChecked == true;
         var alexaAvailable = _config.Alexa.IsConfigured;
@@ -2718,6 +2748,7 @@ public partial class MainWindow : Window
         SetVisible(alexaAvailable, BackgroundAlexaEnabledCheck, BackgroundAlexaTurnOffAfterEventCheck, StopAlexaBackgroundButton);
         SetVisible(!alexaAvailable, AlexaBackgroundUnavailableText);
         SetVisible(alexaAvailable && (alexaEnabled || alexaTurnOffAfterEvent), BackgroundAlexaEventsGrid, ApplyAlexaBackgroundButton);
+        SetVisible(arduinoAvailable, BackgroundEnabledCheck);
         SetVisible(enabled, BackgroundPinsLabel, BackgroundPinsBox, BackgroundPatternGrid, ApplyArduinoBackgroundButton);
         SetVisible(enabled && UsesBrightness(pattern), BackgroundBrightnessPanel);
         SetVisible(enabled && UsesPrimaryColor(pattern), BackgroundPrimaryColorLabel, BackgroundPrimaryColorPanel);
@@ -2734,16 +2765,24 @@ public partial class MainWindow : Window
             return;
         }
 
-        var showArduino = _backgroundOutputMode == BackgroundOutputMode.Arduino;
+        var arduinoAvailable = _config.ArduinoEnabled;
+        if (!arduinoAvailable && _backgroundOutputMode == BackgroundOutputMode.Arduino)
+        {
+            _backgroundOutputMode = BackgroundOutputMode.Alexa;
+        }
+
+        var showArduino = arduinoAvailable && _backgroundOutputMode == BackgroundOutputMode.Arduino;
+        var showAlexa = !showArduino;
+        SetVisible(arduinoAvailable, ArduinoOutputButton);
         SetVisible(showArduino, StripActionsPanel, StripsListLabel, StripsList, ArduinoBackgroundPanel);
-        SetVisible(!showArduino, AlexaBackgroundPanel);
+        SetVisible(showAlexa, AlexaBackgroundPanel);
 
         var palette = _config.DarkMode
             ? ThemePalette.Dark
             : ThemePalette.Light;
 
         ApplyOutputButtonTheme(ArduinoOutputButton, showArduino, palette);
-        ApplyOutputButtonTheme(AlexaOutputButton, !showArduino, palette);
+        ApplyOutputButtonTheme(AlexaOutputButton, showAlexa, palette);
         UpdateBackgroundOptionVisibility();
     }
 
@@ -2824,19 +2863,20 @@ public partial class MainWindow : Window
         var activeBackground = _config.BackgroundEnabled
             ? $"{DisplayNames.For(_config.BackgroundPattern)} de fondo"
             : "Fondo apagado";
-        ArduinoConnectionText.Text = _lightController.HasOpenPort
-            ? $"Conectado en {_lightController.CurrentPort}"
-            : "Sin conectar";
-        ArduinoStatusText.Text = _lightController.HasOpenPort
-            ? $"{_config.BaudRate} baudios. {_config.LedStrips.Count} tiras, {totalLeds} LEDs. {activeBackground}."
-            : $"Puerto: {FirstNonEmpty(_config.SerialPort, "sin COM")}. {_config.LedStrips.Count} tiras, {totalLeds} LEDs.";
+        ArduinoConnectionText.Text = !_config.ArduinoEnabled
+            ? "Desactivado"
+            : _lightController.HasOpenPort
+                ? $"Conectado en {_lightController.CurrentPort}"
+                : "Sin conectar";
+        ArduinoStatusText.Text = !_config.ArduinoEnabled
+            ? "Las luces Arduino no se mostraran ni ejecutaran."
+            : _lightController.HasOpenPort
+                ? $"{_config.BaudRate} baudios. {_config.LedStrips.Count} tiras, {totalLeds} LEDs. {activeBackground}."
+                : $"Puerto: {FirstNonEmpty(_config.SerialPort, "sin COM")}. {_config.LedStrips.Count} tiras, {totalLeds} LEDs.";
         RefreshDashboardConnectionStates();
         UpdateDashboardSummary();
 
-        SetButtonIcon(
-            TwitchButton,
-            _eventSubClient.IsRunning ? "Desconectar Twitch" : "Conectar Twitch",
-            _eventSubClient.IsRunning ? "Power" : "Plug");
+        TwitchButton.Content = _eventSubClient.IsRunning ? "Desconectar Twitch" : "Conectar Twitch";
     }
 
     private void UpdateAlexaStatusText()
@@ -2852,7 +2892,7 @@ public partial class MainWindow : Window
             ? "Relay conectado"
             : _config.Alexa.Enabled
                 ? "Configuracion incompleta"
-                : "Sin conectar";
+                : "Desactivado";
         AlexaSidebarStatusText.Text = _config.Alexa.IsConfigured
             ? BuildAlexaSidebarStatusText()
             : status;
@@ -2899,17 +2939,34 @@ public partial class MainWindow : Window
         SetDashboardConnectionState(
             DashboardArduinoStateText,
             DashboardArduinoStatusIcon,
-            _lightController.HasConfirmedAck);
+            _config.ArduinoEnabled && _lightController.HasConfirmedAck,
+            disconnectedText: _config.ArduinoEnabled ? "Desconectado" : "Desactivado");
         SetDashboardConnectionState(
             DashboardAlexaStateText,
             DashboardAlexaStatusIcon,
-            _config.Alexa.Enabled && _config.Alexa.IsConfigured && _alexaRelayConnected);
+            _config.Alexa.Enabled && _config.Alexa.IsConfigured && _alexaRelayConnected,
+            disconnectedText: _config.Alexa.Enabled ? "Desconectado" : "Desactivado");
         SetDashboardConnectionState(
             DashboardAudioStateText,
             DashboardAudioStatusIcon,
             _config.AlertVolumePercent > 0,
             $"{_config.AlertVolumePercent}%",
             "Desactivado");
+
+        SetConnectionBadgeState(
+            ConnectionsTwitchBadge,
+            ConnectionsTwitchBadgeText,
+            _config.Token.HasToken);
+        SetConnectionBadgeState(
+            ConnectionsArduinoBadge,
+            ConnectionsArduinoBadgeText,
+            _config.ArduinoEnabled && _lightController.HasConfirmedAck,
+            disconnectedText: _config.ArduinoEnabled ? "Desconectado" : "Desactivado");
+        SetConnectionBadgeState(
+            ConnectionsAlexaBadge,
+            ConnectionsAlexaBadgeText,
+            _config.Alexa.Enabled && _config.Alexa.IsConfigured && _alexaRelayConnected,
+            disconnectedText: _config.Alexa.Enabled ? "Desconectado" : "Desactivado");
     }
 
     private static void SetDashboardConnectionState(
@@ -2931,6 +2988,23 @@ public partial class MainWindow : Window
             Stretch = Stretch.Uniform
         };
         statusIcon.ToolTip = connected ? connectedText : disconnectedText;
+    }
+
+    private static void SetConnectionBadgeState(
+        Border badge,
+        TextBlock textBlock,
+        bool connected,
+        string connectedText = "Conectado",
+        string disconnectedText = "Desconectado")
+    {
+        var successBrush = FrozenBrushFrom("#22C55E");
+        var dangerBrush = FrozenBrushFrom("#F43F5E");
+
+        textBlock.Text = connected ? connectedText : disconnectedText;
+        textBlock.Foreground = connected ? successBrush : dangerBrush;
+        badge.Background = FrozenBrushFrom(connected ? "#1422C55E" : "#14F43F5E");
+        badge.BorderBrush = connected ? successBrush : dangerBrush;
+        badge.BorderThickness = new Thickness(1);
     }
 
     private static ImageSource? LoadPackImage(string path)

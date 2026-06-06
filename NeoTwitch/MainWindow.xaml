@@ -1149,260 +1149,400 @@
             </TabItem>
 
             <TabItem Header="Conexiones">
-                <ScrollViewer VerticalScrollBarVisibility="Auto"
-                              HorizontalScrollBarVisibility="Auto">
-                    <Grid Margin="24" MinWidth="840">
+                <Grid Margin="24" MinWidth="980">
+                    <Grid.RowDefinitions>
+                        <RowDefinition Height="Auto" />
+                        <RowDefinition Height="*" />
+                        <RowDefinition Height="12" />
+                        <RowDefinition Height="*" />
+                        <RowDefinition Height="12" />
+                        <RowDefinition Height="*" />
+                    </Grid.RowDefinitions>
+
+                    <Grid Margin="0,0,0,14">
+                        <Grid.ColumnDefinitions>
+                            <ColumnDefinition Width="*" />
+                            <ColumnDefinition Width="180" />
+                        </Grid.ColumnDefinitions>
+                        <StackPanel>
+                            <TextBlock Text="Conexiones"
+                                       FontSize="28"
+                                       Style="{StaticResource TitleText}"
+                                       FontWeight="SemiBold" />
+                            <TextBlock Text="Conecta tus servicios y dispositivos para que Neo Twitch pueda reaccionar al stream."
+                                       Style="{StaticResource MutedText}"
+                                       Margin="0,4,0,0" />
+                        </StackPanel>
+                        <Button Grid.Column="1"
+                                Content="Guardar todo"
+                                Style="{StaticResource PrimaryButton}"
+                                HorizontalAlignment="Stretch"
+                                VerticalAlignment="Top"
+                                Click="SaveButton_Click" />
+                    </Grid>
+
+                    <Border Grid.Row="1"
+                            Style="{StaticResource Card}"
+                            Padding="18">
+                            <Grid>
+                                <Grid.RowDefinitions>
+                                    <RowDefinition Height="Auto" />
+                                    <RowDefinition Height="Auto" />
+                                    <RowDefinition Height="Auto" />
+                                </Grid.RowDefinitions>
+
+                                <Grid>
+                                    <Grid.ColumnDefinitions>
+                                        <ColumnDefinition Width="66" />
+                                        <ColumnDefinition Width="*" />
+                                        <ColumnDefinition Width="150" />
+                                    </Grid.ColumnDefinitions>
+                                    <Border Width="52"
+                                            Height="52"
+                                            CornerRadius="14"
+                                            Background="#1A9146FF"
+                                            HorizontalAlignment="Left">
+                                        <Image Source="Assets/Icons/service_twitch.png"
+                                               Stretch="Uniform"
+                                               Margin="8" />
+                                    </Border>
+                                    <StackPanel Grid.Column="1"
+                                                VerticalAlignment="Center">
+                                        <TextBlock Text="Conectar Twitch"
+                                                   FontSize="18"
+                                                   Style="{StaticResource TitleText}"
+                                                   FontWeight="SemiBold" />
+                                        <TextBlock Text="Autoriza tu cuenta y configura las credenciales de Twitch."
+                                                   Style="{StaticResource MutedText}"
+                                                   Margin="0,4,0,0" />
+                                    </StackPanel>
+                                    <Border x:Name="ConnectionsTwitchBadge"
+                                            Grid.Column="2"
+                                            CornerRadius="14"
+                                            Padding="11,5"
+                                            HorizontalAlignment="Right"
+                                            VerticalAlignment="Top">
+                                        <TextBlock x:Name="ConnectionsTwitchBadgeText"
+                                                   Text="Desconectado"
+                                                   FontSize="12"
+                                                   FontWeight="SemiBold" />
+                                    </Border>
+                                </Grid>
+
+                                <Grid Grid.Row="1"
+                                      Margin="0,18,0,8">
+                                    <Grid.ColumnDefinitions>
+                                        <ColumnDefinition Width="*" />
+                                        <ColumnDefinition Width="16" />
+                                        <ColumnDefinition Width="*" />
+                                    </Grid.ColumnDefinitions>
+                                    <StackPanel>
+                                        <TextBlock Text="Client ID"
+                                                   Style="{StaticResource MutedText}" />
+                                        <Grid Margin="0,4,0,0">
+                                            <TextBox x:Name="ClientIdBox"
+                                                     Margin="0"
+                                                     Padding="10,6,76,6"
+                                                     TextChanged="GlobalSettingsChanged" />
+                                            <TextBlock x:Name="ClientIdMaskText"
+                                                       Margin="1,1,72,1"
+                                                       Padding="9,6"
+                                                       VerticalAlignment="Stretch"
+                                                       Background="{DynamicResource ThemeInputBrush}"
+                                                       Foreground="{DynamicResource ThemeMutedTextBrush}"
+                                                       Visibility="Collapsed" />
+                                            <Button x:Name="ClientIdRevealButton"
+                                                    Content="Ver"
+                                                    Width="64"
+                                                    MinHeight="0"
+                                                    Padding="8,0"
+                                                    Margin="0"
+                                                    HorizontalAlignment="Right"
+                                                    VerticalAlignment="Stretch"
+                                                    ToolTip="Mostrar u ocultar Client ID"
+                                                    Click="ToggleClientIdVisibility_Click" />
+                                        </Grid>
+                                    </StackPanel>
+                                    <StackPanel Grid.Column="2">
+                                        <TextBlock Text="Client Secret opcional"
+                                                   Style="{StaticResource MutedText}" />
+                                        <Grid Margin="0,4,0,0">
+                                            <TextBox x:Name="ClientSecretBox"
+                                                     Margin="0"
+                                                     Padding="10,6,76,6"
+                                                     TextChanged="GlobalSettingsChanged"
+                                                     ToolTip="Se usa para refrescar el token de Twitch. Si lo dejas vacio, la app puede pedir autorizar de nuevo cuando expire." />
+                                            <TextBlock x:Name="ClientSecretMaskText"
+                                                       Margin="1,1,72,1"
+                                                       Padding="9,6"
+                                                       VerticalAlignment="Stretch"
+                                                       Background="{DynamicResource ThemeInputBrush}"
+                                                       Foreground="{DynamicResource ThemeMutedTextBrush}"
+                                                       Visibility="Collapsed" />
+                                            <Button x:Name="ClientSecretRevealButton"
+                                                    Content="Ver"
+                                                    Width="64"
+                                                    MinHeight="0"
+                                                    Padding="8,0"
+                                                    Margin="0"
+                                                    HorizontalAlignment="Right"
+                                                    VerticalAlignment="Stretch"
+                                                    ToolTip="Mostrar u ocultar Client Secret"
+                                                    Click="ToggleClientSecretVisibility_Click" />
+                                        </Grid>
+                                    </StackPanel>
+                                </Grid>
+
+                                <WrapPanel Grid.Row="2"
+                                           HorizontalAlignment="Right"
+                                           Margin="0,8,0,0">
+                                    <Button Content="Abrir Twitch Console"
+                                            Click="OpenTwitchConsoleButton_Click" />
+                                    <Button x:Name="TwitchButton"
+                                            Style="{StaticResource PrimaryButton}"
+                                            Content="Conectar Twitch"
+                                            Click="TwitchButton_Click" />
+                                </WrapPanel>
+                            </Grid>
+                    </Border>
+
+                    <Border Grid.Row="3"
+                            Style="{StaticResource Card}"
+                            Padding="18">
+                            <Grid>
                                 <Grid.RowDefinitions>
                                     <RowDefinition Height="Auto" />
                                     <RowDefinition Height="Auto" />
                                     <RowDefinition Height="Auto" />
                                     <RowDefinition Height="Auto" />
                                 </Grid.RowDefinitions>
-                                <Grid.ColumnDefinitions>
-                                    <ColumnDefinition Width="*" />
-                                    <ColumnDefinition Width="18" />
-                                    <ColumnDefinition Width="*" />
-                                </Grid.ColumnDefinitions>
 
-                                <StackPanel Grid.Row="0"
-                                            Grid.ColumnSpan="3"
-                                            Margin="0,0,0,18">
-                                    <TextBlock Text="Conexiones"
-                                               FontSize="28"
-                                               Style="{StaticResource TitleText}"
-                                               FontWeight="SemiBold" />
-                                    <TextBlock Text="Configura Twitch, Arduino, Alexa y la conexion automatica."
-                                               Style="{StaticResource MutedText}"
-                                               Margin="0,4,0,0" />
-                                </StackPanel>
-
-                                <Border Grid.Row="1"
-                                        Grid.Column="0"
-                                        Style="{StaticResource Card}">
-                            <StackPanel>
-                                <TextBlock Text="Twitch"
-                                           FontSize="18"
-                                           Style="{StaticResource TitleText}"
-                                           FontWeight="SemiBold"
-                                           Margin="0,0,0,10" />
-                                <TextBlock Text="Client ID"
-                                           Style="{StaticResource MutedText}" />
-                                <Grid Margin="0,4,0,10">
-                                    <TextBox x:Name="ClientIdBox"
-                                             Margin="0"
-                                             Padding="10,6,76,6"
-                                             TextChanged="GlobalSettingsChanged" />
-                                    <TextBlock x:Name="ClientIdMaskText"
-                                               Margin="1,1,72,1"
-                                               Padding="9,6"
-                                               VerticalAlignment="Stretch"
-                                               Background="{DynamicResource ThemeInputBrush}"
-                                               Foreground="{DynamicResource ThemeMutedTextBrush}"
-                                               Visibility="Collapsed" />
-                                    <Button x:Name="ClientIdRevealButton"
-                                            Content="Ver"
-                                            Width="64"
-                                            MinHeight="0"
-                                            Padding="8,0"
-                                            Margin="0"
+                                <Grid>
+                                    <Grid.ColumnDefinitions>
+                                        <ColumnDefinition Width="66" />
+                                        <ColumnDefinition Width="*" />
+                                        <ColumnDefinition Width="150" />
+                                    </Grid.ColumnDefinitions>
+                                    <Border Width="52"
+                                            Height="52"
+                                            CornerRadius="14"
+                                            Background="#1A148A86"
+                                            HorizontalAlignment="Left">
+                                        <Image Source="Assets/Icons/service_arduino.png"
+                                               Stretch="Uniform"
+                                               Margin="7" />
+                                    </Border>
+                                    <StackPanel Grid.Column="1"
+                                                VerticalAlignment="Center">
+                                        <TextBlock Text="Conectar Arduino"
+                                                   FontSize="18"
+                                                   Style="{StaticResource TitleText}"
+                                                   FontWeight="SemiBold" />
+                                        <TextBlock Text="Escoge el puerto COM y baudios para enviar comandos a las tiras LED."
+                                                   Style="{StaticResource MutedText}"
+                                                   Margin="0,4,0,0" />
+                                    </StackPanel>
+                                    <Border x:Name="ConnectionsArduinoBadge"
+                                            Grid.Column="2"
+                                            CornerRadius="14"
+                                            Padding="11,5"
                                             HorizontalAlignment="Right"
-                                            VerticalAlignment="Stretch"
-                                            ToolTip="Mostrar u ocultar Client ID"
-                                            Click="ToggleClientIdVisibility_Click" />
+                                            VerticalAlignment="Top">
+                                        <TextBlock x:Name="ConnectionsArduinoBadgeText"
+                                                   Text="Desconectado"
+                                                   FontSize="12"
+                                                   FontWeight="SemiBold" />
+                                    </Border>
                                 </Grid>
-                                <TextBlock Text="Client Secret opcional"
-                                           Style="{StaticResource MutedText}" />
-                                <Grid Margin="0,4,0,10">
-                                    <TextBox x:Name="ClientSecretBox"
-                                             Margin="0"
-                                             Padding="10,6,76,6"
-                                             TextChanged="GlobalSettingsChanged"
-                                             ToolTip="Se usa para refrescar el token de Twitch. Si lo dejas vacio, la app puede pedir autorizar de nuevo cuando expire." />
-                                    <TextBlock x:Name="ClientSecretMaskText"
-                                               Margin="1,1,72,1"
-                                               Padding="9,6"
-                                               VerticalAlignment="Stretch"
-                                               Background="{DynamicResource ThemeInputBrush}"
-                                               Foreground="{DynamicResource ThemeMutedTextBrush}"
-                                               Visibility="Collapsed" />
-                                    <Button x:Name="ClientSecretRevealButton"
-                                            Content="Ver"
-                                            Width="64"
-                                            MinHeight="0"
-                                            Padding="8,0"
-                                            Margin="0"
-                                            HorizontalAlignment="Right"
-                                            VerticalAlignment="Stretch"
-                                            ToolTip="Mostrar u ocultar Client Secret"
-                                            Click="ToggleClientSecretVisibility_Click" />
-                                </Grid>
-                                <Button x:Name="TwitchButton"
-                                        Style="{StaticResource PrimaryButton}"
-                                        Content="Conectar Twitch"
-                                        Click="TwitchButton_Click" />
-                                <Button Content="Abrir Twitch Console"
-                                        Click="OpenTwitchConsoleButton_Click" />
-                            </StackPanel>
-                                </Border>
 
-                                <Border Grid.Row="1"
-                                        Grid.Column="2"
-                                        Style="{StaticResource Card}">
-                            <StackPanel>
-                                <TextBlock Text="Arduino"
-                                           FontSize="18"
-                                           Style="{StaticResource TitleText}"
-                                           FontWeight="SemiBold"
-                                           Margin="0,0,0,10" />
-                                <TextBlock Text="Puerto COM del Arduino"
-                                           Style="{StaticResource MutedText}" />
-                                <ComboBox x:Name="PortComboBox"
-                                          IsEditable="True"
-                                          SelectionChanged="GlobalSettingsChanged"
-                                          DropDownOpened="PortComboBox_DropDownOpened"
-                                          ToolTip="Escoge el puerto que diga Arduino, CH340, CP210 o USB Serial." />
-                                <WrapPanel>
-                                    <Button Content="Detectar" Click="DetectPortsButton_Click" />
-                                    <Button Content="Conectar" Click="ConnectArduinoButton_Click" />
+                                <CheckBox x:Name="ArduinoEnabledCheck"
+                                          Grid.Row="1"
+                                          Content="Activar Arduino"
+                                          Checked="GlobalSettingsChanged"
+                                          Unchecked="GlobalSettingsChanged"
+                                          Margin="0,14,0,8" />
+
+                                <Grid Grid.Row="2"
+                                      Margin="0,0,0,8">
+                                    <Grid.ColumnDefinitions>
+                                        <ColumnDefinition Width="*" />
+                                        <ColumnDefinition Width="16" />
+                                        <ColumnDefinition Width="260" />
+                                    </Grid.ColumnDefinitions>
+                                    <StackPanel>
+                                        <TextBlock Text="Puerto COM del Arduino"
+                                                   Style="{StaticResource MutedText}" />
+                                        <ComboBox x:Name="PortComboBox"
+                                                  IsEditable="True"
+                                                  SelectionChanged="GlobalSettingsChanged"
+                                                  DropDownOpened="PortComboBox_DropDownOpened"
+                                                  ToolTip="Escoge el puerto que diga Arduino, CH340, CP210 o USB Serial."
+                                                  Margin="0,4,0,0" />
+                                    </StackPanel>
+                                    <StackPanel Grid.Column="2">
+                                        <TextBlock Text="Baudios"
+                                                   Style="{StaticResource MutedText}" />
+                                        <TextBox x:Name="BaudRateBox"
+                                                 TextChanged="GlobalSettingsChanged"
+                                                 Margin="0,4,0,0" />
+                                    </StackPanel>
+                                </Grid>
+
+                                <WrapPanel Grid.Row="3"
+                                           HorizontalAlignment="Right"
+                                           Margin="0,8,0,0">
+                                    <Button Content="Detectar puertos"
+                                            Click="DetectPortsButton_Click" />
+                                    <Button Content="Conectar Arduino"
+                                            Style="{StaticResource PrimaryButton}"
+                                            Click="ConnectArduinoButton_Click" />
                                 </WrapPanel>
-                                <TextBlock Text="Baudios"
-                                           Style="{StaticResource MutedText}"
-                                           Margin="0,8,0,0" />
-                                <TextBox x:Name="BaudRateBox" TextChanged="GlobalSettingsChanged" />
-                            </StackPanel>
-                                </Border>
+                            </Grid>
+                    </Border>
 
-                                <Border Grid.Row="2"
-                                        Grid.ColumnSpan="3"
-                                        Style="{StaticResource Card}"
-                                        Margin="0,18,0,0">
+                    <Border Grid.Row="5"
+                            Style="{StaticResource Card}"
+                            Padding="18">
                             <Grid>
-                                <Grid.ColumnDefinitions>
-                                    <ColumnDefinition Width="*" />
-                                    <ColumnDefinition Width="220" />
-                                </Grid.ColumnDefinitions>
-                                <StackPanel>
-                                    <TextBlock Text="Alexa"
-                                               FontSize="18"
-                                               Style="{StaticResource TitleText}"
-                                               FontWeight="SemiBold"
-                                               Margin="0,0,0,10" />
-                                    <CheckBox x:Name="AlexaEnabledCheck"
-                                              Content="Activar integracion con Alexa"
-                                              Checked="AlexaSettingsChanged"
-                                              Unchecked="AlexaSettingsChanged" />
-                                    <TextBlock Text="URL de Skill / relay"
-                                               Style="{StaticResource MutedText}" />
-                                    <Grid Margin="0,4,0,10">
-                                        <TextBox x:Name="AlexaRelayUrlBox"
-                                                 Margin="0"
-                                                 Padding="10,6,76,6"
-                                                 TextChanged="AlexaSettingsChanged"
-                                                 ToolTip="Endpoint HTTPS que recibe eventos de Neo Twitch y los envia a Alexa." />
-                                        <TextBlock x:Name="AlexaRelayUrlMaskText"
-                                                   Margin="1,1,72,1"
-                                                   Padding="9,6"
-                                                   VerticalAlignment="Stretch"
-                                                   Background="{DynamicResource ThemeInputBrush}"
-                                                   Foreground="{DynamicResource ThemeMutedTextBrush}"
-                                                   Visibility="Collapsed" />
-                                        <Button x:Name="AlexaRelayUrlRevealButton"
-                                                Content="Ver"
-                                                Width="64"
-                                                MinHeight="0"
-                                                Padding="8,0"
-                                                Margin="0"
-                                                HorizontalAlignment="Right"
-                                                VerticalAlignment="Stretch"
-                                                ToolTip="Mostrar u ocultar URL de Alexa"
-                                                Click="ToggleAlexaRelayUrlVisibility_Click" />
-                                    </Grid>
-                                    <TextBlock Text="Token opcional"
-                                               Style="{StaticResource MutedText}" />
-                                    <Grid Margin="0,4,0,10">
-                                        <TextBox x:Name="AlexaAuthTokenBox"
-                                                 Margin="0"
-                                                 Padding="10,6,76,6"
-                                                 TextChanged="AlexaSettingsChanged"
-                                                 ToolTip="Token/API key opcional para proteger el relay." />
-                                        <TextBlock x:Name="AlexaAuthTokenMaskText"
-                                                   Margin="1,1,72,1"
-                                                   Padding="9,6"
-                                                   VerticalAlignment="Stretch"
-                                                   Background="{DynamicResource ThemeInputBrush}"
-                                                   Foreground="{DynamicResource ThemeMutedTextBrush}"
-                                                   Visibility="Collapsed" />
-                                        <Button x:Name="AlexaAuthTokenRevealButton"
-                                                Content="Ver"
-                                                Width="64"
-                                                MinHeight="0"
-                                                Padding="8,0"
-                                                Margin="0"
-                                                HorizontalAlignment="Right"
-                                                VerticalAlignment="Stretch"
-                                                ToolTip="Mostrar u ocultar token de Alexa"
-                                                Click="ToggleAlexaAuthTokenVisibility_Click" />
-                                    </Grid>
+                                <Grid.RowDefinitions>
+                                    <RowDefinition Height="Auto" />
+                                    <RowDefinition Height="Auto" />
+                                    <RowDefinition Height="Auto" />
+                                    <RowDefinition Height="Auto" />
+                                </Grid.RowDefinitions>
+
+                                <Grid>
+                                    <Grid.ColumnDefinitions>
+                                        <ColumnDefinition Width="66" />
+                                        <ColumnDefinition Width="*" />
+                                        <ColumnDefinition Width="150" />
+                                    </Grid.ColumnDefinitions>
+                                    <Border Width="52"
+                                            Height="52"
+                                            CornerRadius="14"
+                                            Background="#1A2FB4E9"
+                                            HorizontalAlignment="Left">
+                                        <Image Source="Assets/Icons/service_alexa.png"
+                                               Stretch="Uniform"
+                                               Margin="8" />
+                                    </Border>
+                                    <StackPanel Grid.Column="1"
+                                                VerticalAlignment="Center">
+                                        <TextBlock Text="Conectar Alexa"
+                                                   FontSize="18"
+                                                   Style="{StaticResource TitleText}"
+                                                   FontWeight="SemiBold" />
+                                        <TextBlock Text="Activa el relay para enviar eventos desde Neo Twitch a Alexa."
+                                                   Style="{StaticResource MutedText}"
+                                                   Margin="0,4,0,0" />
+                                    </StackPanel>
+                                    <Border x:Name="ConnectionsAlexaBadge"
+                                            Grid.Column="2"
+                                            CornerRadius="14"
+                                            Padding="11,5"
+                                            HorizontalAlignment="Right"
+                                            VerticalAlignment="Top">
+                                        <TextBlock x:Name="ConnectionsAlexaBadgeText"
+                                                   Text="Desconectado"
+                                                   FontSize="12"
+                                                   FontWeight="SemiBold" />
+                                    </Border>
+                                </Grid>
+
+                                <CheckBox x:Name="AlexaEnabledCheck"
+                                          Grid.Row="1"
+                                          Content="Activar integracion con Alexa"
+                                          Checked="AlexaSettingsChanged"
+                                          Unchecked="AlexaSettingsChanged"
+                                          Margin="0,18,0,8" />
+
+                                <Grid Grid.Row="2"
+                                      Margin="0,0,0,8">
+                                    <Grid.ColumnDefinitions>
+                                        <ColumnDefinition Width="*" />
+                                        <ColumnDefinition Width="16" />
+                                        <ColumnDefinition Width="*" />
+                                    </Grid.ColumnDefinitions>
+                                    <StackPanel>
+                                        <TextBlock Text="URL de Skill / relay"
+                                                   Style="{StaticResource MutedText}" />
+                                        <Grid Margin="0,4,0,0">
+                                            <TextBox x:Name="AlexaRelayUrlBox"
+                                                     Margin="0"
+                                                     Padding="10,6,76,6"
+                                                     TextChanged="AlexaSettingsChanged"
+                                                     ToolTip="Endpoint HTTPS que recibe eventos de Neo Twitch y los envia a Alexa." />
+                                            <TextBlock x:Name="AlexaRelayUrlMaskText"
+                                                       Margin="1,1,72,1"
+                                                       Padding="9,6"
+                                                       VerticalAlignment="Stretch"
+                                                       Background="{DynamicResource ThemeInputBrush}"
+                                                       Foreground="{DynamicResource ThemeMutedTextBrush}"
+                                                       Visibility="Collapsed" />
+                                            <Button x:Name="AlexaRelayUrlRevealButton"
+                                                    Content="Ver"
+                                                    Width="64"
+                                                    MinHeight="0"
+                                                    Padding="8,0"
+                                                    Margin="0"
+                                                    HorizontalAlignment="Right"
+                                                    VerticalAlignment="Stretch"
+                                                    ToolTip="Mostrar u ocultar URL de Alexa"
+                                                    Click="ToggleAlexaRelayUrlVisibility_Click" />
+                                        </Grid>
+                                    </StackPanel>
+                                    <StackPanel Grid.Column="2">
+                                        <TextBlock Text="Token opcional"
+                                                   Style="{StaticResource MutedText}" />
+                                        <Grid Margin="0,4,0,0">
+                                            <TextBox x:Name="AlexaAuthTokenBox"
+                                                     Margin="0"
+                                                     Padding="10,6,76,6"
+                                                     TextChanged="AlexaSettingsChanged"
+                                                     ToolTip="Token/API key opcional para proteger el relay." />
+                                            <TextBlock x:Name="AlexaAuthTokenMaskText"
+                                                       Margin="1,1,72,1"
+                                                       Padding="9,6"
+                                                       VerticalAlignment="Stretch"
+                                                       Background="{DynamicResource ThemeInputBrush}"
+                                                       Foreground="{DynamicResource ThemeMutedTextBrush}"
+                                                       Visibility="Collapsed" />
+                                            <Button x:Name="AlexaAuthTokenRevealButton"
+                                                    Content="Ver"
+                                                    Width="64"
+                                                    MinHeight="0"
+                                                    Padding="8,0"
+                                                    Margin="0"
+                                                    HorizontalAlignment="Right"
+                                                    VerticalAlignment="Stretch"
+                                                    ToolTip="Mostrar u ocultar token de Alexa"
+                                                    Click="ToggleAlexaAuthTokenVisibility_Click" />
+                                        </Grid>
+                                    </StackPanel>
+                                </Grid>
+
+                                <Grid Grid.Row="3"
+                                      Margin="0,8,0,0">
+                                    <Grid.ColumnDefinitions>
+                                        <ColumnDefinition Width="*" />
+                                        <ColumnDefinition Width="360" />
+                                    </Grid.ColumnDefinitions>
                                     <TextBlock x:Name="AlexaStatusText"
                                                Style="{StaticResource MutedText}"
                                                TextWrapping="Wrap"
-                                               Margin="0,4,0,0" />
-                                </StackPanel>
-                                <Button Grid.Column="1"
-                                        Content="Probar Alexa"
-                                        Style="{StaticResource PrimaryButton}"
-                                        HorizontalAlignment="Right"
-                                        VerticalAlignment="Top"
-                                        Click="TestAlexaButton_Click" />
-                                <Button Grid.Column="1"
-                                        Content="Abrir Alexa Console"
-                                        HorizontalAlignment="Right"
-                                        VerticalAlignment="Top"
-                                        Margin="0,44,8,4"
-                                        Click="OpenAlexaConsoleButton_Click" />
-                            </Grid>
-                                </Border>
-
-                                <Border Grid.Row="3"
-                                        Grid.ColumnSpan="3"
-                                        Style="{StaticResource Card}"
-                                        Margin="0,18,0,0">
-                            <Grid>
-                                <Grid.ColumnDefinitions>
-                                    <ColumnDefinition Width="*" />
-                                    <ColumnDefinition Width="220" />
-                                </Grid.ColumnDefinitions>
-                                <StackPanel>
-                                    <TextBlock Text="Conexion automatica"
-                                               FontSize="18"
-                                               Style="{StaticResource TitleText}"
-                                               FontWeight="SemiBold"
-                                               Margin="0,0,0,10" />
-                                    <WrapPanel>
-                                        <CheckBox x:Name="AutoTwitchCheck"
-                                                  Content="Conectar Twitch al abrir"
-                                                  Checked="GlobalSettingsChanged"
-                                                  Unchecked="GlobalSettingsChanged" />
-                                        <CheckBox x:Name="AutoArduinoCheck"
-                                                  Content="Conectar Arduino al abrir"
-                                                  Checked="GlobalSettingsChanged"
-                                                  Unchecked="GlobalSettingsChanged" />
+                                               VerticalAlignment="Center" />
+                                    <WrapPanel Grid.Column="1"
+                                               HorizontalAlignment="Right">
+                                        <Button Content="Abrir Alexa Console"
+                                                Click="OpenAlexaConsoleButton_Click" />
+                                        <Button Content="Probar Alexa"
+                                                Style="{StaticResource PrimaryButton}"
+                                                Click="TestAlexaButton_Click" />
                                     </WrapPanel>
-                                    <TextBlock Text="Estas opciones intentan conectar los servicios apenas abre Neo Twitch."
-                                               Style="{StaticResource MutedText}"
-                                               TextWrapping="Wrap"
-                                               Margin="0,8,0,0" />
-                                </StackPanel>
-                                <Button Grid.Column="1"
-                                        Content="Guardar configuracion"
-                                        Style="{StaticResource PrimaryButton}"
-                                        HorizontalAlignment="Right"
-                                        VerticalAlignment="Top"
-                                        Click="SaveButton_Click" />
+                                </Grid>
                             </Grid>
-                                </Border>
-                            </Grid>
-                </ScrollViewer>
+                    </Border>
+                </Grid>
             </TabItem>
 
             <TabItem Header="Reglas">
@@ -2101,6 +2241,7 @@
                             <RowDefinition Height="Auto" />
                             <RowDefinition Height="Auto" />
                             <RowDefinition Height="Auto" />
+                            <RowDefinition Height="Auto" />
                         </Grid.RowDefinitions>
                         <Grid.ColumnDefinitions>
                             <ColumnDefinition Width="*" />
@@ -2243,6 +2384,63 @@
                         </Border>
 
                         <Border Grid.Row="3"
+                                Grid.ColumnSpan="3"
+                                Style="{StaticResource Card}"
+                                Margin="0,18,0,0">
+                            <Grid>
+                                <Grid.ColumnDefinitions>
+                                    <ColumnDefinition Width="66" />
+                                    <ColumnDefinition Width="*" />
+                                    <ColumnDefinition Width="220" />
+                                </Grid.ColumnDefinitions>
+                                <Border Width="52"
+                                        Height="52"
+                                        CornerRadius="14"
+                                        Background="#1A14B8A6"
+                                        HorizontalAlignment="Left">
+                                    <Border Width="28"
+                                            Height="28"
+                                            Background="#14B8A6"
+                                            HorizontalAlignment="Center"
+                                            VerticalAlignment="Center">
+                                        <Border.OpacityMask>
+                                            <ImageBrush ImageSource="Assets/Icons/nav_connections.png"
+                                                        Stretch="Uniform" />
+                                        </Border.OpacityMask>
+                                    </Border>
+                                </Border>
+                                <StackPanel Grid.Column="1"
+                                            VerticalAlignment="Center">
+                                    <TextBlock Text="Conexion automatica"
+                                               FontSize="18"
+                                               Style="{StaticResource TitleText}"
+                                               FontWeight="SemiBold"
+                                               Margin="0,0,0,10" />
+                                    <WrapPanel>
+                                        <CheckBox x:Name="AutoTwitchCheck"
+                                                  Content="Conectar Twitch al abrir"
+                                                  Checked="GlobalSettingsChanged"
+                                                  Unchecked="GlobalSettingsChanged" />
+                                        <CheckBox x:Name="AutoArduinoCheck"
+                                                  Content="Conectar Arduino al abrir"
+                                                  Checked="GlobalSettingsChanged"
+                                                  Unchecked="GlobalSettingsChanged" />
+                                    </WrapPanel>
+                                    <TextBlock Text="Estas opciones intentan conectar los servicios apenas abre Neo Twitch."
+                                               Style="{StaticResource MutedText}"
+                                               TextWrapping="Wrap"
+                                               Margin="0,8,0,0" />
+                                </StackPanel>
+                                <Button Grid.Column="2"
+                                        Content="Guardar configuracion"
+                                        Style="{StaticResource PrimaryButton}"
+                                        HorizontalAlignment="Right"
+                                        VerticalAlignment="Top"
+                                        Click="SaveButton_Click" />
+                            </Grid>
+                        </Border>
+
+                        <Border Grid.Row="4"
                                 Grid.ColumnSpan="3"
                                 Style="{StaticResource Card}"
                                 Margin="0,18,0,0">

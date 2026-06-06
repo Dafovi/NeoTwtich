@@ -13,6 +13,7 @@ public sealed class AppConfig
     public string SerialPort { get; set; } = "";
     public ObservableCollection<LedStripConfig> LedStrips { get; set; } = [];
     public int BaudRate { get; set; } = 115200;
+    public bool ArduinoEnabled { get; set; } = true;
     public bool AutoConnectTwitch { get; set; } = true;
     public bool AutoConnectArduino { get; set; } = true;
     public bool StartHidden { get; set; }

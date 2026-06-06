@@ -247,6 +247,10 @@ Resumen corto:
 6. Crear una rutina en la app de Alexa.
 7. En Neo Twitch, pegar la Function URL y activar `Enviar evento a Alexa` en cada regla que lo necesite.
 
+## Creditos y atribuciones
+
+Los iconos y logos usados por Neo Twitch tienen sus creditos recopilados en [docs/ATRIBUCIONES_ICONOS.md](docs/ATRIBUCIONES_ICONOS.md).
+
 ## Documentacion oficial consultada
 
 - Twitch EventSub WebSockets: https://dev.twitch.tv/docs/eventsub/handling-websocket-events/

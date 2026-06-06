@@ -44,7 +44,11 @@ public partial class MainWindow : Window
     private readonly VersionCheckService _versionCheckService = new();
     private readonly TwitchEventSubClient _eventSubClient;
     private readonly ObservableCollection<ActivityLogEntry> _activity = [];
+    private readonly ObservableCollection<RuleLedPreviewDot> _ruleLedPreviewDots = [];
     private readonly CollectionViewSource _activityViewSource = new();
+    private readonly CollectionViewSource _rulesViewSource = new();
+    private readonly DispatcherTimer _ruleLedPreviewTimer = new();
+    private readonly Random _previewRandom = new();
     private readonly SemaphoreSlim _effectGate = new(1, 1);
     private readonly object _alertQueueSync = new();
     private readonly List<QueuedAlertSlot> _pendingAlertSlots = [];
@@ -70,14 +74,15 @@ public partial class MainWindow : Window
         new("Canje de puntos", TwitchEventKind.ChannelPointRedemption),
         new("Prueba manual", TwitchEventKind.Test)
     ];
-    private readonly UiOption<TwitchEventKind>[] _simulatorEventOptions =
+    private readonly UiOption<string>[] _ruleCategoryOptions =
     [
-        new("Nuevo seguidor", TwitchEventKind.Follow),
-        new("Nueva suscripcion", TwitchEventKind.Subscription),
-        new("Raid recibida", TwitchEventKind.Raid),
-        new("Bits", TwitchEventKind.Cheer),
-        new("Comando de chat", TwitchEventKind.ChatCommand),
-        new("Canje de puntos", TwitchEventKind.ChannelPointRedemption)
+        new("Todas las categorias", ""),
+        new("Seguidores", nameof(TwitchEventKind.Follow)),
+        new("Suscripciones", nameof(TwitchEventKind.Subscription)),
+        new("Raids", nameof(TwitchEventKind.Raid)),
+        new("Bits", nameof(TwitchEventKind.Cheer)),
+        new("Comandos de chat", nameof(TwitchEventKind.ChatCommand)),
+        new("Canjes de puntos", nameof(TwitchEventKind.ChannelPointRedemption))
     ];
     private readonly UiOption<LightPattern>[] _patternOptions =
     [
@@ -108,6 +113,9 @@ public partial class MainWindow : Window
     private bool _showAlexaAuthToken;
     private bool _alexaRelayConnected;
     private string _activitySearchText = "";
+    private string _ruleSearchText = "";
+    private string _ruleStatusFilter = "ALL";
+    private string _ruleCategoryFilter = "";
     private BackgroundOutputMode _backgroundOutputMode = BackgroundOutputMode.Arduino;
     private CancellationTokenSource? _backgroundApplyDebounce;
     private CancellationTokenSource? _twitchSubscriptionRefreshDebounce;
@@ -122,6 +130,7 @@ public partial class MainWindow : Window
     private int _dashboardBitsToday;
     private int _dashboardChatMessagesToday;
     private int _dashboardEventsToday;
+    private int _ruleLedPreviewStep;
     private AudioPlayback? _currentPlayback;
     private TwitchStreamStatus? _streamStatus;
     private DrawingIcon? _trayIcon;
@@ -153,12 +162,24 @@ public partial class MainWindow : Window
             _activityViewSource.Filter += ActivityViewSource_Filter;
             ActivityList.ItemsSource = _activityViewSource.View;
             DashboardActivityList.ItemsSource = _activity;
+            for (var i = 0; i < 24; i++)
+            {
+                _ruleLedPreviewDots.Add(PreviewDot(ParsePreviewColor("#334155", "#334155"), 0.08));
+            }
+
+            RuleLedPreviewList.ItemsSource = _ruleLedPreviewDots;
+            _ruleLedPreviewTimer.Interval = TimeSpan.FromMilliseconds(120);
+            _ruleLedPreviewTimer.Tick += (_, _) => UpdateRuleLedPreviewFrame();
+            _rulesViewSource.Source = _config.Rules;
+            _rulesViewSource.Filter += RulesViewSource_Filter;
+            RulesList.ItemsSource = _rulesViewSource.View;
             EventKindBox.ItemsSource = _eventOptions;
             EventKindBox.DisplayMemberPath = nameof(UiOption<TwitchEventKind>.Label);
             EventKindBox.SelectedValuePath = nameof(UiOption<TwitchEventKind>.Value);
-            SimulatorEventKindBox.ItemsSource = _simulatorEventOptions;
-            SimulatorEventKindBox.DisplayMemberPath = nameof(UiOption<TwitchEventKind>.Label);
-            SimulatorEventKindBox.SelectedValuePath = nameof(UiOption<TwitchEventKind>.Value);
+            RuleCategoryFilterBox.ItemsSource = _ruleCategoryOptions;
+            RuleCategoryFilterBox.DisplayMemberPath = nameof(UiOption<string>.Label);
+            RuleCategoryFilterBox.SelectedValuePath = nameof(UiOption<string>.Value);
+            RuleCategoryFilterBox.SelectedValue = "";
             PatternBox.ItemsSource = _patternOptions;
             PatternBox.DisplayMemberPath = nameof(UiOption<LightPattern>.Label);
             PatternBox.SelectedValuePath = nameof(UiOption<LightPattern>.Value);
@@ -261,10 +282,14 @@ public partial class MainWindow : Window
             ["Guardar configuracion"] = "Save",
             ["Ir a actividad"] = "Activity",
             ["Nueva"] = "Plus",
+            ["Nueva alerta"] = "Plus",
             ["Duplicar"] = "Copy",
             ["Eliminar"] = "Trash",
             ["Probar regla"] = "Play",
+            ["Probar alerta"] = "Play",
             ["Parar prueba"] = "Square",
+            ["Guardar cambios"] = "Save",
+            ["Eliminar alerta"] = "Trash",
             ["Buscar"] = "Search",
             ["Arduino Tira led ws2812b"] = "Arduino",
             ["Alexa"] = "Alexa",
@@ -1462,6 +1487,8 @@ public partial class MainWindow : Window
         };
 
         _config.Rules.Add(rule);
+        ShowAllRuleFilters();
+        RefreshRulesView();
         RulesList.SelectedItem = rule;
         SaveConfig();
         ScheduleTwitchSubscriptionRefreshIfNeeded();
@@ -1525,6 +1552,8 @@ public partial class MainWindow : Window
 
         var copy = rule.Duplicate();
         _config.Rules.Add(copy);
+        ShowAllRuleFilters();
+        RefreshRulesView();
         RulesList.SelectedItem = copy;
         SaveConfig();
         ScheduleTwitchSubscriptionRefreshIfNeeded();
@@ -1537,16 +1566,26 @@ public partial class MainWindow : Window
             return;
         }
 
+        RemoveRule(rule);
+    }
+
+    private void RemoveRule(EventRule rule)
+    {
         if (WpfMessageBox.Show(this, $"Eliminar la regla '{rule.Name}'?", "Reglas", MessageBoxButton.YesNo, MessageBoxImage.Question) != MessageBoxResult.Yes)
         {
             return;
         }
 
-        var index = RulesList.SelectedIndex;
+        var wasSelected = ReferenceEquals(RulesList.SelectedItem, rule);
         _config.Rules.Remove(rule);
+        RefreshRulesView();
+
         if (_config.Rules.Count > 0)
         {
-            RulesList.SelectedIndex = Math.Clamp(index - 1, 0, _config.Rules.Count - 1);
+            if (wasSelected || RulesList.SelectedItem is not EventRule)
+            {
+                RulesList.SelectedItem = _rulesViewSource.View?.Cast<EventRule>().FirstOrDefault();
+            }
         }
         else
         {
@@ -1557,7 +1596,19 @@ public partial class MainWindow : Window
         ScheduleTwitchSubscriptionRefreshIfNeeded();
     }
 
-    private async void TestRuleButton_Click(object sender, RoutedEventArgs e)
+    private async void RuleTestButton_Click(object sender, RoutedEventArgs e)
+    {
+        if (_currentEffectCts is not null)
+        {
+            await StopCurrentEffectAsync();
+            UpdateRuleTestButtonState();
+            return;
+        }
+
+        await StartRuleTestAsync();
+    }
+
+    private async Task StartRuleTestAsync()
     {
         if (RulesList.SelectedItem is not EventRule rule)
         {
@@ -1587,18 +1638,39 @@ public partial class MainWindow : Window
         await RunRuleAsync(rule, simulatedEvent);
     }
 
+    private void UpdateRuleTestButtonState()
+    {
+        if (_initializingComponent)
+        {
+            return;
+        }
+
+        if (!Dispatcher.CheckAccess())
+        {
+            _ = Dispatcher.InvokeAsync(UpdateRuleTestButtonState);
+            return;
+        }
+
+        var isRunning = _currentEffectCts is not null;
+        RuleTestButton.Style = isRunning
+            ? Resources["DangerButton"] as Style
+            : Resources["PrimaryButton"] as Style;
+        SetButtonIcon(RuleTestButton, isRunning ? "Parar prueba" : "Probar alerta", isRunning ? "Square" : "Play");
+        ApplyButtonTheme(RuleTestButton, _config.DarkMode ? ThemePalette.Dark : ThemePalette.Light);
+    }
+
     private TwitchEvent BuildSimulatedEvent(EventRule rule)
     {
-        var kind = SimulatorEventKindBox.SelectedValue is TwitchEventKind selectedKind
-            ? selectedKind
-            : rule.EventKind == TwitchEventKind.Test
-                ? TwitchEventKind.Follow
-                : rule.EventKind;
-        var userName = FirstNonEmpty(SimulatorUserBox.Text.Trim(), "Prueba");
-        var bits = ParseInt(SimulatorBitsBox.Text, Math.Max(1, rule.MinimumBits), 1, 1_000_000);
-        var viewers = ParseInt(SimulatorViewersBox.Text, 18, 1, 1_000_000);
-        var rewardTitle = FirstNonEmpty(SimulatorRewardBox.Text.Trim(), rule.CustomRewardTitle, "Canje de prueba");
-        var message = FirstNonEmpty(SimulatorMessageBox.Text.Trim(), rule.ChatCommand, "!baile mensaje de prueba");
+        var kind = rule.EventKind == TwitchEventKind.Test
+            ? TwitchEventKind.Follow
+            : rule.EventKind;
+        var userName = "Prueba";
+        var bits = Math.Max(1, rule.MinimumBits);
+        var viewers = 18;
+        var rewardTitle = FirstNonEmpty(rule.CustomRewardTitle, "Canje de prueba");
+        var message = kind == TwitchEventKind.ChatCommand
+            ? FirstNonEmpty(rule.ChatCommand, "!baile mensaje de prueba")
+            : "Mensaje de prueba";
 
         return new TwitchEvent
         {
@@ -1812,8 +1884,38 @@ public partial class MainWindow : Window
 
         SaveCurrentRuleFromFields();
         SaveConfig();
+        UpdateEventKindTileSelection();
+        UpdatePatternTileSelection();
         UpdateRuleOptionVisibility();
+        UpdateRuleLedPreviewTimerState();
         ScheduleTwitchSubscriptionRefreshIfNeeded();
+    }
+
+    private void EventKindTile_Click(object sender, RoutedEventArgs e)
+    {
+        if (sender is not System.Windows.Controls.Button button
+            || button.Tag is not string value
+            || !Enum.TryParse<TwitchEventKind>(value, out var kind))
+        {
+            return;
+        }
+
+        EventKindBox.SelectedValue = kind;
+        UpdateEventKindTileSelection();
+    }
+
+    private void PatternTile_Click(object sender, RoutedEventArgs e)
+    {
+        if (sender is not System.Windows.Controls.Button button
+            || button.Tag is not string value
+            || !Enum.TryParse<LightPattern>(value, out var pattern))
+        {
+            return;
+        }
+
+        PatternBox.SelectedValue = pattern;
+        UpdatePatternTileSelection();
+        UpdateRuleLedPreviewFrame();
     }
 
     private void StripFieldChanged(object sender, RoutedEventArgs e)
@@ -1839,6 +1941,11 @@ public partial class MainWindow : Window
         SaveConfig();
         UpdateBackgroundOptionVisibility();
         ScheduleBackgroundApply();
+    }
+
+    private void RuleLedPreviewPanel_IsVisibleChanged(object sender, DependencyPropertyChangedEventArgs e)
+    {
+        UpdateRuleLedPreviewTimerState();
     }
 
     private void ThemeModeChanged(object sender, SelectionChangedEventArgs e)
@@ -1885,6 +1992,7 @@ public partial class MainWindow : Window
         }
 
         UpdateNavigationButtons();
+        UpdateRuleLedPreviewTimerState();
         ConfigureActionIcons();
         _ = Dispatcher.BeginInvoke(ApplyTheme, DispatcherPriority.Loaded);
         _ = Dispatcher.BeginInvoke(ApplyTheme, DispatcherPriority.ContextIdle);
@@ -2014,6 +2122,140 @@ public partial class MainWindow : Window
     private void ClearLogButton_Click(object sender, RoutedEventArgs e)
     {
         _activity.Clear();
+    }
+
+    private void RuleSearchBox_TextChanged(object sender, TextChangedEventArgs e)
+    {
+        if (_loadingUi || sender is not System.Windows.Controls.TextBox textBox)
+        {
+            return;
+        }
+
+        _ruleSearchText = textBox.Text.Trim();
+        RefreshRulesView();
+    }
+
+    private void RuleStatusFilterButton_Click(object sender, RoutedEventArgs e)
+    {
+        if (_loadingUi || sender is not ToggleButton button)
+        {
+            return;
+        }
+
+        button.IsChecked = true;
+        _ruleStatusFilter = button.Tag?.ToString() ?? "ALL";
+
+        foreach (var filterButton in RuleStatusFilterButtons())
+        {
+            if (!ReferenceEquals(filterButton, button))
+            {
+                filterButton.IsChecked = false;
+            }
+
+            ApplyRuleStatusFilterButtonTheme(filterButton, _config.DarkMode ? ThemePalette.Dark : ThemePalette.Light);
+        }
+
+        RefreshRulesView();
+    }
+
+    private void RuleCategoryFilterBox_SelectionChanged(object sender, SelectionChangedEventArgs e)
+    {
+        if (_loadingUi)
+        {
+            return;
+        }
+
+        _ruleCategoryFilter = RuleCategoryFilterBox.SelectedValue?.ToString() ?? "";
+        RefreshRulesView();
+    }
+
+    private void RulesViewSource_Filter(object sender, FilterEventArgs e)
+    {
+        if (e.Item is not EventRule rule)
+        {
+            e.Accepted = false;
+            return;
+        }
+
+        e.Accepted = RuleMatchesFilters(rule);
+    }
+
+    private bool RuleMatchesFilters(EventRule rule)
+    {
+        if (_ruleStatusFilter == "ACTIVE" && !rule.IsEnabled)
+        {
+            return false;
+        }
+
+        if (_ruleStatusFilter == "INACTIVE" && rule.IsEnabled)
+        {
+            return false;
+        }
+
+        if (!string.IsNullOrWhiteSpace(_ruleCategoryFilter)
+            && !string.Equals(rule.EventKind.ToString(), _ruleCategoryFilter, StringComparison.OrdinalIgnoreCase))
+        {
+            return false;
+        }
+
+        if (string.IsNullOrWhiteSpace(_ruleSearchText))
+        {
+            return true;
+        }
+
+        var text = _ruleSearchText;
+        return ContainsIgnoreCase(rule.Name, text)
+            || ContainsIgnoreCase(rule.DisplayLabel, text)
+            || ContainsIgnoreCase(rule.ChatCommand, text)
+            || ContainsIgnoreCase(rule.CustomRewardTitle, text)
+            || ContainsIgnoreCase(rule.ChatMessageTemplate, text)
+            || ContainsIgnoreCase(DisplayNames.For(rule.EventKind), text);
+    }
+
+    private static bool ContainsIgnoreCase(string? value, string query)
+    {
+        return !string.IsNullOrWhiteSpace(value)
+            && value.Contains(query, StringComparison.OrdinalIgnoreCase);
+    }
+
+    private void RefreshRulesView()
+    {
+        var selected = RulesList.SelectedItem as EventRule;
+        _rulesViewSource.View?.Refresh();
+
+        if (selected is not null && _rulesViewSource.View?.Contains(selected) == true)
+        {
+            RulesList.SelectedItem = selected;
+        }
+        else if (RulesList.SelectedItem is not EventRule)
+        {
+            RulesList.SelectedItem = _rulesViewSource.View?.Cast<EventRule>().FirstOrDefault();
+        }
+
+        UpdateRulesCountText();
+    }
+
+    private void UpdateRulesCountText()
+    {
+        if (_initializingComponent || RulesCountText is null)
+        {
+            return;
+        }
+
+        var visibleCount = _rulesViewSource.View?.Cast<EventRule>().Count() ?? 0;
+        RulesCountText.Text = $"Mostrando {visibleCount} de {_config.Rules.Count} alertas";
+    }
+
+    private void ShowAllRuleFilters()
+    {
+        _ruleStatusFilter = "ALL";
+        _ruleCategoryFilter = "";
+        RuleFilterAllButton.IsChecked = true;
+        RuleFilterActiveButton.IsChecked = false;
+        RuleFilterInactiveButton.IsChecked = false;
+        RuleCategoryFilterBox.SelectedValue = "";
+        RuleSearchBox.Text = "";
+        _ruleSearchText = "";
     }
 
     private void ActivityFilterButton_CheckedChanged(object sender, RoutedEventArgs e)
@@ -2321,6 +2563,7 @@ public partial class MainWindow : Window
         MarkQueuedAlertStarted(queueSlot);
         var effectCts = new CancellationTokenSource();
         _currentEffectCts = effectCts;
+        UpdateRuleTestButtonState();
         var wasCancelled = false;
         var shouldRestoreBackground = false;
 
@@ -2420,6 +2663,7 @@ public partial class MainWindow : Window
             {
                 _currentEffectCts = null;
             }
+            UpdateRuleTestButtonState();
 
             if (shouldRestoreBackground || wasCancelled)
             {
@@ -2491,7 +2735,9 @@ public partial class MainWindow : Window
             BackgroundBrightnessSlider.Value = _config.BackgroundBrightness;
             BackgroundCycleSlider.Value = _config.BackgroundCycleMs;
             BackgroundStepSlider.Value = _config.BackgroundStepMs;
-            RulesList.ItemsSource = _config.Rules;
+            _rulesViewSource.Source = _config.Rules;
+            RulesList.ItemsSource = _rulesViewSource.View;
+            RefreshRulesView();
             StripsList.ItemsSource = _config.LedStrips;
             SettingsPathText.Text = _settingsStore.SettingsPath;
             BackupPathText.Text = $"Backups automaticos: {_settingsStore.BackupDirectory}";
@@ -2537,16 +2783,7 @@ public partial class MainWindow : Window
             RuleEnabledCheck.IsChecked = rule.IsEnabled;
             RuleNameBox.Text = rule.Name;
             EventKindBox.SelectedValue = rule.EventKind;
-            SimulatorEventKindBox.SelectedValue = rule.EventKind == TwitchEventKind.Test
-                ? TwitchEventKind.Follow
-                : rule.EventKind;
-            SimulatorUserBox.Text = FirstNonEmpty(SimulatorUserBox.Text, "Prueba");
-            SimulatorBitsBox.Text = Math.Max(1, rule.MinimumBits).ToString();
-            SimulatorViewersBox.Text = FirstNonEmpty(SimulatorViewersBox.Text, "18");
-            SimulatorRewardBox.Text = FirstNonEmpty(rule.CustomRewardTitle, SimulatorRewardBox.Text, "Canje de prueba");
-            SimulatorMessageBox.Text = rule.EventKind == TwitchEventKind.ChatCommand
-                ? FirstNonEmpty(rule.ChatCommand, SimulatorMessageBox.Text, "!baile mensaje de prueba")
-                : FirstNonEmpty(SimulatorMessageBox.Text, "Mensaje de prueba");
+            UpdateEventKindTileSelection();
             RewardTitleBox.Text = rule.CustomRewardTitle;
             ChatCommandBox.Text = rule.ChatCommand;
             MinimumBitsBox.Text = rule.MinimumBits.ToString();
@@ -2567,11 +2804,14 @@ public partial class MainWindow : Window
             StepSlider.Value = rule.StepMs;
             UpdateColorButtons();
             UpdateSliderLabels();
+            UpdatePatternTileSelection();
+            UpdateRuleLedPreviewFrame();
         }
         finally
         {
             _loadingRule = false;
             UpdateRuleOptionVisibility();
+            UpdateRuleLedPreviewTimerState();
         }
     }
 
@@ -2657,8 +2897,11 @@ public partial class MainWindow : Window
 
         UpdateColorButtons();
         UpdateSliderLabels();
+        UpdatePatternTileSelection();
+        UpdateRuleLedPreviewFrame();
         UpdateRuleOptionVisibility();
-        RulesList.Items.Refresh();
+        UpdateRuleLedPreviewTimerState();
+        RefreshRulesView();
     }
 
     private void SaveBackgroundFromFields()
@@ -2697,7 +2940,7 @@ public partial class MainWindow : Window
         strip.LedCount = ParseInt(StripLedCountBox.Text, 30, 1, 600);
 
         StripsList.Items.Refresh();
-        RulesList.Items.Refresh();
+        RefreshRulesView();
     }
 
     private void UpdateRuleOptionVisibility()
@@ -2718,13 +2961,13 @@ public partial class MainWindow : Window
         SetVisible(kind == TwitchEventKind.ChannelPointRedemption, RewardTitleLabel, RewardTitleBox);
         SetVisible(kind == TwitchEventKind.ChatCommand, ChatCommandLabel, ChatCommandBox);
         SetVisible(kind == TwitchEventKind.Cheer, MinimumBitsLabel, MinimumBitsBox);
-        SetVisible(playAudio, AudioLabel, AudioPanel);
-        SetVisible(sendChat, ChatMessageLabel, ChatMessageBox);
-        SetVisible(arduinoAvailable, UseLightsCheck);
-        SetVisible(alexaAvailable, AlexaEventCheck);
-        SetVisible(alexaAvailable && sendAlexa, AlexaRuleHintText);
+        SetVisible(playAudio, AudioDetailsPanel, AudioLabel, AudioPanel);
+        SetVisible(sendChat, ChatDetailsPanel, ChatMessageLabel, ChatMessageBox);
+        SetVisible(arduinoAvailable, UseLightsActionCard);
+        SetVisible(alexaAvailable, AlexaActionCard);
+        SetVisible(alexaAvailable && sendAlexa, AlexaDetailsPanel, AlexaRuleHintText);
 
-        SetVisible(useLights, LightOptionsSeparator, TargetPinsLabel, TargetPinsBox, PatternGrid);
+        SetVisible(useLights, LightConfigurationPanel, LightOptionsSeparator, TargetPinsLabel, TargetPinsBox, PatternGrid, RuleLedPreviewPanel);
         SetVisible(useLights && UsesPrimaryColor(pattern), PrimaryColorPanel);
         SetVisible(useLights && UsesSecondaryColor(pattern), SecondaryColorLabel, SecondaryColorPanel);
         SetVisible(useLights && UsesTertiaryColor(pattern), TertiaryColorLabel, TertiaryColorPanel);
@@ -2732,6 +2975,8 @@ public partial class MainWindow : Window
         SetVisible(useLights && !playAudio, DurationGrid, DurationSlider);
         SetVisible(useLights && UsesCycle(pattern), CycleGrid, CycleSlider);
         SetVisible(useLights && UsesStep(pattern), StepGrid, StepSlider);
+        UpdateRuleLedPreviewFrame();
+        UpdateRuleLedPreviewTimerState();
     }
 
     private void UpdateBackgroundOptionVisibility()
@@ -2800,6 +3045,186 @@ public partial class MainWindow : Window
         {
             element.Visibility = visibility;
         }
+    }
+
+    private void UpdateRuleLedPreviewFrame()
+    {
+        if (_initializingComponent || _ruleLedPreviewDots.Count == 0)
+        {
+            return;
+        }
+
+        if (!Dispatcher.CheckAccess())
+        {
+            _ = Dispatcher.InvokeAsync(UpdateRuleLedPreviewFrame);
+            return;
+        }
+
+        if (!ShouldRunRuleLedPreview())
+        {
+            UpdateRuleLedPreviewTimerState();
+            return;
+        }
+
+        var pattern = PatternBox.SelectedValue is LightPattern selectedPattern
+            ? selectedPattern
+            : LightPattern.Pulse;
+        var brightness = Math.Clamp(BrightnessSlider.Value / 255d, 0d, 1d);
+        var colorScale = Math.Clamp(brightness, 0.08, 1d);
+        var primary = ParsePreviewColor(PrimaryColorBox.Text, "#14B8A6");
+        var secondary = ParsePreviewColor(SecondaryColorBox.Text, "#B56CFF");
+        var tertiary = ParsePreviewColor(TertiaryColorBox.Text, "#FFFFFF");
+        var count = _ruleLedPreviewDots.Count;
+        _ruleLedPreviewStep++;
+
+        for (var i = 0; i < count; i++)
+        {
+            var phase = (i + _ruleLedPreviewStep) / (double)count;
+            var color = pattern switch
+            {
+                LightPattern.Solid => primary,
+                LightPattern.Rainbow => RainbowPreviewColor(phase),
+                LightPattern.Pulse => BlendPreviewColor(primary, secondary, (Math.Sin((_ruleLedPreviewStep * 0.18) + (i * 0.22)) + 1d) / 2d),
+                LightPattern.Chase => ((i + _ruleLedPreviewStep) % 6) < 2
+                    ? primary
+                    : ScalePreviewColor(secondary, 0.22),
+                LightPattern.Theater => ((i + _ruleLedPreviewStep) % 3) == 0
+                    ? primary
+                    : (((i + _ruleLedPreviewStep) % 3) == 1 ? secondary : ScalePreviewColor(tertiary, 0.18)),
+                LightPattern.Sparkle => _previewRandom.NextDouble() > 0.72
+                    ? RandomPreviewColor(primary, secondary, tertiary)
+                    : ScalePreviewColor(primary, 0.16),
+                LightPattern.Rave => RandomPreviewColor(primary, secondary, tertiary),
+                _ => primary
+            };
+
+            _ruleLedPreviewDots[i] = PreviewDot(ScalePreviewColor(color, colorScale), brightness);
+        }
+    }
+
+    private void SetRuleLedPreviewAll(string color)
+    {
+        var previewColor = ParsePreviewColor(color, "#334155");
+        for (var i = 0; i < _ruleLedPreviewDots.Count; i++)
+        {
+            _ruleLedPreviewDots[i] = PreviewDot(previewColor, 0.08);
+        }
+    }
+
+    private void UpdateRuleLedPreviewTimerState()
+    {
+        if (_initializingComponent || !Dispatcher.CheckAccess())
+        {
+            return;
+        }
+
+        var shouldRun = ShouldRunRuleLedPreview();
+        if (shouldRun)
+        {
+            if (!_ruleLedPreviewTimer.IsEnabled)
+            {
+                _ruleLedPreviewTimer.Start();
+            }
+
+            return;
+        }
+
+        if (_ruleLedPreviewTimer.IsEnabled)
+        {
+            _ruleLedPreviewTimer.Stop();
+        }
+
+        if (UseLightsCheck.IsChecked != true || !_config.ArduinoEnabled)
+        {
+            SetRuleLedPreviewAll("#334155");
+        }
+    }
+
+    private bool ShouldRunRuleLedPreview()
+    {
+        return UseLightsCheck.IsChecked == true
+            && _config.ArduinoEnabled
+            && MainTabs.SelectedIndex == 2
+            && LightConfigurationPanel.IsExpanded
+            && RuleLedPreviewPanel.IsVisible;
+    }
+
+    private System.Windows.Media.Color RandomPreviewColor(
+        System.Windows.Media.Color primary,
+        System.Windows.Media.Color secondary,
+        System.Windows.Media.Color tertiary)
+    {
+        return _previewRandom.Next(3) switch
+        {
+            0 => primary,
+            1 => secondary,
+            _ => tertiary
+        };
+    }
+
+    private static System.Windows.Media.Color ParsePreviewColor(string color, string fallback)
+    {
+        try
+        {
+            return (System.Windows.Media.Color)System.Windows.Media.ColorConverter.ConvertFromString(LightCommand.NormalizeColor(color));
+        }
+        catch
+        {
+            return (System.Windows.Media.Color)System.Windows.Media.ColorConverter.ConvertFromString(fallback);
+        }
+    }
+
+    private static RuleLedPreviewDot PreviewDot(System.Windows.Media.Color color, double brightness)
+    {
+        var glowOpacity = Math.Clamp(0.12 + (brightness * 0.72), 0.12, 0.9);
+        var glowRadius = 7d + (brightness * 22d);
+        return new RuleLedPreviewDot(
+            FrozenBrushFrom($"#{color.R:X2}{color.G:X2}{color.B:X2}"),
+            color,
+            glowOpacity,
+            glowRadius);
+    }
+
+    private static System.Windows.Media.Color ScalePreviewColor(System.Windows.Media.Color color, double factor)
+    {
+        factor = Math.Clamp(factor, 0d, 1d);
+        return System.Windows.Media.Color.FromRgb(
+            (byte)Math.Round(color.R * factor),
+            (byte)Math.Round(color.G * factor),
+            (byte)Math.Round(color.B * factor));
+    }
+
+    private static System.Windows.Media.Color BlendPreviewColor(
+        System.Windows.Media.Color start,
+        System.Windows.Media.Color end,
+        double amount)
+    {
+        amount = Math.Clamp(amount, 0d, 1d);
+        return System.Windows.Media.Color.FromRgb(
+            (byte)Math.Round(start.R + ((end.R - start.R) * amount)),
+            (byte)Math.Round(start.G + ((end.G - start.G) * amount)),
+            (byte)Math.Round(start.B + ((end.B - start.B) * amount)));
+    }
+
+    private static System.Windows.Media.Color RainbowPreviewColor(double phase)
+    {
+        phase -= Math.Floor(phase);
+        var h = phase * 6d;
+        var x = 1d - Math.Abs((h % 2d) - 1d);
+        var (r, g, b) = h switch
+        {
+            < 1d => (1d, x, 0d),
+            < 2d => (x, 1d, 0d),
+            < 3d => (0d, 1d, x),
+            < 4d => (0d, x, 1d),
+            < 5d => (x, 0d, 1d),
+            _ => (1d, 0d, x)
+        };
+
+        return System.Windows.Media.Color.FromRgb(
+            (byte)Math.Round(r * 255d),
+            (byte)Math.Round(g * 255d),
+            (byte)Math.Round(b * 255d));
     }
 
     private static bool UsesPrimaryColor(LightPattern pattern)
@@ -3268,6 +3693,8 @@ public partial class MainWindow : Window
         UpdateTwitchLiveIndicator();
         UpdateDashboardSummary();
         UpdateColorButtons();
+        UpdateEventKindTileSelection();
+        UpdatePatternTileSelection();
     }
 
     private void ApplyThemeToElement(DependencyObject element, ThemePalette palette)
@@ -3400,6 +3827,10 @@ public partial class MainWindow : Window
                 button.BorderBrush = palette.Border;
                 skipChildren = true;
                 break;
+            case ToggleButton toggleButton when IsRuleStatusFilterButton(toggleButton):
+                ApplyRuleStatusFilterButtonTheme(toggleButton, palette);
+                skipChildren = true;
+                break;
             case ToggleButton toggleButton:
                 ApplyActivityFilterButtonTheme(toggleButton, palette);
                 skipChildren = true;
@@ -3474,6 +3905,171 @@ public partial class MainWindow : Window
         button.BorderBrush = active
             ? accent
             : palette.Border;
+    }
+
+    private void ApplyRuleStatusFilterButtonTheme(ToggleButton button, ThemePalette palette)
+    {
+        var active = button.IsChecked == true;
+        var accentColor = button.Tag?.ToString() switch
+        {
+            "ACTIVE" => "#22C55E",
+            "INACTIVE" => "#94A3B8",
+            _ => "#14B8A6"
+        };
+        var accent = FrozenBrushFrom(accentColor);
+
+        button.Background = active
+            ? TranslucentBrushFrom(accentColor)
+            : palette.Input;
+        button.Foreground = active
+            ? accent
+            : palette.MutedText;
+        button.BorderBrush = active
+            ? accent
+            : palette.Border;
+    }
+
+    private static bool IsRuleStatusFilterButton(ToggleButton button)
+    {
+        return button.Name.StartsWith("RuleFilter", StringComparison.OrdinalIgnoreCase);
+    }
+
+    private IEnumerable<ToggleButton> RuleStatusFilterButtons()
+    {
+        return
+        [
+            RuleFilterAllButton,
+            RuleFilterActiveButton,
+            RuleFilterInactiveButton
+        ];
+    }
+
+    private void UpdateEventKindTileSelection()
+    {
+        if (_initializingComponent)
+        {
+            return;
+        }
+
+        var selectedKind = EventKindBox.SelectedValue is TwitchEventKind kind
+            ? kind
+            : TwitchEventKind.Follow;
+        var palette = _config.DarkMode
+            ? ThemePalette.Dark
+            : ThemePalette.Light;
+
+        foreach (var button in EventKindTileButtons())
+        {
+            if (button.Tag is not string value || !Enum.TryParse<TwitchEventKind>(value, out var tileKind))
+            {
+                continue;
+            }
+
+            var selected = tileKind == selectedKind;
+            var accentColor = EventKindAccent(tileKind);
+            var accent = FrozenBrushFrom(accentColor);
+            button.Background = selected
+                ? TranslucentBrushFrom(accentColor)
+                : palette.Input;
+            button.BorderBrush = selected
+                ? accent
+                : palette.Border;
+            button.Foreground = selected
+                ? accent
+                : palette.Text;
+        }
+    }
+
+    private IEnumerable<System.Windows.Controls.Button> EventKindTileButtons()
+    {
+        return
+        [
+            EventFollowTileButton,
+            EventSubscriptionTileButton,
+            EventRaidTileButton,
+            EventCheerTileButton,
+            EventChatCommandTileButton,
+            EventRedemptionTileButton
+        ];
+    }
+
+    private static string EventKindAccent(TwitchEventKind kind)
+    {
+        return kind switch
+        {
+            TwitchEventKind.Follow => "#14B8A6",
+            TwitchEventKind.Subscription => "#B56CFF",
+            TwitchEventKind.Raid => "#F43F5E",
+            TwitchEventKind.Cheer => "#37C7F3",
+            TwitchEventKind.ChatCommand => "#22C55E",
+            TwitchEventKind.ChannelPointRedemption => "#FB923C",
+            _ => "#94A3B8"
+        };
+    }
+
+    private void UpdatePatternTileSelection()
+    {
+        if (_initializingComponent)
+        {
+            return;
+        }
+
+        var selectedPattern = PatternBox.SelectedValue is LightPattern pattern
+            ? pattern
+            : LightPattern.Pulse;
+        var palette = _config.DarkMode
+            ? ThemePalette.Dark
+            : ThemePalette.Light;
+
+        foreach (var button in PatternTileButtons())
+        {
+            if (button.Tag is not string value || !Enum.TryParse<LightPattern>(value, out var tilePattern))
+            {
+                continue;
+            }
+
+            var selected = tilePattern == selectedPattern;
+            var accentColor = PatternAccent(tilePattern);
+            var accent = FrozenBrushFrom(accentColor);
+            button.Background = selected
+                ? TranslucentBrushFrom(accentColor)
+                : palette.Input;
+            button.BorderBrush = selected
+                ? accent
+                : palette.Border;
+            button.Foreground = selected
+                ? accent
+                : palette.Text;
+        }
+    }
+
+    private IEnumerable<System.Windows.Controls.Button> PatternTileButtons()
+    {
+        return
+        [
+            PatternSolidTileButton,
+            PatternPulseTileButton,
+            PatternRainbowTileButton,
+            PatternChaseTileButton,
+            PatternTheaterTileButton,
+            PatternSparkleTileButton,
+            PatternRaveTileButton
+        ];
+    }
+
+    private static string PatternAccent(LightPattern pattern)
+    {
+        return pattern switch
+        {
+            LightPattern.Solid => "#14B8A6",
+            LightPattern.Pulse => "#B56CFF",
+            LightPattern.Rainbow => "#37C7F3",
+            LightPattern.Chase => "#22C55E",
+            LightPattern.Theater => "#F59E0B",
+            LightPattern.Sparkle => "#FACC15",
+            LightPattern.Rave => "#EC4899",
+            _ => "#94A3B8"
+        };
     }
 
     private void UpdateNavigationButtons()
@@ -4619,6 +5215,12 @@ public partial class MainWindow : Window
         brush.Freeze();
         return brush;
     }
+
+    private sealed record RuleLedPreviewDot(
+        SolidColorBrush Fill,
+        System.Windows.Media.Color GlowColor,
+        double GlowOpacity,
+        double GlowRadius);
 
     [DllImport("dwmapi.dll")]
     private static extern int DwmSetWindowAttribute(

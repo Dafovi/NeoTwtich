@@ -1,5 +1,6 @@
 using System.ComponentModel;
 using System.Runtime.CompilerServices;
+using System.Windows;
 
 namespace NeoTwitch.Models;
 
@@ -39,7 +40,14 @@ public sealed class EventRule : INotifyPropertyChanged
     public bool IsEnabled
     {
         get => _isEnabled;
-        set => SetField(ref _isEnabled, value);
+        set
+        {
+            if (SetField(ref _isEnabled, value))
+            {
+                OnPropertyChanged(nameof(StatusText));
+                OnPropertyChanged(nameof(StatusColor));
+            }
+        }
     }
 
     public TwitchEventKind EventKind
@@ -50,6 +58,8 @@ public sealed class EventRule : INotifyPropertyChanged
             if (SetField(ref _eventKind, value))
             {
                 OnPropertyChanged(nameof(DisplayLabel));
+                OnPropertyChanged(nameof(EventIconPath));
+                OnPropertyChanged(nameof(EventAccentColor));
             }
         }
     }
@@ -87,13 +97,27 @@ public sealed class EventRule : INotifyPropertyChanged
     public bool UseLights
     {
         get => _useLights;
-        set => SetField(ref _useLights, value);
+        set
+        {
+            if (SetField(ref _useLights, value))
+            {
+                OnPropertyChanged(nameof(ActionsSummary));
+                OnPropertyChanged(nameof(LightsActionVisibility));
+            }
+        }
     }
 
     public bool PlayAudio
     {
         get => _playAudio;
-        set => SetField(ref _playAudio, value);
+        set
+        {
+            if (SetField(ref _playAudio, value))
+            {
+                OnPropertyChanged(nameof(ActionsSummary));
+                OnPropertyChanged(nameof(AudioActionVisibility));
+            }
+        }
     }
 
     public string AudioPath
@@ -105,7 +129,14 @@ public sealed class EventRule : INotifyPropertyChanged
     public bool SendChatMessage
     {
         get => _sendChatMessage;
-        set => SetField(ref _sendChatMessage, value);
+        set
+        {
+            if (SetField(ref _sendChatMessage, value))
+            {
+                OnPropertyChanged(nameof(ActionsSummary));
+                OnPropertyChanged(nameof(ChatActionVisibility));
+            }
+        }
     }
 
     public string ChatMessageTemplate
@@ -117,7 +148,14 @@ public sealed class EventRule : INotifyPropertyChanged
     public bool SendAlexaEvent
     {
         get => _sendAlexaEvent;
-        set => SetField(ref _sendAlexaEvent, value);
+        set
+        {
+            if (SetField(ref _sendAlexaEvent, value))
+            {
+                OnPropertyChanged(nameof(ActionsSummary));
+                OnPropertyChanged(nameof(AlexaActionVisibility));
+            }
+        }
     }
 
     public string AlexaEventName
@@ -196,6 +234,71 @@ public sealed class EventRule : INotifyPropertyChanged
             };
         }
     }
+
+    public string StatusText => IsEnabled ? "Activa" : "Inactiva";
+
+    public string StatusColor => IsEnabled ? "#22C55E" : "#94A3B8";
+
+    public string EventIconPath => EventKind switch
+    {
+        TwitchEventKind.Follow => "Assets/Icons/action_follower_teal.png",
+        TwitchEventKind.Subscription => "Assets/Icons/action_subscription_purple.png",
+        TwitchEventKind.Cheer => "Assets/Icons/action_bits_blue.png",
+        TwitchEventKind.ChatCommand => "Assets/Icons/action_message_green.png",
+        TwitchEventKind.ChannelPointRedemption => "Assets/Icons/activity_notification_lime.png",
+        TwitchEventKind.Raid => "Assets/Icons/activity_notification.png",
+        _ => "Assets/Icons/nav_rules.png"
+    };
+
+    public string EventAccentColor => EventKind switch
+    {
+        TwitchEventKind.Follow => "#14B8A6",
+        TwitchEventKind.Subscription => "#B56CFF",
+        TwitchEventKind.Raid => "#F43F5E",
+        TwitchEventKind.Cheer => "#37C7F3",
+        TwitchEventKind.ChatCommand => "#22C55E",
+        TwitchEventKind.ChannelPointRedemption => "#FB923C",
+        _ => "#94A3B8"
+    };
+
+    public string ActionsSummary
+    {
+        get
+        {
+            var actions = new List<string>();
+            if (UseLights)
+            {
+                actions.Add("Luces");
+            }
+
+            if (PlayAudio)
+            {
+                actions.Add("Audio");
+            }
+
+            if (SendChatMessage)
+            {
+                actions.Add("Chat");
+            }
+
+            if (SendAlexaEvent)
+            {
+                actions.Add("Alexa");
+            }
+
+            return actions.Count == 0
+                ? "Sin acciones"
+                : string.Join(" / ", actions);
+        }
+    }
+
+    public Visibility LightsActionVisibility => UseLights ? Visibility.Visible : Visibility.Collapsed;
+
+    public Visibility AudioActionVisibility => PlayAudio ? Visibility.Visible : Visibility.Collapsed;
+
+    public Visibility ChatActionVisibility => SendChatMessage ? Visibility.Visible : Visibility.Collapsed;
+
+    public Visibility AlexaActionVisibility => SendAlexaEvent ? Visibility.Visible : Visibility.Collapsed;
 
     public event PropertyChangedEventHandler? PropertyChanged;
 

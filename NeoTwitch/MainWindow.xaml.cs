@@ -45,9 +45,11 @@ public partial class MainWindow : Window
     private readonly TwitchEventSubClient _eventSubClient;
     private readonly ObservableCollection<ActivityLogEntry> _activity = [];
     private readonly ObservableCollection<RuleLedPreviewDot> _ruleLedPreviewDots = [];
+    private readonly ObservableCollection<RuleLedPreviewDot> _backgroundLedPreviewDots = [];
     private readonly CollectionViewSource _activityViewSource = new();
     private readonly CollectionViewSource _rulesViewSource = new();
     private readonly DispatcherTimer _ruleLedPreviewTimer = new();
+    private readonly DispatcherTimer _backgroundLedPreviewTimer = new();
     private readonly Random _previewRandom = new();
     private readonly SemaphoreSlim _effectGate = new(1, 1);
     private readonly object _alertQueueSync = new();
@@ -116,7 +118,6 @@ public partial class MainWindow : Window
     private string _ruleSearchText = "";
     private string _ruleStatusFilter = "ALL";
     private string _ruleCategoryFilter = "";
-    private BackgroundOutputMode _backgroundOutputMode = BackgroundOutputMode.Arduino;
     private CancellationTokenSource? _backgroundApplyDebounce;
     private CancellationTokenSource? _twitchSubscriptionRefreshDebounce;
     private CancellationTokenSource? _currentEffectCts;
@@ -131,6 +132,7 @@ public partial class MainWindow : Window
     private int _dashboardChatMessagesToday;
     private int _dashboardEventsToday;
     private int _ruleLedPreviewStep;
+    private int _backgroundLedPreviewStep;
     private AudioPlayback? _currentPlayback;
     private TwitchStreamStatus? _streamStatus;
     private DrawingIcon? _trayIcon;
@@ -165,11 +167,15 @@ public partial class MainWindow : Window
             for (var i = 0; i < 24; i++)
             {
                 _ruleLedPreviewDots.Add(PreviewDot(ParsePreviewColor("#334155", "#334155"), 0.08));
+                _backgroundLedPreviewDots.Add(PreviewDot(ParsePreviewColor("#334155", "#334155"), 0.08));
             }
 
             RuleLedPreviewList.ItemsSource = _ruleLedPreviewDots;
             _ruleLedPreviewTimer.Interval = TimeSpan.FromMilliseconds(120);
             _ruleLedPreviewTimer.Tick += (_, _) => UpdateRuleLedPreviewFrame();
+            BackgroundLedPreviewList.ItemsSource = _backgroundLedPreviewDots;
+            _backgroundLedPreviewTimer.Interval = TimeSpan.FromMilliseconds(120);
+            _backgroundLedPreviewTimer.Tick += (_, _) => UpdateBackgroundLedPreviewFrame();
             _rulesViewSource.Source = _config.Rules;
             _rulesViewSource.Filter += RulesViewSource_Filter;
             RulesList.ItemsSource = _rulesViewSource.View;
@@ -212,6 +218,7 @@ public partial class MainWindow : Window
         NavConnectionsButton.Content = CreateNavigationItem("Assets/Icons/nav_connections.png", "Conexiones");
         NavRulesButton.Content = CreateNavigationItem("Assets/Icons/nav_rules.png", "Reglas");
         NavStripsButton.Content = CreateNavigationItem("Assets/Icons/nav_lights.png", "Luces");
+        NavAlexaButton.Content = CreateNavigationItem("Assets/Icons/nav_alexa.png", "Alexa");
         NavPreferencesButton.Content = CreateNavigationItem("Assets/Icons/nav_settings.png", "Configuracion");
         NavActivityButton.Content = CreateNavigationItem("Assets/Icons/nav_activity.png", "Actividad");
     }
@@ -295,6 +302,10 @@ public partial class MainWindow : Window
             ["Alexa"] = "Alexa",
             ["Aplicar fondo LED"] = "Sun",
             ["Apagar tiras"] = "Power",
+            ["Borrar salida"] = "Trash",
+            ["Agregar salida de pin digital"] = "Plus",
+            ["Descargar ultimo sketch"] = "Download",
+            ["Ver guia"] = "Book",
             ["Aplicar fondo Alexa"] = "Alexa",
             ["Apagar fondo Alexa"] = "Power",
             ["Exportar configuracion"] = "Upload",
@@ -396,6 +407,7 @@ public partial class MainWindow : Window
             "Alexa" => "M12,4 A8,8 0 1 1 12,20 A8,8 0 1 1 12,4 M12,8 A4,4 0 1 1 12,16 A4,4 0 1 1 12,8",
             "Arduino" => "M7,8 C4,8 2,10 2,12 C2,14 4,16 7,16 C9,16 10,14 12,12 C14,10 15,8 17,8 C20,8 22,10 22,12 C22,14 20,16 17,16 C15,16 14,14 12,12 C10,10 9,8 7,8 M5,12 L9,12 M17,10 L17,14 M15,12 L19,12",
             "Bits" => "M12,2 L20,9 L12,22 L4,9 Z M12,2 L12,22 M4,9 L20,9",
+            "Book" => "M4,5 C6,4 8,4 10,5 L10,20 C8,19 6,19 4,20 Z M20,5 C18,4 16,4 14,5 L14,20 C16,19 18,19 20,20 Z M10,5 L14,5 M10,20 L14,20",
             "Chat" => "M4,5 L20,5 L20,16 L9,16 L5,20 L5,16 L4,16 Z M8,10 L16,10 M8,13 L13,13",
             "Copy" => "M8,8 L19,8 L19,19 L8,19 Z M5,15 L4,15 L4,4 L15,4 L15,5",
             "Download" => "M12,3 L12,15 M7,10 L12,15 L17,10 M5,20 L19,20",
@@ -543,6 +555,26 @@ public partial class MainWindow : Window
             UseShellExecute = true
         });
         AddLog("Alexa Developer Console abierta.", ActivityLogKind.Alexa);
+    }
+
+    private void OpenArduinoSketchButton_Click(object sender, RoutedEventArgs e)
+    {
+        Process.Start(new ProcessStartInfo
+        {
+            FileName = "https://github.com/Dafovi/NeoTwtich/blob/main/NeoTwitch/Arduino/NeoTwitchNeoPixel/NeoTwitchNeoPixel.ino",
+            UseShellExecute = true
+        });
+        AddLog("Arduino: abriendo sketch NeoPixel.", ActivityLogKind.Arduino);
+    }
+
+    private void OpenArduinoGuideButton_Click(object sender, RoutedEventArgs e)
+    {
+        Process.Start(new ProcessStartInfo
+        {
+            FileName = "https://github.com/Dafovi/NeoTwtich#conexion-arduino-y-neopixel",
+            UseShellExecute = true
+        });
+        AddLog("Arduino: abriendo guia de conexion.", ActivityLogKind.Arduino);
     }
 
     private async Task CheckForUpdatesAsync()
@@ -1918,6 +1950,20 @@ public partial class MainWindow : Window
         UpdateRuleLedPreviewFrame();
     }
 
+    private void BackgroundPatternTile_Click(object sender, RoutedEventArgs e)
+    {
+        if (sender is not System.Windows.Controls.Button button
+            || button.Tag is not string value
+            || !Enum.TryParse<LightPattern>(value, out var pattern))
+        {
+            return;
+        }
+
+        BackgroundPatternBox.SelectedValue = pattern;
+        UpdateBackgroundPatternTileSelection();
+        UpdateBackgroundLedPreviewFrame();
+    }
+
     private void StripFieldChanged(object sender, RoutedEventArgs e)
     {
         if (_initializingComponent || _loadingStrip)
@@ -1940,12 +1986,20 @@ public partial class MainWindow : Window
         SaveBackgroundFromFields();
         SaveConfig();
         UpdateBackgroundOptionVisibility();
+        UpdateBackgroundPatternTileSelection();
+        UpdateBackgroundLedPreviewFrame();
+        UpdateBackgroundLedPreviewTimerState();
         ScheduleBackgroundApply();
     }
 
     private void RuleLedPreviewPanel_IsVisibleChanged(object sender, DependencyPropertyChangedEventArgs e)
     {
         UpdateRuleLedPreviewTimerState();
+    }
+
+    private void BackgroundLedPreviewPanel_IsVisibleChanged(object sender, DependencyPropertyChangedEventArgs e)
+    {
+        UpdateBackgroundLedPreviewTimerState();
     }
 
     private void ThemeModeChanged(object sender, SelectionChangedEventArgs e)
@@ -1993,6 +2047,7 @@ public partial class MainWindow : Window
 
         UpdateNavigationButtons();
         UpdateRuleLedPreviewTimerState();
+        UpdateBackgroundLedPreviewTimerState();
         ConfigureActionIcons();
         _ = Dispatcher.BeginInvoke(ApplyTheme, DispatcherPriority.Loaded);
         _ = Dispatcher.BeginInvoke(ApplyTheme, DispatcherPriority.ContextIdle);
@@ -2014,32 +2069,8 @@ public partial class MainWindow : Window
 
     private void GoToActivityButton_Click(object sender, RoutedEventArgs e)
     {
-        MainTabs.SelectedIndex = 5;
+        MainTabs.SelectedIndex = 6;
         UpdateNavigationButtons();
-    }
-
-    private void ArduinoOutputButton_Click(object sender, RoutedEventArgs e)
-    {
-        if (!_config.ArduinoEnabled)
-        {
-            _backgroundOutputMode = BackgroundOutputMode.Alexa;
-            ApplyBackgroundOutputMode();
-            return;
-        }
-
-        _backgroundOutputMode = BackgroundOutputMode.Arduino;
-        if (StripsList.SelectedItem is null && _config.LedStrips.Count > 0)
-        {
-            StripsList.SelectedIndex = 0;
-        }
-
-        ApplyBackgroundOutputMode();
-    }
-
-    private void AlexaOutputButton_Click(object sender, RoutedEventArgs e)
-    {
-        _backgroundOutputMode = BackgroundOutputMode.Alexa;
-        ApplyBackgroundOutputMode();
     }
 
     private async void ExitButton_Click(object sender, RoutedEventArgs e)
@@ -2755,6 +2786,9 @@ public partial class MainWindow : Window
             LoadSelectedRuleIntoUi();
             LoadSelectedStripIntoUi();
             UpdateBackgroundOptionVisibility();
+            UpdateBackgroundPatternTileSelection();
+            UpdateBackgroundLedPreviewFrame();
+            UpdateLightsArduinoStatus();
             ApplyBackgroundOutputMode();
             UpdateAlexaStatusText();
             UpdateSensitiveFieldVisibility();
@@ -2835,6 +2869,7 @@ public partial class MainWindow : Window
         finally
         {
             _loadingStrip = false;
+            UpdateLightsArduinoStatus();
         }
     }
 
@@ -2922,6 +2957,8 @@ public partial class MainWindow : Window
 
         UpdateColorButtons();
         UpdateSliderLabels();
+        UpdateBackgroundPatternTileSelection();
+        UpdateBackgroundLedPreviewFrame();
         UpdateBackgroundOptionVisibility();
         UpdateAlexaStatusText();
     }
@@ -2941,6 +2978,7 @@ public partial class MainWindow : Window
 
         StripsList.Items.Refresh();
         RefreshRulesView();
+        UpdateLightsArduinoStatus();
     }
 
     private void UpdateRuleOptionVisibility()
@@ -2994,7 +3032,7 @@ public partial class MainWindow : Window
         SetVisible(!alexaAvailable, AlexaBackgroundUnavailableText);
         SetVisible(alexaAvailable && (alexaEnabled || alexaTurnOffAfterEvent), BackgroundAlexaEventsGrid, ApplyAlexaBackgroundButton);
         SetVisible(arduinoAvailable, BackgroundEnabledCheck);
-        SetVisible(enabled, BackgroundPinsLabel, BackgroundPinsBox, BackgroundPatternGrid, ApplyArduinoBackgroundButton);
+        SetVisible(enabled, BackgroundPatternGrid, BackgroundLedPreviewPanel, ApplyArduinoBackgroundButton);
         SetVisible(enabled && UsesBrightness(pattern), BackgroundBrightnessPanel);
         SetVisible(enabled && UsesPrimaryColor(pattern), BackgroundPrimaryColorLabel, BackgroundPrimaryColorPanel);
         SetVisible(enabled && UsesSecondaryColor(pattern), BackgroundSecondaryColorLabel, BackgroundSecondaryColorPanel);
@@ -3010,32 +3048,8 @@ public partial class MainWindow : Window
             return;
         }
 
-        var arduinoAvailable = _config.ArduinoEnabled;
-        if (!arduinoAvailable && _backgroundOutputMode == BackgroundOutputMode.Arduino)
-        {
-            _backgroundOutputMode = BackgroundOutputMode.Alexa;
-        }
-
-        var showArduino = arduinoAvailable && _backgroundOutputMode == BackgroundOutputMode.Arduino;
-        var showAlexa = !showArduino;
-        SetVisible(arduinoAvailable, ArduinoOutputButton);
-        SetVisible(showArduino, StripActionsPanel, StripsListLabel, StripsList, ArduinoBackgroundPanel);
-        SetVisible(showAlexa, AlexaBackgroundPanel);
-
-        var palette = _config.DarkMode
-            ? ThemePalette.Dark
-            : ThemePalette.Light;
-
-        ApplyOutputButtonTheme(ArduinoOutputButton, showArduino, palette);
-        ApplyOutputButtonTheme(AlexaOutputButton, showAlexa, palette);
         UpdateBackgroundOptionVisibility();
-    }
-
-    private static void ApplyOutputButtonTheme(System.Windows.Controls.Button button, bool selected, ThemePalette palette)
-    {
-        button.Background = selected ? palette.NavSelected : palette.Button;
-        button.Foreground = selected ? System.Windows.Media.Brushes.White : palette.Text;
-        button.BorderBrush = selected ? palette.NavSelected : palette.Border;
+        UpdateBackgroundLedPreviewTimerState();
     }
 
     private static void SetVisible(bool isVisible, params UIElement[] elements)
@@ -3147,6 +3161,107 @@ public partial class MainWindow : Window
             && MainTabs.SelectedIndex == 2
             && LightConfigurationPanel.IsExpanded
             && RuleLedPreviewPanel.IsVisible;
+    }
+
+    private void UpdateBackgroundLedPreviewFrame()
+    {
+        if (_initializingComponent || _backgroundLedPreviewDots.Count == 0)
+        {
+            return;
+        }
+
+        if (!Dispatcher.CheckAccess())
+        {
+            _ = Dispatcher.InvokeAsync(UpdateBackgroundLedPreviewFrame);
+            return;
+        }
+
+        if (!ShouldRunBackgroundLedPreview())
+        {
+            UpdateBackgroundLedPreviewTimerState();
+            return;
+        }
+
+        var pattern = BackgroundPatternBox.SelectedValue is LightPattern selectedPattern
+            ? selectedPattern
+            : LightPattern.Solid;
+        var brightness = Math.Clamp(BackgroundBrightnessSlider.Value / 255d, 0d, 1d);
+        var colorScale = Math.Clamp(brightness, 0.08, 1d);
+        var primary = ParsePreviewColor(BackgroundPrimaryColorBox.Text, "#14B8A6");
+        var secondary = ParsePreviewColor(BackgroundSecondaryColorBox.Text, "#B56CFF");
+        var tertiary = ParsePreviewColor(BackgroundTertiaryColorBox.Text, "#FFFFFF");
+        var count = _backgroundLedPreviewDots.Count;
+        _backgroundLedPreviewStep++;
+
+        for (var i = 0; i < count; i++)
+        {
+            var phase = (i + _backgroundLedPreviewStep) / (double)count;
+            var color = pattern switch
+            {
+                LightPattern.Solid => primary,
+                LightPattern.Rainbow => RainbowPreviewColor(phase),
+                LightPattern.Pulse => BlendPreviewColor(primary, secondary, (Math.Sin((_backgroundLedPreviewStep * 0.18) + (i * 0.22)) + 1d) / 2d),
+                LightPattern.Chase => ((i + _backgroundLedPreviewStep) % 6) < 2
+                    ? primary
+                    : ScalePreviewColor(secondary, 0.22),
+                LightPattern.Theater => ((i + _backgroundLedPreviewStep) % 3) == 0
+                    ? primary
+                    : (((i + _backgroundLedPreviewStep) % 3) == 1 ? secondary : ScalePreviewColor(tertiary, 0.18)),
+                LightPattern.Sparkle => _previewRandom.NextDouble() > 0.72
+                    ? RandomPreviewColor(primary, secondary, tertiary)
+                    : ScalePreviewColor(primary, 0.16),
+                LightPattern.Rave => RandomPreviewColor(primary, secondary, tertiary),
+                _ => primary
+            };
+
+            _backgroundLedPreviewDots[i] = PreviewDot(ScalePreviewColor(color, colorScale), brightness);
+        }
+    }
+
+    private void SetBackgroundLedPreviewAll(string color)
+    {
+        var previewColor = ParsePreviewColor(color, "#334155");
+        for (var i = 0; i < _backgroundLedPreviewDots.Count; i++)
+        {
+            _backgroundLedPreviewDots[i] = PreviewDot(previewColor, 0.08);
+        }
+    }
+
+    private void UpdateBackgroundLedPreviewTimerState()
+    {
+        if (_initializingComponent || !Dispatcher.CheckAccess())
+        {
+            return;
+        }
+
+        var shouldRun = ShouldRunBackgroundLedPreview();
+        if (shouldRun)
+        {
+            if (!_backgroundLedPreviewTimer.IsEnabled)
+            {
+                _backgroundLedPreviewTimer.Start();
+            }
+
+            return;
+        }
+
+        if (_backgroundLedPreviewTimer.IsEnabled)
+        {
+            _backgroundLedPreviewTimer.Stop();
+        }
+
+        if (BackgroundEnabledCheck.IsChecked != true || !_config.ArduinoEnabled)
+        {
+            SetBackgroundLedPreviewAll("#334155");
+        }
+    }
+
+    private bool ShouldRunBackgroundLedPreview()
+    {
+        return BackgroundEnabledCheck.IsChecked == true
+            && _config.ArduinoEnabled
+            && MainTabs.SelectedIndex == 3
+            && BackgroundLedPreviewPanel.IsVisible;
     }
 
     private System.Windows.Media.Color RandomPreviewColor(
@@ -3300,8 +3415,35 @@ public partial class MainWindow : Window
                 : $"Puerto: {FirstNonEmpty(_config.SerialPort, "sin COM")}. {_config.LedStrips.Count} tiras, {totalLeds} LEDs.";
         RefreshDashboardConnectionStates();
         UpdateDashboardSummary();
+        UpdateLightsArduinoStatus();
 
         TwitchButton.Content = _eventSubClient.IsRunning ? "Desconectar Twitch" : "Conectar Twitch";
+    }
+
+    private void UpdateLightsArduinoStatus()
+    {
+        if (_initializingComponent)
+        {
+            return;
+        }
+
+        var totalLeds = _config.LedStrips.Sum(strip => strip.LedCount);
+        var pins = _config.LedStrips.Count == 0
+            ? "Sin pines"
+            : string.Join(", ", _config.LedStrips.Select(strip => $"Pin {strip.Pin}"));
+
+        LightsArduinoDeviceText.Text = !_config.ArduinoEnabled
+            ? "Desactivado"
+            : _lightController.HasConfirmedAck
+                ? "Conectado"
+                : _lightController.HasOpenPort
+                    ? "Sin respuesta"
+                    : "Desconectado";
+        LightsArduinoPortText.Text = _lightController.HasOpenPort
+            ? FirstNonEmpty(_lightController.CurrentPort, _config.SerialPort, "Sin COM")
+            : FirstNonEmpty(_config.SerialPort, "Sin COM");
+        LightsArduinoLedCountText.Text = totalLeds.ToString();
+        LightsArduinoPinsText.Text = pins;
     }
 
     private void UpdateAlexaStatusText()
@@ -3695,6 +3837,7 @@ public partial class MainWindow : Window
         UpdateColorButtons();
         UpdateEventKindTileSelection();
         UpdatePatternTileSelection();
+        UpdateBackgroundPatternTileSelection();
     }
 
     private void ApplyThemeToElement(DependencyObject element, ThemePalette palette)
@@ -4072,6 +4215,56 @@ public partial class MainWindow : Window
         };
     }
 
+    private void UpdateBackgroundPatternTileSelection()
+    {
+        if (_initializingComponent)
+        {
+            return;
+        }
+
+        var selectedPattern = BackgroundPatternBox.SelectedValue is LightPattern pattern
+            ? pattern
+            : LightPattern.Solid;
+        var palette = _config.DarkMode
+            ? ThemePalette.Dark
+            : ThemePalette.Light;
+
+        foreach (var button in BackgroundPatternTileButtons())
+        {
+            if (button.Tag is not string value || !Enum.TryParse<LightPattern>(value, out var tilePattern))
+            {
+                continue;
+            }
+
+            var selected = tilePattern == selectedPattern;
+            var accentColor = PatternAccent(tilePattern);
+            var accent = FrozenBrushFrom(accentColor);
+            button.Background = selected
+                ? TranslucentBrushFrom(accentColor)
+                : palette.Input;
+            button.BorderBrush = selected
+                ? accent
+                : palette.Border;
+            button.Foreground = selected
+                ? accent
+                : palette.Text;
+        }
+    }
+
+    private IEnumerable<System.Windows.Controls.Button> BackgroundPatternTileButtons()
+    {
+        return
+        [
+            BackgroundPatternSolidTileButton,
+            BackgroundPatternPulseTileButton,
+            BackgroundPatternRainbowTileButton,
+            BackgroundPatternChaseTileButton,
+            BackgroundPatternTheaterTileButton,
+            BackgroundPatternSparkleTileButton,
+            BackgroundPatternRaveTileButton
+        ];
+    }
+
     private void UpdateNavigationButtons()
     {
         if (_initializingComponent)
@@ -4083,7 +4276,7 @@ public partial class MainWindow : Window
             ? ThemePalette.Dark
             : ThemePalette.Light;
 
-        foreach (var button in new[] { NavSettingsButton, NavConnectionsButton, NavRulesButton, NavStripsButton, NavPreferencesButton, NavActivityButton })
+        foreach (var button in new[] { NavSettingsButton, NavConnectionsButton, NavRulesButton, NavStripsButton, NavAlexaButton, NavPreferencesButton, NavActivityButton })
         {
             ApplyNavigationButtonTheme(button, palette);
         }
@@ -4567,12 +4760,6 @@ public partial class MainWindow : Window
         Audio,
         Event,
         Important
-    }
-
-    private enum BackgroundOutputMode
-    {
-        Arduino,
-        Alexa
     }
 
     private sealed record QueuedAlertSlot(string Id, string RuleId, string RuleName, TwitchEventKind EventKind);

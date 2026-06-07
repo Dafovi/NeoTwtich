@@ -700,13 +700,18 @@
                             Style="{StaticResource NavButton}"
                             ToolTip="Luces de fondo"
                             Click="NavButton_Click" />
-                    <Button x:Name="NavPreferencesButton"
+                    <Button x:Name="NavAlexaButton"
                             Tag="4"
+                            Style="{StaticResource NavButton}"
+                            ToolTip="Alexa"
+                            Click="NavButton_Click" />
+                    <Button x:Name="NavPreferencesButton"
+                            Tag="5"
                             Style="{StaticResource NavButton}"
                             ToolTip="Configuracion"
                             Click="NavButton_Click" />
                     <Button x:Name="NavActivityButton"
-                            Tag="5"
+                            Tag="6"
                             Style="{StaticResource NavButton}"
                             ToolTip="Actividad"
                             Click="NavButton_Click" />
@@ -2443,16 +2448,14 @@
             </TabItem>
 
             <TabItem Header="Luces de fondo">
-                <ScrollViewer VerticalScrollBarVisibility="Auto"
-                              HorizontalScrollBarVisibility="Auto">
-                    <Grid Margin="24" MinWidth="840">
+                    <Grid Margin="24">
                         <Grid.RowDefinitions>
                             <RowDefinition Height="Auto" />
                             <RowDefinition Height="*" />
                         </Grid.RowDefinitions>
                         <Grid.ColumnDefinitions>
-                            <ColumnDefinition Width="330" />
-                            <ColumnDefinition Width="18" />
+                            <ColumnDefinition Width="0" />
+                            <ColumnDefinition Width="0" />
                             <ColumnDefinition Width="*" />
                         </Grid.ColumnDefinitions>
 
@@ -2492,21 +2495,19 @@
                                             Content="Arduino Tira led ws2812b"
                                             HorizontalContentAlignment="Left"
                                             Margin="0,0,0,8"
-                                            ToolTip="Configura las tiras NeoPixel conectadas al Arduino."
-                                            Click="ArduinoOutputButton_Click" />
+                                            ToolTip="Configura las tiras NeoPixel conectadas al Arduino." />
                                     <Button x:Name="AlexaOutputButton"
                                             Content="Alexa"
                                             HorizontalContentAlignment="Left"
                                             Margin="0,0,0,12"
-                                            ToolTip="Configura el fondo que se envia al relay de Alexa."
-                                            Click="AlexaOutputButton_Click" />
+                                            ToolTip="Configura el fondo que se envia al relay de Alexa." />
                                     <TextBlock x:Name="StripsListLabel"
                                                Text="Tiras LED"
                                                Style="{StaticResource MutedText}"
                                                Margin="0,0,0,6" />
                                 </StackPanel>
 
-                                <ListBox x:Name="StripsList"
+                                <ListBox x:Name="LegacyStripsList"
                                          BorderBrush="{DynamicResource ThemeBorderBrush}"
                                          MinHeight="220"
                                          SelectionChanged="StripsList_SelectionChanged">
@@ -2530,14 +2531,55 @@
                         <Border Grid.Row="1"
                                 Grid.Column="2"
                                 Style="{StaticResource Card}">
-                            <Grid>
+                            <ScrollViewer VerticalScrollBarVisibility="Auto"
+                                          HorizontalScrollBarVisibility="Disabled">
                                 <StackPanel x:Name="ArduinoBackgroundPanel">
                                     <StackPanel x:Name="StripEditorPanel">
-                                        <TextBlock Text="Detalle de tira"
+                                        <TextBlock Text="Pines de salida"
                                                    FontSize="18"
                                                    Style="{StaticResource TitleText}"
                                                    FontWeight="SemiBold"
                                                    Margin="0,0,0,12" />
+
+                                        <ListBox x:Name="StripsList"
+                                                 BorderBrush="{DynamicResource ThemeBorderBrush}"
+                                                 Background="Transparent"
+                                                 BorderThickness="0"
+                                                 MaxHeight="150"
+                                                 ScrollViewer.VerticalScrollBarVisibility="Auto"
+                                                 ScrollViewer.HorizontalScrollBarVisibility="Disabled"
+                                                 SelectionChanged="StripsList_SelectionChanged">
+                                            <ListBox.ItemTemplate>
+                                                <DataTemplate>
+                                                    <Border BorderBrush="{DynamicResource ThemeBorderBrush}"
+                                                            BorderThickness="1"
+                                                            CornerRadius="12"
+                                                            Padding="10"
+                                                            Margin="0,0,0,8"
+                                                            Background="{DynamicResource ThemeInputBrush}">
+                                                        <Grid>
+                                                            <Grid.ColumnDefinitions>
+                                                                <ColumnDefinition Width="42" />
+                                                                <ColumnDefinition Width="*" />
+                                                            </Grid.ColumnDefinitions>
+                                                            <Image Source="Assets/Icons/service_arduino.png"
+                                                                   Width="26"
+                                                                   Height="26"
+                                                                   Stretch="Uniform"
+                                                                   VerticalAlignment="Center" />
+                                                            <StackPanel Grid.Column="1">
+                                                                <TextBlock Text="{Binding Name}"
+                                                                           FontWeight="SemiBold" />
+                                                                <TextBlock Text="{Binding DisplayLabel}"
+                                                                           Style="{StaticResource MutedText}"
+                                                                           FontSize="12"
+                                                                           TextWrapping="Wrap" />
+                                                            </StackPanel>
+                                                        </Grid>
+                                                    </Border>
+                                                </DataTemplate>
+                                            </ListBox.ItemTemplate>
+                                        </ListBox>
 
                                         <TextBlock Text="Nombre" Style="{StaticResource MutedText}" />
                                         <TextBox x:Name="StripNameBox" TextChanged="StripFieldChanged" />
@@ -2575,24 +2617,104 @@
 
                                 <TextBlock x:Name="BackgroundPinsLabel"
                                            Text="Pines de fondo"
-                                           Style="{StaticResource MutedText}" />
+                                           Style="{StaticResource MutedText}"
+                                           Visibility="Collapsed" />
                                 <TextBox x:Name="BackgroundPinsBox"
                                          TextChanged="BackgroundFieldChanged"
-                                         ToolTip="Dejalo vacio para usar todas las tiras." />
+                                         ToolTip="Dejalo vacio para usar todas las tiras."
+                                         Visibility="Collapsed" />
 
-                                <Grid x:Name="BackgroundPatternGrid">
-                                    <Grid.ColumnDefinitions>
-                                        <ColumnDefinition Width="*" />
-                                        <ColumnDefinition Width="16" />
-                                        <ColumnDefinition Width="*" />
-                                    </Grid.ColumnDefinitions>
+                                <StackPanel x:Name="BackgroundPatternGrid">
                                     <StackPanel>
                                         <TextBlock Text="Patron de fondo" Style="{StaticResource MutedText}" />
                                         <ComboBox x:Name="BackgroundPatternBox"
+                                                  Visibility="Collapsed"
                                                   SelectionChanged="BackgroundFieldChanged" />
+                                        <Grid Margin="0,4,0,12">
+                                            <Grid.ColumnDefinitions>
+                                                <ColumnDefinition Width="*" />
+                                                <ColumnDefinition Width="8" />
+                                                <ColumnDefinition Width="*" />
+                                                <ColumnDefinition Width="8" />
+                                                <ColumnDefinition Width="*" />
+                                            </Grid.ColumnDefinitions>
+                                            <Grid.RowDefinitions>
+                                                <RowDefinition Height="70" />
+                                                <RowDefinition Height="8" />
+                                                <RowDefinition Height="70" />
+                                                <RowDefinition Height="8" />
+                                                <RowDefinition Height="70" />
+                                            </Grid.RowDefinitions>
+
+                                            <Button x:Name="BackgroundPatternSolidTileButton"
+                                                    Tag="Solid"
+                                                    Click="BackgroundPatternTile_Click">
+                                                <StackPanel HorizontalAlignment="Center">
+                                                    <Image Source="Assets/Icons/lights_fx_static.png" Width="22" Height="22" Margin="0,0,0,6" />
+                                                    <TextBlock Text="Fijo" FontSize="12" FontWeight="SemiBold" TextAlignment="Center" />
+                                                </StackPanel>
+                                            </Button>
+                                            <Button x:Name="BackgroundPatternPulseTileButton"
+                                                    Grid.Column="2"
+                                                    Tag="Pulse"
+                                                    Click="BackgroundPatternTile_Click">
+                                                <StackPanel HorizontalAlignment="Center">
+                                                    <Image Source="Assets/Icons/lights_fx_pulse.png" Width="22" Height="22" Margin="0,0,0,6" />
+                                                    <TextBlock Text="Pulso" FontSize="12" FontWeight="SemiBold" TextAlignment="Center" />
+                                                </StackPanel>
+                                            </Button>
+                                            <Button x:Name="BackgroundPatternRainbowTileButton"
+                                                    Grid.Column="4"
+                                                    Tag="Rainbow"
+                                                    Click="BackgroundPatternTile_Click">
+                                                <StackPanel HorizontalAlignment="Center">
+                                                    <Image Source="Assets/Icons/lights_fx_rainbow.png" Width="22" Height="22" Margin="0,0,0,6" />
+                                                    <TextBlock Text="Arcoiris" FontSize="12" FontWeight="SemiBold" TextAlignment="Center" />
+                                                </StackPanel>
+                                            </Button>
+                                            <Button x:Name="BackgroundPatternChaseTileButton"
+                                                    Grid.Row="2"
+                                                    Tag="Chase"
+                                                    Click="BackgroundPatternTile_Click">
+                                                <StackPanel HorizontalAlignment="Center">
+                                                    <Image Source="Assets/Icons/lights_fx_wave.png" Width="22" Height="22" Margin="0,0,0,6" />
+                                                    <TextBlock Text="Carrera" FontSize="12" FontWeight="SemiBold" TextAlignment="Center" />
+                                                </StackPanel>
+                                            </Button>
+                                            <Button x:Name="BackgroundPatternTheaterTileButton"
+                                                    Grid.Row="2"
+                                                    Grid.Column="2"
+                                                    Tag="Theater"
+                                                    Click="BackgroundPatternTile_Click">
+                                                <StackPanel HorizontalAlignment="Center">
+                                                    <Image Source="Assets/Icons/lights_fx_breathe.png" Width="22" Height="22" Margin="0,0,0,6" />
+                                                    <TextBlock Text="Teatro" FontSize="12" FontWeight="SemiBold" TextAlignment="Center" />
+                                                </StackPanel>
+                                            </Button>
+                                            <Button x:Name="BackgroundPatternSparkleTileButton"
+                                                    Grid.Row="2"
+                                                    Grid.Column="4"
+                                                    Tag="Sparkle"
+                                                    Click="BackgroundPatternTile_Click">
+                                                <StackPanel HorizontalAlignment="Center">
+                                                    <Image Source="Assets/Icons/activity_notification_lime.png" Width="22" Height="22" Margin="0,0,0,6" />
+                                                    <TextBlock Text="Destellos" FontSize="12" FontWeight="SemiBold" TextAlignment="Center" />
+                                                </StackPanel>
+                                            </Button>
+                                            <Button x:Name="BackgroundPatternRaveTileButton"
+                                                    Grid.Row="4"
+                                                    Grid.ColumnSpan="5"
+                                                    Tag="Rave"
+                                                    Click="BackgroundPatternTile_Click">
+                                                <StackPanel HorizontalAlignment="Center">
+                                                    <Image Source="Assets/Icons/lights_fx_rave.png" Width="22" Height="22" Margin="0,0,0,6" />
+                                                    <TextBlock Text="Rave" FontSize="12" FontWeight="SemiBold" TextAlignment="Center" />
+                                                </StackPanel>
+                                            </Button>
+                                        </Grid>
                                     </StackPanel>
                                     <StackPanel x:Name="BackgroundBrightnessPanel"
-                                                Grid.Column="2">
+                                                Margin="0,2,0,0">
                                         <TextBlock Text="Brillo de fondo" Style="{StaticResource MutedText}" />
                                         <TextBlock x:Name="BackgroundBrightnessValueText"
                                                    HorizontalAlignment="Right"
@@ -2603,7 +2725,7 @@
                                                 TickFrequency="1"
                                                 ValueChanged="BackgroundFieldChanged" />
                                     </StackPanel>
-                                </Grid>
+                                </StackPanel>
 
                                 <TextBlock x:Name="BackgroundPrimaryColorLabel"
                                            Text="Color principal de fondo"
@@ -2690,6 +2812,42 @@
                                         TickFrequency="10"
                                         ValueChanged="BackgroundFieldChanged" />
 
+                                <TextBlock Text="Simulacion"
+                                           FontWeight="SemiBold"
+                                           Margin="0,8,0,6" />
+                                <Border x:Name="BackgroundLedPreviewPanel"
+                                        BorderBrush="{DynamicResource ThemeBorderBrush}"
+                                        BorderThickness="1"
+                                        CornerRadius="10"
+                                        Padding="10"
+                                        Background="{DynamicResource ThemeSurfaceBrush}"
+                                        IsVisibleChanged="BackgroundLedPreviewPanel_IsVisibleChanged">
+                                    <ItemsControl x:Name="BackgroundLedPreviewList">
+                                        <ItemsControl.ItemsPanel>
+                                            <ItemsPanelTemplate>
+                                                <UniformGrid Rows="1" />
+                                            </ItemsPanelTemplate>
+                                        </ItemsControl.ItemsPanel>
+                                        <ItemsControl.ItemTemplate>
+                                            <DataTemplate>
+                                                <Ellipse Width="16"
+                                                         Height="16"
+                                                         Fill="{Binding Fill}"
+                                                         Stroke="#80FFFFFF"
+                                                         StrokeThickness="1"
+                                                         Margin="4">
+                                                    <Ellipse.Effect>
+                                                        <DropShadowEffect Color="{Binding GlowColor}"
+                                                                          BlurRadius="{Binding GlowRadius}"
+                                                                          ShadowDepth="0"
+                                                                          Opacity="{Binding GlowOpacity}" />
+                                                    </Ellipse.Effect>
+                                                </Ellipse>
+                                            </DataTemplate>
+                                        </ItemsControl.ItemTemplate>
+                                    </ItemsControl>
+                                </Border>
+
                                 <WrapPanel Margin="0,8,0,0">
                                     <Button x:Name="ApplyArduinoBackgroundButton"
                                             Content="Aplicar fondo LED"
@@ -2698,11 +2856,125 @@
                                     <Button Content="Apagar tiras"
                                             Style="{StaticResource DangerButton}"
                                             Click="StopArduinoBackgroundButton_Click" />
+                                    <Button Content="Borrar salida"
+                                            Style="{StaticResource DangerButton}"
+                                            Click="RemoveStripButton_Click" />
                                 </WrapPanel>
-                                </StackPanel>
 
-                                <StackPanel x:Name="AlexaBackgroundPanel"
-                                            Visibility="Collapsed">
+                                <Button Content="Agregar salida de pin digital"
+                                        Style="{StaticResource PrimaryButton}"
+                                        HorizontalContentAlignment="Center"
+                                        Margin="0,12,0,0"
+                                        Click="AddStripButton_Click" />
+
+                                <Grid Margin="0,18,0,0">
+                                    <Grid.ColumnDefinitions>
+                                        <ColumnDefinition Width="*" />
+                                        <ColumnDefinition Width="16" />
+                                        <ColumnDefinition Width="*" />
+                                    </Grid.ColumnDefinitions>
+
+                                    <Border BorderBrush="{DynamicResource ThemeBorderBrush}"
+                                            BorderThickness="1"
+                                            CornerRadius="12"
+                                            Padding="14"
+                                            Background="{DynamicResource ThemeInputBrush}">
+                                        <Grid>
+                                            <Grid.ColumnDefinitions>
+                                                <ColumnDefinition Width="46" />
+                                                <ColumnDefinition Width="*" />
+                                            </Grid.ColumnDefinitions>
+                                            <Image Source="Assets/Icons/nav_arduino.png"
+                                                   Width="30"
+                                                   Height="30"
+                                                   Stretch="Uniform"
+                                                   VerticalAlignment="Top" />
+                                            <StackPanel Grid.Column="1">
+                                                <TextBlock Text="Sketch"
+                                                           FontWeight="SemiBold"
+                                                           FontSize="15" />
+                                                <TextBlock Text="Tu Arduino necesita el sketch instalado para funcionar con Neo Twitch."
+                                                           Style="{StaticResource MutedText}"
+                                                           TextWrapping="Wrap"
+                                                           FontSize="12"
+                                                           Margin="0,4,0,10" />
+                                                <WrapPanel>
+                                                    <Button Content="Descargar ultimo sketch"
+                                                            Style="{StaticResource PrimaryButton}"
+                                                            Click="OpenArduinoSketchButton_Click" />
+                                                    <Button Content="Ver guia"
+                                                            Click="OpenArduinoGuideButton_Click" />
+                                                </WrapPanel>
+                                            </StackPanel>
+                                        </Grid>
+                                    </Border>
+
+                                    <Border Grid.Column="2"
+                                            BorderBrush="{DynamicResource ThemeBorderBrush}"
+                                            BorderThickness="1"
+                                            CornerRadius="12"
+                                            Padding="14"
+                                            Background="{DynamicResource ThemeInputBrush}">
+                                        <StackPanel>
+                                            <TextBlock Text="Estado actual"
+                                                       FontWeight="SemiBold"
+                                                       FontSize="15"
+                                                       Margin="0,0,0,8" />
+                                            <Grid Margin="0,4,0,0">
+                                                <Grid.ColumnDefinitions>
+                                                    <ColumnDefinition Width="*" />
+                                                    <ColumnDefinition Width="Auto" />
+                                                </Grid.ColumnDefinitions>
+                                                <TextBlock Text="Dispositivo" Style="{StaticResource MutedText}" />
+                                                <TextBlock x:Name="LightsArduinoDeviceText"
+                                                           Grid.Column="1"
+                                                           FontWeight="SemiBold" />
+                                            </Grid>
+                                            <Grid Margin="0,6,0,0">
+                                                <Grid.ColumnDefinitions>
+                                                    <ColumnDefinition Width="*" />
+                                                    <ColumnDefinition Width="Auto" />
+                                                </Grid.ColumnDefinitions>
+                                                <TextBlock Text="Puerto actual" Style="{StaticResource MutedText}" />
+                                                <TextBlock x:Name="LightsArduinoPortText"
+                                                           Grid.Column="1"
+                                                           FontWeight="SemiBold" />
+                                            </Grid>
+                                            <Grid Margin="0,6,0,0">
+                                                <Grid.ColumnDefinitions>
+                                                    <ColumnDefinition Width="*" />
+                                                    <ColumnDefinition Width="Auto" />
+                                                </Grid.ColumnDefinitions>
+                                                <TextBlock Text="LEDs configurados" Style="{StaticResource MutedText}" />
+                                                <TextBlock x:Name="LightsArduinoLedCountText"
+                                                           Grid.Column="1"
+                                                           FontWeight="SemiBold" />
+                                            </Grid>
+                                            <Grid Margin="0,6,0,0">
+                                                <Grid.ColumnDefinitions>
+                                                    <ColumnDefinition Width="*" />
+                                                    <ColumnDefinition Width="Auto" />
+                                                </Grid.ColumnDefinitions>
+                                                <TextBlock Text="Pines activos" Style="{StaticResource MutedText}" />
+                                                <TextBlock x:Name="LightsArduinoPinsText"
+                                                           Grid.Column="1"
+                                                           FontWeight="SemiBold" />
+                                            </Grid>
+                                        </StackPanel>
+                                    </Border>
+                                </Grid>
+                            </StackPanel>
+                            </ScrollViewer>
+                        </Border>
+                    </Grid>
+            </TabItem>
+
+            <TabItem Header="Alexa">
+                <ScrollViewer VerticalScrollBarVisibility="Auto"
+                              HorizontalScrollBarVisibility="Auto">
+                    <Grid Margin="24" MinWidth="780">
+                        <Border Style="{StaticResource Card}">
+                            <StackPanel x:Name="AlexaBackgroundPanel">
                                     <TextBlock Text="Fondo Alexa"
                                                FontSize="18"
                                                Style="{StaticResource TitleText}"
@@ -2759,7 +3031,6 @@
                                                 Click="StopAlexaBackgroundButton_Click" />
                                     </WrapPanel>
                                 </StackPanel>
-                            </Grid>
                         </Border>
                     </Grid>
                 </ScrollViewer>

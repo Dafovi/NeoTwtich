@@ -3158,11 +3158,27 @@
             </TabItem>
 
             <TabItem Header="Configuracion">
-                <ScrollViewer VerticalScrollBarVisibility="Auto"
-                              HorizontalScrollBarVisibility="Disabled">
-                    <Grid Margin="24">
+                <Grid Margin="24">
+                    <Grid.RowDefinitions>
+                        <RowDefinition Height="Auto" />
+                        <RowDefinition Height="*" />
+                    </Grid.RowDefinitions>
+
+                    <StackPanel Margin="0,0,0,18">
+                        <TextBlock Text="Configuración"
+                                   FontSize="28"
+                                   Style="{StaticResource TitleText}"
+                                   FontWeight="SemiBold" />
+                        <TextBlock Text="Personaliza Neo Twitch a tu estilo."
+                                   Style="{StaticResource MutedText}"
+                                   Margin="0,4,0,0" />
+                    </StackPanel>
+
+                    <ScrollViewer Grid.Row="1"
+                                  VerticalScrollBarVisibility="Auto"
+                                  HorizontalScrollBarVisibility="Disabled">
+                    <Grid>
                         <Grid.RowDefinitions>
-                            <RowDefinition Height="Auto" />
                             <RowDefinition Height="Auto" />
                             <RowDefinition Height="Auto" />
                             <RowDefinition Height="Auto" />
@@ -3175,17 +3191,7 @@
                             <ColumnDefinition Width="*" />
                         </Grid.ColumnDefinitions>
 
-                        <StackPanel Grid.ColumnSpan="3" Margin="0,0,0,18">
-                            <TextBlock Text="Configuración"
-                                       FontSize="28"
-                                       Style="{StaticResource TitleText}"
-                                       FontWeight="SemiBold" />
-                            <TextBlock Text="Personaliza Neo Twitch a tu estilo."
-                                       Style="{StaticResource MutedText}"
-                                       Margin="0,4,0,0" />
-                        </StackPanel>
-
-                        <Border Grid.Row="1"
+                        <Border Grid.Row="0"
                                 Grid.ColumnSpan="3"
                                 Style="{StaticResource Card}">
                             <StackPanel>
@@ -3312,7 +3318,7 @@
                             </StackPanel>
                         </Border>
 
-                        <Grid Grid.Row="2"
+                        <Grid Grid.Row="1"
                               Grid.ColumnSpan="3"
                               Margin="0,18,0,0">
                             <Grid.ColumnDefinitions>
@@ -3392,7 +3398,7 @@
                             </Border>
                         </Grid>
 
-                        <Grid Grid.Row="3"
+                        <Grid Grid.Row="2"
                               Grid.ColumnSpan="3"
                               Margin="0,18,0,0">
                             <Grid.ColumnDefinitions>
@@ -3515,7 +3521,7 @@
                             </Border>
                         </Grid>
 
-                        <Border Grid.Row="4"
+                        <Border Grid.Row="3"
                                 Grid.ColumnSpan="3"
                                 Style="{StaticResource Card}"
                                 Margin="0,18,0,0">
@@ -3564,7 +3570,7 @@
                             </StackPanel>
                         </Border>
 
-                        <Border Grid.Row="5"
+                        <Border Grid.Row="4"
                                 Grid.ColumnSpan="3"
                                 Style="{StaticResource Card}"
                                 Margin="0,18,0,0">
@@ -3621,6 +3627,7 @@
                         </Border>
                     </Grid>
                 </ScrollViewer>
+                </Grid>
             </TabItem>
 
             <TabItem Header="Actividad">

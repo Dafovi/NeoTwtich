@@ -219,6 +219,7 @@ public partial class MainWindow : Window
         NavRulesButton.Content = CreateNavigationItem("Assets/Icons/nav_rules.png", "Reglas");
         NavStripsButton.Content = CreateNavigationItem("Assets/Icons/nav_lights.png", "Luces");
         NavAlexaButton.Content = CreateNavigationItem("Assets/Icons/nav_alexa.png", "Alexa");
+        NavAudioButton.Content = CreateNavigationItem("Assets/Icons/nav_audio.png", "Audio");
         NavPreferencesButton.Content = CreateNavigationItem("Assets/Icons/nav_settings.png", "Configuracion");
         NavActivityButton.Content = CreateNavigationItem("Assets/Icons/nav_activity.png", "Actividad");
     }
@@ -310,6 +311,8 @@ public partial class MainWindow : Window
             ["Apagar fondo Alexa"] = "Power",
             ["Exportar configuracion"] = "Upload",
             ["Importar configuracion"] = "Download",
+            ["Crear backup ahora"] = "Save",
+            ["Restaurar backup"] = "Download",
             ["Ejecutar diagnostico"] = "MonitorCheck",
             ["Limpiar actividad"] = "Trash",
             ["Limpiar filtros"] = "Search",
@@ -1086,6 +1089,31 @@ public partial class MainWindow : Window
         }
     }
 
+    private void CreateBackupButton_Click(object sender, RoutedEventArgs e)
+    {
+        try
+        {
+            SaveGlobalSettingsFromFields();
+            SaveCurrentRuleFromFields();
+            SaveCurrentStripFromFields();
+            SaveBackgroundFromFields();
+            SaveConfig();
+
+            Directory.CreateDirectory(_settingsStore.BackupDirectory);
+            var backupPath = System.IO.Path.Combine(_settingsStore.BackupDirectory, $"settings-manual-{DateTime.Now:yyyyMMdd-HHmmss}.json");
+            _settingsStore.Export(_config, backupPath);
+            BackupPathText.Text = $"Ultimo backup manual: {backupPath}";
+            AddLog($"Backup creado: {backupPath}");
+            WpfMessageBox.Show(this, "Backup creado correctamente.", "Backups", MessageBoxButton.OK, MessageBoxImage.Information);
+        }
+        catch (Exception ex)
+        {
+            CrashReporter.Log(ex, "No se pudo crear un backup manual.");
+            AddLog($"Backups: no pude crear backup ({ex.Message}).", ActivityLogKind.Important);
+            WpfMessageBox.Show(this, ex.Message, "Backups", MessageBoxButton.OK, MessageBoxImage.Warning);
+        }
+    }
+
     private async void ImportSettingsButton_Click(object sender, RoutedEventArgs e)
     {
         var dialog = new WpfOpenFileDialog
@@ -1136,6 +1164,62 @@ public partial class MainWindow : Window
             CrashReporter.Log(ex, "No se pudo importar la configuracion.");
             AddLog($"Configuracion: no pude importar ({ex.Message}).", ActivityLogKind.Important);
             WpfMessageBox.Show(this, ex.Message, "Importar configuracion", MessageBoxButton.OK, MessageBoxImage.Warning);
+        }
+    }
+
+    private async void RestoreBackupButton_Click(object sender, RoutedEventArgs e)
+    {
+        var dialog = new WpfOpenFileDialog
+        {
+            Title = "Restaurar backup",
+            Filter = "Backup Neo Twitch (*.json)|*.json|Todos los archivos (*.*)|*.*",
+            CheckFileExists = true,
+            InitialDirectory = Directory.Exists(_settingsStore.BackupDirectory)
+                ? _settingsStore.BackupDirectory
+                : System.IO.Path.GetDirectoryName(_settingsStore.SettingsPath)
+        };
+
+        if (dialog.ShowDialog(this) != true)
+        {
+            return;
+        }
+
+        var confirm = WpfMessageBox.Show(
+            this,
+            "Restaurar este backup reemplazara la configuracion actual. Se creara un backup automatico antes de guardar.\n\nQuieres continuar?",
+            "Restaurar backup",
+            MessageBoxButton.YesNo,
+            MessageBoxImage.Question);
+
+        if (confirm != MessageBoxResult.Yes)
+        {
+            return;
+        }
+
+        try
+        {
+            if (_eventSubClient.IsRunning)
+            {
+                await _eventSubClient.StopAsync();
+                _eventSubscriptionSignature = "";
+                _streamStatus = null;
+            }
+
+            _config = _settingsStore.Import(dialog.FileName);
+            LoadConfigIntoUi();
+            AddLog($"Backup restaurado: {dialog.FileName}", ActivityLogKind.Important);
+            WpfMessageBox.Show(
+                this,
+                "Backup restaurado correctamente. Revisa Twitch, Arduino y Alexa antes de salir en vivo.",
+                "Restaurar backup",
+                MessageBoxButton.OK,
+                MessageBoxImage.Information);
+        }
+        catch (Exception ex)
+        {
+            CrashReporter.Log(ex, "No se pudo restaurar el backup.");
+            AddLog($"Backups: no pude restaurar ({ex.Message}).", ActivityLogKind.Important);
+            WpfMessageBox.Show(this, ex.Message, "Restaurar backup", MessageBoxButton.OK, MessageBoxImage.Warning);
         }
     }
 
@@ -1867,6 +1951,18 @@ public partial class MainWindow : Window
         UpdateStatusText();
         UpdateRuleOptionVisibility();
         ApplyBackgroundOutputMode();
+        UpdateCloseBehaviorCards();
+    }
+
+    private void CloseBehaviorRadio_Checked(object sender, RoutedEventArgs e)
+    {
+        if (_initializingComponent || _loadingUi)
+        {
+            return;
+        }
+
+        CloseToTrayCheck.IsChecked = sender == CloseToTrayRadio;
+        GlobalSettingsChanged(sender, e);
     }
 
     private void AlexaSettingsChanged(object sender, RoutedEventArgs e)
@@ -2012,6 +2108,7 @@ public partial class MainWindow : Window
         SaveGlobalSettingsFromFields();
         ApplyTheme();
         SaveConfig();
+        UpdateCloseBehaviorCards();
     }
 
     private void ToggleClientIdVisibility_Click(object sender, RoutedEventArgs e)
@@ -2069,7 +2166,7 @@ public partial class MainWindow : Window
 
     private void GoToActivityButton_Click(object sender, RoutedEventArgs e)
     {
-        MainTabs.SelectedIndex = 6;
+        MainTabs.SelectedIndex = 7;
         UpdateNavigationButtons();
     }
 
@@ -2772,6 +2869,8 @@ public partial class MainWindow : Window
             StripsList.ItemsSource = _config.LedStrips;
             SettingsPathText.Text = _settingsStore.SettingsPath;
             BackupPathText.Text = $"Backups automaticos: {_settingsStore.BackupDirectory}";
+            SettingsVersionText.Text = $"V{VersionCheckService.CurrentVersionText}";
+            UpdateCloseBehaviorCards();
 
             if (_config.Rules.Count > 0)
             {
@@ -3797,6 +3896,41 @@ public partial class MainWindow : Window
         return new string('*', length);
     }
 
+    private void UpdateCloseBehaviorCards()
+    {
+        if (_initializingComponent)
+        {
+            return;
+        }
+
+        var closeToTray = CloseToTrayCheck.IsChecked == true;
+        if (CloseToTrayRadio.IsChecked != closeToTray)
+        {
+            CloseToTrayRadio.IsChecked = closeToTray;
+        }
+
+        if (CloseAppRadio.IsChecked != !closeToTray)
+        {
+            CloseAppRadio.IsChecked = !closeToTray;
+        }
+
+        var palette = _config.DarkMode
+            ? ThemePalette.Dark
+            : ThemePalette.Light;
+        ApplyCloseBehaviorCardTheme(CloseToTrayCard, closeToTray, palette);
+        ApplyCloseBehaviorCardTheme(CloseAppCard, !closeToTray, palette);
+    }
+
+    private static void ApplyCloseBehaviorCardTheme(Border card, bool selected, ThemePalette palette)
+    {
+        card.Background = selected
+            ? TranslucentBrushFrom("#14B8A6")
+            : palette.Input;
+        card.BorderBrush = selected
+            ? palette.Accent
+            : palette.Border;
+    }
+
     private void ApplyTheme()
     {
         _config.DarkMode = ResolveDarkMode(_config.ThemeMode);
@@ -3838,6 +3972,7 @@ public partial class MainWindow : Window
         UpdateEventKindTileSelection();
         UpdatePatternTileSelection();
         UpdateBackgroundPatternTileSelection();
+        UpdateCloseBehaviorCards();
     }
 
     private void ApplyThemeToElement(DependencyObject element, ThemePalette palette)
@@ -3847,6 +3982,8 @@ public partial class MainWindow : Window
         switch (element)
         {
             case Border border when border.TemplatedParent is not null:
+                break;
+            case Border border when string.Equals(border.Tag?.ToString(), "StaticBrush", StringComparison.OrdinalIgnoreCase):
                 break;
             case Border border when border.DataContext is ActivityLogEntry:
                 break;
@@ -4276,7 +4413,7 @@ public partial class MainWindow : Window
             ? ThemePalette.Dark
             : ThemePalette.Light;
 
-        foreach (var button in new[] { NavSettingsButton, NavConnectionsButton, NavRulesButton, NavStripsButton, NavAlexaButton, NavPreferencesButton, NavActivityButton })
+        foreach (var button in new[] { NavSettingsButton, NavConnectionsButton, NavRulesButton, NavStripsButton, NavAlexaButton, NavAudioButton, NavPreferencesButton, NavActivityButton })
         {
             ApplyNavigationButtonTheme(button, palette);
         }

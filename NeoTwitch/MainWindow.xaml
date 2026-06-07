@@ -330,6 +330,50 @@
             </Setter>
         </Style>
 
+        <Style TargetType="RadioButton">
+            <Setter Property="Margin" Value="0" />
+            <Setter Property="Foreground" Value="{DynamicResource ThemeTextBrush}" />
+            <Setter Property="Template">
+                <Setter.Value>
+                    <ControlTemplate TargetType="RadioButton">
+                        <Grid MinHeight="18">
+                            <Grid.ColumnDefinitions>
+                                <ColumnDefinition Width="22" />
+                                <ColumnDefinition Width="*" />
+                            </Grid.ColumnDefinitions>
+                            <Ellipse x:Name="RadioFrame"
+                                     Width="16"
+                                     Height="16"
+                                     Stroke="{DynamicResource ThemeMutedTextBrush}"
+                                     StrokeThickness="1.6"
+                                     Fill="Transparent"
+                                     VerticalAlignment="Center" />
+                            <Ellipse x:Name="RadioDot"
+                                     Width="8"
+                                     Height="8"
+                                     Fill="{DynamicResource ThemeSelectionBrush}"
+                                     Visibility="Collapsed"
+                                     VerticalAlignment="Center"
+                                     HorizontalAlignment="Left"
+                                     Margin="4,0,0,0" />
+                            <ContentPresenter Grid.Column="1"
+                                              VerticalAlignment="Center"
+                                              RecognizesAccessKey="True" />
+                        </Grid>
+                        <ControlTemplate.Triggers>
+                            <Trigger Property="IsChecked" Value="True">
+                                <Setter TargetName="RadioFrame" Property="Stroke" Value="{DynamicResource ThemeSelectionBrush}" />
+                                <Setter TargetName="RadioDot" Property="Visibility" Value="Visible" />
+                            </Trigger>
+                            <Trigger Property="IsEnabled" Value="False">
+                                <Setter Property="Opacity" Value="0.55" />
+                            </Trigger>
+                        </ControlTemplate.Triggers>
+                    </ControlTemplate>
+                </Setter.Value>
+            </Setter>
+        </Style>
+
         <Style TargetType="Slider">
             <Setter Property="Margin" Value="0,3,0,10" />
         </Style>
@@ -705,13 +749,18 @@
                             Style="{StaticResource NavButton}"
                             ToolTip="Alexa"
                             Click="NavButton_Click" />
-                    <Button x:Name="NavPreferencesButton"
+                    <Button x:Name="NavAudioButton"
                             Tag="5"
+                            Style="{StaticResource NavButton}"
+                            ToolTip="Audio"
+                            Click="NavButton_Click" />
+                    <Button x:Name="NavPreferencesButton"
+                            Tag="6"
                             Style="{StaticResource NavButton}"
                             ToolTip="Configuracion"
                             Click="NavButton_Click" />
                     <Button x:Name="NavActivityButton"
-                            Tag="6"
+                            Tag="7"
                             Style="{StaticResource NavButton}"
                             ToolTip="Actividad"
                             Click="NavButton_Click" />
@@ -3036,11 +3085,84 @@
                 </ScrollViewer>
             </TabItem>
 
+            <TabItem Header="Audio">
+                <Grid Margin="24">
+                    <Grid.RowDefinitions>
+                        <RowDefinition Height="Auto" />
+                        <RowDefinition Height="*" />
+                    </Grid.RowDefinitions>
+
+                    <StackPanel Margin="0,0,0,18">
+                        <TextBlock Text="Audio"
+                                   FontSize="28"
+                                   Style="{StaticResource TitleText}"
+                                   FontWeight="SemiBold" />
+                        <TextBlock Text="Controla el volumen de las alertas sonoras."
+                                   Style="{StaticResource MutedText}"
+                                   Margin="0,4,0,0" />
+                    </StackPanel>
+
+                    <Border Grid.Row="1"
+                            Style="{StaticResource Card}"
+                            MaxWidth="760"
+                            HorizontalAlignment="Left"
+                            VerticalAlignment="Top">
+                        <Grid>
+                            <Grid.ColumnDefinitions>
+                                <ColumnDefinition Width="76" />
+                                <ColumnDefinition Width="*" />
+                            </Grid.ColumnDefinitions>
+                            <Border Width="54"
+                                    Height="54"
+                                    CornerRadius="16"
+                                    Background="#18B56CFF"
+                                    Tag="StaticBrush"
+                                    VerticalAlignment="Top">
+                                <Image Source="Assets/Icons/service_audio.png"
+                                       Width="34"
+                                       Height="34"
+                                       Stretch="Uniform"
+                                       HorizontalAlignment="Center"
+                                       VerticalAlignment="Center" />
+                            </Border>
+                            <StackPanel Grid.Column="1">
+                                <TextBlock Text="Volumen de alertas"
+                                           FontSize="18"
+                                           Style="{StaticResource TitleText}"
+                                           FontWeight="SemiBold" />
+                                <TextBlock Text="Este volumen se aplica a todos los audios reproducidos por las reglas."
+                                           Style="{StaticResource MutedText}"
+                                           TextWrapping="Wrap"
+                                           Margin="0,4,0,16" />
+                                <Grid>
+                                    <Grid.ColumnDefinitions>
+                                        <ColumnDefinition Width="*" />
+                                        <ColumnDefinition Width="70" />
+                                    </Grid.ColumnDefinitions>
+                                    <TextBlock Text="Volumen general"
+                                               Style="{StaticResource MutedText}" />
+                                    <TextBlock x:Name="AlertVolumeValueText"
+                                               Grid.Column="1"
+                                               HorizontalAlignment="Right"
+                                               Style="{StaticResource MutedText}" />
+                                </Grid>
+                                <Slider x:Name="AlertVolumeSlider"
+                                        Minimum="0"
+                                        Maximum="100"
+                                        TickFrequency="1"
+                                        ValueChanged="GlobalSettingsChanged" />
+                            </StackPanel>
+                        </Grid>
+                    </Border>
+                </Grid>
+            </TabItem>
+
             <TabItem Header="Configuracion">
                 <ScrollViewer VerticalScrollBarVisibility="Auto"
-                              HorizontalScrollBarVisibility="Auto">
-                    <Grid Margin="24" MinWidth="780">
+                              HorizontalScrollBarVisibility="Disabled">
+                    <Grid Margin="24">
                         <Grid.RowDefinitions>
+                            <RowDefinition Height="Auto" />
                             <RowDefinition Height="Auto" />
                             <RowDefinition Height="Auto" />
                             <RowDefinition Height="Auto" />
@@ -3054,129 +3176,384 @@
                         </Grid.ColumnDefinitions>
 
                         <StackPanel Grid.ColumnSpan="3" Margin="0,0,0,18">
-                            <TextBlock Text="Configuracion"
+                            <TextBlock Text="Configuración"
                                        FontSize="28"
                                        Style="{StaticResource TitleText}"
                                        FontWeight="SemiBold" />
-                            <TextBlock Text="Ajusta el comportamiento general, audio y cola de alertas."
+                            <TextBlock Text="Personaliza Neo Twitch a tu estilo."
                                        Style="{StaticResource MutedText}"
                                        Margin="0,4,0,0" />
                         </StackPanel>
 
                         <Border Grid.Row="1"
-                                Grid.Column="0"
+                                Grid.ColumnSpan="3"
                                 Style="{StaticResource Card}">
                             <StackPanel>
-                                <TextBlock Text="Ventana y apariencia"
-                                           FontSize="18"
+                                <TextBlock Text="Opciones generales"
+                                           FontSize="16"
                                            Style="{StaticResource TitleText}"
                                            FontWeight="SemiBold"
-                                           Margin="0,0,0,10" />
-                                <CheckBox x:Name="StartHiddenCheck"
-                                          Content="Abrir minimizada"
-                                          Checked="GlobalSettingsChanged"
-                                          Unchecked="GlobalSettingsChanged" />
-                                <CheckBox x:Name="CloseToTrayCheck"
-                                          Content="Cerrar con X envia a segundo plano"
-                                          Checked="GlobalSettingsChanged"
-                                          Unchecked="GlobalSettingsChanged" />
-                                <TextBlock Text="Tema"
-                                           Style="{StaticResource MutedText}" />
-                                <ComboBox x:Name="ThemeModeBox"
-                                          SelectionChanged="ThemeModeChanged" />
-                                <TextBlock x:Name="SettingsPathText"
-                                           Style="{StaticResource MutedText}"
-                                           FontSize="11"
-                                           TextWrapping="Wrap"
-                                           Margin="0,8,0,0" />
-                                <TextBlock x:Name="BackupPathText"
-                                           Style="{StaticResource MutedText}"
-                                           FontSize="11"
-                                           TextWrapping="Wrap"
-                                           Margin="0,4,0,8" />
-                                <WrapPanel>
-                                    <Button Content="Exportar configuracion"
-                                            Click="ExportSettingsButton_Click" />
-                                    <Button Content="Importar configuracion"
-                                            Click="ImportSettingsButton_Click" />
-                                </WrapPanel>
-                            </StackPanel>
-                        </Border>
+                                           Margin="0,0,0,12" />
+                                <Separator Margin="0,0,0,10" />
 
-                        <Border Grid.Row="1"
-                                Grid.Column="2"
-                                Style="{StaticResource Card}">
-                            <StackPanel>
-                                <TextBlock Text="Audio"
-                                           FontSize="18"
-                                           Style="{StaticResource TitleText}"
-                                           FontWeight="SemiBold"
-                                           Margin="0,0,0,10" />
+                                <Grid Margin="0,0,0,12">
+                                    <Grid.ColumnDefinitions>
+                                        <ColumnDefinition Width="50" />
+                                        <ColumnDefinition Width="*" />
+                                        <ColumnDefinition Width="Auto" />
+                                    </Grid.ColumnDefinitions>
+                                    <Border Width="38"
+                                            Height="38"
+                                            CornerRadius="10"
+                                            Background="#1514B8A6"
+                                            Tag="StaticBrush">
+                                        <Border Width="22"
+                                                Height="22"
+                                                Background="#14B8A6"
+                                                HorizontalAlignment="Center"
+                                                VerticalAlignment="Center"
+                                                Tag="StaticBrush">
+                                            <Border.OpacityMask>
+                                                <ImageBrush ImageSource="Assets/Icons/nav_settings.png"
+                                                            Stretch="Uniform" />
+                                            </Border.OpacityMask>
+                                        </Border>
+                                    </Border>
+                                    <StackPanel Grid.Column="1"
+                                                VerticalAlignment="Center">
+                                        <TextBlock Text="Abrir minimizada"
+                                                   FontWeight="SemiBold" />
+                                        <TextBlock Text="Abrir Neo Twitch en segundo plano al iniciar la app."
+                                                   Style="{StaticResource MutedText}"
+                                                   FontSize="12" />
+                                    </StackPanel>
+                                    <CheckBox x:Name="StartHiddenCheck"
+                                              Grid.Column="2"
+                                              Content=""
+                                              Checked="GlobalSettingsChanged"
+                                              Unchecked="GlobalSettingsChanged" />
+                                </Grid>
+
+                                <Separator Margin="0,0,0,10" />
+                                <Grid Margin="0,0,0,12">
+                                    <Grid.ColumnDefinitions>
+                                        <ColumnDefinition Width="50" />
+                                        <ColumnDefinition Width="*" />
+                                        <ColumnDefinition Width="Auto" />
+                                    </Grid.ColumnDefinitions>
+                                    <Border Width="38"
+                                            Height="38"
+                                            CornerRadius="10"
+                                            Background="#1514B8A6"
+                                            Tag="StaticBrush">
+                                        <Border Width="22"
+                                                Height="22"
+                                                Background="#14B8A6"
+                                                HorizontalAlignment="Center"
+                                                VerticalAlignment="Center"
+                                                Tag="StaticBrush">
+                                            <Border.OpacityMask>
+                                                <ImageBrush ImageSource="Assets/Icons/nav_activity.png"
+                                                            Stretch="Uniform" />
+                                            </Border.OpacityMask>
+                                        </Border>
+                                    </Border>
+                                    <StackPanel Grid.Column="1"
+                                                VerticalAlignment="Center">
+                                        <TextBlock Text="Minimizar a la bandeja"
+                                                   FontWeight="SemiBold" />
+                                        <TextBlock Text="Minimiza la aplicación al cerrar la ventana."
+                                                   Style="{StaticResource MutedText}"
+                                                   FontSize="12" />
+                                    </StackPanel>
+                                    <CheckBox x:Name="CloseToTrayCheck"
+                                              Grid.Column="2"
+                                              Content=""
+                                              Checked="GlobalSettingsChanged"
+                                              Unchecked="GlobalSettingsChanged" />
+                                </Grid>
+
+                                <Separator Margin="0,0,0,10" />
                                 <Grid>
                                     <Grid.ColumnDefinitions>
+                                        <ColumnDefinition Width="50" />
                                         <ColumnDefinition Width="*" />
-                                        <ColumnDefinition Width="70" />
+                                        <ColumnDefinition Width="220" />
                                     </Grid.ColumnDefinitions>
-                                    <TextBlock Text="Volumen de alertas" Style="{StaticResource MutedText}" />
-                                    <TextBlock x:Name="AlertVolumeValueText"
-                                               Grid.Column="1"
-                                               HorizontalAlignment="Right"
-                                               Style="{StaticResource MutedText}" />
+                                    <Border Width="38"
+                                            Height="38"
+                                            CornerRadius="10"
+                                            Background="#1514B8A6"
+                                            Tag="StaticBrush">
+                                        <Border Width="22"
+                                                Height="22"
+                                                Background="#14B8A6"
+                                                HorizontalAlignment="Center"
+                                                VerticalAlignment="Center"
+                                                Tag="StaticBrush">
+                                            <Border.OpacityMask>
+                                                <ImageBrush ImageSource="Assets/Icons/nav_lights.png"
+                                                            Stretch="Uniform" />
+                                            </Border.OpacityMask>
+                                        </Border>
+                                    </Border>
+                                    <StackPanel Grid.Column="1"
+                                                VerticalAlignment="Center">
+                                        <TextBlock Text="Tema de la aplicación"
+                                                   FontWeight="SemiBold" />
+                                        <TextBlock Text="Elige entre sistema, modo claro u oscuro."
+                                                   Style="{StaticResource MutedText}"
+                                                   FontSize="12" />
+                                    </StackPanel>
+                                    <ComboBox x:Name="ThemeModeBox"
+                                              Grid.Column="2"
+                                              SelectionChanged="ThemeModeChanged" />
                                 </Grid>
-                                <Slider x:Name="AlertVolumeSlider"
-                                        Minimum="0"
-                                        Maximum="100"
-                                        TickFrequency="1"
-                                        ValueChanged="GlobalSettingsChanged" />
-                                <TextBlock Text="Este volumen se aplica a todos los audios reproducidos por las reglas."
-                                           Style="{StaticResource MutedText}"
-                                           TextWrapping="Wrap" />
                             </StackPanel>
                         </Border>
 
-                        <Border Grid.Row="2"
+                        <Grid Grid.Row="2"
+                              Grid.ColumnSpan="3"
+                              Margin="0,18,0,0">
+                            <Grid.ColumnDefinitions>
+                                <ColumnDefinition Width="*" />
+                                <ColumnDefinition Width="18" />
+                                <ColumnDefinition Width="*" />
+                                <ColumnDefinition Width="18" />
+                                <ColumnDefinition Width="*" />
+                            </Grid.ColumnDefinitions>
+
+                            <Border Style="{StaticResource Card}">
+                                <StackPanel>
+                                    <TextBlock Text="Importar / Exportar"
+                                               FontSize="16"
+                                               Style="{StaticResource TitleText}"
+                                               FontWeight="SemiBold" />
+                                    <TextBlock Text="Transfiere tu configuración entre equipos fácilmente."
+                                               Style="{StaticResource MutedText}"
+                                               FontSize="12"
+                                               TextWrapping="Wrap"
+                                               Margin="0,8,0,14" />
+                                    <Button Content="Importar configuracion"
+                                            Click="ImportSettingsButton_Click" />
+                                    <Button Content="Exportar configuracion"
+                                            Click="ExportSettingsButton_Click" />
+                                </StackPanel>
+                            </Border>
+
+                            <Border Grid.Column="2"
+                                    Style="{StaticResource Card}">
+                                <StackPanel>
+                                    <TextBlock Text="Backups"
+                                               FontSize="16"
+                                               Style="{StaticResource TitleText}"
+                                               FontWeight="SemiBold" />
+                                    <TextBlock Text="Guarda y restaura tus ajustes y configuraciones."
+                                               Style="{StaticResource MutedText}"
+                                               FontSize="12"
+                                               TextWrapping="Wrap"
+                                               Margin="0,8,0,14" />
+                                    <Button Content="Crear backup ahora"
+                                            Click="CreateBackupButton_Click" />
+                                    <Button Content="Restaurar backup"
+                                            Click="RestoreBackupButton_Click" />
+                                </StackPanel>
+                            </Border>
+
+                            <Border Grid.Column="4"
+                                    Style="{StaticResource Card}">
+                                <StackPanel>
+                                    <TextBlock Text="Modo diagnóstico"
+                                               FontSize="16"
+                                               Style="{StaticResource TitleText}"
+                                               FontWeight="SemiBold" />
+                                    <TextBlock Text="Herramientas útiles para resolver problemas."
+                                               Style="{StaticResource MutedText}"
+                                               FontSize="12"
+                                               TextWrapping="Wrap"
+                                               Margin="0,8,0,14" />
+                                    <Button Content="Ejecutar diagnostico"
+                                            Click="RunDiagnosticsButton_Click" />
+                                    <StackPanel Orientation="Horizontal"
+                                                Margin="0,10,0,0">
+                                        <Ellipse Width="10"
+                                                 Height="10"
+                                                 Fill="#22C55E"
+                                                 VerticalAlignment="Center"
+                                                 Margin="0,0,8,0" />
+                                        <TextBlock x:Name="SettingsDiagnosticStatusText"
+                                                   Text="Estado: Todo en orden"
+                                                   Tag="Success"
+                                                   Foreground="#22C55E"
+                                                   FontSize="12"
+                                                   VerticalAlignment="Center" />
+                                    </StackPanel>
+                                </StackPanel>
+                            </Border>
+                        </Grid>
+
+                        <Grid Grid.Row="3"
+                              Grid.ColumnSpan="3"
+                              Margin="0,18,0,0">
+                            <Grid.ColumnDefinitions>
+                                <ColumnDefinition Width="2*" />
+                                <ColumnDefinition Width="18" />
+                                <ColumnDefinition Width="*" />
+                            </Grid.ColumnDefinitions>
+
+                            <Border Style="{StaticResource Card}">
+                                <StackPanel>
+                                    <TextBlock Text="Comportamiento al cerrar"
+                                               FontSize="16"
+                                               Style="{StaticResource TitleText}"
+                                               FontWeight="SemiBold" />
+                                    <TextBlock Text="Elige qué debe hacer la aplicación al cerrarse."
+                                               Style="{StaticResource MutedText}"
+                                               FontSize="12"
+                                               TextWrapping="Wrap"
+                                               Margin="0,6,0,14" />
+                                    <Grid>
+                                        <Grid.ColumnDefinitions>
+                                            <ColumnDefinition Width="*" />
+                                            <ColumnDefinition Width="12" />
+                                            <ColumnDefinition Width="*" />
+                                        </Grid.ColumnDefinitions>
+                                        <Border x:Name="CloseToTrayCard"
+                                                BorderBrush="{DynamicResource ThemeSelectionBrush}"
+                                                BorderThickness="1"
+                                                CornerRadius="12"
+                                                Padding="14"
+                                                Background="{DynamicResource ThemeInputBrush}">
+                                            <StackPanel>
+                                                <RadioButton x:Name="CloseToTrayRadio"
+                                                             Content=""
+                                                             IsChecked="{Binding IsChecked, ElementName=CloseToTrayCheck}"
+                                                             Checked="CloseBehaviorRadio_Checked" />
+                                                <TextBlock Text="Minimizar a la bandeja"
+                                                           FontWeight="SemiBold"
+                                                           FontSize="12"
+                                                           Margin="0,8,0,4" />
+                                                <TextBlock Text="La app seguirá funcionando en segundo plano."
+                                                           Style="{StaticResource MutedText}"
+                                                           FontSize="11"
+                                                           TextWrapping="Wrap" />
+                                            </StackPanel>
+                                        </Border>
+                                        <Border x:Name="CloseAppCard"
+                                                Grid.Column="2"
+                                                BorderBrush="{DynamicResource ThemeBorderBrush}"
+                                                BorderThickness="1"
+                                                CornerRadius="12"
+                                                Padding="14"
+                                                Background="{DynamicResource ThemeInputBrush}">
+                                            <StackPanel>
+                                                <RadioButton x:Name="CloseAppRadio"
+                                                             Content=""
+                                                             Checked="CloseBehaviorRadio_Checked" />
+                                                <TextBlock Text="Cerrar aplicación"
+                                                           FontWeight="SemiBold"
+                                                           FontSize="12"
+                                                           Margin="0,8,0,4" />
+                                                <TextBlock Text="Finaliza completamente Neo Twitch."
+                                                           Style="{StaticResource MutedText}"
+                                                           FontSize="11"
+                                                           TextWrapping="Wrap" />
+                                            </StackPanel>
+                                        </Border>
+                                    </Grid>
+                                </StackPanel>
+                            </Border>
+
+                            <Border Grid.Column="2"
+                                    Style="{StaticResource Card}">
+                                <StackPanel HorizontalAlignment="Center"
+                                            VerticalAlignment="Center">
+                                    <TextBlock Text="Estado de la aplicación"
+                                               FontSize="16"
+                                               Style="{StaticResource TitleText}"
+                                               FontWeight="SemiBold"
+                                               HorizontalAlignment="Center"
+                                               Margin="0,0,0,16" />
+                                    <Border Width="82"
+                                            Height="82"
+                                            CornerRadius="41"
+                                            BorderBrush="#22C55E"
+                                            BorderThickness="3"
+                                            Background="#1822C55E"
+                                            Tag="StaticBrush">
+                                        <Path Data="M 22 43 L 34 55 L 60 29"
+                                              Stroke="#22C55E"
+                                              StrokeThickness="6"
+                                              StrokeStartLineCap="Round"
+                                              StrokeEndLineCap="Round"
+                                              HorizontalAlignment="Center"
+                                              VerticalAlignment="Center" />
+                                    </Border>
+                                    <TextBlock Text="Todo funcionando correctamente"
+                                               Foreground="#22C55E"
+                                               FontWeight="SemiBold"
+                                               FontSize="12"
+                                               HorizontalAlignment="Center"
+                                               Margin="0,14,0,4" />
+                                    <TextBlock Text="Neo Twitch está actualizado."
+                                               Style="{StaticResource MutedText}"
+                                               FontSize="12"
+                                               HorizontalAlignment="Center" />
+                                    <Border CornerRadius="10"
+                                            Background="#2022C55E"
+                                            Padding="8,3"
+                                            Margin="0,12,0,0"
+                                            Tag="StaticBrush">
+                                        <TextBlock x:Name="SettingsVersionText"
+                                                   Text="V"
+                                                   Tag="Success"
+                                                   Foreground="#22C55E"
+                                                   FontWeight="SemiBold"
+                                                   FontSize="11" />
+                                    </Border>
+                                </StackPanel>
+                            </Border>
+                        </Grid>
+
+                        <Border Grid.Row="4"
                                 Grid.ColumnSpan="3"
                                 Style="{StaticResource Card}"
                                 Margin="0,18,0,0">
                             <StackPanel>
                                 <TextBlock Text="Cola de alertas"
-                                           FontSize="18"
+                                           FontSize="16"
                                            Style="{StaticResource TitleText}"
                                            FontWeight="SemiBold"
-                                           Margin="0,0,0,10" />
-                                <TextBlock Text="Controla cuantas alertas se acumulan cuando Twitch manda muchas seguidas."
+                                           Margin="0,0,0,12" />
+                                <TextBlock Text="Controla cuántas alertas se acumulan cuando Twitch manda muchas seguidas."
                                            Style="{StaticResource MutedText}"
+                                           FontSize="12"
                                            TextWrapping="Wrap"
                                            Margin="0,0,0,12" />
-
                                 <Grid>
                                     <Grid.ColumnDefinitions>
                                         <ColumnDefinition Width="*" />
-                                        <ColumnDefinition Width="16" />
+                                        <ColumnDefinition Width="14" />
                                         <ColumnDefinition Width="*" />
                                     </Grid.ColumnDefinitions>
-
                                     <StackPanel>
                                         <TextBlock Text="Repetidas maximas en cola"
                                                    Style="{StaticResource MutedText}" />
                                         <TextBox x:Name="MaxQueuedSameRuleAlertsBox"
                                                  TextChanged="GlobalSettingsChanged"
                                                  ToolTip="Cuantas alertas de la misma regla pueden esperar mientras otra se reproduce. 1 es el valor recomendado." />
-
                                         <TextBlock Text="Tiempo minimo para repetir"
                                                    Style="{StaticResource MutedText}" />
                                         <TextBox x:Name="SameRuleQueueCooldownBox"
                                                  TextChanged="GlobalSettingsChanged"
                                                  ToolTip="Milisegundos desde que empezo una regla antes de permitir otra igual. Usa 0 para desactivar este filtro." />
                                     </StackPanel>
-
                                     <StackPanel Grid.Column="2">
                                         <TextBlock Text="Distintas maximas en cola"
                                                    Style="{StaticResource MutedText}" />
                                         <TextBox x:Name="MaxQueuedDifferentRuleAlertsBox"
                                                  TextChanged="GlobalSettingsChanged"
                                                  ToolTip="Cuantas alertas de reglas distintas pueden esperar mientras otra se reproduce." />
-
                                         <TextBlock Text="Tiempo minimo para distintas"
                                                    Style="{StaticResource MutedText}" />
                                         <TextBox x:Name="DifferentRuleQueueCooldownBox"
@@ -3187,88 +3564,59 @@
                             </StackPanel>
                         </Border>
 
-                        <Border Grid.Row="3"
+                        <Border Grid.Row="5"
                                 Grid.ColumnSpan="3"
                                 Style="{StaticResource Card}"
                                 Margin="0,18,0,0">
                             <Grid>
                                 <Grid.ColumnDefinitions>
-                                    <ColumnDefinition Width="66" />
+                                    <ColumnDefinition Width="*" />
+                                    <ColumnDefinition Width="18" />
                                     <ColumnDefinition Width="*" />
                                     <ColumnDefinition Width="220" />
                                 </Grid.ColumnDefinitions>
-                                <Border Width="52"
-                                        Height="52"
-                                        CornerRadius="14"
-                                        Background="#1A14B8A6"
-                                        HorizontalAlignment="Left">
-                                    <Border Width="28"
-                                            Height="28"
-                                            Background="#14B8A6"
-                                            HorizontalAlignment="Center"
-                                            VerticalAlignment="Center">
-                                        <Border.OpacityMask>
-                                            <ImageBrush ImageSource="Assets/Icons/nav_connections.png"
-                                                        Stretch="Uniform" />
-                                        </Border.OpacityMask>
-                                    </Border>
-                                </Border>
-                                <StackPanel Grid.Column="1"
-                                            VerticalAlignment="Center">
-                                    <TextBlock Text="Conexion automatica"
-                                               FontSize="18"
+                                <StackPanel>
+                                    <TextBlock Text="Conexión automática"
+                                               FontSize="16"
                                                Style="{StaticResource TitleText}"
                                                FontWeight="SemiBold"
                                                Margin="0,0,0,10" />
-                                    <WrapPanel>
-                                        <CheckBox x:Name="AutoTwitchCheck"
-                                                  Content="Conectar Twitch al abrir"
-                                                  Checked="GlobalSettingsChanged"
-                                                  Unchecked="GlobalSettingsChanged" />
-                                        <CheckBox x:Name="AutoArduinoCheck"
-                                                  Content="Conectar Arduino al abrir"
-                                                  Checked="GlobalSettingsChanged"
-                                                  Unchecked="GlobalSettingsChanged" />
-                                    </WrapPanel>
+                                    <CheckBox x:Name="AutoTwitchCheck"
+                                              Content="Conectar Twitch al abrir"
+                                              Checked="GlobalSettingsChanged"
+                                              Unchecked="GlobalSettingsChanged" />
+                                    <CheckBox x:Name="AutoArduinoCheck"
+                                              Content="Conectar Arduino al abrir"
+                                              Checked="GlobalSettingsChanged"
+                                              Unchecked="GlobalSettingsChanged" />
                                     <TextBlock Text="Estas opciones intentan conectar los servicios apenas abre Neo Twitch."
                                                Style="{StaticResource MutedText}"
+                                               FontSize="12"
                                                TextWrapping="Wrap"
                                                Margin="0,8,0,0" />
                                 </StackPanel>
-                                <Button Grid.Column="2"
+                                <StackPanel Grid.Column="2">
+                                    <TextBlock Text="Archivos de configuración"
+                                               FontSize="16"
+                                               Style="{StaticResource TitleText}"
+                                               FontWeight="SemiBold"
+                                               Margin="0,0,0,10" />
+                                    <TextBlock x:Name="SettingsPathText"
+                                               Style="{StaticResource MutedText}"
+                                               FontSize="11"
+                                               TextWrapping="Wrap" />
+                                    <TextBlock x:Name="BackupPathText"
+                                               Style="{StaticResource MutedText}"
+                                               FontSize="11"
+                                               TextWrapping="Wrap"
+                                               Margin="0,6,0,0" />
+                                </StackPanel>
+                                <Button Grid.Column="3"
                                         Content="Guardar configuracion"
                                         Style="{StaticResource PrimaryButton}"
                                         HorizontalAlignment="Right"
                                         VerticalAlignment="Top"
                                         Click="SaveButton_Click" />
-                            </Grid>
-                        </Border>
-
-                        <Border Grid.Row="4"
-                                Grid.ColumnSpan="3"
-                                Style="{StaticResource Card}"
-                                Margin="0,18,0,0">
-                            <Grid>
-                                <Grid.ColumnDefinitions>
-                                    <ColumnDefinition Width="*" />
-                                    <ColumnDefinition Width="220" />
-                                </Grid.ColumnDefinitions>
-                                <StackPanel>
-                                    <TextBlock Text="Diagnostico"
-                                               FontSize="18"
-                                               Style="{StaticResource TitleText}"
-                                               FontWeight="SemiBold"
-                                               Margin="0,0,0,10" />
-                                    <TextBlock Text="Revisa configuracion, conexiones, reglas, audios y version sin ejecutar alertas."
-                                               Style="{StaticResource MutedText}"
-                                               TextWrapping="Wrap" />
-                                </StackPanel>
-                                <Button Grid.Column="1"
-                                        Content="Ejecutar diagnostico"
-                                        Style="{StaticResource PrimaryButton}"
-                                        HorizontalAlignment="Right"
-                                        VerticalAlignment="Top"
-                                        Click="RunDiagnosticsButton_Click" />
                             </Grid>
                         </Border>
                     </Grid>

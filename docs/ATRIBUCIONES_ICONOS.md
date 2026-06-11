@@ -18,6 +18,9 @@ Neo Twitch usa iconos y logos de terceros. Esta pagina recopila las atribuciones
 - Advertencia: [Signo de exclamacion iconos](https://www.flaticon.es/iconos-gratis/signo-de-exclamacion), creados por Lizel Arina - Flaticon.
 - Error: [Error iconos](https://www.flaticon.es/iconos-gratis/error), creados por Freepik - Flaticon.
 - Check: [Check in foursquare iconos](https://www.flaticon.es/iconos-gratis/check-in-foursquare), creados por Freepik - Flaticon.
+- Estado OK de la aplicacion: [Check in foursquare iconos](https://www.flaticon.es/iconos-gratis/check-in-foursquare), creados por Anggara - Flaticon.
+- Estado error de la aplicacion: [Error iconos](https://www.flaticon.es/iconos-gratis/error), creados por Alfredo Hernandez - Flaticon.
+- Estado advertencia de la aplicacion: [Advertencia iconos](https://www.flaticon.es/iconos-gratis/advertencia), creados por Vector Valley - Flaticon.
 - Checkbox: [Circunferencia iconos](https://www.flaticon.es/iconos-gratis/circunferencia), creados por See Icons - Flaticon.
 - Notificacion: [Notificacion iconos](https://www.flaticon.es/iconos-gratis/notificacion), creados por Uniconlabs - Flaticon.
 - Tema: [Paleta iconos](https://www.flaticon.es/iconos-gratis/paleta), creados por Freepik - Flaticon.

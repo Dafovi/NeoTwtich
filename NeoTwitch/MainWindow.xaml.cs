@@ -44,6 +44,7 @@ public partial class MainWindow : Window
     private readonly VersionCheckService _versionCheckService = new();
     private readonly TwitchEventSubClient _eventSubClient;
     private readonly ObservableCollection<ActivityLogEntry> _activity = [];
+    private readonly ObservableCollection<ActivityLogEntry> _dashboardActivity = [];
     private readonly ObservableCollection<RuleLedPreviewDot> _ruleLedPreviewDots = [];
     private readonly ObservableCollection<RuleLedPreviewDot> _backgroundLedPreviewDots = [];
     private readonly CollectionViewSource _activityViewSource = new();
@@ -114,6 +115,10 @@ public partial class MainWindow : Window
     private bool _showAlexaRelayUrl;
     private bool _showAlexaAuthToken;
     private bool _alexaRelayConnected;
+    private bool _isTwitchConnecting;
+    private bool _isArduinoConnecting;
+    private bool _isAlexaConnecting;
+    private string _twitchConnectionError = "";
     private string _activitySearchText = "";
     private string _ruleSearchText = "";
     private string _ruleStatusFilter = "ALL";
@@ -163,7 +168,7 @@ public partial class MainWindow : Window
             _activityViewSource.Source = _activity;
             _activityViewSource.Filter += ActivityViewSource_Filter;
             ActivityList.ItemsSource = _activityViewSource.View;
-            DashboardActivityList.ItemsSource = _activity;
+            DashboardActivityList.ItemsSource = _dashboardActivity;
             for (var i = 0; i < 24; i++)
             {
                 _ruleLedPreviewDots.Add(PreviewDot(ParsePreviewColor("#334155", "#334155"), 0.08));
@@ -216,7 +221,7 @@ public partial class MainWindow : Window
     {
         NavSettingsButton.Content = CreateNavigationItem("Assets/Icons/nav_panel.png", "Panel");
         NavConnectionsButton.Content = CreateNavigationItem("Assets/Icons/nav_connections.png", "Conexiones");
-        NavRulesButton.Content = CreateNavigationItem("Assets/Icons/nav_rules.png", "Reglas");
+        NavRulesButton.Content = CreateNavigationItem("Assets/Icons/nav_rules.png", "Alertas");
         NavStripsButton.Content = CreateNavigationItem("Assets/Icons/nav_lights.png", "Luces");
         NavAlexaButton.Content = CreateNavigationItem("Assets/Icons/nav_alexa.png", "Alexa");
         NavAudioButton.Content = CreateNavigationItem("Assets/Icons/nav_audio.png", "Audio");
@@ -496,6 +501,7 @@ public partial class MainWindow : Window
                 await _eventSubClient.StopAsync();
                 _eventSubscriptionSignature = "";
                 _streamStatus = null;
+                _twitchConnectionError = "";
                 AddLog("Twitch desconectado.");
                 UpdateStatusText();
                 return;
@@ -510,6 +516,8 @@ public partial class MainWindow : Window
         }
         catch (Exception ex)
         {
+            _twitchConnectionError = ex.Message;
+            UpdateStatusText();
             AddLog($"Twitch: {ex.Message}");
             WpfMessageBox.Show(this, ex.Message, "Twitch", MessageBoxButton.OK, MessageBoxImage.Warning);
         }
@@ -652,36 +660,52 @@ public partial class MainWindow : Window
 
     private async Task StartTwitchAsync(bool allowInteractiveReauth = false)
     {
-        var missingScopes = TwitchAuthService.GetMissingScopes(_config.Token);
-        if (missingScopes.Count > 0)
-        {
-            throw new InvalidOperationException($"Twitch necesita autorizar permisos nuevos: {string.Join(", ", missingScopes)}. Presiona Conectar Twitch para iniciar sesion otra vez.");
-        }
+        _isTwitchConnecting = true;
+        _twitchConnectionError = "";
+        UpdateStatusText();
 
         try
         {
-            await _authService.EnsureValidTokenAsync(_config, AddLog, CancellationToken.None);
-        }
-        catch (Exception ex) when (allowInteractiveReauth && IsRecoverableTwitchRefreshError(ex))
-        {
-            AddLog("Twitch necesita autorizar de nuevo porque el token guardado no se pudo refrescar.", ActivityLogKind.Twitch);
-            _config.Token = new TwitchTokenInfo();
-            _config.Channel = new TwitchChannelInfo();
-            SaveConfig();
-            await SignInToTwitchAsync();
-        }
+            var missingScopes = TwitchAuthService.GetMissingScopes(_config.Token);
+            if (missingScopes.Count > 0)
+            {
+                throw new InvalidOperationException($"Twitch necesita autorizar permisos nuevos: {string.Join(", ", missingScopes)}. Presiona Conectar Twitch para iniciar sesion otra vez.");
+            }
 
-        if (!_config.Channel.IsReady)
-        {
-            _config.Channel = await _authService.GetCurrentUserAsync(_config, CancellationToken.None);
-            SaveConfig();
-        }
+            try
+            {
+                await _authService.EnsureValidTokenAsync(_config, AddLog, CancellationToken.None);
+            }
+            catch (Exception ex) when (allowInteractiveReauth && IsRecoverableTwitchRefreshError(ex))
+            {
+                AddLog("Twitch necesita autorizar de nuevo porque el token guardado no se pudo refrescar.", ActivityLogKind.Twitch);
+                _config.Token = new TwitchTokenInfo();
+                _config.Channel = new TwitchChannelInfo();
+                SaveConfig();
+                await SignInToTwitchAsync();
+            }
 
-        await _eventSubClient.StartAsync();
-        _eventSubscriptionSignature = BuildEventSubscriptionSignature();
-        await RefreshTwitchStreamStatusAsync();
-        AddLog("Twitch escuchando eventos.");
-        UpdateStatusText();
+            if (!_config.Channel.IsReady)
+            {
+                _config.Channel = await _authService.GetCurrentUserAsync(_config, CancellationToken.None);
+                SaveConfig();
+            }
+
+            await _eventSubClient.StartAsync();
+            _eventSubscriptionSignature = BuildEventSubscriptionSignature();
+            await RefreshTwitchStreamStatusAsync();
+            AddLog("Twitch escuchando eventos.");
+        }
+        catch (Exception ex)
+        {
+            _twitchConnectionError = ex.Message;
+            throw;
+        }
+        finally
+        {
+            _isTwitchConnecting = false;
+            UpdateStatusText();
+        }
     }
 
     private string BuildEventSubscriptionSignature()
@@ -731,6 +755,11 @@ public partial class MainWindow : Window
             {
                 CrashReporter.Log(ex, "No se pudieron refrescar las suscripciones de Twitch.");
                 AddLog($"Twitch: {ex.Message}", ActivityLogKind.Important);
+                _ = Dispatcher.InvokeAsync(() =>
+                {
+                    _twitchConnectionError = ex.Message;
+                    UpdateStatusText();
+                });
             }
         });
     }
@@ -747,6 +776,7 @@ public partial class MainWindow : Window
         await _eventSubClient.StopAsync();
         await _eventSubClient.StartAsync();
         _eventSubscriptionSignature = signature;
+        _twitchConnectionError = "";
         AddLog("Twitch: suscripciones actualizadas.", ActivityLogKind.Twitch);
         UpdateStatusText();
     }
@@ -773,11 +803,13 @@ public partial class MainWindow : Window
         {
             await _authService.EnsureValidTokenAsync(_config, AddLog, CancellationToken.None);
             _streamStatus = await _authService.GetStreamStatusAsync(_config, CancellationToken.None);
+            _twitchConnectionError = "";
             SaveConfig();
         }
         catch (Exception ex)
         {
             _streamStatus = null;
+            _twitchConnectionError = ex.Message;
             AddLog($"Twitch estado: {ex.Message}");
         }
 
@@ -814,8 +846,18 @@ public partial class MainWindow : Window
             return;
         }
 
-        await _lightController.ConfigureAsync(_config.SerialPort, _config.BaudRate, AddLog, CancellationToken.None);
+        _isArduinoConnecting = true;
         UpdateStatusText();
+
+        try
+        {
+            await _lightController.ConfigureAsync(_config.SerialPort, _config.BaudRate, AddLog, CancellationToken.None);
+        }
+        finally
+        {
+            _isArduinoConnecting = false;
+            UpdateStatusText();
+        }
     }
 
     private async Task ApplyBackgroundAsync()
@@ -1239,6 +1281,9 @@ public partial class MainWindow : Window
                     ? "Diagnostico: sin advertencias."
                     : $"Diagnostico: {result.WarningCount} punto(s) por revisar.",
                 result.WarningCount == 0 ? ActivityLogKind.Info : ActivityLogKind.Important);
+            UpdateSettingsAppState(result.WarningCount == 0
+                ? ConnectionVisualState.Connected
+                : ConnectionVisualState.Warning);
 
             ShowDiagnosticsReport(result);
         }
@@ -1246,8 +1291,23 @@ public partial class MainWindow : Window
         {
             CrashReporter.Log(ex, "No se pudo ejecutar el diagnostico.");
             AddLog($"Diagnostico: {ex.Message}", ActivityLogKind.Important);
+            UpdateSettingsAppState(ConnectionVisualState.Disconnected);
             WpfMessageBox.Show(this, ex.Message, "Diagnostico", MessageBoxButton.OK, MessageBoxImage.Warning);
         }
+    }
+
+    private void UpdateSettingsAppState(ConnectionVisualState state)
+    {
+        var (text, color, imagePath) = state switch
+        {
+            ConnectionVisualState.Connected => ("Estado: Todo en orden", "#22C55E", "Assets/Icons/appstate_ok.png"),
+            ConnectionVisualState.Warning => ("Estado: Hay puntos por revisar", "#FFB020", "Assets/Icons/appstate_warning.png"),
+            _ => ("Estado: Revisa el diagnostico", "#F43F5E", "Assets/Icons/appstate_error.png")
+        };
+
+        SettingsAppStateIcon.Source = LoadPackImage(imagePath);
+        SettingsDiagnosticStatusText.Text = text;
+        SettingsDiagnosticStatusText.Foreground = FrozenBrushFrom(color);
     }
 
     private void ShowDiagnosticsReport(DiagnosticResult result)
@@ -1513,7 +1573,7 @@ public partial class MainWindow : Window
             Info($"Fondo Alexa encendido: {_config.BackgroundAlexaOnEventName}. Apagado: {_config.BackgroundAlexaOffEventName}.");
         }
 
-        Section("Reglas");
+        Section("Alertas");
         var activeRules = _config.Rules.Where(rule => rule.IsEnabled).ToArray();
         if (activeRules.Length == 0)
         {
@@ -1530,7 +1590,7 @@ public partial class MainWindow : Window
             .ToArray();
         if (rulesWithoutAction.Length > 0)
         {
-            Warn($"Reglas activas sin acciones: {FormatNameList(rulesWithoutAction)}.");
+            Warn($"Alertas activas sin acciones: {FormatNameList(rulesWithoutAction)}.");
         }
 
         var missingAudio = activeRules
@@ -1539,7 +1599,7 @@ public partial class MainWindow : Window
             .ToArray();
         if (missingAudio.Length > 0)
         {
-            Warn($"Reglas con audio faltante: {FormatNameList(missingAudio)}.");
+            Warn($"Alertas con audio faltante: {FormatNameList(missingAudio)}.");
         }
 
         var chatCommandsWithoutCommand = activeRules
@@ -1557,7 +1617,7 @@ public partial class MainWindow : Window
             .ToArray();
         if (rulesWithInvalidPins.Length > 0)
         {
-            Warn($"Reglas con pines LED no validos: {FormatNameList(rulesWithInvalidPins)}.");
+            Warn($"Alertas con pines LED no validos: {FormatNameList(rulesWithInvalidPins)}.");
         }
 
         var activeAlexaRules = activeRules.Count(rule => rule.SendAlexaEvent);
@@ -1687,7 +1747,7 @@ public partial class MainWindow : Window
 
     private void RemoveRule(EventRule rule)
     {
-        if (WpfMessageBox.Show(this, $"Eliminar la regla '{rule.Name}'?", "Reglas", MessageBoxButton.YesNo, MessageBoxImage.Question) != MessageBoxResult.Yes)
+        if (WpfMessageBox.Show(this, $"Eliminar la alerta '{rule.Name}'?", "Alertas", MessageBoxButton.YesNo, MessageBoxImage.Question) != MessageBoxResult.Yes)
         {
             return;
         }
@@ -1714,14 +1774,24 @@ public partial class MainWindow : Window
 
     private async void RuleTestButton_Click(object sender, RoutedEventArgs e)
     {
-        if (_currentEffectCts is not null)
+        try
         {
-            await StopCurrentEffectAsync();
-            UpdateRuleTestButtonState();
-            return;
-        }
+            if (_currentEffectCts is not null)
+            {
+                await StopCurrentEffectAsync();
+                UpdateRuleTestButtonState();
+                return;
+            }
 
-        await StartRuleTestAsync();
+            await StartRuleTestAsync();
+        }
+        catch (Exception ex)
+        {
+            CrashReporter.Log(ex, "No se pudo probar la alerta.");
+            AddLog($"Prueba de alerta: {ex.Message}", ActivityLogKind.Important);
+            WpfMessageBox.Show(this, ex.Message, "Probar alerta", MessageBoxButton.OK, MessageBoxImage.Warning);
+            UpdateRuleTestButtonState();
+        }
     }
 
     private async Task StartRuleTestAsync()
@@ -1948,6 +2018,7 @@ public partial class MainWindow : Window
         SaveGlobalSettingsFromFields();
         SaveConfig();
         UpdateSensitiveFieldVisibility();
+        UpdateSliderLabels();
         UpdateStatusText();
         UpdateRuleOptionVisibility();
         ApplyBackgroundOutputMode();
@@ -1984,6 +2055,8 @@ public partial class MainWindow : Window
     {
         try
         {
+            _isAlexaConnecting = true;
+            UpdateStatusText();
             SaveGlobalSettingsFromFields();
             SaveConfig();
             await _alexaRelayService.SendTestEventAsync(_config, CancellationToken.None);
@@ -1999,6 +2072,7 @@ public partial class MainWindow : Window
         }
         finally
         {
+            _isAlexaConnecting = false;
             UpdateAlexaStatusText();
         }
     }
@@ -2085,7 +2159,6 @@ public partial class MainWindow : Window
         UpdateBackgroundPatternTileSelection();
         UpdateBackgroundLedPreviewFrame();
         UpdateBackgroundLedPreviewTimerState();
-        ScheduleBackgroundApply();
     }
 
     private void RuleLedPreviewPanel_IsVisibleChanged(object sender, DependencyPropertyChangedEventArgs e)
@@ -2456,31 +2529,56 @@ public partial class MainWindow : Window
 
     private async void EventSubClient_EventReceived(TwitchEvent twitchEvent)
     {
-        RegisterDashboardTwitchEvent(twitchEvent);
-        var matchingRules = ResolveMatchingRules(twitchEvent);
-        if (matchingRules.Length == 0)
+        try
         {
-            if (twitchEvent.Kind != TwitchEventKind.ChatCommand)
+            RegisterDashboardTwitchEvent(twitchEvent);
+            var matchingRules = ResolveMatchingRules(twitchEvent);
+            if (matchingRules.Length == 0)
             {
-                AddLog(twitchEvent.Title, ActivityLogKind.Event);
-                AddLog("El evento no coincide con reglas activas.");
+                if (twitchEvent.Kind != TwitchEventKind.ChatCommand)
+                {
+                    AddLog(twitchEvent.Title, ActivityLogKind.Event);
+                    AddLog("El evento no coincide con alertas activas.");
+                }
+
+                return;
             }
 
+            AddLog(twitchEvent.Title, ActivityLogKind.Event);
+            RegisterDashboardMatchedRules(matchingRules.Length);
+
+            foreach (var rule in matchingRules)
+            {
+                await QueueAndRunRuleAsync(rule, twitchEvent);
+            }
+        }
+        catch (Exception ex)
+        {
+            CrashReporter.Log(ex, $"No se pudo procesar evento Twitch '{twitchEvent.Title}'.");
+            AddLog($"Twitch evento: {ex.Message}", ActivityLogKind.Important);
+        }
+    }
+
+    private void RegisterDashboardMatchedRules(int count)
+    {
+        if (!Dispatcher.CheckAccess())
+        {
+            _ = Dispatcher.InvokeAsync(() => RegisterDashboardMatchedRules(count));
             return;
         }
 
-        AddLog(twitchEvent.Title, ActivityLogKind.Event);
-        _dashboardEventsToday += matchingRules.Length;
+        _dashboardEventsToday += count;
         UpdateDashboardSummary();
-
-        foreach (var rule in matchingRules)
-        {
-            await QueueAndRunRuleAsync(rule, twitchEvent);
-        }
     }
 
     private void RegisterDashboardTwitchEvent(TwitchEvent twitchEvent)
     {
+        if (!Dispatcher.CheckAccess())
+        {
+            _ = Dispatcher.InvokeAsync(() => RegisterDashboardTwitchEvent(twitchEvent));
+            return;
+        }
+
         switch (twitchEvent.Kind)
         {
             case TwitchEventKind.Follow:
@@ -3480,6 +3578,12 @@ public partial class MainWindow : Window
 
     private void UpdateStatusText()
     {
+        if (!Dispatcher.CheckAccess())
+        {
+            _ = Dispatcher.InvokeAsync(UpdateStatusText);
+            return;
+        }
+
         var channelName = _config.Channel.IsReady
             ? FirstNonEmpty(_config.Channel.DisplayName, _config.Channel.Login, "Canal Twitch")
             : "Sin Twitch";
@@ -3489,11 +3593,15 @@ public partial class MainWindow : Window
 
         ChannelNameText.Text = channelName;
         ChannelLoginText.Text = login;
-        TwitchConnectionText.Text = _eventSubClient.IsRunning
-            ? "Eventos conectados"
-            : _config.Token.HasToken
-                ? "Sesion autorizada"
-                : "Sin conectar";
+        TwitchConnectionText.Text = _isTwitchConnecting
+            ? "Conectando"
+            : !string.IsNullOrWhiteSpace(_twitchConnectionError)
+                ? "Revisar conexion"
+                : _eventSubClient.IsRunning
+                    ? "Eventos conectados"
+                    : _config.Token.HasToken
+                        ? "Sesion autorizada"
+                        : "Sin conectar";
         TwitchStatusText.Text = BuildTwitchStatusText();
         UpdateTwitchLiveIndicator();
         UpdateChannelAvatar();
@@ -3504,13 +3612,21 @@ public partial class MainWindow : Window
             : "Fondo apagado";
         ArduinoConnectionText.Text = !_config.ArduinoEnabled
             ? "Desactivado"
-            : _lightController.HasOpenPort
+            : _isArduinoConnecting
+                ? "Conectando"
+            : _lightController.HasConfirmedAck
                 ? $"Conectado en {_lightController.CurrentPort}"
+                : _lightController.HasOpenPort
+                    ? "Puerto abierto sin respuesta"
                 : "Sin conectar";
         ArduinoStatusText.Text = !_config.ArduinoEnabled
             ? "Las luces Arduino no se mostraran ni ejecutaran."
-            : _lightController.HasOpenPort
+            : _isArduinoConnecting
+                ? $"Intentando conectar con {FirstNonEmpty(_config.SerialPort, "el puerto configurado")}."
+            : _lightController.HasConfirmedAck
                 ? $"{_config.BaudRate} baudios. {_config.LedStrips.Count} tiras, {totalLeds} LEDs. {activeBackground}."
+                : _lightController.HasOpenPort
+                    ? "El puerto esta abierto, pero Arduino no ha confirmado ACK."
                 : $"Puerto: {FirstNonEmpty(_config.SerialPort, "sin COM")}. {_config.LedStrips.Count} tiras, {totalLeds} LEDs.";
         RefreshDashboardConnectionStates();
         UpdateDashboardSummary();
@@ -3521,6 +3637,12 @@ public partial class MainWindow : Window
 
     private void UpdateLightsArduinoStatus()
     {
+        if (!Dispatcher.CheckAccess())
+        {
+            _ = Dispatcher.InvokeAsync(UpdateLightsArduinoStatus);
+            return;
+        }
+
         if (_initializingComponent)
         {
             return;
@@ -3547,6 +3669,12 @@ public partial class MainWindow : Window
 
     private void UpdateAlexaStatusText()
     {
+        if (!Dispatcher.CheckAccess())
+        {
+            _ = Dispatcher.InvokeAsync(UpdateAlexaStatusText);
+            return;
+        }
+
         var status = _config.Alexa.IsConfigured
             ? "Alexa lista. Las reglas pueden enviar eventos a la Skill/relay."
             : _config.Alexa.Enabled
@@ -3555,7 +3683,11 @@ public partial class MainWindow : Window
 
         AlexaStatusText.Text = status;
         AlexaConnectionText.Text = _config.Alexa.IsConfigured
-            ? "Relay conectado"
+            ? _isAlexaConnecting
+                ? "Conectando"
+                : _alexaRelayConnected
+                    ? "Relay conectado"
+                    : "Relay configurado"
             : _config.Alexa.Enabled
                 ? "Configuracion incompleta"
                 : "Desactivado";
@@ -3581,6 +3713,12 @@ public partial class MainWindow : Window
 
     private void UpdateDashboardSummary()
     {
+        if (!Dispatcher.CheckAccess())
+        {
+            _ = Dispatcher.InvokeAsync(UpdateDashboardSummary);
+            return;
+        }
+
         DashboardFollowersSummaryText.Text = $"+{_dashboardFollowersToday}";
         DashboardSubsSummaryText.Text = $"+{_dashboardSubscriptionsToday}";
         DashboardBitsSummaryText.Text = $"+{_dashboardBitsToday}";
@@ -3598,79 +3736,145 @@ public partial class MainWindow : Window
 
     private void RefreshDashboardConnectionStates()
     {
+        var twitchState = _isTwitchConnecting
+            ? ConnectionVisualState.Connecting
+            : !string.IsNullOrWhiteSpace(_twitchConnectionError)
+                ? ConnectionVisualState.Warning
+                : _config.Token.HasToken
+                    ? ConnectionVisualState.Connected
+                    : ConnectionVisualState.Disconnected;
+        var arduinoState = !_config.ArduinoEnabled
+            ? ConnectionVisualState.Disabled
+            : _isArduinoConnecting
+                ? ConnectionVisualState.Connecting
+                : _lightController.HasConfirmedAck
+                    ? ConnectionVisualState.Connected
+                    : _lightController.HasOpenPort
+                        ? ConnectionVisualState.Warning
+                        : ConnectionVisualState.Disconnected;
+        var alexaState = !_config.Alexa.Enabled
+            ? ConnectionVisualState.Disabled
+            : _isAlexaConnecting
+                ? ConnectionVisualState.Connecting
+                : !_config.Alexa.IsConfigured
+                    ? ConnectionVisualState.Warning
+                    : _alexaRelayConnected
+                        ? ConnectionVisualState.Connected
+                        : ConnectionVisualState.Warning;
+        var audioState = _config.AlertVolumePercent > 0
+            ? ConnectionVisualState.Connected
+            : ConnectionVisualState.Disabled;
+
         SetDashboardConnectionState(
             DashboardTwitchStateText,
             DashboardTwitchStatusIcon,
-            _config.Token.HasToken);
+            twitchState,
+            warningText: "Revisar");
         SetDashboardConnectionState(
             DashboardArduinoStateText,
             DashboardArduinoStatusIcon,
-            _config.ArduinoEnabled && _lightController.HasConfirmedAck,
-            disconnectedText: _config.ArduinoEnabled ? "Desconectado" : "Desactivado");
+            arduinoState,
+            warningText: "Sin respuesta");
         SetDashboardConnectionState(
             DashboardAlexaStateText,
             DashboardAlexaStatusIcon,
-            _config.Alexa.Enabled && _config.Alexa.IsConfigured && _alexaRelayConnected,
-            disconnectedText: _config.Alexa.Enabled ? "Desconectado" : "Desactivado");
+            alexaState,
+            warningText: _config.Alexa.IsConfigured ? "Configurado" : "Incompleta");
         SetDashboardConnectionState(
             DashboardAudioStateText,
             DashboardAudioStatusIcon,
-            _config.AlertVolumePercent > 0,
-            $"{_config.AlertVolumePercent}%",
-            "Desactivado");
+            audioState,
+            connectedText: $"{_config.AlertVolumePercent}%");
 
         SetConnectionBadgeState(
             ConnectionsTwitchBadge,
             ConnectionsTwitchBadgeText,
-            _config.Token.HasToken);
+            twitchState,
+            warningText: "Revisar");
         SetConnectionBadgeState(
             ConnectionsArduinoBadge,
             ConnectionsArduinoBadgeText,
-            _config.ArduinoEnabled && _lightController.HasConfirmedAck,
-            disconnectedText: _config.ArduinoEnabled ? "Desconectado" : "Desactivado");
+            arduinoState,
+            warningText: "Sin respuesta");
         SetConnectionBadgeState(
             ConnectionsAlexaBadge,
             ConnectionsAlexaBadgeText,
-            _config.Alexa.Enabled && _config.Alexa.IsConfigured && _alexaRelayConnected,
-            disconnectedText: _config.Alexa.Enabled ? "Desconectado" : "Desactivado");
+            alexaState,
+            warningText: _config.Alexa.IsConfigured ? "Configurado" : "Incompleta");
     }
 
     private static void SetDashboardConnectionState(
         TextBlock stateText,
         Border statusIcon,
-        bool connected,
+        ConnectionVisualState state,
         string connectedText = "Conectado",
-        string disconnectedText = "Desconectado")
+        string disconnectedText = "Desconectado",
+        string disabledText = "Desactivado",
+        string connectingText = "Conectando",
+        string warningText = "Revisar")
     {
-        var successBrush = FrozenBrushFrom("#22C55E");
-        var dangerBrush = FrozenBrushFrom("#F43F5E");
+        var (text, color, icon) = ConnectionStateVisuals(
+            state,
+            connectedText,
+            disconnectedText,
+            disabledText,
+            connectingText,
+            warningText);
+        var brush = FrozenBrushFrom(color);
 
-        stateText.Text = connected ? connectedText : disconnectedText;
-        stateText.Foreground = connected ? successBrush : dangerBrush;
-        statusIcon.Background = connected ? successBrush : dangerBrush;
+        stateText.Text = text;
+        stateText.Foreground = brush;
+        statusIcon.Background = brush;
         statusIcon.OpacityMask = new ImageBrush
         {
-            ImageSource = LoadPackImage(connected ? "Assets/Icons/status_ok.png" : "Assets/Icons/status_error.png"),
+            ImageSource = LoadPackImage(icon),
             Stretch = Stretch.Uniform
         };
-        statusIcon.ToolTip = connected ? connectedText : disconnectedText;
+        statusIcon.ToolTip = text;
     }
 
     private static void SetConnectionBadgeState(
         Border badge,
         TextBlock textBlock,
-        bool connected,
+        ConnectionVisualState state,
         string connectedText = "Conectado",
-        string disconnectedText = "Desconectado")
+        string disconnectedText = "Desconectado",
+        string disabledText = "Desactivado",
+        string connectingText = "Conectando",
+        string warningText = "Revisar")
     {
-        var successBrush = FrozenBrushFrom("#22C55E");
-        var dangerBrush = FrozenBrushFrom("#F43F5E");
+        var (text, color, _) = ConnectionStateVisuals(
+            state,
+            connectedText,
+            disconnectedText,
+            disabledText,
+            connectingText,
+            warningText);
+        var brush = FrozenBrushFrom(color);
 
-        textBlock.Text = connected ? connectedText : disconnectedText;
-        textBlock.Foreground = connected ? successBrush : dangerBrush;
-        badge.Background = FrozenBrushFrom(connected ? "#1422C55E" : "#14F43F5E");
-        badge.BorderBrush = connected ? successBrush : dangerBrush;
+        textBlock.Text = text;
+        textBlock.Foreground = brush;
+        badge.Background = TranslucentBrushFrom(color);
+        badge.BorderBrush = brush;
         badge.BorderThickness = new Thickness(1);
+    }
+
+    private static (string Text, string Color, string IconPath) ConnectionStateVisuals(
+        ConnectionVisualState state,
+        string connectedText,
+        string disconnectedText,
+        string disabledText,
+        string connectingText,
+        string warningText)
+    {
+        return state switch
+        {
+            ConnectionVisualState.Connected => (connectedText, "#22C55E", "Assets/Icons/status_ok.png"),
+            ConnectionVisualState.Connecting => (connectingText, "#FFB020", "Assets/Icons/status_warning.png"),
+            ConnectionVisualState.Warning => (warningText, "#FFB020", "Assets/Icons/status_warning.png"),
+            ConnectionVisualState.Disabled => (disabledText, "#94A3B8", "Assets/Icons/status_empty.png"),
+            _ => (disconnectedText, "#F43F5E", "Assets/Icons/status_error.png")
+        };
     }
 
     private static ImageSource? LoadPackImage(string path)
@@ -4019,6 +4223,8 @@ public partial class MainWindow : Window
                 break;
             case TextBlock textBlock when textBlock.DataContext is ActivityLogEntry:
                 break;
+            case TextBlock textBlock when string.Equals(textBlock.Tag?.ToString(), "StaticBrush", StringComparison.OrdinalIgnoreCase):
+                break;
             case TextBlock textBlock when string.Equals(textBlock.Tag?.ToString(), "Accent", StringComparison.OrdinalIgnoreCase):
                 textBlock.Foreground = palette.Accent;
                 break;
@@ -4300,6 +4506,12 @@ public partial class MainWindow : Window
         var palette = _config.DarkMode
             ? ThemePalette.Dark
             : ThemePalette.Light;
+        var tileBackground = _config.DarkMode
+            ? palette.Input
+            : FrozenBrushFrom("#10202A");
+        var tileForeground = _config.DarkMode
+            ? palette.Text
+            : FrozenBrushFrom("#F8FAFC");
 
         foreach (var button in PatternTileButtons())
         {
@@ -4311,15 +4523,13 @@ public partial class MainWindow : Window
             var selected = tilePattern == selectedPattern;
             var accentColor = PatternAccent(tilePattern);
             var accent = FrozenBrushFrom(accentColor);
-            button.Background = selected
-                ? TranslucentBrushFrom(accentColor)
-                : palette.Input;
+            button.Background = tileBackground;
             button.BorderBrush = selected
                 ? accent
                 : palette.Border;
             button.Foreground = selected
                 ? accent
-                : palette.Text;
+                : tileForeground;
         }
     }
 
@@ -4365,6 +4575,12 @@ public partial class MainWindow : Window
         var palette = _config.DarkMode
             ? ThemePalette.Dark
             : ThemePalette.Light;
+        var tileBackground = _config.DarkMode
+            ? palette.Input
+            : FrozenBrushFrom("#10202A");
+        var tileForeground = _config.DarkMode
+            ? palette.Text
+            : FrozenBrushFrom("#F8FAFC");
 
         foreach (var button in BackgroundPatternTileButtons())
         {
@@ -4376,15 +4592,13 @@ public partial class MainWindow : Window
             var selected = tilePattern == selectedPattern;
             var accentColor = PatternAccent(tilePattern);
             var accent = FrozenBrushFrom(accentColor);
-            button.Background = selected
-                ? TranslucentBrushFrom(accentColor)
-                : palette.Input;
+            button.Background = tileBackground;
             button.BorderBrush = selected
                 ? accent
                 : palette.Border;
             button.Foreground = selected
                 ? accent
-                : palette.Text;
+                : tileForeground;
         }
     }
 
@@ -4776,11 +4990,18 @@ public partial class MainWindow : Window
     {
         Dispatcher.BeginInvoke(() =>
         {
-            _activity.Insert(0, new ActivityLogEntry(message, kind));
+            var entry = new ActivityLogEntry(message, kind);
+            _activity.Insert(0, entry);
+            _dashboardActivity.Insert(0, entry);
 
             while (_activity.Count > 250)
             {
                 _activity.RemoveAt(_activity.Count - 1);
+            }
+
+            while (_dashboardActivity.Count > 10)
+            {
+                _dashboardActivity.RemoveAt(_dashboardActivity.Count - 1);
             }
         });
     }
@@ -4897,6 +5118,15 @@ public partial class MainWindow : Window
         Audio,
         Event,
         Important
+    }
+
+    private enum ConnectionVisualState
+    {
+        Connected,
+        Connecting,
+        Disconnected,
+        Disabled,
+        Warning
     }
 
     private sealed record QueuedAlertSlot(string Id, string RuleId, string RuleName, TwitchEventKind EventKind);

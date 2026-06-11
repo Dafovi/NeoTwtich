@@ -380,14 +380,17 @@
 
         <Style TargetType="ScrollBar">
             <Setter Property="Background" Value="{DynamicResource ThemeScrollTrackBrush}" />
-            <Setter Property="Width" Value="10" />
-            <Setter Property="Height" Value="10" />
+            <Setter Property="Width" Value="12" />
+            <Setter Property="Height" Value="12" />
+            <Setter Property="MinWidth" Value="12" />
+            <Setter Property="MinHeight" Value="12" />
             <Setter Property="Template">
                 <Setter.Value>
                     <ControlTemplate TargetType="ScrollBar">
                         <Grid Background="Transparent">
                             <Border Background="{TemplateBinding Background}"
-                                    CornerRadius="5" />
+                                    CornerRadius="6"
+                                    Opacity="0.55" />
                             <Track x:Name="PART_Track"
                                    IsDirectionReversed="True">
                                 <Track.DecreaseRepeatButton>
@@ -395,12 +398,13 @@
                                                   Opacity="0" />
                                 </Track.DecreaseRepeatButton>
                                 <Track.Thumb>
-                                    <Thumb MinHeight="28" MinWidth="28">
+                                    <Thumb MinHeight="44" MinWidth="44">
                                         <Thumb.Template>
                                             <ControlTemplate TargetType="Thumb">
                                                 <Border Background="{DynamicResource ThemeScrollThumbBrush}"
-                                                        CornerRadius="5"
-                                                        Opacity="0.82" />
+                                                        CornerRadius="6"
+                                                        Margin="2"
+                                                        Opacity="0.92" />
                                             </ControlTemplate>
                                         </Thumb.Template>
                                     </Thumb>
@@ -737,7 +741,7 @@
                     <Button x:Name="NavRulesButton"
                             Tag="2"
                             Style="{StaticResource NavButton}"
-                            ToolTip="Reglas"
+                            ToolTip="Alertas"
                             Click="NavButton_Click" />
                     <Button x:Name="NavStripsButton"
                             Tag="3"
@@ -841,7 +845,7 @@
                     Padding="0"
                     SelectionChanged="MainTabs_SelectionChanged">
             <TabItem Header="Panel">
-                <Grid Margin="24" MinWidth="980">
+                <Grid Margin="24">
                     <Grid.RowDefinitions>
                         <RowDefinition Height="Auto" />
                         <RowDefinition Height="Auto" />
@@ -1165,8 +1169,7 @@
                     </StackPanel>
 
                     <Border Grid.Row="3"
-                            Style="{StaticResource Card}"
-                            MinHeight="260">
+                            Style="{StaticResource Card}">
                         <DockPanel LastChildFill="True">
                             <Grid DockPanel.Dock="Top"
                                   Margin="0,0,0,12">
@@ -1195,22 +1198,24 @@
                                      Background="Transparent"
                                      ItemContainerStyle="{StaticResource ActivityListItem}"
                                      ScrollViewer.HorizontalScrollBarVisibility="Disabled"
-                                     ScrollViewer.VerticalScrollBarVisibility="Disabled"
-                                     ItemTemplate="{StaticResource MiniActivityTemplate}" />
+                                     ScrollViewer.VerticalScrollBarVisibility="Auto"
+                                     ItemTemplate="{StaticResource ActivityTemplate}" />
                         </DockPanel>
                     </Border>
                 </Grid>
             </TabItem>
 
             <TabItem Header="Conexiones">
-                <Grid Margin="24" MinWidth="980">
+                <ScrollViewer VerticalScrollBarVisibility="Auto"
+                              HorizontalScrollBarVisibility="Disabled">
+                <Grid Margin="24">
                     <Grid.RowDefinitions>
                         <RowDefinition Height="Auto" />
-                        <RowDefinition Height="*" />
+                        <RowDefinition Height="Auto" />
                         <RowDefinition Height="12" />
-                        <RowDefinition Height="*" />
+                        <RowDefinition Height="Auto" />
                         <RowDefinition Height="12" />
-                        <RowDefinition Height="*" />
+                        <RowDefinition Height="Auto" />
                     </Grid.RowDefinitions>
 
                     <Grid Margin="0,0,0,14">
@@ -1597,9 +1602,10 @@
                             </Grid>
                     </Border>
                 </Grid>
+                </ScrollViewer>
             </TabItem>
 
-            <TabItem Header="Reglas">
+            <TabItem Header="Alertas">
                     <Grid Margin="24">
                         <Grid.RowDefinitions>
                             <RowDefinition Height="0" />
@@ -1613,7 +1619,7 @@
 
                         <Grid Grid.ColumnSpan="3" Margin="0" Visibility="Collapsed">
                             <StackPanel>
-                                <TextBlock Text="Reglas y alertas"
+                                <TextBlock Text="Alertas"
                                            FontSize="28"
                                            Style="{StaticResource TitleText}"
                                            FontWeight="SemiBold" />
@@ -1704,11 +1710,19 @@
                                                         <ControlTemplate.Triggers>
                                                             <Trigger Property="IsSelected" Value="True">
                                                                 <Setter TargetName="SelectedRuleFrame" Property="BorderBrush" Value="{DynamicResource ThemeSelectionBrush}" />
-                                                                <Setter TargetName="SelectedRuleFrame" Property="Background" Value="{DynamicResource ThemeButtonBrush}" />
+                                                                <Setter TargetName="SelectedRuleFrame" Property="Background" Value="#2214B8A6" />
                                                             </Trigger>
                                                             <Trigger Property="IsMouseOver" Value="True">
                                                                 <Setter TargetName="SelectedRuleFrame" Property="BorderBrush" Value="{DynamicResource ThemeBorderBrush}" />
                                                             </Trigger>
+                                                            <MultiTrigger>
+                                                                <MultiTrigger.Conditions>
+                                                                    <Condition Property="IsSelected" Value="True" />
+                                                                    <Condition Property="IsMouseOver" Value="True" />
+                                                                </MultiTrigger.Conditions>
+                                                                <Setter TargetName="SelectedRuleFrame" Property="BorderBrush" Value="{DynamicResource ThemeSelectionBrush}" />
+                                                                <Setter TargetName="SelectedRuleFrame" Property="Background" Value="#2214B8A6" />
+                                                            </MultiTrigger>
                                                         </ControlTemplate.Triggers>
                                                     </ControlTemplate>
                                                 </Setter.Value>
@@ -1784,6 +1798,7 @@
                                                             VerticalAlignment="Top">
                                                         <TextBlock Text="{Binding StatusText}"
                                                                    Foreground="White"
+                                                                   Tag="StaticBrush"
                                                                    FontSize="11"
                                                                    FontWeight="SemiBold" />
                                                     </Border>
@@ -3480,21 +3495,11 @@
                                                FontWeight="SemiBold"
                                                HorizontalAlignment="Center"
                                                Margin="0,0,0,16" />
-                                    <Border Width="82"
-                                            Height="82"
-                                            CornerRadius="41"
-                                            BorderBrush="#22C55E"
-                                            BorderThickness="3"
-                                            Background="#1822C55E"
-                                            Tag="StaticBrush">
-                                        <Path Data="M 22 43 L 34 55 L 60 29"
-                                              Stroke="#22C55E"
-                                              StrokeThickness="6"
-                                              StrokeStartLineCap="Round"
-                                              StrokeEndLineCap="Round"
-                                              HorizontalAlignment="Center"
-                                              VerticalAlignment="Center" />
-                                    </Border>
+                                    <Image x:Name="SettingsAppStateIcon"
+                                           Source="Assets/Icons/appstate_ok.png"
+                                           Width="82"
+                                           Height="82"
+                                           Stretch="Uniform" />
                                     <TextBlock Text="Todo funcionando correctamente"
                                                Foreground="#22C55E"
                                                FontWeight="SemiBold"

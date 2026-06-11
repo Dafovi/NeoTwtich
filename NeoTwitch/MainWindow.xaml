@@ -1206,16 +1206,10 @@
             </TabItem>
 
             <TabItem Header="Conexiones">
-                <ScrollViewer VerticalScrollBarVisibility="Auto"
-                              HorizontalScrollBarVisibility="Disabled">
                 <Grid Margin="24">
                     <Grid.RowDefinitions>
                         <RowDefinition Height="Auto" />
-                        <RowDefinition Height="Auto" />
-                        <RowDefinition Height="12" />
-                        <RowDefinition Height="Auto" />
-                        <RowDefinition Height="12" />
-                        <RowDefinition Height="Auto" />
+                        <RowDefinition Height="*" />
                     </Grid.RowDefinitions>
 
                     <Grid Margin="0,0,0,14">
@@ -1240,7 +1234,21 @@
                                 Click="SaveButton_Click" />
                     </Grid>
 
-                    <Border Grid.Row="1"
+                    <ScrollViewer Grid.Row="1"
+                                  VerticalScrollBarVisibility="Auto"
+                                  HorizontalScrollBarVisibility="Disabled"
+                                  CanContentScroll="False"
+                                  Padding="0,0,8,0">
+                    <Grid>
+                        <Grid.RowDefinitions>
+                            <RowDefinition Height="Auto" />
+                            <RowDefinition Height="12" />
+                            <RowDefinition Height="Auto" />
+                            <RowDefinition Height="12" />
+                            <RowDefinition Height="Auto" />
+                        </Grid.RowDefinitions>
+
+                    <Border Grid.Row="0"
                             Style="{StaticResource Card}"
                             Padding="18">
                             <Grid>
@@ -1365,7 +1373,7 @@
                             </Grid>
                     </Border>
 
-                    <Border Grid.Row="3"
+                    <Border Grid.Row="2"
                             Style="{StaticResource Card}"
                             Padding="18">
                             <Grid>
@@ -1459,7 +1467,7 @@
                             </Grid>
                     </Border>
 
-                    <Border Grid.Row="5"
+                    <Border Grid.Row="4"
                             Style="{StaticResource Card}"
                             Padding="18">
                             <Grid>
@@ -1601,8 +1609,9 @@
                                 </Grid>
                             </Grid>
                     </Border>
-                </Grid>
+                    </Grid>
                 </ScrollViewer>
+                </Grid>
             </TabItem>
 
             <TabItem Header="Alertas">
@@ -3274,20 +3283,20 @@
                                                 VerticalAlignment="Center"
                                                 Tag="StaticBrush">
                                             <Border.OpacityMask>
-                                                <ImageBrush ImageSource="Assets/Icons/nav_activity.png"
+                                                <ImageBrush ImageSource="Assets/Icons/nav_settings.png"
                                                             Stretch="Uniform" />
                                             </Border.OpacityMask>
                                         </Border>
                                     </Border>
                                     <StackPanel Grid.Column="1"
                                                 VerticalAlignment="Center">
-                                        <TextBlock Text="Minimizar a la bandeja"
+                                        <TextBlock Text="Iniciar con Windows"
                                                    FontWeight="SemiBold" />
-                                        <TextBlock Text="Minimiza la aplicación al cerrar la ventana."
+                                        <TextBlock Text="Abre Neo Twitch automáticamente al iniciar sesión."
                                                    Style="{StaticResource MutedText}"
                                                    FontSize="12" />
                                     </StackPanel>
-                                    <CheckBox x:Name="CloseToTrayCheck"
+                                    <CheckBox x:Name="StartWithWindowsCheck"
                                               Grid.Column="2"
                                               Content=""
                                               Checked="GlobalSettingsChanged"
@@ -3313,7 +3322,7 @@
                                                 VerticalAlignment="Center"
                                                 Tag="StaticBrush">
                                             <Border.OpacityMask>
-                                                <ImageBrush ImageSource="Assets/Icons/nav_lights.png"
+                                                <ImageBrush ImageSource="Assets/Icons/activity_theme.png"
                                                             Stretch="Uniform" />
                                             </Border.OpacityMask>
                                         </Border>
@@ -3433,6 +3442,10 @@
                                                FontSize="12"
                                                TextWrapping="Wrap"
                                                Margin="0,6,0,14" />
+                                    <CheckBox x:Name="CloseToTrayCheck"
+                                              Visibility="Collapsed"
+                                              Checked="GlobalSettingsChanged"
+                                              Unchecked="GlobalSettingsChanged" />
                                     <Grid>
                                         <Grid.ColumnDefinitions>
                                             <ColumnDefinition Width="*" />

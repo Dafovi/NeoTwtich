@@ -17,6 +17,7 @@ public sealed class AppConfig
     public bool AutoConnectTwitch { get; set; } = true;
     public bool AutoConnectArduino { get; set; } = true;
     public bool StartHidden { get; set; }
+    public bool StartWithWindows { get; set; }
     public string ThemeMode { get; set; } = "System";
     public bool DarkMode { get; set; }
     public bool CloseToTray { get; set; } = true;

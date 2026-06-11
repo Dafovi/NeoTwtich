@@ -34,6 +34,8 @@ public partial class MainWindow : Window
     private const int AppCaptionColor = 0x0017110B;
     private const int AppCaptionTextColor = 0x00FFFFFF;
     private const int LightStopSettleMs = 120;
+    private const string WindowsRunKeyPath = @"Software\Microsoft\Windows\CurrentVersion\Run";
+    private const string WindowsStartupValueName = "Neo Twitch";
 
     private readonly SettingsStore _settingsStore = new();
     private readonly AudioPlayerService _audioPlayer = new();
@@ -118,6 +120,7 @@ public partial class MainWindow : Window
     private bool _isTwitchConnecting;
     private bool _isArduinoConnecting;
     private bool _isAlexaConnecting;
+    private bool? _lastAppliedStartWithWindows;
     private string _twitchConnectionError = "";
     private string _activitySearchText = "";
     private string _ruleSearchText = "";
@@ -455,7 +458,9 @@ public partial class MainWindow : Window
             AddLog($"No pude leer la configuracion anterior: {_settingsStore.LastLoadError}");
         }
 
+        ApplyStartWithWindowsRegistration();
         _ = CheckForUpdatesAsync();
+
 
         if (_config.StartHidden)
         {
@@ -2017,6 +2022,7 @@ public partial class MainWindow : Window
 
         SaveGlobalSettingsFromFields();
         SaveConfig();
+        ApplyStartWithWindowsRegistration();
         UpdateSensitiveFieldVisibility();
         UpdateSliderLabels();
         UpdateStatusText();
@@ -2938,6 +2944,7 @@ public partial class MainWindow : Window
             AutoTwitchCheck.IsChecked = _config.AutoConnectTwitch;
             AutoArduinoCheck.IsChecked = _config.AutoConnectArduino;
             StartHiddenCheck.IsChecked = _config.StartHidden;
+            StartWithWindowsCheck.IsChecked = _config.StartWithWindows;
             ThemeModeBox.SelectedValue = _config.ThemeMode;
             CloseToTrayCheck.IsChecked = _config.CloseToTray;
             AlertVolumeSlider.Value = _config.AlertVolumePercent;
@@ -3085,6 +3092,7 @@ public partial class MainWindow : Window
         _config.AutoConnectTwitch = AutoTwitchCheck.IsChecked == true;
         _config.AutoConnectArduino = AutoArduinoCheck.IsChecked == true;
         _config.StartHidden = StartHiddenCheck.IsChecked == true;
+        _config.StartWithWindows = StartWithWindowsCheck.IsChecked == true;
         _config.ThemeMode = NormalizeThemeMode(ThemeModeBox.SelectedValue as string ?? _config.ThemeMode);
         _config.DarkMode = ResolveDarkMode(_config.ThemeMode);
         _config.CloseToTray = CloseToTrayCheck.IsChecked == true;
@@ -3096,6 +3104,44 @@ public partial class MainWindow : Window
         _config.Alexa.Enabled = AlexaEnabledCheck.IsChecked == true;
         _config.Alexa.RelayUrl = AlexaRelayUrlBox.Text.Trim();
         _config.Alexa.AuthToken = AlexaAuthTokenBox.Text.Trim();
+    }
+
+    private void ApplyStartWithWindowsRegistration()
+    {
+        if (_lastAppliedStartWithWindows == _config.StartWithWindows)
+        {
+            return;
+        }
+
+        try
+        {
+            using var runKey = Microsoft.Win32.Registry.CurrentUser.CreateSubKey(WindowsRunKeyPath, writable: true);
+            if (runKey is null)
+            {
+                throw new InvalidOperationException("No pude abrir la clave de inicio de Windows.");
+            }
+
+            if (_config.StartWithWindows)
+            {
+                var executablePath = Environment.ProcessPath;
+                if (string.IsNullOrWhiteSpace(executablePath) || !File.Exists(executablePath))
+                {
+                    throw new InvalidOperationException("No pude detectar la ruta del ejecutable actual.");
+                }
+
+                runKey.SetValue(WindowsStartupValueName, $"\"{executablePath}\"");
+            }
+            else
+            {
+                runKey.DeleteValue(WindowsStartupValueName, throwOnMissingValue: false);
+            }
+
+            _lastAppliedStartWithWindows = _config.StartWithWindows;
+        }
+        catch (Exception ex)
+        {
+            AddLog($"Inicio con Windows: {ex.Message}", ActivityLogKind.Important);
+        }
     }
 
     private void SaveCurrentRuleFromFields()

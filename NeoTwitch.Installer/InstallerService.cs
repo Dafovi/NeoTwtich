@@ -30,11 +30,6 @@ internal sealed class InstallerService
             string version;
             if (string.IsNullOrWhiteSpace(packagePath) || !File.Exists(packagePath))
             {
-                packagePath = FindLocalPackage();
-            }
-
-            if (string.IsNullOrWhiteSpace(packagePath) || !File.Exists(packagePath))
-            {
                 var asset = await _releaseClient.GetLatestInstallAssetAsync(cancellationToken);
                 version = NormalizeVersion(asset.Version);
                 packagePath = await _releaseClient.DownloadAsync(asset, tempRoot, progress, cancellationToken);
@@ -87,46 +82,6 @@ internal sealed class InstallerService
         {
             TryDeleteDirectory(tempRoot);
         }
-    }
-
-    private static string FindLocalPackage()
-    {
-        var currentExe = Environment.ProcessPath;
-        if (string.IsNullOrWhiteSpace(currentExe) || !File.Exists(currentExe))
-        {
-            return string.Empty;
-        }
-
-        var sourceDirectory = Path.GetDirectoryName(currentExe)!;
-        var localZip = Directory
-            .EnumerateFiles(sourceDirectory, "*.zip", SearchOption.TopDirectoryOnly)
-            .Where(file => Path.GetFileName(file).Contains("NeoTwitch", StringComparison.OrdinalIgnoreCase))
-            .Where(file => !Path.GetFileName(file).Contains("Installer", StringComparison.OrdinalIgnoreCase))
-            .OrderBy(file => LocalPackageRank(Path.GetFileName(file)))
-            .ThenByDescending(File.GetLastWriteTimeUtc)
-            .FirstOrDefault();
-        if (!string.IsNullOrWhiteSpace(localZip))
-        {
-            return localZip;
-        }
-
-        var localExe = Path.Combine(sourceDirectory, "NeoTwitch.exe");
-        return File.Exists(localExe) ? localExe : string.Empty;
-    }
-
-    private static int LocalPackageRank(string name)
-    {
-        if (name.Contains("Full", StringComparison.OrdinalIgnoreCase))
-        {
-            return 0;
-        }
-
-        if (name.Contains("Windows", StringComparison.OrdinalIgnoreCase))
-        {
-            return 1;
-        }
-
-        return 2;
     }
 
     private static async Task WaitForNeoTwitchToExitAsync(

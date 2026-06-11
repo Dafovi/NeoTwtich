@@ -607,26 +607,82 @@ public partial class MainWindow : Window
             }
 
             AddLog($"Version: hay una nueva version V{result.LatestVersion}.", ActivityLogKind.Important);
+            var installerPath = FindLocalInstallerPath();
+            var canUpdateInPlace = !string.IsNullOrWhiteSpace(installerPath);
+            var prompt = canUpdateInPlace
+                ? $"Hay una nueva version de Neo Twitch.\n\nTu version: V{result.CurrentVersion}\nUltima version: V{result.LatestVersion}\n\nQuieres actualizar ahora? La app se cerrara un momento y el instalador hara el reemplazo."
+                : $"Hay una nueva version de Neo Twitch.\n\nTu version: V{result.CurrentVersion}\nUltima version: V{result.LatestVersion}\n\nNo encontre el instalador local. Quieres abrir la pagina de releases para descargarla?";
             var answer = WpfMessageBox.Show(
                 this,
-                $"Hay una nueva version de Neo Twitch.\n\nTu version: V{result.CurrentVersion}\nUltima version: V{result.LatestVersion}\n\nQuieres abrir la pagina de releases para descargarla?",
+                prompt,
                 "Actualizacion disponible",
                 MessageBoxButton.YesNo,
                 MessageBoxImage.Information);
 
             if (answer == MessageBoxResult.Yes)
             {
-                Process.Start(new ProcessStartInfo
+                if (canUpdateInPlace)
                 {
-                    FileName = result.ReleaseUrl,
-                    UseShellExecute = true
-                });
+                    await LaunchInstallerUpdateAsync(installerPath, result);
+                }
+                else
+                {
+                    OpenReleasePage(result.ReleaseUrl);
+                }
             }
         }
         catch (Exception ex)
         {
             AddLog($"Version: no pude consultar actualizaciones ({ex.Message}).");
         }
+    }
+
+    private async Task LaunchInstallerUpdateAsync(string installerPath, VersionCheckResult result)
+    {
+        try
+        {
+            var installPath = AppContext.BaseDirectory.TrimEnd(System.IO.Path.DirectorySeparatorChar, System.IO.Path.AltDirectorySeparatorChar);
+            Process.Start(new ProcessStartInfo
+            {
+                FileName = installerPath,
+                Arguments = $"--update --target \"{installPath}\" --version \"V{result.LatestVersion}\"",
+                WorkingDirectory = System.IO.Path.GetDirectoryName(installerPath),
+                UseShellExecute = true
+            });
+            AddLog($"Version: iniciando actualizador a V{result.LatestVersion}.", ActivityLogKind.Important);
+            await ExitApplicationAsync();
+        }
+        catch (Exception ex)
+        {
+            AddLog($"Version: no pude abrir el actualizador ({ex.Message}).", ActivityLogKind.Important);
+            OpenReleasePage(result.ReleaseUrl);
+        }
+    }
+
+    private static string FindLocalInstallerPath()
+    {
+        var baseDirectory = AppContext.BaseDirectory;
+        var candidates = new[]
+        {
+            System.IO.Path.Combine(baseDirectory, "NeoTwitch.Installer.exe"),
+            System.IO.Path.Combine(baseDirectory, "Installer", "NeoTwitch.Installer.exe"),
+            System.IO.Path.Combine(
+                Environment.GetFolderPath(Environment.SpecialFolder.LocalApplicationData),
+                "NeoTwitch",
+                "Updater",
+                "NeoTwitch.Installer.exe"),
+        };
+
+        return candidates.FirstOrDefault(File.Exists) ?? string.Empty;
+    }
+
+    private static void OpenReleasePage(string releaseUrl)
+    {
+        Process.Start(new ProcessStartInfo
+        {
+            FileName = releaseUrl,
+            UseShellExecute = true
+        });
     }
 
     private async Task SignInToTwitchAsync()

@@ -7,9 +7,13 @@ using System.Runtime.InteropServices;
 using System.Text;
 using System.Windows;
 using System.Windows.Controls;
+using System.Windows.Controls.Primitives;
+using System.Windows.Data;
 using System.Windows.Interop;
+using System.Windows.Input;
 using System.Windows.Media;
 using System.Windows.Media.Imaging;
+using System.Windows.Shapes;
 using System.Windows.Threading;
 using NeoTwitch.Models;
 using NeoTwitch.Services;
@@ -27,9 +31,11 @@ public partial class MainWindow : Window
     private const int DwmWindowAttributeBorderColor = 34;
     private const int DwmWindowAttributeCaptionColor = 35;
     private const int DwmWindowAttributeTextColor = 36;
-    private const int AppCaptionColor = 0x00F65286;
+    private const int AppCaptionColor = 0x0017110B;
     private const int AppCaptionTextColor = 0x00FFFFFF;
     private const int LightStopSettleMs = 120;
+    private const string WindowsRunKeyPath = @"Software\Microsoft\Windows\CurrentVersion\Run";
+    private const string WindowsStartupValueName = "Neo Twitch";
 
     private readonly SettingsStore _settingsStore = new();
     private readonly AudioPlayerService _audioPlayer = new();
@@ -40,11 +46,29 @@ public partial class MainWindow : Window
     private readonly VersionCheckService _versionCheckService = new();
     private readonly TwitchEventSubClient _eventSubClient;
     private readonly ObservableCollection<ActivityLogEntry> _activity = [];
+    private readonly ObservableCollection<ActivityLogEntry> _dashboardActivity = [];
+    private readonly ObservableCollection<RuleLedPreviewDot> _ruleLedPreviewDots = [];
+    private readonly ObservableCollection<RuleLedPreviewDot> _backgroundLedPreviewDots = [];
+    private readonly CollectionViewSource _activityViewSource = new();
+    private readonly CollectionViewSource _rulesViewSource = new();
+    private readonly DispatcherTimer _ruleLedPreviewTimer = new();
+    private readonly DispatcherTimer _backgroundLedPreviewTimer = new();
+    private readonly Random _previewRandom = new();
     private readonly SemaphoreSlim _effectGate = new(1, 1);
     private readonly object _alertQueueSync = new();
     private readonly List<QueuedAlertSlot> _pendingAlertSlots = [];
     private readonly Dictionary<string, DateTimeOffset> _lastRuleStartTimes = new(StringComparer.OrdinalIgnoreCase);
     private IReadOnlyList<SerialPortInfo> _availablePorts = [];
+    private readonly HashSet<string> _activityEnabledFilters = new(StringComparer.OrdinalIgnoreCase)
+    {
+        "TWITCH",
+        "ARDUINO",
+        "ALEXA",
+        "AUDIO",
+        "EVENTO",
+        "SISTEMA",
+        "IMPORTANTE"
+    };
     private readonly UiOption<TwitchEventKind>[] _eventOptions =
     [
         new("Nuevo seguidor", TwitchEventKind.Follow),
@@ -55,6 +79,16 @@ public partial class MainWindow : Window
         new("Canje de puntos", TwitchEventKind.ChannelPointRedemption),
         new("Prueba manual", TwitchEventKind.Test)
     ];
+    private readonly UiOption<string>[] _ruleCategoryOptions =
+    [
+        new("Todas las categorias", ""),
+        new("Seguidores", nameof(TwitchEventKind.Follow)),
+        new("Suscripciones", nameof(TwitchEventKind.Subscription)),
+        new("Raids", nameof(TwitchEventKind.Raid)),
+        new("Bits", nameof(TwitchEventKind.Cheer)),
+        new("Comandos de chat", nameof(TwitchEventKind.ChatCommand)),
+        new("Canjes de puntos", nameof(TwitchEventKind.ChannelPointRedemption))
+    ];
     private readonly UiOption<LightPattern>[] _patternOptions =
     [
         new("Color fijo", LightPattern.Solid),
@@ -64,6 +98,12 @@ public partial class MainWindow : Window
         new("Teatro", LightPattern.Theater),
         new("Destellos", LightPattern.Sparkle),
         new("Rave", LightPattern.Rave)
+    ];
+    private readonly UiOption<string>[] _themeModeOptions =
+    [
+        new("Seguir Windows", "System"),
+        new("Claro", "Light"),
+        new("Oscuro", "Dark")
     ];
 
     private AppConfig _config = AppConfig.CreateDefault();
@@ -76,7 +116,16 @@ public partial class MainWindow : Window
     private bool _showClientSecret;
     private bool _showAlexaRelayUrl;
     private bool _showAlexaAuthToken;
-    private BackgroundOutputMode _backgroundOutputMode = BackgroundOutputMode.Arduino;
+    private bool _alexaRelayConnected;
+    private bool _isTwitchConnecting;
+    private bool _isArduinoConnecting;
+    private bool _isAlexaConnecting;
+    private bool? _lastAppliedStartWithWindows;
+    private string _twitchConnectionError = "";
+    private string _activitySearchText = "";
+    private string _ruleSearchText = "";
+    private string _ruleStatusFilter = "ALL";
+    private string _ruleCategoryFilter = "";
     private CancellationTokenSource? _backgroundApplyDebounce;
     private CancellationTokenSource? _twitchSubscriptionRefreshDebounce;
     private CancellationTokenSource? _currentEffectCts;
@@ -85,6 +134,13 @@ public partial class MainWindow : Window
     private string _lastStartedRuleId = "";
     private DateTimeOffset _lastAlertStartAt = DateTimeOffset.MinValue;
     private bool _hasShownTrayNotice;
+    private int _dashboardFollowersToday;
+    private int _dashboardSubscriptionsToday;
+    private int _dashboardBitsToday;
+    private int _dashboardChatMessagesToday;
+    private int _dashboardEventsToday;
+    private int _ruleLedPreviewStep;
+    private int _backgroundLedPreviewStep;
     private AudioPlayback? _currentPlayback;
     private TwitchStreamStatus? _streamStatus;
     private DrawingIcon? _trayIcon;
@@ -93,6 +149,8 @@ public partial class MainWindow : Window
     public MainWindow()
     {
         _config = _settingsStore.Load();
+        _config.ThemeMode = NormalizeThemeMode(_config.ThemeMode);
+        _config.DarkMode = ResolveDarkMode(_config.ThemeMode);
 
         try
         {
@@ -110,21 +168,47 @@ public partial class MainWindow : Window
         _loadingUi = true;
         try
         {
-            ActivityList.ItemsSource = _activity;
-            MiniActivityList.ItemsSource = _activity;
+            _activityViewSource.Source = _activity;
+            _activityViewSource.Filter += ActivityViewSource_Filter;
+            ActivityList.ItemsSource = _activityViewSource.View;
+            DashboardActivityList.ItemsSource = _dashboardActivity;
+            for (var i = 0; i < 24; i++)
+            {
+                _ruleLedPreviewDots.Add(PreviewDot(ParsePreviewColor("#334155", "#334155"), 0.08));
+                _backgroundLedPreviewDots.Add(PreviewDot(ParsePreviewColor("#334155", "#334155"), 0.08));
+            }
+
+            RuleLedPreviewList.ItemsSource = _ruleLedPreviewDots;
+            _ruleLedPreviewTimer.Interval = TimeSpan.FromMilliseconds(120);
+            _ruleLedPreviewTimer.Tick += (_, _) => UpdateRuleLedPreviewFrame();
+            BackgroundLedPreviewList.ItemsSource = _backgroundLedPreviewDots;
+            _backgroundLedPreviewTimer.Interval = TimeSpan.FromMilliseconds(120);
+            _backgroundLedPreviewTimer.Tick += (_, _) => UpdateBackgroundLedPreviewFrame();
+            _rulesViewSource.Source = _config.Rules;
+            _rulesViewSource.Filter += RulesViewSource_Filter;
+            RulesList.ItemsSource = _rulesViewSource.View;
             EventKindBox.ItemsSource = _eventOptions;
             EventKindBox.DisplayMemberPath = nameof(UiOption<TwitchEventKind>.Label);
             EventKindBox.SelectedValuePath = nameof(UiOption<TwitchEventKind>.Value);
+            RuleCategoryFilterBox.ItemsSource = _ruleCategoryOptions;
+            RuleCategoryFilterBox.DisplayMemberPath = nameof(UiOption<string>.Label);
+            RuleCategoryFilterBox.SelectedValuePath = nameof(UiOption<string>.Value);
+            RuleCategoryFilterBox.SelectedValue = "";
             PatternBox.ItemsSource = _patternOptions;
             PatternBox.DisplayMemberPath = nameof(UiOption<LightPattern>.Label);
             PatternBox.SelectedValuePath = nameof(UiOption<LightPattern>.Value);
             BackgroundPatternBox.ItemsSource = _patternOptions;
             BackgroundPatternBox.DisplayMemberPath = nameof(UiOption<LightPattern>.Label);
             BackgroundPatternBox.SelectedValuePath = nameof(UiOption<LightPattern>.Value);
+            ThemeModeBox.ItemsSource = _themeModeOptions;
+            ThemeModeBox.DisplayMemberPath = nameof(UiOption<string>.Label);
+            ThemeModeBox.SelectedValuePath = nameof(UiOption<string>.Value);
             StripsList.ItemsSource = _config.LedStrips;
             PortComboBox.DisplayMemberPath = nameof(SerialPortInfo.DisplayName);
             PortComboBox.SelectedValuePath = nameof(SerialPortInfo.PortName);
             VersionText.Text = $"V{VersionCheckService.CurrentVersionText}";
+            ConfigureNavigationIcons();
+            ConfigureActionIcons();
             RefreshPortList(choosePreferred: false);
         }
         finally
@@ -136,9 +220,236 @@ public partial class MainWindow : Window
         LoadConfigIntoUi();
     }
 
+    private void ConfigureNavigationIcons()
+    {
+        NavSettingsButton.Content = CreateNavigationItem("Assets/Icons/nav_panel.png", "Panel");
+        NavConnectionsButton.Content = CreateNavigationItem("Assets/Icons/nav_connections.png", "Conexiones");
+        NavRulesButton.Content = CreateNavigationItem("Assets/Icons/nav_rules.png", "Alertas");
+        NavStripsButton.Content = CreateNavigationItem("Assets/Icons/nav_lights.png", "Luces");
+        NavAlexaButton.Content = CreateNavigationItem("Assets/Icons/nav_alexa.png", "Alexa");
+        NavAudioButton.Content = CreateNavigationItem("Assets/Icons/nav_audio.png", "Audio");
+        NavPreferencesButton.Content = CreateNavigationItem("Assets/Icons/nav_settings.png", "Configuracion");
+        NavActivityButton.Content = CreateNavigationItem("Assets/Icons/nav_activity.png", "Actividad");
+    }
+
+    private static System.Windows.Shapes.Path CreateNavigationIcon(string data)
+    {
+        return CreateIconPath(data, 24, 2);
+    }
+
+    private static StackPanel CreateNavigationItem(string iconPath, string label)
+    {
+        var panel = new StackPanel
+        {
+            Orientation = System.Windows.Controls.Orientation.Horizontal,
+            VerticalAlignment = VerticalAlignment.Center
+        };
+        panel.Children.Add(CreateTintedImageIcon(iconPath, 18));
+        var text = new TextBlock
+        {
+            Text = label,
+            Margin = new Thickness(10, 0, 0, 0),
+            VerticalAlignment = VerticalAlignment.Center,
+            FontWeight = FontWeights.SemiBold
+        };
+        text.SetBinding(
+            TextBlock.ForegroundProperty,
+            new System.Windows.Data.Binding("Foreground")
+            {
+                RelativeSource = new RelativeSource(RelativeSourceMode.FindAncestor, typeof(System.Windows.Controls.Button), 1)
+            });
+        panel.Children.Add(text);
+        return panel;
+    }
+
+    private static Border CreateTintedImageIcon(string iconPath, double size)
+    {
+        var icon = new Border
+        {
+            Width = size,
+            Height = size,
+            Background = System.Windows.Media.Brushes.White,
+            OpacityMask = new ImageBrush
+            {
+                ImageSource = LoadPackImage(iconPath),
+                Stretch = Stretch.Uniform
+            }
+        };
+
+        icon.SetBinding(
+            Border.BackgroundProperty,
+            new System.Windows.Data.Binding("Foreground")
+            {
+                RelativeSource = new RelativeSource(RelativeSourceMode.FindAncestor, typeof(System.Windows.Controls.Button), 1)
+            });
+
+        return icon;
+    }
+
+    private void ConfigureActionIcons()
+    {
+        var labels = new Dictionary<string, string>(StringComparer.OrdinalIgnoreCase)
+        {
+            ["Abrir Twitch Console"] = "ExternalLink",
+            ["Detectar"] = "Search",
+            ["Conectar"] = "Plug",
+            ["Probar Alexa"] = "Play",
+            ["Abrir Alexa Console"] = "ExternalLink",
+            ["Guardar configuracion"] = "Save",
+            ["Ir a actividad"] = "Activity",
+            ["Nueva"] = "Plus",
+            ["Nueva alerta"] = "Plus",
+            ["Duplicar"] = "Copy",
+            ["Eliminar"] = "Trash",
+            ["Probar regla"] = "Play",
+            ["Probar alerta"] = "Play",
+            ["Parar prueba"] = "Square",
+            ["Guardar cambios"] = "Save",
+            ["Eliminar alerta"] = "Trash",
+            ["Buscar"] = "Search",
+            ["Arduino Tira led ws2812b"] = "Arduino",
+            ["Alexa"] = "Alexa",
+            ["Aplicar fondo LED"] = "Sun",
+            ["Apagar tiras"] = "Power",
+            ["Borrar salida"] = "Trash",
+            ["Agregar salida de pin digital"] = "Plus",
+            ["Descargar ultimo sketch"] = "Download",
+            ["Ver guia"] = "Book",
+            ["Aplicar fondo Alexa"] = "Alexa",
+            ["Apagar fondo Alexa"] = "Power",
+            ["Exportar configuracion"] = "Upload",
+            ["Importar configuracion"] = "Download",
+            ["Crear backup ahora"] = "Save",
+            ["Restaurar backup"] = "Download",
+            ["Ejecutar diagnostico"] = "MonitorCheck",
+            ["Limpiar actividad"] = "Trash",
+            ["Limpiar filtros"] = "Search",
+            ["Limpiar"] = "Trash"
+        };
+
+        foreach (var button in FindVisualChildren<System.Windows.Controls.Button>(this))
+        {
+            if (IsColorButton(button) || button.Content is not string label)
+            {
+                continue;
+            }
+
+            if (labels.TryGetValue(label.Trim(), out var iconKey))
+            {
+                SetButtonIcon(button, label.Trim(), iconKey);
+            }
+        }
+    }
+
+    private static void SetButtonIcon(System.Windows.Controls.Button button, string label, string iconKey)
+    {
+        var panel = new StackPanel
+        {
+            Orientation = System.Windows.Controls.Orientation.Horizontal,
+            HorizontalAlignment = System.Windows.HorizontalAlignment.Center,
+            VerticalAlignment = VerticalAlignment.Center
+        };
+
+        panel.Children.Add(CreateIconPath(IconData(iconKey), 15, 1.9));
+        var text = new TextBlock
+        {
+            Text = label,
+            Margin = new Thickness(7, 0, 0, 0),
+            VerticalAlignment = VerticalAlignment.Center
+        };
+        text.SetBinding(
+            TextBlock.ForegroundProperty,
+            new System.Windows.Data.Binding("Foreground")
+            {
+                RelativeSource = new RelativeSource(RelativeSourceMode.FindAncestor, typeof(System.Windows.Controls.Button), 1)
+            });
+        panel.Children.Add(text);
+
+        button.Content = panel;
+    }
+
+    private static System.Windows.Shapes.Path CreateIconPath(string data, double size, double strokeThickness)
+    {
+        var path = new System.Windows.Shapes.Path
+        {
+            Data = Geometry.Parse(data),
+            Width = size,
+            Height = size,
+            Stretch = Stretch.Uniform,
+            StrokeThickness = strokeThickness,
+            StrokeStartLineCap = PenLineCap.Round,
+            StrokeEndLineCap = PenLineCap.Round,
+            StrokeLineJoin = PenLineJoin.Round
+        };
+
+        path.SetBinding(
+            Shape.StrokeProperty,
+            new System.Windows.Data.Binding("Foreground")
+            {
+                RelativeSource = new RelativeSource(RelativeSourceMode.FindAncestor, typeof(System.Windows.Controls.Button), 1)
+            });
+
+        return path;
+    }
+
+    private static IEnumerable<T> FindVisualChildren<T>(DependencyObject parent)
+        where T : DependencyObject
+    {
+        for (var index = 0; index < VisualTreeHelper.GetChildrenCount(parent); index++)
+        {
+            var child = VisualTreeHelper.GetChild(parent, index);
+            if (child is T typedChild)
+            {
+                yield return typedChild;
+            }
+
+            foreach (var descendant in FindVisualChildren<T>(child))
+            {
+                yield return descendant;
+            }
+        }
+    }
+
+    private static string IconData(string key)
+    {
+        return key switch
+        {
+            "Activity" => "M3,12 L7,12 L10,5 L14,19 L17,12 L21,12",
+            "Alexa" => "M12,4 A8,8 0 1 1 12,20 A8,8 0 1 1 12,4 M12,8 A4,4 0 1 1 12,16 A4,4 0 1 1 12,8",
+            "Arduino" => "M7,8 C4,8 2,10 2,12 C2,14 4,16 7,16 C9,16 10,14 12,12 C14,10 15,8 17,8 C20,8 22,10 22,12 C22,14 20,16 17,16 C15,16 14,14 12,12 C10,10 9,8 7,8 M5,12 L9,12 M17,10 L17,14 M15,12 L19,12",
+            "Bits" => "M12,2 L20,9 L12,22 L4,9 Z M12,2 L12,22 M4,9 L20,9",
+            "Book" => "M4,5 C6,4 8,4 10,5 L10,20 C8,19 6,19 4,20 Z M20,5 C18,4 16,4 14,5 L14,20 C16,19 18,19 20,20 Z M10,5 L14,5 M10,20 L14,20",
+            "Chat" => "M4,5 L20,5 L20,16 L9,16 L5,20 L5,16 L4,16 Z M8,10 L16,10 M8,13 L13,13",
+            "Copy" => "M8,8 L19,8 L19,19 L8,19 Z M5,15 L4,15 L4,4 L15,4 L15,5",
+            "Download" => "M12,3 L12,15 M7,10 L12,15 L17,10 M5,20 L19,20",
+            "Event" => "M12,3 L14.5,9 L21,9 L15.5,13 L17.5,21 L12,16.5 L6.5,21 L8.5,13 L3,9 L9.5,9 Z",
+            "ExternalLink" => "M14,4 L20,4 L20,10 M20,4 L11,13 M19,14 L19,20 L5,20 L5,6 L11,6",
+            "Home" => "M3,11 L12,3 L21,11 M5,10 L5,21 L10,21 L10,15 L14,15 L14,21 L19,21 L19,10",
+            "MonitorCheck" => "M4,5 L20,5 L20,16 L4,16 Z M9,21 L15,21 M12,16 L12,21 M8,10 L11,13 L16,8",
+            "Play" => "M8,5 L19,12 L8,19 Z",
+            "Plug" => "M8,3 L8,9 M16,3 L16,9 M6,9 L18,9 L18,13 C18,16 16,18 13,18 L13,22 M10,22 L10,18 C7,18 5,16 5,13 L5,9",
+            "Plus" => "M12,5 L12,19 M5,12 L19,12",
+            "Power" => "M12,3 L12,11 M7,6 C5,8 4,10 4,13 C4,17 8,21 12,21 C16,21 20,17 20,13 C20,10 19,8 17,6",
+            "Save" => "M5,4 L17,4 L20,7 L20,20 L4,20 L4,4 Z M8,4 L8,10 L16,10 L16,4 M8,20 L8,14 L16,14 L16,20",
+            "Search" => "M10.5,5 A5.5,5.5 0 1 1 10.5,16 A5.5,5.5 0 1 1 10.5,5 M15,15 L21,21",
+            "Settings" => "M12,8 A4,4 0 1 1 12,16 A4,4 0 1 1 12,8 M12,2 L14,2 L15,5 L18,4 L20,6 L19,9 L22,11 L22,13 L19,15 L20,18 L18,20 L15,19 L14,22 L10,22 L9,19 L6,20 L4,18 L5,15 L2,13 L2,11 L5,9 L4,6 L6,4 L9,5 L10,2 Z",
+            "Square" => "M7,7 L17,7 L17,17 L7,17 Z",
+            "Star" => "M12,3 L14.6,8.6 L20.8,9.3 L16.2,13.5 L17.5,19.8 L12,16.6 L6.5,19.8 L7.8,13.5 L3.2,9.3 L9.4,8.6 Z",
+            "Sun" => "M12,7 A5,5 0 1 1 12,17 A5,5 0 1 1 12,7 M12,1 L12,4 M12,20 L12,23 M4.2,4.2 L6.3,6.3 M17.7,17.7 L19.8,19.8 M1,12 L4,12 M20,12 L23,12 M4.2,19.8 L6.3,17.7 M17.7,6.3 L19.8,4.2",
+            "Trash" => "M4,7 L20,7 M9,7 L9,5 L15,5 L15,7 M7,7 L8,21 L16,21 L17,7 M10,11 L10,18 M14,11 L14,18",
+            "Twitch" => "M4,5 L20,5 L20,16 L13,16 L9,20 L9,16 L4,16 Z M8,9 L8,13 M13,9 L13,13",
+            "Upload" => "M12,15 L12,3 M7,8 L12,3 L17,8 M5,20 L19,20",
+            "Users" => "M8,11 A4,4 0 1 1 8,3 A4,4 0 1 1 8,11 M2,21 C2,16 5,14 8,14 C11,14 14,16 14,21 M17,10 A3,3 0 1 1 17,4 A3,3 0 1 1 17,10 M15,14 C18,14 21,16 21,20",
+            "Warning" => "M12,3 L22,20 L2,20 Z M12,8 L12,13 M12,17 L12.1,17",
+            "Zap" => "M13,2 L4,14 L11,14 L9,22 L20,10 L13,10 Z",
+            _ => "M12,5 L12,19 M5,12 L19,12"
+        };
+    }
+
     private async void Window_Loaded(object sender, RoutedEventArgs e)
     {
         ApplyWindowChromeColor();
+        ConfigureActionIcons();
         AddLog("Aplicacion lista.");
         AddLog($"Configuracion: {_settingsStore.SettingsPath}");
         AddLog($"Log de errores: {CrashReporter.PreferredLogPath}");
@@ -147,14 +458,16 @@ public partial class MainWindow : Window
             AddLog($"No pude leer la configuracion anterior: {_settingsStore.LastLoadError}");
         }
 
+        ApplyStartWithWindowsRegistration();
         _ = CheckForUpdatesAsync();
+
 
         if (_config.StartHidden)
         {
             Hide();
         }
 
-        if (_config.AutoConnectArduino && !string.IsNullOrWhiteSpace(_config.SerialPort))
+        if (_config.ArduinoEnabled && _config.AutoConnectArduino && !string.IsNullOrWhiteSpace(_config.SerialPort))
         {
             try
             {
@@ -193,6 +506,7 @@ public partial class MainWindow : Window
                 await _eventSubClient.StopAsync();
                 _eventSubscriptionSignature = "";
                 _streamStatus = null;
+                _twitchConnectionError = "";
                 AddLog("Twitch desconectado.");
                 UpdateStatusText();
                 return;
@@ -207,6 +521,8 @@ public partial class MainWindow : Window
         }
         catch (Exception ex)
         {
+            _twitchConnectionError = ex.Message;
+            UpdateStatusText();
             AddLog($"Twitch: {ex.Message}");
             WpfMessageBox.Show(this, ex.Message, "Twitch", MessageBoxButton.OK, MessageBoxImage.Warning);
         }
@@ -222,6 +538,31 @@ public partial class MainWindow : Window
         AddLog("Twitch Console abierta para revisar el Client ID.", ActivityLogKind.Twitch);
     }
 
+    private void OpenTwitchProfileButton_Click(object sender, RoutedEventArgs e)
+    {
+        var channel = FirstNonEmpty(_config.Channel.Login, _config.Channel.DisplayName)
+            .Trim()
+            .TrimStart('@');
+
+        if (string.IsNullOrWhiteSpace(channel))
+        {
+            WpfMessageBox.Show(
+                this,
+                "Conecta Twitch primero para abrir el perfil del canal.",
+                "Twitch",
+                MessageBoxButton.OK,
+                MessageBoxImage.Information);
+            return;
+        }
+
+        Process.Start(new ProcessStartInfo
+        {
+            FileName = $"https://www.twitch.tv/{Uri.EscapeDataString(channel)}",
+            UseShellExecute = true
+        });
+        AddLog($"Twitch: abriendo perfil de {channel}.", ActivityLogKind.Twitch);
+    }
+
     private void OpenAlexaConsoleButton_Click(object sender, RoutedEventArgs e)
     {
         Process.Start(new ProcessStartInfo
@@ -230,6 +571,26 @@ public partial class MainWindow : Window
             UseShellExecute = true
         });
         AddLog("Alexa Developer Console abierta.", ActivityLogKind.Alexa);
+    }
+
+    private void OpenArduinoSketchButton_Click(object sender, RoutedEventArgs e)
+    {
+        Process.Start(new ProcessStartInfo
+        {
+            FileName = "https://github.com/Dafovi/NeoTwtich/blob/main/NeoTwitch/Arduino/NeoTwitchNeoPixel/NeoTwitchNeoPixel.ino",
+            UseShellExecute = true
+        });
+        AddLog("Arduino: abriendo sketch NeoPixel.", ActivityLogKind.Arduino);
+    }
+
+    private void OpenArduinoGuideButton_Click(object sender, RoutedEventArgs e)
+    {
+        Process.Start(new ProcessStartInfo
+        {
+            FileName = "https://github.com/Dafovi/NeoTwtich#conexion-arduino-y-neopixel",
+            UseShellExecute = true
+        });
+        AddLog("Arduino: abriendo guia de conexion.", ActivityLogKind.Arduino);
     }
 
     private async Task CheckForUpdatesAsync()
@@ -246,26 +607,82 @@ public partial class MainWindow : Window
             }
 
             AddLog($"Version: hay una nueva version V{result.LatestVersion}.", ActivityLogKind.Important);
+            var installerPath = FindLocalInstallerPath();
+            var canUpdateInPlace = !string.IsNullOrWhiteSpace(installerPath);
+            var prompt = canUpdateInPlace
+                ? $"Hay una nueva version de Neo Twitch.\n\nTu version: V{result.CurrentVersion}\nUltima version: V{result.LatestVersion}\n\nQuieres actualizar ahora? La app se cerrara un momento y el instalador hara el reemplazo."
+                : $"Hay una nueva version de Neo Twitch.\n\nTu version: V{result.CurrentVersion}\nUltima version: V{result.LatestVersion}\n\nNo encontre el instalador local. Quieres abrir la pagina de releases para descargarla?";
             var answer = WpfMessageBox.Show(
                 this,
-                $"Hay una nueva version de Neo Twitch.\n\nTu version: V{result.CurrentVersion}\nUltima version: V{result.LatestVersion}\n\nQuieres abrir la pagina de releases para descargarla?",
+                prompt,
                 "Actualizacion disponible",
                 MessageBoxButton.YesNo,
                 MessageBoxImage.Information);
 
             if (answer == MessageBoxResult.Yes)
             {
-                Process.Start(new ProcessStartInfo
+                if (canUpdateInPlace)
                 {
-                    FileName = result.ReleaseUrl,
-                    UseShellExecute = true
-                });
+                    await LaunchInstallerUpdateAsync(installerPath, result);
+                }
+                else
+                {
+                    OpenReleasePage(result.ReleaseUrl);
+                }
             }
         }
         catch (Exception ex)
         {
             AddLog($"Version: no pude consultar actualizaciones ({ex.Message}).");
         }
+    }
+
+    private async Task LaunchInstallerUpdateAsync(string installerPath, VersionCheckResult result)
+    {
+        try
+        {
+            var installPath = AppContext.BaseDirectory.TrimEnd(System.IO.Path.DirectorySeparatorChar, System.IO.Path.AltDirectorySeparatorChar);
+            Process.Start(new ProcessStartInfo
+            {
+                FileName = installerPath,
+                Arguments = $"--update --target \"{installPath}\" --version \"V{result.LatestVersion}\"",
+                WorkingDirectory = System.IO.Path.GetDirectoryName(installerPath),
+                UseShellExecute = true
+            });
+            AddLog($"Version: iniciando actualizador a V{result.LatestVersion}.", ActivityLogKind.Important);
+            await ExitApplicationAsync();
+        }
+        catch (Exception ex)
+        {
+            AddLog($"Version: no pude abrir el actualizador ({ex.Message}).", ActivityLogKind.Important);
+            OpenReleasePage(result.ReleaseUrl);
+        }
+    }
+
+    private static string FindLocalInstallerPath()
+    {
+        var baseDirectory = AppContext.BaseDirectory;
+        var candidates = new[]
+        {
+            System.IO.Path.Combine(baseDirectory, "NeoTwitch.Installer.exe"),
+            System.IO.Path.Combine(baseDirectory, "Installer", "NeoTwitch.Installer.exe"),
+            System.IO.Path.Combine(
+                Environment.GetFolderPath(Environment.SpecialFolder.LocalApplicationData),
+                "NeoTwitch",
+                "Updater",
+                "NeoTwitch.Installer.exe"),
+        };
+
+        return candidates.FirstOrDefault(File.Exists) ?? string.Empty;
+    }
+
+    private static void OpenReleasePage(string releaseUrl)
+    {
+        Process.Start(new ProcessStartInfo
+        {
+            FileName = releaseUrl,
+            UseShellExecute = true
+        });
     }
 
     private async Task SignInToTwitchAsync()
@@ -304,36 +721,52 @@ public partial class MainWindow : Window
 
     private async Task StartTwitchAsync(bool allowInteractiveReauth = false)
     {
-        var missingScopes = TwitchAuthService.GetMissingScopes(_config.Token);
-        if (missingScopes.Count > 0)
-        {
-            throw new InvalidOperationException($"Twitch necesita autorizar permisos nuevos: {string.Join(", ", missingScopes)}. Presiona Conectar Twitch para iniciar sesion otra vez.");
-        }
+        _isTwitchConnecting = true;
+        _twitchConnectionError = "";
+        UpdateStatusText();
 
         try
         {
-            await _authService.EnsureValidTokenAsync(_config, AddLog, CancellationToken.None);
-        }
-        catch (Exception ex) when (allowInteractiveReauth && IsRecoverableTwitchRefreshError(ex))
-        {
-            AddLog("Twitch necesita autorizar de nuevo porque el token guardado no se pudo refrescar.", ActivityLogKind.Twitch);
-            _config.Token = new TwitchTokenInfo();
-            _config.Channel = new TwitchChannelInfo();
-            SaveConfig();
-            await SignInToTwitchAsync();
-        }
+            var missingScopes = TwitchAuthService.GetMissingScopes(_config.Token);
+            if (missingScopes.Count > 0)
+            {
+                throw new InvalidOperationException($"Twitch necesita autorizar permisos nuevos: {string.Join(", ", missingScopes)}. Presiona Conectar Twitch para iniciar sesion otra vez.");
+            }
 
-        if (!_config.Channel.IsReady)
-        {
-            _config.Channel = await _authService.GetCurrentUserAsync(_config, CancellationToken.None);
-            SaveConfig();
-        }
+            try
+            {
+                await _authService.EnsureValidTokenAsync(_config, AddLog, CancellationToken.None);
+            }
+            catch (Exception ex) when (allowInteractiveReauth && IsRecoverableTwitchRefreshError(ex))
+            {
+                AddLog("Twitch necesita autorizar de nuevo porque el token guardado no se pudo refrescar.", ActivityLogKind.Twitch);
+                _config.Token = new TwitchTokenInfo();
+                _config.Channel = new TwitchChannelInfo();
+                SaveConfig();
+                await SignInToTwitchAsync();
+            }
 
-        await _eventSubClient.StartAsync();
-        _eventSubscriptionSignature = BuildEventSubscriptionSignature();
-        await RefreshTwitchStreamStatusAsync();
-        AddLog("Twitch escuchando eventos.");
-        UpdateStatusText();
+            if (!_config.Channel.IsReady)
+            {
+                _config.Channel = await _authService.GetCurrentUserAsync(_config, CancellationToken.None);
+                SaveConfig();
+            }
+
+            await _eventSubClient.StartAsync();
+            _eventSubscriptionSignature = BuildEventSubscriptionSignature();
+            await RefreshTwitchStreamStatusAsync();
+            AddLog("Twitch escuchando eventos.");
+        }
+        catch (Exception ex)
+        {
+            _twitchConnectionError = ex.Message;
+            throw;
+        }
+        finally
+        {
+            _isTwitchConnecting = false;
+            UpdateStatusText();
+        }
     }
 
     private string BuildEventSubscriptionSignature()
@@ -383,6 +816,11 @@ public partial class MainWindow : Window
             {
                 CrashReporter.Log(ex, "No se pudieron refrescar las suscripciones de Twitch.");
                 AddLog($"Twitch: {ex.Message}", ActivityLogKind.Important);
+                _ = Dispatcher.InvokeAsync(() =>
+                {
+                    _twitchConnectionError = ex.Message;
+                    UpdateStatusText();
+                });
             }
         });
     }
@@ -399,6 +837,7 @@ public partial class MainWindow : Window
         await _eventSubClient.StopAsync();
         await _eventSubClient.StartAsync();
         _eventSubscriptionSignature = signature;
+        _twitchConnectionError = "";
         AddLog("Twitch: suscripciones actualizadas.", ActivityLogKind.Twitch);
         UpdateStatusText();
     }
@@ -425,11 +864,13 @@ public partial class MainWindow : Window
         {
             await _authService.EnsureValidTokenAsync(_config, AddLog, CancellationToken.None);
             _streamStatus = await _authService.GetStreamStatusAsync(_config, CancellationToken.None);
+            _twitchConnectionError = "";
             SaveConfig();
         }
         catch (Exception ex)
         {
             _streamStatus = null;
+            _twitchConnectionError = ex.Message;
             AddLog($"Twitch estado: {ex.Message}");
         }
 
@@ -453,14 +894,31 @@ public partial class MainWindow : Window
 
     private async Task ConnectArduinoAsync()
     {
+        if (!_config.ArduinoEnabled)
+        {
+            AddLog("Arduino esta desactivado en Conexiones.");
+            UpdateStatusText();
+            return;
+        }
+
         if (string.IsNullOrWhiteSpace(_config.SerialPort))
         {
             AddLog("No hay puerto COM configurado.");
             return;
         }
 
-        await _lightController.ConfigureAsync(_config.SerialPort, _config.BaudRate, AddLog, CancellationToken.None);
+        _isArduinoConnecting = true;
         UpdateStatusText();
+
+        try
+        {
+            await _lightController.ConfigureAsync(_config.SerialPort, _config.BaudRate, AddLog, CancellationToken.None);
+        }
+        finally
+        {
+            _isArduinoConnecting = false;
+            UpdateStatusText();
+        }
     }
 
     private async Task ApplyBackgroundAsync()
@@ -470,7 +928,7 @@ public partial class MainWindow : Window
             return;
         }
 
-        if (_config.BackgroundEnabled)
+        if (_config.ArduinoEnabled && _config.BackgroundEnabled)
         {
             await ApplyArduinoBackgroundAsync();
         }
@@ -483,7 +941,7 @@ public partial class MainWindow : Window
 
     private async Task ApplyArduinoBackgroundAsync()
     {
-        if (!_config.BackgroundEnabled)
+        if (!_config.ArduinoEnabled || !_config.BackgroundEnabled)
         {
             return;
         }
@@ -516,6 +974,7 @@ public partial class MainWindow : Window
 
             var command = LightCommand.FromBackground(_config);
             await _lightController.SendAsync(command, AddLog, CancellationToken.None);
+            UpdateStatusText();
             AddLog($"Fondo aplicado: {DisplayNames.For(command.Pattern)}.");
         }
     }
@@ -546,15 +1005,15 @@ public partial class MainWindow : Window
 
     private async Task RestoreArduinoBackgroundStateWithRetriesAsync(bool retryArduino)
     {
-        var attempts = _config.BackgroundEnabled && retryArduino ? 2 : 1;
+        var attempts = _config.ArduinoEnabled && _config.BackgroundEnabled && retryArduino ? 2 : 1;
 
         for (var attempt = 1; attempt <= attempts; attempt++)
         {
-            if (_config.BackgroundEnabled)
+            if (_config.ArduinoEnabled && _config.BackgroundEnabled)
             {
                 await ApplyArduinoBackgroundAsync();
             }
-            else
+            else if (_config.ArduinoEnabled)
             {
                 await StopLightsAsync(LightCommand.ResolveTargets(_config, ""));
             }
@@ -577,12 +1036,18 @@ public partial class MainWindow : Window
         try
         {
             await _alexaRelayService.SendBackgroundEventAsync(_config, eventName, title, CancellationToken.None);
+            _alexaRelayConnected = true;
             AddLog($"Alexa fondo: {eventName}.", ActivityLogKind.Alexa);
         }
         catch (Exception ex)
         {
+            _alexaRelayConnected = false;
             CrashReporter.Log(ex, $"No se pudo enviar fondo Alexa '{eventName}'.");
             AddLog($"Alexa fondo: {ex.Message}", ActivityLogKind.Important);
+        }
+        finally
+        {
+            UpdateAlexaStatusText();
         }
     }
 
@@ -648,12 +1113,13 @@ public partial class MainWindow : Window
 
     private async Task StopLightsAsync(IReadOnlyList<LightStripTarget> targets)
     {
-        if (!_lightController.HasOpenPort)
+        if (!_config.ArduinoEnabled || !_lightController.HasOpenPort)
         {
             return;
         }
 
         await _lightController.StopAsync(targets, AddLog, CancellationToken.None);
+        UpdateStatusText();
     }
 
     private void DetectPortsButton_Click(object sender, RoutedEventArgs e)
@@ -726,6 +1192,31 @@ public partial class MainWindow : Window
         }
     }
 
+    private void CreateBackupButton_Click(object sender, RoutedEventArgs e)
+    {
+        try
+        {
+            SaveGlobalSettingsFromFields();
+            SaveCurrentRuleFromFields();
+            SaveCurrentStripFromFields();
+            SaveBackgroundFromFields();
+            SaveConfig();
+
+            Directory.CreateDirectory(_settingsStore.BackupDirectory);
+            var backupPath = System.IO.Path.Combine(_settingsStore.BackupDirectory, $"settings-manual-{DateTime.Now:yyyyMMdd-HHmmss}.json");
+            _settingsStore.Export(_config, backupPath);
+            BackupPathText.Text = $"Ultimo backup manual: {backupPath}";
+            AddLog($"Backup creado: {backupPath}");
+            WpfMessageBox.Show(this, "Backup creado correctamente.", "Backups", MessageBoxButton.OK, MessageBoxImage.Information);
+        }
+        catch (Exception ex)
+        {
+            CrashReporter.Log(ex, "No se pudo crear un backup manual.");
+            AddLog($"Backups: no pude crear backup ({ex.Message}).", ActivityLogKind.Important);
+            WpfMessageBox.Show(this, ex.Message, "Backups", MessageBoxButton.OK, MessageBoxImage.Warning);
+        }
+    }
+
     private async void ImportSettingsButton_Click(object sender, RoutedEventArgs e)
     {
         var dialog = new WpfOpenFileDialog
@@ -779,6 +1270,62 @@ public partial class MainWindow : Window
         }
     }
 
+    private async void RestoreBackupButton_Click(object sender, RoutedEventArgs e)
+    {
+        var dialog = new WpfOpenFileDialog
+        {
+            Title = "Restaurar backup",
+            Filter = "Backup Neo Twitch (*.json)|*.json|Todos los archivos (*.*)|*.*",
+            CheckFileExists = true,
+            InitialDirectory = Directory.Exists(_settingsStore.BackupDirectory)
+                ? _settingsStore.BackupDirectory
+                : System.IO.Path.GetDirectoryName(_settingsStore.SettingsPath)
+        };
+
+        if (dialog.ShowDialog(this) != true)
+        {
+            return;
+        }
+
+        var confirm = WpfMessageBox.Show(
+            this,
+            "Restaurar este backup reemplazara la configuracion actual. Se creara un backup automatico antes de guardar.\n\nQuieres continuar?",
+            "Restaurar backup",
+            MessageBoxButton.YesNo,
+            MessageBoxImage.Question);
+
+        if (confirm != MessageBoxResult.Yes)
+        {
+            return;
+        }
+
+        try
+        {
+            if (_eventSubClient.IsRunning)
+            {
+                await _eventSubClient.StopAsync();
+                _eventSubscriptionSignature = "";
+                _streamStatus = null;
+            }
+
+            _config = _settingsStore.Import(dialog.FileName);
+            LoadConfigIntoUi();
+            AddLog($"Backup restaurado: {dialog.FileName}", ActivityLogKind.Important);
+            WpfMessageBox.Show(
+                this,
+                "Backup restaurado correctamente. Revisa Twitch, Arduino y Alexa antes de salir en vivo.",
+                "Restaurar backup",
+                MessageBoxButton.OK,
+                MessageBoxImage.Information);
+        }
+        catch (Exception ex)
+        {
+            CrashReporter.Log(ex, "No se pudo restaurar el backup.");
+            AddLog($"Backups: no pude restaurar ({ex.Message}).", ActivityLogKind.Important);
+            WpfMessageBox.Show(this, ex.Message, "Restaurar backup", MessageBoxButton.OK, MessageBoxImage.Warning);
+        }
+    }
+
     private async void RunDiagnosticsButton_Click(object sender, RoutedEventArgs e)
     {
         try
@@ -795,6 +1342,9 @@ public partial class MainWindow : Window
                     ? "Diagnostico: sin advertencias."
                     : $"Diagnostico: {result.WarningCount} punto(s) por revisar.",
                 result.WarningCount == 0 ? ActivityLogKind.Info : ActivityLogKind.Important);
+            UpdateSettingsAppState(result.WarningCount == 0
+                ? ConnectionVisualState.Connected
+                : ConnectionVisualState.Warning);
 
             ShowDiagnosticsReport(result);
         }
@@ -802,8 +1352,23 @@ public partial class MainWindow : Window
         {
             CrashReporter.Log(ex, "No se pudo ejecutar el diagnostico.");
             AddLog($"Diagnostico: {ex.Message}", ActivityLogKind.Important);
+            UpdateSettingsAppState(ConnectionVisualState.Disconnected);
             WpfMessageBox.Show(this, ex.Message, "Diagnostico", MessageBoxButton.OK, MessageBoxImage.Warning);
         }
+    }
+
+    private void UpdateSettingsAppState(ConnectionVisualState state)
+    {
+        var (text, color, imagePath) = state switch
+        {
+            ConnectionVisualState.Connected => ("Estado: Todo en orden", "#22C55E", "Assets/Icons/appstate_ok.png"),
+            ConnectionVisualState.Warning => ("Estado: Hay puntos por revisar", "#FFB020", "Assets/Icons/appstate_warning.png"),
+            _ => ("Estado: Revisa el diagnostico", "#F43F5E", "Assets/Icons/appstate_error.png")
+        };
+
+        SettingsAppStateIcon.Source = LoadPackImage(imagePath);
+        SettingsDiagnosticStatusText.Text = text;
+        SettingsDiagnosticStatusText.Foreground = FrozenBrushFrom(color);
     }
 
     private void ShowDiagnosticsReport(DiagnosticResult result)
@@ -1015,33 +1580,40 @@ public partial class MainWindow : Window
         }
 
         Section("Arduino");
-        var ports = SerialLightController.GetAvailablePortInfos();
-        if (ports.Count == 0)
+        if (!_config.ArduinoEnabled)
         {
-            Warn("No encontre puertos COM disponibles.");
+            Info("Arduino esta desactivado en Conexiones.");
         }
         else
         {
-            Info($"Puertos detectados: {string.Join(", ", ports.Select(port => port.DisplayName))}.");
-        }
+            var ports = SerialLightController.GetAvailablePortInfos();
+            if (ports.Count == 0)
+            {
+                Warn("No encontre puertos COM disponibles.");
+            }
+            else
+            {
+                Info($"Puertos detectados: {string.Join(", ", ports.Select(port => port.DisplayName))}.");
+            }
 
-        if (string.IsNullOrWhiteSpace(_config.SerialPort))
-        {
-            Warn("No hay puerto COM configurado para Arduino.");
-        }
-        else if (ports.Any(port => string.Equals(port.PortName, _config.SerialPort, StringComparison.OrdinalIgnoreCase)))
-        {
-            Ok($"Puerto configurado disponible: {_config.SerialPort}.");
-        }
-        else
-        {
-            Warn($"El puerto configurado {_config.SerialPort} no aparece conectado ahora.");
-        }
+            if (string.IsNullOrWhiteSpace(_config.SerialPort))
+            {
+                Warn("No hay puerto COM configurado para Arduino.");
+            }
+            else if (ports.Any(port => string.Equals(port.PortName, _config.SerialPort, StringComparison.OrdinalIgnoreCase)))
+            {
+                Ok($"Puerto configurado disponible: {_config.SerialPort}.");
+            }
+            else
+            {
+                Warn($"El puerto configurado {_config.SerialPort} no aparece conectado ahora.");
+            }
 
-        Info(_lightController.HasOpenPort
-            ? $"Arduino conectado en {_lightController.CurrentPort}. {_lightController.AckStatusText}."
-            : "Arduino no esta conectado desde la app.");
-        Ok($"{_config.LedStrips.Count} salida(s) LED configurada(s), {_config.LedStrips.Sum(strip => strip.LedCount)} LEDs en total.");
+            Info(_lightController.HasOpenPort
+                ? $"Arduino conectado en {_lightController.CurrentPort}. {_lightController.AckStatusText}."
+                : "Arduino no esta conectado desde la app.");
+            Ok($"{_config.LedStrips.Count} salida(s) LED configurada(s), {_config.LedStrips.Sum(strip => strip.LedCount)} LEDs en total.");
+        }
 
         Section("Alexa");
         if (!_config.Alexa.Enabled)
@@ -1062,7 +1634,7 @@ public partial class MainWindow : Window
             Info($"Fondo Alexa encendido: {_config.BackgroundAlexaOnEventName}. Apagado: {_config.BackgroundAlexaOffEventName}.");
         }
 
-        Section("Reglas");
+        Section("Alertas");
         var activeRules = _config.Rules.Where(rule => rule.IsEnabled).ToArray();
         if (activeRules.Length == 0)
         {
@@ -1079,7 +1651,7 @@ public partial class MainWindow : Window
             .ToArray();
         if (rulesWithoutAction.Length > 0)
         {
-            Warn($"Reglas activas sin acciones: {FormatNameList(rulesWithoutAction)}.");
+            Warn($"Alertas activas sin acciones: {FormatNameList(rulesWithoutAction)}.");
         }
 
         var missingAudio = activeRules
@@ -1088,7 +1660,7 @@ public partial class MainWindow : Window
             .ToArray();
         if (missingAudio.Length > 0)
         {
-            Warn($"Reglas con audio faltante: {FormatNameList(missingAudio)}.");
+            Warn($"Alertas con audio faltante: {FormatNameList(missingAudio)}.");
         }
 
         var chatCommandsWithoutCommand = activeRules
@@ -1106,7 +1678,7 @@ public partial class MainWindow : Window
             .ToArray();
         if (rulesWithInvalidPins.Length > 0)
         {
-            Warn($"Reglas con pines LED no validos: {FormatNameList(rulesWithInvalidPins)}.");
+            Warn($"Alertas con pines LED no validos: {FormatNameList(rulesWithInvalidPins)}.");
         }
 
         var activeAlexaRules = activeRules.Count(rule => rule.SendAlexaEvent);
@@ -1152,6 +1724,8 @@ public partial class MainWindow : Window
         };
 
         _config.Rules.Add(rule);
+        ShowAllRuleFilters();
+        RefreshRulesView();
         RulesList.SelectedItem = rule;
         SaveConfig();
         ScheduleTwitchSubscriptionRefreshIfNeeded();
@@ -1215,6 +1789,8 @@ public partial class MainWindow : Window
 
         var copy = rule.Duplicate();
         _config.Rules.Add(copy);
+        ShowAllRuleFilters();
+        RefreshRulesView();
         RulesList.SelectedItem = copy;
         SaveConfig();
         ScheduleTwitchSubscriptionRefreshIfNeeded();
@@ -1227,16 +1803,26 @@ public partial class MainWindow : Window
             return;
         }
 
-        if (WpfMessageBox.Show(this, $"Eliminar la regla '{rule.Name}'?", "Reglas", MessageBoxButton.YesNo, MessageBoxImage.Question) != MessageBoxResult.Yes)
+        RemoveRule(rule);
+    }
+
+    private void RemoveRule(EventRule rule)
+    {
+        if (WpfMessageBox.Show(this, $"Eliminar la alerta '{rule.Name}'?", "Alertas", MessageBoxButton.YesNo, MessageBoxImage.Question) != MessageBoxResult.Yes)
         {
             return;
         }
 
-        var index = RulesList.SelectedIndex;
+        var wasSelected = ReferenceEquals(RulesList.SelectedItem, rule);
         _config.Rules.Remove(rule);
+        RefreshRulesView();
+
         if (_config.Rules.Count > 0)
         {
-            RulesList.SelectedIndex = Math.Clamp(index - 1, 0, _config.Rules.Count - 1);
+            if (wasSelected || RulesList.SelectedItem is not EventRule)
+            {
+                RulesList.SelectedItem = _rulesViewSource.View?.Cast<EventRule>().FirstOrDefault();
+            }
         }
         else
         {
@@ -1247,7 +1833,29 @@ public partial class MainWindow : Window
         ScheduleTwitchSubscriptionRefreshIfNeeded();
     }
 
-    private async void TestRuleButton_Click(object sender, RoutedEventArgs e)
+    private async void RuleTestButton_Click(object sender, RoutedEventArgs e)
+    {
+        try
+        {
+            if (_currentEffectCts is not null)
+            {
+                await StopCurrentEffectAsync();
+                UpdateRuleTestButtonState();
+                return;
+            }
+
+            await StartRuleTestAsync();
+        }
+        catch (Exception ex)
+        {
+            CrashReporter.Log(ex, "No se pudo probar la alerta.");
+            AddLog($"Prueba de alerta: {ex.Message}", ActivityLogKind.Important);
+            WpfMessageBox.Show(this, ex.Message, "Probar alerta", MessageBoxButton.OK, MessageBoxImage.Warning);
+            UpdateRuleTestButtonState();
+        }
+    }
+
+    private async Task StartRuleTestAsync()
     {
         if (RulesList.SelectedItem is not EventRule rule)
         {
@@ -1256,21 +1864,145 @@ public partial class MainWindow : Window
 
         SaveGlobalSettingsFromFields();
         SaveCurrentRuleFromFields();
+        var simulatedEvent = BuildSimulatedEvent(rule);
+
+        if (!rule.Matches(simulatedEvent))
+        {
+            var message = $"La regla '{rule.Name}' no se ejecutaria con esta simulacion. Regla: {DisplayNames.For(rule.EventKind)}. Simulacion: {DisplayNames.For(simulatedEvent.Kind)}.";
+            AddLog($"Simulador: {message}", ActivityLogKind.Important);
+            WpfMessageBox.Show(this, message, "Simulador de eventos", MessageBoxButton.OK, MessageBoxImage.Warning);
+            return;
+        }
+
+        if (!ValidateSimulatedRun(rule, simulatedEvent))
+        {
+            return;
+        }
         AddLog(
-            $"Probando regla '{rule.Name}' como {DisplayNames.For(rule.EventKind)}. Acciones: {DescribeRuleActions(rule)}.",
+            $"Simulando {DescribeSimulatedEvent(simulatedEvent)} para regla '{rule.Name}'. Acciones: {DescribeRuleActions(rule)}.",
             ActivityLogKind.Event);
 
-        await RunRuleAsync(
-            rule,
-            new TwitchEvent
-            {
-                Kind = rule.EventKind,
-                RewardTitle = rule.CustomRewardTitle,
-                Bits = rule.EventKind == TwitchEventKind.Cheer ? rule.MinimumBits : null,
-                Message = rule.EventKind == TwitchEventKind.ChatCommand ? FirstNonEmpty(rule.ChatCommand, "!prueba") : "Mensaje de prueba",
-                UserName = "Prueba",
-                Title = $"Prueba de {rule.Name}"
-            });
+        await RunRuleAsync(rule, simulatedEvent);
+    }
+
+    private void UpdateRuleTestButtonState()
+    {
+        if (_initializingComponent)
+        {
+            return;
+        }
+
+        if (!Dispatcher.CheckAccess())
+        {
+            _ = Dispatcher.InvokeAsync(UpdateRuleTestButtonState);
+            return;
+        }
+
+        var isRunning = _currentEffectCts is not null;
+        RuleTestButton.Style = isRunning
+            ? Resources["DangerButton"] as Style
+            : Resources["PrimaryButton"] as Style;
+        SetButtonIcon(RuleTestButton, isRunning ? "Parar prueba" : "Probar alerta", isRunning ? "Square" : "Play");
+        ApplyButtonTheme(RuleTestButton, _config.DarkMode ? ThemePalette.Dark : ThemePalette.Light);
+    }
+
+    private TwitchEvent BuildSimulatedEvent(EventRule rule)
+    {
+        var kind = rule.EventKind == TwitchEventKind.Test
+            ? TwitchEventKind.Follow
+            : rule.EventKind;
+        var userName = "Prueba";
+        var bits = Math.Max(1, rule.MinimumBits);
+        var viewers = 18;
+        var rewardTitle = FirstNonEmpty(rule.CustomRewardTitle, "Canje de prueba");
+        var message = kind == TwitchEventKind.ChatCommand
+            ? FirstNonEmpty(rule.ChatCommand, "!baile mensaje de prueba")
+            : "Mensaje de prueba";
+
+        return new TwitchEvent
+        {
+            Kind = kind,
+            UserName = userName,
+            RewardTitle = kind == TwitchEventKind.ChannelPointRedemption ? rewardTitle : null,
+            Bits = kind == TwitchEventKind.Cheer ? bits : null,
+            ViewerCount = kind == TwitchEventKind.Raid ? viewers : null,
+            Message = kind == TwitchEventKind.ChatCommand ? message : "Mensaje de prueba",
+            RawType = "simulator",
+            Title = $"Simulacion: {DisplayNames.For(kind)} de {userName}"
+        };
+    }
+
+    private bool ValidateSimulatedRun(EventRule rule, TwitchEvent twitchEvent)
+    {
+        if (rule.PlayAudio && (string.IsNullOrWhiteSpace(rule.AudioPath) || !File.Exists(rule.AudioPath)))
+        {
+            var message = $"El audio de '{rule.Name}' no existe o no esta configurado.";
+            AddLog($"Simulador: {message}", ActivityLogKind.Important);
+            WpfMessageBox.Show(this, message, "Simulador de eventos", MessageBoxButton.OK, MessageBoxImage.Warning);
+            return false;
+        }
+
+        if (_config.ArduinoEnabled && rule.UseLights && !_lightController.HasOpenPort)
+        {
+            AddLog(
+                string.IsNullOrWhiteSpace(_config.SerialPort)
+                    ? "Simulador: la regla usa luces, pero no hay puerto COM configurado."
+                    : $"Simulador: la regla usa luces, pero Arduino no esta conectado ahora ({_config.SerialPort}).",
+                ActivityLogKind.Important);
+        }
+
+        if (_config.ArduinoEnabled && rule.UseLights && !string.IsNullOrWhiteSpace(rule.TargetPins) && LightCommand.ParsePins(rule.TargetPins).Count == 0)
+        {
+            AddLog($"Simulador: los pines de la regla '{rule.Name}' no son validos.", ActivityLogKind.Important);
+        }
+
+        if (rule.SendAlexaEvent && !_config.Alexa.IsConfigured)
+        {
+            AddLog("Simulador: Alexa esta activada en la regla, pero el relay no esta configurado.", ActivityLogKind.Important);
+        }
+
+        if (rule.EventKind == TwitchEventKind.ChatCommand
+            && !EventRuleMatchesChatCommand(rule, twitchEvent.Message))
+        {
+            AddLog("Simulador: el mensaje no empieza con el comando configurado.", ActivityLogKind.Important);
+        }
+
+        return true;
+    }
+
+    private static bool EventRuleMatchesChatCommand(EventRule rule, string? message)
+    {
+        if (rule.EventKind != TwitchEventKind.ChatCommand)
+        {
+            return true;
+        }
+
+        var command = rule.ChatCommand.Trim();
+        if (string.IsNullOrWhiteSpace(command))
+        {
+            return false;
+        }
+
+        if (!command.StartsWith('!'))
+        {
+            command = $"!{command}";
+        }
+
+        var firstToken = message?.Trim().Split([' ', '\t'], StringSplitOptions.RemoveEmptyEntries).FirstOrDefault();
+        return string.Equals(firstToken, command, StringComparison.OrdinalIgnoreCase);
+    }
+
+    private static string DescribeSimulatedEvent(TwitchEvent twitchEvent)
+    {
+        var user = FirstNonEmpty(twitchEvent.UserName ?? "", "Prueba");
+        return twitchEvent.Kind switch
+        {
+            TwitchEventKind.Cheer => $"{twitchEvent.Bits ?? 0} bits de {user}",
+            TwitchEventKind.Raid => $"raid de {user} con {twitchEvent.ViewerCount ?? 0} viewers",
+            TwitchEventKind.ChannelPointRedemption => $"canje '{FirstNonEmpty(twitchEvent.RewardTitle ?? "", "Canje de prueba")}' de {user}",
+            TwitchEventKind.ChatCommand => $"comando de chat de {user}: {FirstNonEmpty(twitchEvent.Message ?? "", "sin mensaje")}",
+            _ => $"{DisplayNames.For(twitchEvent.Kind)} de {user}"
+        };
     }
 
     private static string DescribeRuleActions(EventRule rule)
@@ -1346,8 +2078,24 @@ public partial class MainWindow : Window
 
         SaveGlobalSettingsFromFields();
         SaveConfig();
+        ApplyStartWithWindowsRegistration();
         UpdateSensitiveFieldVisibility();
+        UpdateSliderLabels();
         UpdateStatusText();
+        UpdateRuleOptionVisibility();
+        ApplyBackgroundOutputMode();
+        UpdateCloseBehaviorCards();
+    }
+
+    private void CloseBehaviorRadio_Checked(object sender, RoutedEventArgs e)
+    {
+        if (_initializingComponent || _loadingUi)
+        {
+            return;
+        }
+
+        CloseToTrayCheck.IsChecked = sender == CloseToTrayRadio;
+        GlobalSettingsChanged(sender, e);
     }
 
     private void AlexaSettingsChanged(object sender, RoutedEventArgs e)
@@ -1358,6 +2106,7 @@ public partial class MainWindow : Window
         }
 
         SaveGlobalSettingsFromFields();
+        _alexaRelayConnected = false;
         SaveConfig();
         UpdateAlexaStatusText();
         UpdateSensitiveFieldVisibility();
@@ -1368,19 +2117,24 @@ public partial class MainWindow : Window
     {
         try
         {
+            _isAlexaConnecting = true;
+            UpdateStatusText();
             SaveGlobalSettingsFromFields();
             SaveConfig();
             await _alexaRelayService.SendTestEventAsync(_config, CancellationToken.None);
+            _alexaRelayConnected = true;
             AddLog("Alexa: evento de prueba enviado.", ActivityLogKind.Alexa);
         }
         catch (Exception ex)
         {
+            _alexaRelayConnected = false;
             CrashReporter.Log(ex, "No se pudo enviar la prueba de Alexa.");
             AddLog($"Alexa: {ex.Message}", ActivityLogKind.Important);
             WpfMessageBox.Show(this, ex.Message, "Alexa", MessageBoxButton.OK, MessageBoxImage.Warning);
         }
         finally
         {
+            _isAlexaConnecting = false;
             UpdateAlexaStatusText();
         }
     }
@@ -1394,8 +2148,52 @@ public partial class MainWindow : Window
 
         SaveCurrentRuleFromFields();
         SaveConfig();
+        UpdateEventKindTileSelection();
+        UpdatePatternTileSelection();
         UpdateRuleOptionVisibility();
+        UpdateRuleLedPreviewTimerState();
         ScheduleTwitchSubscriptionRefreshIfNeeded();
+    }
+
+    private void EventKindTile_Click(object sender, RoutedEventArgs e)
+    {
+        if (sender is not System.Windows.Controls.Button button
+            || button.Tag is not string value
+            || !Enum.TryParse<TwitchEventKind>(value, out var kind))
+        {
+            return;
+        }
+
+        EventKindBox.SelectedValue = kind;
+        UpdateEventKindTileSelection();
+    }
+
+    private void PatternTile_Click(object sender, RoutedEventArgs e)
+    {
+        if (sender is not System.Windows.Controls.Button button
+            || button.Tag is not string value
+            || !Enum.TryParse<LightPattern>(value, out var pattern))
+        {
+            return;
+        }
+
+        PatternBox.SelectedValue = pattern;
+        UpdatePatternTileSelection();
+        UpdateRuleLedPreviewFrame();
+    }
+
+    private void BackgroundPatternTile_Click(object sender, RoutedEventArgs e)
+    {
+        if (sender is not System.Windows.Controls.Button button
+            || button.Tag is not string value
+            || !Enum.TryParse<LightPattern>(value, out var pattern))
+        {
+            return;
+        }
+
+        BackgroundPatternBox.SelectedValue = pattern;
+        UpdateBackgroundPatternTileSelection();
+        UpdateBackgroundLedPreviewFrame();
     }
 
     private void StripFieldChanged(object sender, RoutedEventArgs e)
@@ -1420,10 +2218,22 @@ public partial class MainWindow : Window
         SaveBackgroundFromFields();
         SaveConfig();
         UpdateBackgroundOptionVisibility();
-        ScheduleBackgroundApply();
+        UpdateBackgroundPatternTileSelection();
+        UpdateBackgroundLedPreviewFrame();
+        UpdateBackgroundLedPreviewTimerState();
     }
 
-    private void ThemeModeChanged(object sender, RoutedEventArgs e)
+    private void RuleLedPreviewPanel_IsVisibleChanged(object sender, DependencyPropertyChangedEventArgs e)
+    {
+        UpdateRuleLedPreviewTimerState();
+    }
+
+    private void BackgroundLedPreviewPanel_IsVisibleChanged(object sender, DependencyPropertyChangedEventArgs e)
+    {
+        UpdateBackgroundLedPreviewTimerState();
+    }
+
+    private void ThemeModeChanged(object sender, SelectionChangedEventArgs e)
     {
         if (_initializingComponent || _loadingUi)
         {
@@ -1433,6 +2243,7 @@ public partial class MainWindow : Window
         SaveGlobalSettingsFromFields();
         ApplyTheme();
         SaveConfig();
+        UpdateCloseBehaviorCards();
     }
 
     private void ToggleClientIdVisibility_Click(object sender, RoutedEventArgs e)
@@ -1467,6 +2278,9 @@ public partial class MainWindow : Window
         }
 
         UpdateNavigationButtons();
+        UpdateRuleLedPreviewTimerState();
+        UpdateBackgroundLedPreviewTimerState();
+        ConfigureActionIcons();
         _ = Dispatcher.BeginInvoke(ApplyTheme, DispatcherPriority.Loaded);
         _ = Dispatcher.BeginInvoke(ApplyTheme, DispatcherPriority.ContextIdle);
     }
@@ -1485,21 +2299,10 @@ public partial class MainWindow : Window
         UpdateNavigationButtons();
     }
 
-    private void ArduinoOutputButton_Click(object sender, RoutedEventArgs e)
+    private void GoToActivityButton_Click(object sender, RoutedEventArgs e)
     {
-        _backgroundOutputMode = BackgroundOutputMode.Arduino;
-        if (StripsList.SelectedItem is null && _config.LedStrips.Count > 0)
-        {
-            StripsList.SelectedIndex = 0;
-        }
-
-        ApplyBackgroundOutputMode();
-    }
-
-    private void AlexaOutputButton_Click(object sender, RoutedEventArgs e)
-    {
-        _backgroundOutputMode = BackgroundOutputMode.Alexa;
-        ApplyBackgroundOutputMode();
+        MainTabs.SelectedIndex = 7;
+        UpdateNavigationButtons();
     }
 
     private async void ExitButton_Click(object sender, RoutedEventArgs e)
@@ -1584,26 +2387,277 @@ public partial class MainWindow : Window
         _activity.Clear();
     }
 
-    private async void EventSubClient_EventReceived(TwitchEvent twitchEvent)
+    private void RuleSearchBox_TextChanged(object sender, TextChangedEventArgs e)
     {
-        var matchingRules = ResolveMatchingRules(twitchEvent);
-        if (matchingRules.Length == 0)
+        if (_loadingUi || sender is not System.Windows.Controls.TextBox textBox)
         {
-            if (twitchEvent.Kind != TwitchEventKind.ChatCommand)
-            {
-                AddLog(twitchEvent.Title, ActivityLogKind.Event);
-                AddLog("El evento no coincide con reglas activas.");
-            }
-
             return;
         }
 
-        AddLog(twitchEvent.Title, ActivityLogKind.Event);
+        _ruleSearchText = textBox.Text.Trim();
+        RefreshRulesView();
+    }
 
-        foreach (var rule in matchingRules)
+    private void RuleStatusFilterButton_Click(object sender, RoutedEventArgs e)
+    {
+        if (_loadingUi || sender is not ToggleButton button)
         {
-            await QueueAndRunRuleAsync(rule, twitchEvent);
+            return;
         }
+
+        button.IsChecked = true;
+        _ruleStatusFilter = button.Tag?.ToString() ?? "ALL";
+
+        foreach (var filterButton in RuleStatusFilterButtons())
+        {
+            if (!ReferenceEquals(filterButton, button))
+            {
+                filterButton.IsChecked = false;
+            }
+
+            ApplyRuleStatusFilterButtonTheme(filterButton, _config.DarkMode ? ThemePalette.Dark : ThemePalette.Light);
+        }
+
+        RefreshRulesView();
+    }
+
+    private void RuleCategoryFilterBox_SelectionChanged(object sender, SelectionChangedEventArgs e)
+    {
+        if (_loadingUi)
+        {
+            return;
+        }
+
+        _ruleCategoryFilter = RuleCategoryFilterBox.SelectedValue?.ToString() ?? "";
+        RefreshRulesView();
+    }
+
+    private void RulesViewSource_Filter(object sender, FilterEventArgs e)
+    {
+        if (e.Item is not EventRule rule)
+        {
+            e.Accepted = false;
+            return;
+        }
+
+        e.Accepted = RuleMatchesFilters(rule);
+    }
+
+    private bool RuleMatchesFilters(EventRule rule)
+    {
+        if (_ruleStatusFilter == "ACTIVE" && !rule.IsEnabled)
+        {
+            return false;
+        }
+
+        if (_ruleStatusFilter == "INACTIVE" && rule.IsEnabled)
+        {
+            return false;
+        }
+
+        if (!string.IsNullOrWhiteSpace(_ruleCategoryFilter)
+            && !string.Equals(rule.EventKind.ToString(), _ruleCategoryFilter, StringComparison.OrdinalIgnoreCase))
+        {
+            return false;
+        }
+
+        if (string.IsNullOrWhiteSpace(_ruleSearchText))
+        {
+            return true;
+        }
+
+        var text = _ruleSearchText;
+        return ContainsIgnoreCase(rule.Name, text)
+            || ContainsIgnoreCase(rule.DisplayLabel, text)
+            || ContainsIgnoreCase(rule.ChatCommand, text)
+            || ContainsIgnoreCase(rule.CustomRewardTitle, text)
+            || ContainsIgnoreCase(rule.ChatMessageTemplate, text)
+            || ContainsIgnoreCase(DisplayNames.For(rule.EventKind), text);
+    }
+
+    private static bool ContainsIgnoreCase(string? value, string query)
+    {
+        return !string.IsNullOrWhiteSpace(value)
+            && value.Contains(query, StringComparison.OrdinalIgnoreCase);
+    }
+
+    private void RefreshRulesView()
+    {
+        var selected = RulesList.SelectedItem as EventRule;
+        _rulesViewSource.View?.Refresh();
+
+        if (selected is not null && _rulesViewSource.View?.Contains(selected) == true)
+        {
+            RulesList.SelectedItem = selected;
+        }
+        else if (RulesList.SelectedItem is not EventRule)
+        {
+            RulesList.SelectedItem = _rulesViewSource.View?.Cast<EventRule>().FirstOrDefault();
+        }
+
+        UpdateRulesCountText();
+    }
+
+    private void UpdateRulesCountText()
+    {
+        if (_initializingComponent || RulesCountText is null)
+        {
+            return;
+        }
+
+        var visibleCount = _rulesViewSource.View?.Cast<EventRule>().Count() ?? 0;
+        RulesCountText.Text = $"Mostrando {visibleCount} de {_config.Rules.Count} alertas";
+    }
+
+    private void ShowAllRuleFilters()
+    {
+        _ruleStatusFilter = "ALL";
+        _ruleCategoryFilter = "";
+        RuleFilterAllButton.IsChecked = true;
+        RuleFilterActiveButton.IsChecked = false;
+        RuleFilterInactiveButton.IsChecked = false;
+        RuleCategoryFilterBox.SelectedValue = "";
+        RuleSearchBox.Text = "";
+        _ruleSearchText = "";
+    }
+
+    private void ActivityFilterButton_CheckedChanged(object sender, RoutedEventArgs e)
+    {
+        if (_initializingComponent || sender is not ToggleButton button)
+        {
+            return;
+        }
+
+        var filter = button.Tag?.ToString() ?? "";
+        if (string.IsNullOrWhiteSpace(filter))
+        {
+            return;
+        }
+
+        if (button.IsChecked == true)
+        {
+            _activityEnabledFilters.Add(filter);
+        }
+        else
+        {
+            _activityEnabledFilters.Remove(filter);
+        }
+
+        ApplyActivityFilterButtonTheme(button, _config.DarkMode ? ThemePalette.Dark : ThemePalette.Light);
+        _activityViewSource.View?.Refresh();
+    }
+
+    private void ActivitySearchBox_TextChanged(object sender, TextChangedEventArgs e)
+    {
+        if (_loadingUi || sender is not System.Windows.Controls.TextBox textBox)
+        {
+            return;
+        }
+
+        _activitySearchText = textBox.Text.Trim();
+        _activityViewSource.View?.Refresh();
+    }
+
+    private void ClearActivityFiltersButton_Click(object sender, RoutedEventArgs e)
+    {
+        _activityEnabledFilters.Clear();
+        foreach (var button in ActivityFilterButtons())
+        {
+            var filter = button.Tag?.ToString() ?? "";
+            if (!string.IsNullOrWhiteSpace(filter))
+            {
+                _activityEnabledFilters.Add(filter);
+            }
+
+            button.IsChecked = true;
+            ApplyActivityFilterButtonTheme(button, _config.DarkMode ? ThemePalette.Dark : ThemePalette.Light);
+        }
+
+        ActivitySearchBox.Text = "";
+        _activitySearchText = "";
+        _activityViewSource.View?.Refresh();
+    }
+
+    private void ActivityViewSource_Filter(object sender, FilterEventArgs e)
+    {
+        if (e.Item is not ActivityLogEntry entry)
+        {
+            e.Accepted = false;
+            return;
+        }
+
+        e.Accepted = entry.MatchesFilter(_activityEnabledFilters, _activitySearchText);
+    }
+
+    private async void EventSubClient_EventReceived(TwitchEvent twitchEvent)
+    {
+        try
+        {
+            RegisterDashboardTwitchEvent(twitchEvent);
+            var matchingRules = ResolveMatchingRules(twitchEvent);
+            if (matchingRules.Length == 0)
+            {
+                if (twitchEvent.Kind != TwitchEventKind.ChatCommand)
+                {
+                    AddLog(twitchEvent.Title, ActivityLogKind.Event);
+                    AddLog("El evento no coincide con alertas activas.");
+                }
+
+                return;
+            }
+
+            AddLog(twitchEvent.Title, ActivityLogKind.Event);
+            RegisterDashboardMatchedRules(matchingRules.Length);
+
+            foreach (var rule in matchingRules)
+            {
+                await QueueAndRunRuleAsync(rule, twitchEvent);
+            }
+        }
+        catch (Exception ex)
+        {
+            CrashReporter.Log(ex, $"No se pudo procesar evento Twitch '{twitchEvent.Title}'.");
+            AddLog($"Twitch evento: {ex.Message}", ActivityLogKind.Important);
+        }
+    }
+
+    private void RegisterDashboardMatchedRules(int count)
+    {
+        if (!Dispatcher.CheckAccess())
+        {
+            _ = Dispatcher.InvokeAsync(() => RegisterDashboardMatchedRules(count));
+            return;
+        }
+
+        _dashboardEventsToday += count;
+        UpdateDashboardSummary();
+    }
+
+    private void RegisterDashboardTwitchEvent(TwitchEvent twitchEvent)
+    {
+        if (!Dispatcher.CheckAccess())
+        {
+            _ = Dispatcher.InvokeAsync(() => RegisterDashboardTwitchEvent(twitchEvent));
+            return;
+        }
+
+        switch (twitchEvent.Kind)
+        {
+            case TwitchEventKind.Follow:
+                _dashboardFollowersToday++;
+                break;
+            case TwitchEventKind.Subscription:
+                _dashboardSubscriptionsToday++;
+                break;
+            case TwitchEventKind.Cheer:
+                _dashboardBitsToday += Math.Max(0, twitchEvent.Bits ?? 0);
+                break;
+            case TwitchEventKind.ChatCommand:
+                _dashboardChatMessagesToday++;
+                break;
+        }
+
+        UpdateDashboardSummary();
     }
 
     private async Task QueueAndRunRuleAsync(EventRule rule, TwitchEvent twitchEvent)
@@ -1771,12 +2825,18 @@ public partial class MainWindow : Window
         try
         {
             await _alexaRelayService.SendRuleEventAsync(_config, rule, twitchEvent, CancellationToken.None);
+            _alexaRelayConnected = true;
             AddLog($"Alexa: evento enviado para '{rule.Name}'.", ActivityLogKind.Alexa);
         }
         catch (Exception ex)
         {
+            _alexaRelayConnected = false;
             CrashReporter.Log(ex, $"No se pudo enviar evento Alexa para la regla '{rule.Name}'.");
             AddLog($"Alexa: {ex.Message}", ActivityLogKind.Important);
+        }
+        finally
+        {
+            UpdateAlexaStatusText();
         }
     }
 
@@ -1791,6 +2851,7 @@ public partial class MainWindow : Window
         MarkQueuedAlertStarted(queueSlot);
         var effectCts = new CancellationTokenSource();
         _currentEffectCts = effectCts;
+        UpdateRuleTestButtonState();
         var wasCancelled = false;
         var shouldRestoreBackground = false;
 
@@ -1813,7 +2874,9 @@ public partial class MainWindow : Window
                 _currentPlayback = playback;
             }
 
-            if (!rule.UseLights)
+            var useLights = _config.ArduinoEnabled && rule.UseLights;
+
+            if (!useLights)
             {
                 playback?.Play();
                 if (playback is not null)
@@ -1824,14 +2887,14 @@ public partial class MainWindow : Window
                 return;
             }
 
-            if (rule.UseLights && !_lightController.HasOpenPort && !string.IsNullOrWhiteSpace(_config.SerialPort))
+            if (useLights && !_lightController.HasOpenPort && !string.IsNullOrWhiteSpace(_config.SerialPort))
             {
                 await ConnectArduinoAsync();
             }
 
             shouldRestoreBackground = true;
             var targets = LightCommand.ResolveTargets(_config, rule.TargetPins);
-            if (rule.UseLights)
+            if (useLights)
             {
                 await StopLightsAsync(LightCommand.ResolveTargets(_config, ""));
                 await Task.Delay(LightStopSettleMs);
@@ -1843,10 +2906,11 @@ public partial class MainWindow : Window
                 : (int?)null;
 
             LightCommand? command = null;
-            if (rule.UseLights)
+            if (useLights)
             {
                 command = LightCommand.FromRule(rule, _config, syncedDurationMs);
                 await _lightController.SendAsync(command, AddLog, CancellationToken.None);
+                UpdateStatusText();
             }
 
             playback?.Play();
@@ -1887,6 +2951,7 @@ public partial class MainWindow : Window
             {
                 _currentEffectCts = null;
             }
+            UpdateRuleTestButtonState();
 
             if (shouldRestoreBackground || wasCancelled)
             {
@@ -1931,10 +2996,12 @@ public partial class MainWindow : Window
             PortComboBox.SelectedValue = _config.SerialPort;
             PortComboBox.Text = _config.SerialPort;
             BaudRateBox.Text = _config.BaudRate.ToString();
+            ArduinoEnabledCheck.IsChecked = _config.ArduinoEnabled;
             AutoTwitchCheck.IsChecked = _config.AutoConnectTwitch;
             AutoArduinoCheck.IsChecked = _config.AutoConnectArduino;
             StartHiddenCheck.IsChecked = _config.StartHidden;
-            DarkModeCheck.IsChecked = _config.DarkMode;
+            StartWithWindowsCheck.IsChecked = _config.StartWithWindows;
+            ThemeModeBox.SelectedValue = _config.ThemeMode;
             CloseToTrayCheck.IsChecked = _config.CloseToTray;
             AlertVolumeSlider.Value = _config.AlertVolumePercent;
             MaxQueuedSameRuleAlertsBox.Text = _config.MaxQueuedSameRuleAlerts.ToString();
@@ -1957,10 +3024,14 @@ public partial class MainWindow : Window
             BackgroundBrightnessSlider.Value = _config.BackgroundBrightness;
             BackgroundCycleSlider.Value = _config.BackgroundCycleMs;
             BackgroundStepSlider.Value = _config.BackgroundStepMs;
-            RulesList.ItemsSource = _config.Rules;
+            _rulesViewSource.Source = _config.Rules;
+            RulesList.ItemsSource = _rulesViewSource.View;
+            RefreshRulesView();
             StripsList.ItemsSource = _config.LedStrips;
             SettingsPathText.Text = _settingsStore.SettingsPath;
             BackupPathText.Text = $"Backups automaticos: {_settingsStore.BackupDirectory}";
+            SettingsVersionText.Text = $"V{VersionCheckService.CurrentVersionText}";
+            UpdateCloseBehaviorCards();
 
             if (_config.Rules.Count > 0)
             {
@@ -1975,6 +3046,9 @@ public partial class MainWindow : Window
             LoadSelectedRuleIntoUi();
             LoadSelectedStripIntoUi();
             UpdateBackgroundOptionVisibility();
+            UpdateBackgroundPatternTileSelection();
+            UpdateBackgroundLedPreviewFrame();
+            UpdateLightsArduinoStatus();
             ApplyBackgroundOutputMode();
             UpdateAlexaStatusText();
             UpdateSensitiveFieldVisibility();
@@ -2003,6 +3077,7 @@ public partial class MainWindow : Window
             RuleEnabledCheck.IsChecked = rule.IsEnabled;
             RuleNameBox.Text = rule.Name;
             EventKindBox.SelectedValue = rule.EventKind;
+            UpdateEventKindTileSelection();
             RewardTitleBox.Text = rule.CustomRewardTitle;
             ChatCommandBox.Text = rule.ChatCommand;
             MinimumBitsBox.Text = rule.MinimumBits.ToString();
@@ -2023,11 +3098,14 @@ public partial class MainWindow : Window
             StepSlider.Value = rule.StepMs;
             UpdateColorButtons();
             UpdateSliderLabels();
+            UpdatePatternTileSelection();
+            UpdateRuleLedPreviewFrame();
         }
         finally
         {
             _loadingRule = false;
             UpdateRuleOptionVisibility();
+            UpdateRuleLedPreviewTimerState();
         }
     }
 
@@ -2051,6 +3129,7 @@ public partial class MainWindow : Window
         finally
         {
             _loadingStrip = false;
+            UpdateLightsArduinoStatus();
         }
     }
 
@@ -2065,10 +3144,13 @@ public partial class MainWindow : Window
         _config.TwitchClientSecret = ClientSecretBox.Text.Trim();
         _config.SerialPort = ParsePort(PortComboBox.SelectedValue as string ?? PortComboBox.Text);
         _config.BaudRate = ParseInt(BaudRateBox.Text, 115200, 300, 921600);
+        _config.ArduinoEnabled = ArduinoEnabledCheck.IsChecked == true;
         _config.AutoConnectTwitch = AutoTwitchCheck.IsChecked == true;
         _config.AutoConnectArduino = AutoArduinoCheck.IsChecked == true;
         _config.StartHidden = StartHiddenCheck.IsChecked == true;
-        _config.DarkMode = DarkModeCheck.IsChecked == true;
+        _config.StartWithWindows = StartWithWindowsCheck.IsChecked == true;
+        _config.ThemeMode = NormalizeThemeMode(ThemeModeBox.SelectedValue as string ?? _config.ThemeMode);
+        _config.DarkMode = ResolveDarkMode(_config.ThemeMode);
         _config.CloseToTray = CloseToTrayCheck.IsChecked == true;
         _config.AlertVolumePercent = (int)Math.Round(AlertVolumeSlider.Value);
         _config.MaxQueuedSameRuleAlerts = ParseInt(MaxQueuedSameRuleAlertsBox.Text, 1, 0, 100);
@@ -2078,6 +3160,44 @@ public partial class MainWindow : Window
         _config.Alexa.Enabled = AlexaEnabledCheck.IsChecked == true;
         _config.Alexa.RelayUrl = AlexaRelayUrlBox.Text.Trim();
         _config.Alexa.AuthToken = AlexaAuthTokenBox.Text.Trim();
+    }
+
+    private void ApplyStartWithWindowsRegistration()
+    {
+        if (_lastAppliedStartWithWindows == _config.StartWithWindows)
+        {
+            return;
+        }
+
+        try
+        {
+            using var runKey = Microsoft.Win32.Registry.CurrentUser.CreateSubKey(WindowsRunKeyPath, writable: true);
+            if (runKey is null)
+            {
+                throw new InvalidOperationException("No pude abrir la clave de inicio de Windows.");
+            }
+
+            if (_config.StartWithWindows)
+            {
+                var executablePath = Environment.ProcessPath;
+                if (string.IsNullOrWhiteSpace(executablePath) || !File.Exists(executablePath))
+                {
+                    throw new InvalidOperationException("No pude detectar la ruta del ejecutable actual.");
+                }
+
+                runKey.SetValue(WindowsStartupValueName, $"\"{executablePath}\"");
+            }
+            else
+            {
+                runKey.DeleteValue(WindowsStartupValueName, throwOnMissingValue: false);
+            }
+
+            _lastAppliedStartWithWindows = _config.StartWithWindows;
+        }
+        catch (Exception ex)
+        {
+            AddLog($"Inicio con Windows: {ex.Message}", ActivityLogKind.Important);
+        }
     }
 
     private void SaveCurrentRuleFromFields()
@@ -2111,8 +3231,11 @@ public partial class MainWindow : Window
 
         UpdateColorButtons();
         UpdateSliderLabels();
+        UpdatePatternTileSelection();
+        UpdateRuleLedPreviewFrame();
         UpdateRuleOptionVisibility();
-        RulesList.Items.Refresh();
+        UpdateRuleLedPreviewTimerState();
+        RefreshRulesView();
     }
 
     private void SaveBackgroundFromFields()
@@ -2133,6 +3256,8 @@ public partial class MainWindow : Window
 
         UpdateColorButtons();
         UpdateSliderLabels();
+        UpdateBackgroundPatternTileSelection();
+        UpdateBackgroundLedPreviewFrame();
         UpdateBackgroundOptionVisibility();
         UpdateAlexaStatusText();
     }
@@ -2151,7 +3276,8 @@ public partial class MainWindow : Window
         strip.LedCount = ParseInt(StripLedCountBox.Text, 30, 1, 600);
 
         StripsList.Items.Refresh();
-        RulesList.Items.Refresh();
+        RefreshRulesView();
+        UpdateLightsArduinoStatus();
     }
 
     private void UpdateRuleOptionVisibility()
@@ -2159,7 +3285,8 @@ public partial class MainWindow : Window
         var kind = EventKindBox.SelectedValue is TwitchEventKind eventKind
             ? eventKind
             : TwitchEventKind.Follow;
-        var useLights = UseLightsCheck.IsChecked == true;
+        var arduinoAvailable = _config.ArduinoEnabled;
+        var useLights = arduinoAvailable && UseLightsCheck.IsChecked == true;
         var playAudio = PlayAudioCheck.IsChecked == true;
         var sendChat = ChatMessageCheck.IsChecked == true;
         var alexaAvailable = _config.Alexa.IsConfigured;
@@ -2171,12 +3298,13 @@ public partial class MainWindow : Window
         SetVisible(kind == TwitchEventKind.ChannelPointRedemption, RewardTitleLabel, RewardTitleBox);
         SetVisible(kind == TwitchEventKind.ChatCommand, ChatCommandLabel, ChatCommandBox);
         SetVisible(kind == TwitchEventKind.Cheer, MinimumBitsLabel, MinimumBitsBox);
-        SetVisible(playAudio, AudioLabel, AudioPanel);
-        SetVisible(sendChat, ChatMessageLabel, ChatMessageBox);
-        SetVisible(alexaAvailable, AlexaEventCheck);
-        SetVisible(alexaAvailable && sendAlexa, AlexaRuleHintText);
+        SetVisible(playAudio, AudioDetailsPanel, AudioLabel, AudioPanel);
+        SetVisible(sendChat, ChatDetailsPanel, ChatMessageLabel, ChatMessageBox);
+        SetVisible(arduinoAvailable, UseLightsActionCard);
+        SetVisible(alexaAvailable, AlexaActionCard);
+        SetVisible(alexaAvailable && sendAlexa, AlexaDetailsPanel, AlexaRuleHintText);
 
-        SetVisible(useLights, LightOptionsSeparator, TargetPinsLabel, TargetPinsBox, PatternGrid);
+        SetVisible(useLights, LightConfigurationPanel, LightOptionsSeparator, TargetPinsLabel, TargetPinsBox, PatternGrid, RuleLedPreviewPanel);
         SetVisible(useLights && UsesPrimaryColor(pattern), PrimaryColorPanel);
         SetVisible(useLights && UsesSecondaryColor(pattern), SecondaryColorLabel, SecondaryColorPanel);
         SetVisible(useLights && UsesTertiaryColor(pattern), TertiaryColorLabel, TertiaryColorPanel);
@@ -2184,11 +3312,14 @@ public partial class MainWindow : Window
         SetVisible(useLights && !playAudio, DurationGrid, DurationSlider);
         SetVisible(useLights && UsesCycle(pattern), CycleGrid, CycleSlider);
         SetVisible(useLights && UsesStep(pattern), StepGrid, StepSlider);
+        UpdateRuleLedPreviewFrame();
+        UpdateRuleLedPreviewTimerState();
     }
 
     private void UpdateBackgroundOptionVisibility()
     {
-        var enabled = BackgroundEnabledCheck.IsChecked == true;
+        var arduinoAvailable = _config.ArduinoEnabled;
+        var enabled = arduinoAvailable && BackgroundEnabledCheck.IsChecked == true;
         var alexaEnabled = BackgroundAlexaEnabledCheck.IsChecked == true;
         var alexaTurnOffAfterEvent = BackgroundAlexaTurnOffAfterEventCheck.IsChecked == true;
         var alexaAvailable = _config.Alexa.IsConfigured;
@@ -2199,7 +3330,8 @@ public partial class MainWindow : Window
         SetVisible(alexaAvailable, BackgroundAlexaEnabledCheck, BackgroundAlexaTurnOffAfterEventCheck, StopAlexaBackgroundButton);
         SetVisible(!alexaAvailable, AlexaBackgroundUnavailableText);
         SetVisible(alexaAvailable && (alexaEnabled || alexaTurnOffAfterEvent), BackgroundAlexaEventsGrid, ApplyAlexaBackgroundButton);
-        SetVisible(enabled, BackgroundPinsLabel, BackgroundPinsBox, BackgroundPatternGrid, ApplyArduinoBackgroundButton);
+        SetVisible(arduinoAvailable, BackgroundEnabledCheck);
+        SetVisible(enabled, BackgroundPatternGrid, BackgroundLedPreviewPanel, ApplyArduinoBackgroundButton);
         SetVisible(enabled && UsesBrightness(pattern), BackgroundBrightnessPanel);
         SetVisible(enabled && UsesPrimaryColor(pattern), BackgroundPrimaryColorLabel, BackgroundPrimaryColorPanel);
         SetVisible(enabled && UsesSecondaryColor(pattern), BackgroundSecondaryColorLabel, BackgroundSecondaryColorPanel);
@@ -2215,24 +3347,8 @@ public partial class MainWindow : Window
             return;
         }
 
-        var showArduino = _backgroundOutputMode == BackgroundOutputMode.Arduino;
-        SetVisible(showArduino, StripActionsPanel, StripsListLabel, StripsList, ArduinoBackgroundPanel);
-        SetVisible(!showArduino, AlexaBackgroundPanel);
-
-        var palette = _config.DarkMode
-            ? ThemePalette.Dark
-            : ThemePalette.Light;
-
-        ApplyOutputButtonTheme(ArduinoOutputButton, showArduino, palette);
-        ApplyOutputButtonTheme(AlexaOutputButton, !showArduino, palette);
         UpdateBackgroundOptionVisibility();
-    }
-
-    private static void ApplyOutputButtonTheme(System.Windows.Controls.Button button, bool selected, ThemePalette palette)
-    {
-        button.Background = selected ? palette.NavSelected : palette.Button;
-        button.Foreground = selected ? System.Windows.Media.Brushes.White : palette.Text;
-        button.BorderBrush = selected ? palette.NavSelected : palette.Border;
+        UpdateBackgroundLedPreviewTimerState();
     }
 
     private static void SetVisible(bool isVisible, params UIElement[] elements)
@@ -2242,6 +3358,287 @@ public partial class MainWindow : Window
         {
             element.Visibility = visibility;
         }
+    }
+
+    private void UpdateRuleLedPreviewFrame()
+    {
+        if (_initializingComponent || _ruleLedPreviewDots.Count == 0)
+        {
+            return;
+        }
+
+        if (!Dispatcher.CheckAccess())
+        {
+            _ = Dispatcher.InvokeAsync(UpdateRuleLedPreviewFrame);
+            return;
+        }
+
+        if (!ShouldRunRuleLedPreview())
+        {
+            UpdateRuleLedPreviewTimerState();
+            return;
+        }
+
+        var pattern = PatternBox.SelectedValue is LightPattern selectedPattern
+            ? selectedPattern
+            : LightPattern.Pulse;
+        var brightness = Math.Clamp(BrightnessSlider.Value / 255d, 0d, 1d);
+        var colorScale = Math.Clamp(brightness, 0.08, 1d);
+        var primary = ParsePreviewColor(PrimaryColorBox.Text, "#14B8A6");
+        var secondary = ParsePreviewColor(SecondaryColorBox.Text, "#B56CFF");
+        var tertiary = ParsePreviewColor(TertiaryColorBox.Text, "#FFFFFF");
+        var count = _ruleLedPreviewDots.Count;
+        _ruleLedPreviewStep++;
+
+        for (var i = 0; i < count; i++)
+        {
+            var phase = (i + _ruleLedPreviewStep) / (double)count;
+            var color = pattern switch
+            {
+                LightPattern.Solid => primary,
+                LightPattern.Rainbow => RainbowPreviewColor(phase),
+                LightPattern.Pulse => BlendPreviewColor(primary, secondary, (Math.Sin((_ruleLedPreviewStep * 0.18) + (i * 0.22)) + 1d) / 2d),
+                LightPattern.Chase => ((i + _ruleLedPreviewStep) % 6) < 2
+                    ? primary
+                    : ScalePreviewColor(secondary, 0.22),
+                LightPattern.Theater => ((i + _ruleLedPreviewStep) % 3) == 0
+                    ? primary
+                    : (((i + _ruleLedPreviewStep) % 3) == 1 ? secondary : ScalePreviewColor(tertiary, 0.18)),
+                LightPattern.Sparkle => _previewRandom.NextDouble() > 0.72
+                    ? RandomPreviewColor(primary, secondary, tertiary)
+                    : ScalePreviewColor(primary, 0.16),
+                LightPattern.Rave => RandomPreviewColor(primary, secondary, tertiary),
+                _ => primary
+            };
+
+            _ruleLedPreviewDots[i] = PreviewDot(ScalePreviewColor(color, colorScale), brightness);
+        }
+    }
+
+    private void SetRuleLedPreviewAll(string color)
+    {
+        var previewColor = ParsePreviewColor(color, "#334155");
+        for (var i = 0; i < _ruleLedPreviewDots.Count; i++)
+        {
+            _ruleLedPreviewDots[i] = PreviewDot(previewColor, 0.08);
+        }
+    }
+
+    private void UpdateRuleLedPreviewTimerState()
+    {
+        if (_initializingComponent || !Dispatcher.CheckAccess())
+        {
+            return;
+        }
+
+        var shouldRun = ShouldRunRuleLedPreview();
+        if (shouldRun)
+        {
+            if (!_ruleLedPreviewTimer.IsEnabled)
+            {
+                _ruleLedPreviewTimer.Start();
+            }
+
+            return;
+        }
+
+        if (_ruleLedPreviewTimer.IsEnabled)
+        {
+            _ruleLedPreviewTimer.Stop();
+        }
+
+        if (UseLightsCheck.IsChecked != true || !_config.ArduinoEnabled)
+        {
+            SetRuleLedPreviewAll("#334155");
+        }
+    }
+
+    private bool ShouldRunRuleLedPreview()
+    {
+        return UseLightsCheck.IsChecked == true
+            && _config.ArduinoEnabled
+            && MainTabs.SelectedIndex == 2
+            && LightConfigurationPanel.IsExpanded
+            && RuleLedPreviewPanel.IsVisible;
+    }
+
+    private void UpdateBackgroundLedPreviewFrame()
+    {
+        if (_initializingComponent || _backgroundLedPreviewDots.Count == 0)
+        {
+            return;
+        }
+
+        if (!Dispatcher.CheckAccess())
+        {
+            _ = Dispatcher.InvokeAsync(UpdateBackgroundLedPreviewFrame);
+            return;
+        }
+
+        if (!ShouldRunBackgroundLedPreview())
+        {
+            UpdateBackgroundLedPreviewTimerState();
+            return;
+        }
+
+        var pattern = BackgroundPatternBox.SelectedValue is LightPattern selectedPattern
+            ? selectedPattern
+            : LightPattern.Solid;
+        var brightness = Math.Clamp(BackgroundBrightnessSlider.Value / 255d, 0d, 1d);
+        var colorScale = Math.Clamp(brightness, 0.08, 1d);
+        var primary = ParsePreviewColor(BackgroundPrimaryColorBox.Text, "#14B8A6");
+        var secondary = ParsePreviewColor(BackgroundSecondaryColorBox.Text, "#B56CFF");
+        var tertiary = ParsePreviewColor(BackgroundTertiaryColorBox.Text, "#FFFFFF");
+        var count = _backgroundLedPreviewDots.Count;
+        _backgroundLedPreviewStep++;
+
+        for (var i = 0; i < count; i++)
+        {
+            var phase = (i + _backgroundLedPreviewStep) / (double)count;
+            var color = pattern switch
+            {
+                LightPattern.Solid => primary,
+                LightPattern.Rainbow => RainbowPreviewColor(phase),
+                LightPattern.Pulse => BlendPreviewColor(primary, secondary, (Math.Sin((_backgroundLedPreviewStep * 0.18) + (i * 0.22)) + 1d) / 2d),
+                LightPattern.Chase => ((i + _backgroundLedPreviewStep) % 6) < 2
+                    ? primary
+                    : ScalePreviewColor(secondary, 0.22),
+                LightPattern.Theater => ((i + _backgroundLedPreviewStep) % 3) == 0
+                    ? primary
+                    : (((i + _backgroundLedPreviewStep) % 3) == 1 ? secondary : ScalePreviewColor(tertiary, 0.18)),
+                LightPattern.Sparkle => _previewRandom.NextDouble() > 0.72
+                    ? RandomPreviewColor(primary, secondary, tertiary)
+                    : ScalePreviewColor(primary, 0.16),
+                LightPattern.Rave => RandomPreviewColor(primary, secondary, tertiary),
+                _ => primary
+            };
+
+            _backgroundLedPreviewDots[i] = PreviewDot(ScalePreviewColor(color, colorScale), brightness);
+        }
+    }
+
+    private void SetBackgroundLedPreviewAll(string color)
+    {
+        var previewColor = ParsePreviewColor(color, "#334155");
+        for (var i = 0; i < _backgroundLedPreviewDots.Count; i++)
+        {
+            _backgroundLedPreviewDots[i] = PreviewDot(previewColor, 0.08);
+        }
+    }
+
+    private void UpdateBackgroundLedPreviewTimerState()
+    {
+        if (_initializingComponent || !Dispatcher.CheckAccess())
+        {
+            return;
+        }
+
+        var shouldRun = ShouldRunBackgroundLedPreview();
+        if (shouldRun)
+        {
+            if (!_backgroundLedPreviewTimer.IsEnabled)
+            {
+                _backgroundLedPreviewTimer.Start();
+            }
+
+            return;
+        }
+
+        if (_backgroundLedPreviewTimer.IsEnabled)
+        {
+            _backgroundLedPreviewTimer.Stop();
+        }
+
+        if (BackgroundEnabledCheck.IsChecked != true || !_config.ArduinoEnabled)
+        {
+            SetBackgroundLedPreviewAll("#334155");
+        }
+    }
+
+    private bool ShouldRunBackgroundLedPreview()
+    {
+        return BackgroundEnabledCheck.IsChecked == true
+            && _config.ArduinoEnabled
+            && MainTabs.SelectedIndex == 3
+            && BackgroundLedPreviewPanel.IsVisible;
+    }
+
+    private System.Windows.Media.Color RandomPreviewColor(
+        System.Windows.Media.Color primary,
+        System.Windows.Media.Color secondary,
+        System.Windows.Media.Color tertiary)
+    {
+        return _previewRandom.Next(3) switch
+        {
+            0 => primary,
+            1 => secondary,
+            _ => tertiary
+        };
+    }
+
+    private static System.Windows.Media.Color ParsePreviewColor(string color, string fallback)
+    {
+        try
+        {
+            return (System.Windows.Media.Color)System.Windows.Media.ColorConverter.ConvertFromString(LightCommand.NormalizeColor(color));
+        }
+        catch
+        {
+            return (System.Windows.Media.Color)System.Windows.Media.ColorConverter.ConvertFromString(fallback);
+        }
+    }
+
+    private static RuleLedPreviewDot PreviewDot(System.Windows.Media.Color color, double brightness)
+    {
+        var glowOpacity = Math.Clamp(0.12 + (brightness * 0.72), 0.12, 0.9);
+        var glowRadius = 7d + (brightness * 22d);
+        return new RuleLedPreviewDot(
+            FrozenBrushFrom($"#{color.R:X2}{color.G:X2}{color.B:X2}"),
+            color,
+            glowOpacity,
+            glowRadius);
+    }
+
+    private static System.Windows.Media.Color ScalePreviewColor(System.Windows.Media.Color color, double factor)
+    {
+        factor = Math.Clamp(factor, 0d, 1d);
+        return System.Windows.Media.Color.FromRgb(
+            (byte)Math.Round(color.R * factor),
+            (byte)Math.Round(color.G * factor),
+            (byte)Math.Round(color.B * factor));
+    }
+
+    private static System.Windows.Media.Color BlendPreviewColor(
+        System.Windows.Media.Color start,
+        System.Windows.Media.Color end,
+        double amount)
+    {
+        amount = Math.Clamp(amount, 0d, 1d);
+        return System.Windows.Media.Color.FromRgb(
+            (byte)Math.Round(start.R + ((end.R - start.R) * amount)),
+            (byte)Math.Round(start.G + ((end.G - start.G) * amount)),
+            (byte)Math.Round(start.B + ((end.B - start.B) * amount)));
+    }
+
+    private static System.Windows.Media.Color RainbowPreviewColor(double phase)
+    {
+        phase -= Math.Floor(phase);
+        var h = phase * 6d;
+        var x = 1d - Math.Abs((h % 2d) - 1d);
+        var (r, g, b) = h switch
+        {
+            < 1d => (1d, x, 0d),
+            < 2d => (x, 1d, 0d),
+            < 3d => (0d, 1d, x),
+            < 4d => (0d, x, 1d),
+            < 5d => (x, 0d, 1d),
+            _ => (1d, 0d, x)
+        };
+
+        return System.Windows.Media.Color.FromRgb(
+            (byte)Math.Round(r * 255d),
+            (byte)Math.Round(g * 255d),
+            (byte)Math.Round(b * 255d));
     }
 
     private static bool UsesPrimaryColor(LightPattern pattern)
@@ -2283,6 +3680,12 @@ public partial class MainWindow : Window
 
     private void UpdateStatusText()
     {
+        if (!Dispatcher.CheckAccess())
+        {
+            _ = Dispatcher.InvokeAsync(UpdateStatusText);
+            return;
+        }
+
         var channelName = _config.Channel.IsReady
             ? FirstNonEmpty(_config.Channel.DisplayName, _config.Channel.Login, "Canal Twitch")
             : "Sin Twitch";
@@ -2292,11 +3695,15 @@ public partial class MainWindow : Window
 
         ChannelNameText.Text = channelName;
         ChannelLoginText.Text = login;
-        TwitchConnectionText.Text = _eventSubClient.IsRunning
-            ? "Eventos conectados"
-            : _config.Token.HasToken
-                ? "Sesion autorizada"
-                : "Sin conectar";
+        TwitchConnectionText.Text = _isTwitchConnecting
+            ? "Conectando"
+            : !string.IsNullOrWhiteSpace(_twitchConnectionError)
+                ? "Revisar conexion"
+                : _eventSubClient.IsRunning
+                    ? "Eventos conectados"
+                    : _config.Token.HasToken
+                        ? "Sesion autorizada"
+                        : "Sin conectar";
         TwitchStatusText.Text = BuildTwitchStatusText();
         UpdateTwitchLiveIndicator();
         UpdateChannelAvatar();
@@ -2305,18 +3712,71 @@ public partial class MainWindow : Window
         var activeBackground = _config.BackgroundEnabled
             ? $"{DisplayNames.For(_config.BackgroundPattern)} de fondo"
             : "Fondo apagado";
-        ArduinoConnectionText.Text = _lightController.HasOpenPort
-            ? $"Conectado en {_lightController.CurrentPort}"
-            : "Sin conectar";
-        ArduinoStatusText.Text = _lightController.HasOpenPort
-            ? $"{_config.BaudRate} baudios. {_config.LedStrips.Count} tiras, {totalLeds} LEDs. {activeBackground}."
-            : $"Puerto: {FirstNonEmpty(_config.SerialPort, "sin COM")}. {_config.LedStrips.Count} tiras, {totalLeds} LEDs.";
+        ArduinoConnectionText.Text = !_config.ArduinoEnabled
+            ? "Desactivado"
+            : _isArduinoConnecting
+                ? "Conectando"
+            : _lightController.HasConfirmedAck
+                ? $"Conectado en {_lightController.CurrentPort}"
+                : _lightController.HasOpenPort
+                    ? "Puerto abierto sin respuesta"
+                : "Sin conectar";
+        ArduinoStatusText.Text = !_config.ArduinoEnabled
+            ? "Las luces Arduino no se mostraran ni ejecutaran."
+            : _isArduinoConnecting
+                ? $"Intentando conectar con {FirstNonEmpty(_config.SerialPort, "el puerto configurado")}."
+            : _lightController.HasConfirmedAck
+                ? $"{_config.BaudRate} baudios. {_config.LedStrips.Count} tiras, {totalLeds} LEDs. {activeBackground}."
+                : _lightController.HasOpenPort
+                    ? "El puerto esta abierto, pero Arduino no ha confirmado ACK."
+                : $"Puerto: {FirstNonEmpty(_config.SerialPort, "sin COM")}. {_config.LedStrips.Count} tiras, {totalLeds} LEDs.";
+        RefreshDashboardConnectionStates();
+        UpdateDashboardSummary();
+        UpdateLightsArduinoStatus();
 
         TwitchButton.Content = _eventSubClient.IsRunning ? "Desconectar Twitch" : "Conectar Twitch";
     }
 
+    private void UpdateLightsArduinoStatus()
+    {
+        if (!Dispatcher.CheckAccess())
+        {
+            _ = Dispatcher.InvokeAsync(UpdateLightsArduinoStatus);
+            return;
+        }
+
+        if (_initializingComponent)
+        {
+            return;
+        }
+
+        var totalLeds = _config.LedStrips.Sum(strip => strip.LedCount);
+        var pins = _config.LedStrips.Count == 0
+            ? "Sin pines"
+            : string.Join(", ", _config.LedStrips.Select(strip => $"Pin {strip.Pin}"));
+
+        LightsArduinoDeviceText.Text = !_config.ArduinoEnabled
+            ? "Desactivado"
+            : _lightController.HasConfirmedAck
+                ? "Conectado"
+                : _lightController.HasOpenPort
+                    ? "Sin respuesta"
+                    : "Desconectado";
+        LightsArduinoPortText.Text = _lightController.HasOpenPort
+            ? FirstNonEmpty(_lightController.CurrentPort, _config.SerialPort, "Sin COM")
+            : FirstNonEmpty(_config.SerialPort, "Sin COM");
+        LightsArduinoLedCountText.Text = totalLeds.ToString();
+        LightsArduinoPinsText.Text = pins;
+    }
+
     private void UpdateAlexaStatusText()
     {
+        if (!Dispatcher.CheckAccess())
+        {
+            _ = Dispatcher.InvokeAsync(UpdateAlexaStatusText);
+            return;
+        }
+
         var status = _config.Alexa.IsConfigured
             ? "Alexa lista. Las reglas pueden enviar eventos a la Skill/relay."
             : _config.Alexa.Enabled
@@ -2325,13 +3785,19 @@ public partial class MainWindow : Window
 
         AlexaStatusText.Text = status;
         AlexaConnectionText.Text = _config.Alexa.IsConfigured
-            ? "Relay conectado"
+            ? _isAlexaConnecting
+                ? "Conectando"
+                : _alexaRelayConnected
+                    ? "Relay conectado"
+                    : "Relay configurado"
             : _config.Alexa.Enabled
                 ? "Configuracion incompleta"
-                : "Sin conectar";
+                : "Desactivado";
         AlexaSidebarStatusText.Text = _config.Alexa.IsConfigured
             ? BuildAlexaSidebarStatusText()
             : status;
+        RefreshDashboardConnectionStates();
+        UpdateDashboardSummary();
     }
 
     private string BuildAlexaSidebarStatusText()
@@ -2347,6 +3813,195 @@ public partial class MainWindow : Window
         return $"{background}. {endBehavior}.";
     }
 
+    private void UpdateDashboardSummary()
+    {
+        if (!Dispatcher.CheckAccess())
+        {
+            _ = Dispatcher.InvokeAsync(UpdateDashboardSummary);
+            return;
+        }
+
+        DashboardFollowersSummaryText.Text = $"+{_dashboardFollowersToday}";
+        DashboardSubsSummaryText.Text = $"+{_dashboardSubscriptionsToday}";
+        DashboardBitsSummaryText.Text = $"+{_dashboardBitsToday}";
+        DashboardChatSummaryText.Text = _dashboardChatMessagesToday.ToString();
+        DashboardEventsSummaryText.Text = _dashboardEventsToday.ToString();
+
+        DashboardFollowersSummaryText.Foreground = FrozenBrushFrom("#14B8A6");
+        DashboardSubsSummaryText.Foreground = FrozenBrushFrom("#B56CFF");
+        DashboardBitsSummaryText.Foreground = FrozenBrushFrom("#37C7F3");
+        DashboardChatSummaryText.Foreground = FrozenBrushFrom("#22C55E");
+        DashboardEventsSummaryText.Foreground = FrozenBrushFrom("#84CC16");
+
+        RefreshDashboardConnectionStates();
+    }
+
+    private void RefreshDashboardConnectionStates()
+    {
+        var twitchState = _isTwitchConnecting
+            ? ConnectionVisualState.Connecting
+            : !string.IsNullOrWhiteSpace(_twitchConnectionError)
+                ? ConnectionVisualState.Warning
+                : _config.Token.HasToken
+                    ? ConnectionVisualState.Connected
+                    : ConnectionVisualState.Disconnected;
+        var arduinoState = !_config.ArduinoEnabled
+            ? ConnectionVisualState.Disabled
+            : _isArduinoConnecting
+                ? ConnectionVisualState.Connecting
+                : _lightController.HasConfirmedAck
+                    ? ConnectionVisualState.Connected
+                    : _lightController.HasOpenPort
+                        ? ConnectionVisualState.Warning
+                        : ConnectionVisualState.Disconnected;
+        var alexaState = !_config.Alexa.Enabled
+            ? ConnectionVisualState.Disabled
+            : _isAlexaConnecting
+                ? ConnectionVisualState.Connecting
+                : !_config.Alexa.IsConfigured
+                    ? ConnectionVisualState.Warning
+                    : _alexaRelayConnected
+                        ? ConnectionVisualState.Connected
+                        : ConnectionVisualState.Warning;
+        var audioState = _config.AlertVolumePercent > 0
+            ? ConnectionVisualState.Connected
+            : ConnectionVisualState.Disabled;
+
+        SetDashboardConnectionState(
+            DashboardTwitchStateText,
+            DashboardTwitchStatusIcon,
+            twitchState,
+            warningText: "Revisar");
+        SetDashboardConnectionState(
+            DashboardArduinoStateText,
+            DashboardArduinoStatusIcon,
+            arduinoState,
+            warningText: "Sin respuesta");
+        SetDashboardConnectionState(
+            DashboardAlexaStateText,
+            DashboardAlexaStatusIcon,
+            alexaState,
+            warningText: _config.Alexa.IsConfigured ? "Configurado" : "Incompleta");
+        SetDashboardConnectionState(
+            DashboardAudioStateText,
+            DashboardAudioStatusIcon,
+            audioState,
+            connectedText: $"{_config.AlertVolumePercent}%");
+
+        SetConnectionBadgeState(
+            ConnectionsTwitchBadge,
+            ConnectionsTwitchBadgeText,
+            twitchState,
+            warningText: "Revisar");
+        SetConnectionBadgeState(
+            ConnectionsArduinoBadge,
+            ConnectionsArduinoBadgeText,
+            arduinoState,
+            warningText: "Sin respuesta");
+        SetConnectionBadgeState(
+            ConnectionsAlexaBadge,
+            ConnectionsAlexaBadgeText,
+            alexaState,
+            warningText: _config.Alexa.IsConfigured ? "Configurado" : "Incompleta");
+    }
+
+    private static void SetDashboardConnectionState(
+        TextBlock stateText,
+        Border statusIcon,
+        ConnectionVisualState state,
+        string connectedText = "Conectado",
+        string disconnectedText = "Desconectado",
+        string disabledText = "Desactivado",
+        string connectingText = "Conectando",
+        string warningText = "Revisar")
+    {
+        var (text, color, icon) = ConnectionStateVisuals(
+            state,
+            connectedText,
+            disconnectedText,
+            disabledText,
+            connectingText,
+            warningText);
+        var brush = FrozenBrushFrom(color);
+
+        stateText.Text = text;
+        stateText.Foreground = brush;
+        statusIcon.Background = brush;
+        statusIcon.OpacityMask = new ImageBrush
+        {
+            ImageSource = LoadPackImage(icon),
+            Stretch = Stretch.Uniform
+        };
+        statusIcon.ToolTip = text;
+    }
+
+    private static void SetConnectionBadgeState(
+        Border badge,
+        TextBlock textBlock,
+        ConnectionVisualState state,
+        string connectedText = "Conectado",
+        string disconnectedText = "Desconectado",
+        string disabledText = "Desactivado",
+        string connectingText = "Conectando",
+        string warningText = "Revisar")
+    {
+        var (text, color, _) = ConnectionStateVisuals(
+            state,
+            connectedText,
+            disconnectedText,
+            disabledText,
+            connectingText,
+            warningText);
+        var brush = FrozenBrushFrom(color);
+
+        textBlock.Text = text;
+        textBlock.Foreground = brush;
+        badge.Background = TranslucentBrushFrom(color);
+        badge.BorderBrush = brush;
+        badge.BorderThickness = new Thickness(1);
+    }
+
+    private static (string Text, string Color, string IconPath) ConnectionStateVisuals(
+        ConnectionVisualState state,
+        string connectedText,
+        string disconnectedText,
+        string disabledText,
+        string connectingText,
+        string warningText)
+    {
+        return state switch
+        {
+            ConnectionVisualState.Connected => (connectedText, "#22C55E", "Assets/Icons/status_ok.png"),
+            ConnectionVisualState.Connecting => (connectingText, "#FFB020", "Assets/Icons/status_warning.png"),
+            ConnectionVisualState.Warning => (warningText, "#FFB020", "Assets/Icons/status_warning.png"),
+            ConnectionVisualState.Disabled => (disabledText, "#94A3B8", "Assets/Icons/status_empty.png"),
+            _ => (disconnectedText, "#F43F5E", "Assets/Icons/status_error.png")
+        };
+    }
+
+    private static ImageSource? LoadPackImage(string path)
+    {
+        foreach (var uri in new[]
+        {
+            $"pack://application:,,,/NeoTwitch;component/{path}",
+            $"pack://application:,,,/{path}"
+        })
+        {
+            try
+            {
+                var image = new BitmapImage(new Uri(uri, UriKind.Absolute));
+                image.Freeze();
+                return image;
+            }
+            catch
+            {
+                // Some WPF resource contexts prefer the assembly-qualified URI, others the app-root URI.
+            }
+        }
+
+        return null;
+    }
+
     private void UpdateTwitchLiveIndicator()
     {
         var palette = _config.DarkMode
@@ -2360,6 +4015,8 @@ public partial class MainWindow : Window
             TwitchLiveDot.Stroke = liveBrush;
             TwitchLiveStateText.Text = "En directo";
             TwitchLiveStateText.Foreground = liveBrush;
+            TopProfileText.Text = "Perfil";
+            TopProfileText.Foreground = palette.Text;
             return;
         }
 
@@ -2367,6 +4024,8 @@ public partial class MainWindow : Window
         TwitchLiveDot.Stroke = palette.SidebarText;
         TwitchLiveStateText.Text = "No esta en directo";
         TwitchLiveStateText.Foreground = palette.SidebarText;
+        TopProfileText.Text = "Perfil";
+        TopProfileText.Foreground = palette.Text;
     }
 
     private string BuildTwitchStatusText()
@@ -2450,6 +4109,40 @@ public partial class MainWindow : Window
         return remaining > 0 ? $"{text} y {remaining} mas" : text;
     }
 
+    private static string NormalizeThemeMode(string? value)
+    {
+        return value?.Trim().ToLowerInvariant() switch
+        {
+            "light" => "Light",
+            "dark" => "Dark",
+            _ => "System"
+        };
+    }
+
+    private static bool ResolveDarkMode(string? themeMode)
+    {
+        return NormalizeThemeMode(themeMode) switch
+        {
+            "Dark" => true,
+            "Light" => false,
+            _ => IsWindowsAppsDarkMode()
+        };
+    }
+
+    private static bool IsWindowsAppsDarkMode()
+    {
+        try
+        {
+            using var key = Microsoft.Win32.Registry.CurrentUser.OpenSubKey(
+                @"Software\Microsoft\Windows\CurrentVersion\Themes\Personalize");
+            return key?.GetValue("AppsUseLightTheme") is int value && value == 0;
+        }
+        catch
+        {
+            return false;
+        }
+    }
+
     private static string NormalizeEventName(string text, string fallback)
     {
         return string.IsNullOrWhiteSpace(text) ? fallback : text.Trim();
@@ -2509,8 +4202,44 @@ public partial class MainWindow : Window
         return new string('*', length);
     }
 
+    private void UpdateCloseBehaviorCards()
+    {
+        if (_initializingComponent)
+        {
+            return;
+        }
+
+        var closeToTray = CloseToTrayCheck.IsChecked == true;
+        if (CloseToTrayRadio.IsChecked != closeToTray)
+        {
+            CloseToTrayRadio.IsChecked = closeToTray;
+        }
+
+        if (CloseAppRadio.IsChecked != !closeToTray)
+        {
+            CloseAppRadio.IsChecked = !closeToTray;
+        }
+
+        var palette = _config.DarkMode
+            ? ThemePalette.Dark
+            : ThemePalette.Light;
+        ApplyCloseBehaviorCardTheme(CloseToTrayCard, closeToTray, palette);
+        ApplyCloseBehaviorCardTheme(CloseAppCard, !closeToTray, palette);
+    }
+
+    private static void ApplyCloseBehaviorCardTheme(Border card, bool selected, ThemePalette palette)
+    {
+        card.Background = selected
+            ? TranslucentBrushFrom("#14B8A6")
+            : palette.Input;
+        card.BorderBrush = selected
+            ? palette.Accent
+            : palette.Border;
+    }
+
     private void ApplyTheme()
     {
+        _config.DarkMode = ResolveDarkMode(_config.ThemeMode);
         var palette = _config.DarkMode
             ? ThemePalette.Dark
             : ThemePalette.Light;
@@ -2528,7 +4257,7 @@ public partial class MainWindow : Window
         Resources["ThemeBorderBrush"] = palette.Border;
         Resources["ThemeSelectionBrush"] = palette.Accent;
         Resources["ThemeConsoleBrush"] = palette.Console;
-        Resources["ThemeScrollThumbBrush"] = palette.Sidebar;
+        Resources["ThemeScrollThumbBrush"] = palette.Accent;
         Resources["ThemeScrollTrackBrush"] = palette.ScrollTrack;
         Resources[System.Windows.SystemColors.WindowBrushKey] = palette.Input;
         Resources[System.Windows.SystemColors.ControlBrushKey] = palette.Input;
@@ -2544,7 +4273,12 @@ public partial class MainWindow : Window
         ApplyThemeToElement(this, palette);
         ApplyBackgroundOutputMode();
         UpdateTwitchLiveIndicator();
+        UpdateDashboardSummary();
         UpdateColorButtons();
+        UpdateEventKindTileSelection();
+        UpdatePatternTileSelection();
+        UpdateBackgroundPatternTileSelection();
+        UpdateCloseBehaviorCards();
     }
 
     private void ApplyThemeToElement(DependencyObject element, ThemePalette palette)
@@ -2555,11 +4289,22 @@ public partial class MainWindow : Window
         {
             case Border border when border.TemplatedParent is not null:
                 break;
+            case Border border when string.Equals(border.Tag?.ToString(), "StaticBrush", StringComparison.OrdinalIgnoreCase):
+                break;
+            case Border border when border.DataContext is ActivityLogEntry:
+                break;
             case Border border:
                 border.BorderBrush = palette.Border;
                 if (IsSidebarBorder(border))
                 {
                     border.Background = palette.Sidebar;
+                    break;
+                }
+
+                if (IsTitleBarBorder(border))
+                {
+                    border.Background = palette.Window;
+                    border.BorderBrush = palette.Border;
                     break;
                 }
 
@@ -2579,6 +4324,14 @@ public partial class MainWindow : Window
                 border.Background = palette.Surface;
                 break;
             case TextBlock textBlock when textBlock.DataContext is ActivityLogEntry:
+                break;
+            case TextBlock textBlock when string.Equals(textBlock.Tag?.ToString(), "StaticBrush", StringComparison.OrdinalIgnoreCase):
+                break;
+            case TextBlock textBlock when string.Equals(textBlock.Tag?.ToString(), "Accent", StringComparison.OrdinalIgnoreCase):
+                textBlock.Foreground = palette.Accent;
+                break;
+            case TextBlock textBlock when string.Equals(textBlock.Tag?.ToString(), "Success", StringComparison.OrdinalIgnoreCase):
+                textBlock.Foreground = FrozenBrushFrom("#22C55E");
                 break;
             case TextBlock textBlock:
                 if (IsInsideNamedElement(textBlock, "SidebarChrome"))
@@ -2627,6 +4380,14 @@ public partial class MainWindow : Window
                     break;
                 }
 
+                if (IsActivityFeedListBox(listBox))
+                {
+                    listBox.Background = System.Windows.Media.Brushes.Transparent;
+                    listBox.Foreground = palette.Text;
+                    listBox.BorderBrush = System.Windows.Media.Brushes.Transparent;
+                    break;
+                }
+
                 listBox.Background = palette.Input;
                 listBox.Foreground = palette.Text;
                 listBox.BorderBrush = palette.Border;
@@ -2654,6 +4415,14 @@ public partial class MainWindow : Window
                 button.BorderBrush = palette.Border;
                 skipChildren = true;
                 break;
+            case ToggleButton toggleButton when IsRuleStatusFilterButton(toggleButton):
+                ApplyRuleStatusFilterButtonTheme(toggleButton, palette);
+                skipChildren = true;
+                break;
+            case ToggleButton toggleButton:
+                ApplyActivityFilterButtonTheme(toggleButton, palette);
+                skipChildren = true;
+                break;
             case System.Windows.Controls.Button button:
                 ApplyButtonTheme(button, palette);
                 skipChildren = true;
@@ -2679,6 +4448,14 @@ public partial class MainWindow : Window
             return;
         }
 
+        if (IsWindowControlButton(button))
+        {
+            button.Background = System.Windows.Media.Brushes.Transparent;
+            button.Foreground = palette.MutedText;
+            button.BorderBrush = System.Windows.Media.Brushes.Transparent;
+            return;
+        }
+
         if (ReferenceEquals(button.Style, Resources["PrimaryButton"]))
         {
             button.Background = palette.Accent;
@@ -2700,6 +4477,247 @@ public partial class MainWindow : Window
         button.BorderBrush = palette.Border;
     }
 
+    private void ApplyActivityFilterButtonTheme(ToggleButton button, ThemePalette palette)
+    {
+        var filter = button.Tag?.ToString() ?? "";
+        var accentColor = ActivityFilterAccent(filter);
+        var accent = FrozenBrushFrom(accentColor);
+        var active = button.IsChecked == true;
+
+        button.Background = active
+            ? TranslucentBrushFrom(accentColor)
+            : palette.Input;
+        button.Foreground = active
+            ? accent
+            : palette.MutedText;
+        button.BorderBrush = active
+            ? accent
+            : palette.Border;
+    }
+
+    private void ApplyRuleStatusFilterButtonTheme(ToggleButton button, ThemePalette palette)
+    {
+        var active = button.IsChecked == true;
+        var accentColor = button.Tag?.ToString() switch
+        {
+            "ACTIVE" => "#22C55E",
+            "INACTIVE" => "#94A3B8",
+            _ => "#14B8A6"
+        };
+        var accent = FrozenBrushFrom(accentColor);
+
+        button.Background = active
+            ? TranslucentBrushFrom(accentColor)
+            : palette.Input;
+        button.Foreground = active
+            ? accent
+            : palette.MutedText;
+        button.BorderBrush = active
+            ? accent
+            : palette.Border;
+    }
+
+    private static bool IsRuleStatusFilterButton(ToggleButton button)
+    {
+        return button.Name.StartsWith("RuleFilter", StringComparison.OrdinalIgnoreCase);
+    }
+
+    private IEnumerable<ToggleButton> RuleStatusFilterButtons()
+    {
+        return
+        [
+            RuleFilterAllButton,
+            RuleFilterActiveButton,
+            RuleFilterInactiveButton
+        ];
+    }
+
+    private void UpdateEventKindTileSelection()
+    {
+        if (_initializingComponent)
+        {
+            return;
+        }
+
+        var selectedKind = EventKindBox.SelectedValue is TwitchEventKind kind
+            ? kind
+            : TwitchEventKind.Follow;
+        var palette = _config.DarkMode
+            ? ThemePalette.Dark
+            : ThemePalette.Light;
+
+        foreach (var button in EventKindTileButtons())
+        {
+            if (button.Tag is not string value || !Enum.TryParse<TwitchEventKind>(value, out var tileKind))
+            {
+                continue;
+            }
+
+            var selected = tileKind == selectedKind;
+            var accentColor = EventKindAccent(tileKind);
+            var accent = FrozenBrushFrom(accentColor);
+            button.Background = selected
+                ? TranslucentBrushFrom(accentColor)
+                : palette.Input;
+            button.BorderBrush = selected
+                ? accent
+                : palette.Border;
+            button.Foreground = selected
+                ? accent
+                : palette.Text;
+        }
+    }
+
+    private IEnumerable<System.Windows.Controls.Button> EventKindTileButtons()
+    {
+        return
+        [
+            EventFollowTileButton,
+            EventSubscriptionTileButton,
+            EventRaidTileButton,
+            EventCheerTileButton,
+            EventChatCommandTileButton,
+            EventRedemptionTileButton
+        ];
+    }
+
+    private static string EventKindAccent(TwitchEventKind kind)
+    {
+        return kind switch
+        {
+            TwitchEventKind.Follow => "#14B8A6",
+            TwitchEventKind.Subscription => "#B56CFF",
+            TwitchEventKind.Raid => "#F43F5E",
+            TwitchEventKind.Cheer => "#37C7F3",
+            TwitchEventKind.ChatCommand => "#22C55E",
+            TwitchEventKind.ChannelPointRedemption => "#FB923C",
+            _ => "#94A3B8"
+        };
+    }
+
+    private void UpdatePatternTileSelection()
+    {
+        if (_initializingComponent)
+        {
+            return;
+        }
+
+        var selectedPattern = PatternBox.SelectedValue is LightPattern pattern
+            ? pattern
+            : LightPattern.Pulse;
+        var palette = _config.DarkMode
+            ? ThemePalette.Dark
+            : ThemePalette.Light;
+        var tileBackground = _config.DarkMode
+            ? palette.Input
+            : FrozenBrushFrom("#10202A");
+        var tileForeground = _config.DarkMode
+            ? palette.Text
+            : FrozenBrushFrom("#F8FAFC");
+
+        foreach (var button in PatternTileButtons())
+        {
+            if (button.Tag is not string value || !Enum.TryParse<LightPattern>(value, out var tilePattern))
+            {
+                continue;
+            }
+
+            var selected = tilePattern == selectedPattern;
+            var accentColor = PatternAccent(tilePattern);
+            var accent = FrozenBrushFrom(accentColor);
+            button.Background = tileBackground;
+            button.BorderBrush = selected
+                ? accent
+                : palette.Border;
+            button.Foreground = selected
+                ? accent
+                : tileForeground;
+        }
+    }
+
+    private IEnumerable<System.Windows.Controls.Button> PatternTileButtons()
+    {
+        return
+        [
+            PatternSolidTileButton,
+            PatternPulseTileButton,
+            PatternRainbowTileButton,
+            PatternChaseTileButton,
+            PatternTheaterTileButton,
+            PatternSparkleTileButton,
+            PatternRaveTileButton
+        ];
+    }
+
+    private static string PatternAccent(LightPattern pattern)
+    {
+        return pattern switch
+        {
+            LightPattern.Solid => "#14B8A6",
+            LightPattern.Pulse => "#B56CFF",
+            LightPattern.Rainbow => "#37C7F3",
+            LightPattern.Chase => "#22C55E",
+            LightPattern.Theater => "#F59E0B",
+            LightPattern.Sparkle => "#FACC15",
+            LightPattern.Rave => "#EC4899",
+            _ => "#94A3B8"
+        };
+    }
+
+    private void UpdateBackgroundPatternTileSelection()
+    {
+        if (_initializingComponent)
+        {
+            return;
+        }
+
+        var selectedPattern = BackgroundPatternBox.SelectedValue is LightPattern pattern
+            ? pattern
+            : LightPattern.Solid;
+        var palette = _config.DarkMode
+            ? ThemePalette.Dark
+            : ThemePalette.Light;
+        var tileBackground = _config.DarkMode
+            ? palette.Input
+            : FrozenBrushFrom("#10202A");
+        var tileForeground = _config.DarkMode
+            ? palette.Text
+            : FrozenBrushFrom("#F8FAFC");
+
+        foreach (var button in BackgroundPatternTileButtons())
+        {
+            if (button.Tag is not string value || !Enum.TryParse<LightPattern>(value, out var tilePattern))
+            {
+                continue;
+            }
+
+            var selected = tilePattern == selectedPattern;
+            var accentColor = PatternAccent(tilePattern);
+            var accent = FrozenBrushFrom(accentColor);
+            button.Background = tileBackground;
+            button.BorderBrush = selected
+                ? accent
+                : palette.Border;
+            button.Foreground = selected
+                ? accent
+                : tileForeground;
+        }
+    }
+
+    private IEnumerable<System.Windows.Controls.Button> BackgroundPatternTileButtons()
+    {
+        return
+        [
+            BackgroundPatternSolidTileButton,
+            BackgroundPatternPulseTileButton,
+            BackgroundPatternRainbowTileButton,
+            BackgroundPatternChaseTileButton,
+            BackgroundPatternTheaterTileButton,
+            BackgroundPatternSparkleTileButton,
+            BackgroundPatternRaveTileButton
+        ];
+    }
+
     private void UpdateNavigationButtons()
     {
         if (_initializingComponent)
@@ -2711,7 +4729,7 @@ public partial class MainWindow : Window
             ? ThemePalette.Dark
             : ThemePalette.Light;
 
-        foreach (var button in new[] { NavSettingsButton, NavRulesButton, NavStripsButton, NavPreferencesButton, NavActivityButton })
+        foreach (var button in new[] { NavSettingsButton, NavConnectionsButton, NavRulesButton, NavStripsButton, NavAlexaButton, NavAudioButton, NavPreferencesButton, NavActivityButton })
         {
             ApplyNavigationButtonTheme(button, palette);
         }
@@ -2737,9 +4755,63 @@ public partial class MainWindow : Window
             && button.Name.EndsWith("ColorButton", StringComparison.OrdinalIgnoreCase);
     }
 
+    private IEnumerable<ToggleButton> ActivityFilterButtons()
+    {
+        return
+        [
+            ActivityFilterTwitchButton,
+            ActivityFilterArduinoButton,
+            ActivityFilterAlexaButton,
+            ActivityFilterAudioButton,
+            ActivityFilterEventButton,
+            ActivityFilterSystemButton,
+            ActivityFilterImportantButton
+        ];
+    }
+
+    private static string ActivityFilterAccent(string filter)
+    {
+        return filter.ToUpperInvariant() switch
+        {
+            "TWITCH" => "#9146FF",
+            "ARDUINO" => "#00878F",
+            "ALEXA" => "#2FB4E9",
+            "AUDIO" => "#B56CFF",
+            "EVENTO" => "#22C55E",
+            "SISTEMA" => "#94A3B8",
+            "IMPORTANTE" => "#FFB020",
+            _ => "#14B8A6"
+        };
+    }
+
+    private static SolidColorBrush TranslucentBrushFrom(string accentColor)
+    {
+        return accentColor.StartsWith('#') && accentColor.Length == 7
+            ? FrozenBrushFrom($"#22{accentColor[1..]}")
+            : FrozenBrushFrom("#2200C7B7");
+    }
+
+    private static bool IsActivityFeedListBox(System.Windows.Controls.ListBox listBox)
+    {
+        return string.Equals(listBox.Name, "ActivityList", StringComparison.OrdinalIgnoreCase)
+            || string.Equals(listBox.Name, "DashboardActivityList", StringComparison.OrdinalIgnoreCase);
+    }
+
+    private static bool IsWindowControlButton(System.Windows.Controls.Button button)
+    {
+        return string.Equals(button.Name, "MinimizeWindowButton", StringComparison.OrdinalIgnoreCase)
+            || string.Equals(button.Name, "MaximizeWindowButton", StringComparison.OrdinalIgnoreCase)
+            || string.Equals(button.Name, "CloseWindowButton", StringComparison.OrdinalIgnoreCase);
+    }
+
     private static bool IsSidebarBorder(Border border)
     {
         return string.Equals(border.Name, "SidebarChrome", StringComparison.OrdinalIgnoreCase);
+    }
+
+    private static bool IsTitleBarBorder(Border border)
+    {
+        return string.Equals(border.Name, "TitleBarChrome", StringComparison.OrdinalIgnoreCase);
     }
 
     private static bool IsConsoleBorder(Border border)
@@ -2930,11 +5002,80 @@ public partial class MainWindow : Window
     {
     }
 
+    private void CustomTitleDragArea_MouseLeftButtonDown(object sender, MouseButtonEventArgs e)
+    {
+        if (IsInsideButton(e.OriginalSource as DependencyObject))
+        {
+            return;
+        }
+
+        if (e.ClickCount >= 2)
+        {
+            ToggleWindowState();
+            return;
+        }
+
+        try
+        {
+            DragMove();
+        }
+        catch
+        {
+            // DragMove can throw if the pointer is released before the drag starts.
+        }
+    }
+
+    private void MinimizeWindowButton_Click(object sender, RoutedEventArgs e)
+    {
+        WindowState = WindowState.Minimized;
+    }
+
+    private void MaximizeWindowButton_Click(object sender, RoutedEventArgs e)
+    {
+        ToggleWindowState();
+    }
+
+    private void CloseWindowButton_Click(object sender, RoutedEventArgs e)
+    {
+        Close();
+    }
+
+    private void ToggleWindowState()
+    {
+        WindowState = WindowState == WindowState.Maximized
+            ? WindowState.Normal
+            : WindowState.Maximized;
+    }
+
+    private static bool IsInsideButton(DependencyObject? source)
+    {
+        for (var current = source; current is not null; current = VisualTreeHelper.GetParent(current))
+        {
+            if (current is System.Windows.Controls.Button)
+            {
+                return true;
+            }
+        }
+
+        return false;
+    }
+
     private void SaveConfig()
     {
         try
         {
             _settingsStore.Save(_config);
+            if (!_initializingComponent)
+            {
+                if (Dispatcher.CheckAccess())
+                {
+                    UpdateDashboardSummary();
+                }
+                else
+                {
+                    _ = Dispatcher.BeginInvoke(UpdateDashboardSummary, DispatcherPriority.Background);
+                }
+            }
         }
         catch (Exception ex)
         {
@@ -2951,11 +5092,18 @@ public partial class MainWindow : Window
     {
         Dispatcher.BeginInvoke(() =>
         {
-            _activity.Insert(0, new ActivityLogEntry(message, kind));
+            var entry = new ActivityLogEntry(message, kind);
+            _activity.Insert(0, entry);
+            _dashboardActivity.Insert(0, entry);
 
             while (_activity.Count > 250)
             {
                 _activity.RemoveAt(_activity.Count - 1);
+            }
+
+            while (_dashboardActivity.Count > 10)
+            {
+                _dashboardActivity.RemoveAt(_dashboardActivity.Count - 1);
             }
         });
     }
@@ -2964,25 +5112,33 @@ public partial class MainWindow : Window
     {
         var text = message.ToLowerInvariant();
 
-        if (text.Contains("error", StringComparison.Ordinal)
-            || text.Contains("fallo", StringComparison.Ordinal)
-            || text.Contains("no pude", StringComparison.Ordinal)
-            || text.Contains("no puedo", StringComparison.Ordinal)
-            || text.Contains("no hay", StringComparison.Ordinal)
-            || text.Contains("no encontre", StringComparison.Ordinal))
-        {
-            return ActivityLogKind.Important;
-        }
-
         if (text.StartsWith("twitch", StringComparison.Ordinal)
-            || text.StartsWith("alexa", StringComparison.Ordinal)
             || text.StartsWith("chat", StringComparison.Ordinal)
             || text.Contains("autorizado", StringComparison.Ordinal)
             || text.Contains("escuchando eventos", StringComparison.Ordinal))
         {
-            return text.StartsWith("alexa", StringComparison.Ordinal)
-                ? ActivityLogKind.Alexa
-                : ActivityLogKind.Twitch;
+            return ActivityLogKind.Twitch;
+        }
+
+        if (text.StartsWith("alexa", StringComparison.Ordinal))
+        {
+            return ActivityLogKind.Alexa;
+        }
+
+        if (text.StartsWith("arduino", StringComparison.Ordinal)
+            || text.StartsWith("serial", StringComparison.Ordinal)
+            || text.StartsWith("fondo", StringComparison.Ordinal)
+            || text.StartsWith("luces", StringComparison.Ordinal)
+            || text.Contains("puerto com", StringComparison.Ordinal)
+            || text.Contains("puertos com", StringComparison.Ordinal))
+        {
+            return ActivityLogKind.Arduino;
+        }
+
+        if (text.StartsWith("audio", StringComparison.Ordinal)
+            || text.StartsWith("sonido", StringComparison.Ordinal))
+        {
+            return ActivityLogKind.Audio;
         }
 
         if (text.Contains("siguio", StringComparison.Ordinal)
@@ -2993,6 +5149,16 @@ public partial class MainWindow : Window
             || text.StartsWith("prueba de", StringComparison.Ordinal))
         {
             return ActivityLogKind.Event;
+        }
+
+        if (text.Contains("error", StringComparison.Ordinal)
+            || text.Contains("fallo", StringComparison.Ordinal)
+            || text.Contains("no pude", StringComparison.Ordinal)
+            || text.Contains("no puedo", StringComparison.Ordinal)
+            || text.Contains("no hay", StringComparison.Ordinal)
+            || text.Contains("no encontre", StringComparison.Ordinal))
+        {
+            return ActivityLogKind.Important;
         }
 
         return ActivityLogKind.Info;
@@ -3049,53 +5215,654 @@ public partial class MainWindow : Window
     {
         Info,
         Twitch,
+        Arduino,
         Alexa,
+        Audio,
         Event,
         Important
     }
 
-    private enum BackgroundOutputMode
+    private enum ConnectionVisualState
     {
-        Arduino,
-        Alexa
+        Connected,
+        Connecting,
+        Disconnected,
+        Disabled,
+        Warning
     }
 
     private sealed record QueuedAlertSlot(string Id, string RuleId, string RuleName, TwitchEventKind EventKind);
 
     private sealed class ActivityLogEntry
     {
-        private static readonly SolidColorBrush InfoBrush = FrozenBrushFrom("#AFA4CC");
-        private static readonly SolidColorBrush TwitchBrush = FrozenBrushFrom("#9146FF");
-        private static readonly SolidColorBrush AlexaBrush = FrozenBrushFrom("#00A7CE");
-        private static readonly SolidColorBrush EventBrush = FrozenBrushFrom("#00C7B7");
-        private static readonly SolidColorBrush ImportantBrush = FrozenBrushFrom("#FFB020");
-
         public ActivityLogEntry(string message, ActivityLogKind kind)
         {
-            Time = DateTime.Now.ToString("HH:mm:ss");
+            Kind = kind;
+            Time = DateTime.Now.ToString("HH:mm");
             Message = message;
-            Category = kind switch
+            SourceKey = ChooseSourceKey(message, kind);
+            FilterKey = SourceKey;
+            SourceName = SourceDisplayName(SourceKey);
+            Category = BuildCategory(message, kind);
+            Title = BuildTitle(message, kind);
+            Description = BuildDescription(message, Title);
+            var accentColor = ChooseAccentColor(message, kind);
+            var sourceAccentColor = ActivityFilterAccent(SourceKey);
+            SourceBrush = FrozenBrushFrom(sourceAccentColor);
+            SourceBackgroundBrush = TranslucentBrushFrom(sourceAccentColor);
+            SourceIconImageSource = LoadActivityIcon(ChooseServiceIconPath(SourceKey));
+            SourceImageVisibility = SourceIconImageSource is null
+                ? Visibility.Collapsed
+                : Visibility.Visible;
+            SourceVectorVisibility = SourceIconImageSource is null
+                ? Visibility.Visible
+                : Visibility.Collapsed;
+            SourceIconGeometry = Geometry.Parse(IconData(ChooseSourceIconKey(SourceKey)));
+            StatusText = ChooseStatusText(message, kind);
+            IsImportant = kind == ActivityLogKind.Important || !string.Equals(StatusText, "OK", StringComparison.OrdinalIgnoreCase);
+            var statusAccentColor = StatusAccent(StatusText);
+            StatusBrush = FrozenBrushFrom(statusAccentColor);
+            StatusBackgroundBrush = TranslucentBrushFrom(statusAccentColor);
+            StatusIconImageSource = LoadActivityIcon(ChooseStatusIconPath(StatusText, FilterKey));
+
+            AccentBrush = FrozenBrushFrom(accentColor);
+            IconBackgroundBrush = BackgroundBrushFrom(accentColor);
+            var activityIconPath = ChooseActivityIconPath(message, kind, SourceKey);
+            IconImageSource = LoadActivityIcon(activityIconPath);
+            ImageIconVisibility = IconImageSource is null
+                ? Visibility.Collapsed
+                : Visibility.Visible;
+            OriginalImageIconVisibility = IsServiceIconPath(activityIconPath) && IconImageSource is not null
+                ? Visibility.Visible
+                : Visibility.Collapsed;
+            TintedImageIconVisibility = !IsServiceIconPath(activityIconPath) && IconImageSource is not null
+                ? Visibility.Visible
+                : Visibility.Collapsed;
+            VectorIconVisibility = IconImageSource is null
+                ? Visibility.Visible
+                : Visibility.Collapsed;
+            IconGeometry = Geometry.Parse(IconData(ChooseIconKey(message, kind)));
+        }
+
+        public ActivityLogKind Kind { get; }
+        public string Time { get; }
+        public string Message { get; }
+        public string SourceKey { get; }
+        public string FilterKey { get; }
+        public bool IsImportant { get; }
+        public string SourceName { get; }
+        public string Category { get; }
+        public string Title { get; }
+        public string Description { get; }
+        public Geometry IconGeometry { get; }
+        public ImageSource? IconImageSource { get; }
+        public Visibility ImageIconVisibility { get; }
+        public Visibility OriginalImageIconVisibility { get; }
+        public Visibility TintedImageIconVisibility { get; }
+        public Visibility VectorIconVisibility { get; }
+        public SolidColorBrush AccentBrush { get; }
+        public SolidColorBrush IconBackgroundBrush { get; }
+        public Geometry SourceIconGeometry { get; }
+        public ImageSource? SourceIconImageSource { get; }
+        public Visibility SourceImageVisibility { get; }
+        public Visibility SourceVectorVisibility { get; }
+        public SolidColorBrush SourceBrush { get; }
+        public SolidColorBrush SourceBackgroundBrush { get; }
+        public string StatusText { get; }
+        public ImageSource? StatusIconImageSource { get; }
+        public SolidColorBrush StatusBrush { get; }
+        public SolidColorBrush StatusBackgroundBrush { get; }
+
+        public bool MatchesFilter(IReadOnlySet<string> enabledFilters, string searchText)
+        {
+            var sourceEnabled = enabledFilters.Contains(FilterKey);
+            var importantEnabled = enabledFilters.Contains("IMPORTANTE");
+            var hasAnySourceEnabled = enabledFilters.Any(filter => !string.Equals(filter, "IMPORTANTE", StringComparison.OrdinalIgnoreCase));
+
+            if (IsImportant)
             {
-                ActivityLogKind.Twitch => "TWITCH",
-                ActivityLogKind.Alexa => "ALEXA",
-                ActivityLogKind.Event => "EVENTO",
-                ActivityLogKind.Important => "IMPORTANTE",
-                _ => "SISTEMA"
-            };
-            AccentBrush = kind switch
+                if (!importantEnabled)
+                {
+                    return false;
+                }
+
+                if (hasAnySourceEnabled && !sourceEnabled)
+                {
+                    return false;
+                }
+            }
+            else if (!sourceEnabled)
             {
-                ActivityLogKind.Twitch => TwitchBrush,
-                ActivityLogKind.Alexa => AlexaBrush,
-                ActivityLogKind.Event => EventBrush,
-                ActivityLogKind.Important => ImportantBrush,
-                _ => InfoBrush
+                return false;
+            }
+
+            if (string.IsNullOrWhiteSpace(searchText))
+            {
+                return true;
+            }
+
+            return Message.Contains(searchText, StringComparison.OrdinalIgnoreCase)
+                || Title.Contains(searchText, StringComparison.OrdinalIgnoreCase)
+                || Description.Contains(searchText, StringComparison.OrdinalIgnoreCase)
+                || SourceName.Contains(searchText, StringComparison.OrdinalIgnoreCase)
+                || Category.Contains(searchText, StringComparison.OrdinalIgnoreCase)
+                || StatusText.Contains(searchText, StringComparison.OrdinalIgnoreCase);
+        }
+
+        private static string ChooseSourceKey(string message, ActivityLogKind kind)
+        {
+            var text = message.ToLowerInvariant();
+
+            if (kind == ActivityLogKind.Event)
+            {
+                return "EVENTO";
+            }
+
+            if (IsTwitchMessage(text, kind)
+                || text.StartsWith("chat", StringComparison.Ordinal)
+                || text.Contains("autorizado", StringComparison.Ordinal)
+                || text.Contains("escuchando eventos", StringComparison.Ordinal))
+            {
+                return "TWITCH";
+            }
+
+            if (IsArduinoMessage(text, kind)
+                || text.StartsWith("fondo", StringComparison.Ordinal)
+                || text.StartsWith("luces", StringComparison.Ordinal))
+            {
+                return "ARDUINO";
+            }
+
+            if (IsAlexaMessage(text, kind))
+            {
+                return "ALEXA";
+            }
+
+            if (IsAudioMessage(text, kind))
+            {
+                return "AUDIO";
+            }
+
+            return "SISTEMA";
+        }
+
+        private static string SourceDisplayName(string sourceKey)
+        {
+            return sourceKey switch
+            {
+                "TWITCH" => "Twitch",
+                "ARDUINO" => "Arduino",
+                "ALEXA" => "Alexa",
+                "AUDIO" => "Audio",
+                "EVENTO" => "Evento",
+                "IMPORTANTE" => "Importante",
+                _ => "Sistema"
             };
         }
 
-        public string Time { get; }
-        public string Message { get; }
-        public string Category { get; }
-        public SolidColorBrush AccentBrush { get; }
+        private static string BuildCategory(string message, ActivityLogKind kind)
+        {
+            var text = message.ToLowerInvariant();
+
+            if (kind == ActivityLogKind.Event)
+            {
+                if (text.Contains("bits", StringComparison.Ordinal))
+                {
+                    return "BITS";
+                }
+
+                if (text.Contains("suscripcion", StringComparison.Ordinal) || text.Contains("suscribio", StringComparison.Ordinal))
+                {
+                    return "SUB";
+                }
+
+                if (text.Contains("siguio", StringComparison.Ordinal) || text.Contains("seguidor", StringComparison.Ordinal))
+                {
+                    return "SEGUIDOR";
+                }
+
+                if (text.Contains("chat", StringComparison.Ordinal) || text.Contains("comando", StringComparison.Ordinal))
+                {
+                    return "CHAT";
+                }
+
+                if (text.Contains("raid", StringComparison.Ordinal))
+                {
+                    return "RAID";
+                }
+
+                if (text.Contains("canje", StringComparison.Ordinal))
+                {
+                    return "CANJE";
+                }
+
+                return "EVENTO";
+            }
+
+            if (IsTwitchMessage(text, kind))
+            {
+                return "TWITCH";
+            }
+
+            if (IsArduinoMessage(text, kind))
+            {
+                return "ARDUINO";
+            }
+
+            if (IsAlexaMessage(text, kind))
+            {
+                return "ALEXA";
+            }
+
+            if (IsAudioMessage(text, kind))
+            {
+                return "AUDIO";
+            }
+
+            return kind == ActivityLogKind.Important ? "IMPORTANTE" : "SISTEMA";
+        }
+
+        private static string BuildTitle(string message, ActivityLogKind kind)
+        {
+            var text = message.ToLowerInvariant();
+
+            if (kind == ActivityLogKind.Event)
+            {
+                if (text.Contains("bits", StringComparison.Ordinal))
+                {
+                    return "Bits recibidos";
+                }
+
+                if (text.Contains("suscripcion", StringComparison.Ordinal) || text.Contains("suscribio", StringComparison.Ordinal))
+                {
+                    return "Suscripcion";
+                }
+
+                if (text.Contains("raid", StringComparison.Ordinal))
+                {
+                    return "Raid recibida";
+                }
+
+                if (text.Contains("siguio", StringComparison.Ordinal) || text.Contains("seguidor", StringComparison.Ordinal))
+                {
+                    return "Nuevo seguidor";
+                }
+
+                if (text.Contains("canje", StringComparison.Ordinal))
+                {
+                    return "Canje activado";
+                }
+
+                if (text.Contains("comando", StringComparison.Ordinal) || text.Contains("chat", StringComparison.Ordinal))
+                {
+                    return "Comando de chat";
+                }
+
+                if (text.Contains("prueba", StringComparison.Ordinal))
+                {
+                    return "Prueba de alerta";
+                }
+
+                return "Alerta activada";
+            }
+
+            if (IsTwitchMessage(text, kind))
+            {
+                return kind == ActivityLogKind.Important ? "Aviso de Twitch" : "Twitch";
+            }
+
+            if (IsArduinoMessage(text, kind))
+            {
+                return kind == ActivityLogKind.Important ? "Aviso de Arduino" : "Arduino";
+            }
+
+            if (IsAlexaMessage(text, kind))
+            {
+                return text.Contains("fondo", StringComparison.Ordinal) ? "Rutina Alexa" : kind == ActivityLogKind.Important ? "Aviso de Alexa" : "Alexa";
+            }
+
+            if (IsAudioMessage(text, kind))
+            {
+                return kind == ActivityLogKind.Important ? "Aviso de audio" : "Audio";
+            }
+
+            if (kind == ActivityLogKind.Important)
+            {
+                return "Aviso importante";
+            }
+
+            if (text.StartsWith("fondo", StringComparison.Ordinal) || text.StartsWith("luces", StringComparison.Ordinal))
+            {
+                return "Luces";
+            }
+
+            if (text.StartsWith("configuracion", StringComparison.Ordinal))
+            {
+                return "Configuracion";
+            }
+
+            if (text.StartsWith("version", StringComparison.Ordinal))
+            {
+                return "Version";
+            }
+
+            if (text.StartsWith("simulador", StringComparison.Ordinal))
+            {
+                return "Simulador";
+            }
+
+            return "Sistema";
+        }
+
+        private static string BuildDescription(string message, string title)
+        {
+            var clean = message.Trim();
+            var separator = clean.IndexOf(':', StringComparison.Ordinal);
+            if (separator > 0 && separator < clean.Length - 1)
+            {
+                var prefix = clean[..separator].Trim();
+                if (string.Equals(prefix, title, StringComparison.OrdinalIgnoreCase)
+                    || string.Equals(prefix, "Twitch", StringComparison.OrdinalIgnoreCase)
+                    || string.Equals(prefix, "Alexa", StringComparison.OrdinalIgnoreCase)
+                    || string.Equals(prefix, "Arduino", StringComparison.OrdinalIgnoreCase)
+                    || string.Equals(prefix, "Audio", StringComparison.OrdinalIgnoreCase)
+                    || string.Equals(prefix, "Chat", StringComparison.OrdinalIgnoreCase)
+                    || string.Equals(prefix, "Fondo", StringComparison.OrdinalIgnoreCase)
+                    || string.Equals(prefix, "Luces", StringComparison.OrdinalIgnoreCase)
+                    || string.Equals(prefix, "Version", StringComparison.OrdinalIgnoreCase)
+                    || string.Equals(prefix, "Configuracion", StringComparison.OrdinalIgnoreCase)
+                    || string.Equals(prefix, "Simulador", StringComparison.OrdinalIgnoreCase))
+                {
+                    clean = clean[(separator + 1)..].Trim();
+                }
+            }
+
+            return string.IsNullOrWhiteSpace(clean)
+                ? message
+                : clean;
+        }
+
+        private static string ChooseAccentColor(string message, ActivityLogKind kind)
+        {
+            var text = message.ToLowerInvariant();
+
+            if (kind == ActivityLogKind.Event)
+            {
+                if (text.Contains("bits", StringComparison.Ordinal))
+                {
+                    return "#37C7F3";
+                }
+
+                if (text.Contains("suscripcion", StringComparison.Ordinal) || text.Contains("suscribio", StringComparison.Ordinal))
+                {
+                    return "#B56CFF";
+                }
+
+                if (text.Contains("siguio", StringComparison.Ordinal) || text.Contains("seguidor", StringComparison.Ordinal))
+                {
+                    return "#14B8A6";
+                }
+
+                if (text.Contains("chat", StringComparison.Ordinal) || text.Contains("comando", StringComparison.Ordinal))
+                {
+                    return "#22C55E";
+                }
+
+                if (text.Contains("raid", StringComparison.Ordinal))
+                {
+                    return "#F59E0B";
+                }
+
+                return "#00C7B7";
+            }
+
+            if (IsTwitchMessage(text, kind))
+            {
+                return "#9146FF";
+            }
+
+            if (IsArduinoMessage(text, kind))
+            {
+                return "#00878F";
+            }
+
+            if (IsAlexaMessage(text, kind))
+            {
+                return "#2FB4E9";
+            }
+
+            if (IsAudioMessage(text, kind))
+            {
+                return "#B56CFF";
+            }
+
+            return kind == ActivityLogKind.Important ? "#FFB020" : "#AFA4CC";
+        }
+
+        private static string ChooseServiceIconPath(string sourceKey)
+        {
+            return sourceKey switch
+            {
+                "TWITCH" => "Assets/Icons/service_twitch.png",
+                "ARDUINO" => "Assets/Icons/service_arduino.png",
+                "ALEXA" => "Assets/Icons/service_alexa.png",
+                "AUDIO" => "Assets/Icons/service_audio.png",
+                _ => ""
+            };
+        }
+
+        private static string ChooseActivityIconPath(string message, ActivityLogKind kind, string sourceKey)
+        {
+            var text = message.ToLowerInvariant();
+
+            if (kind == ActivityLogKind.Event)
+            {
+                if (text.Contains("bits", StringComparison.Ordinal))
+                {
+                    return "Assets/Icons/action_bits.png";
+                }
+
+                if (text.Contains("suscripcion", StringComparison.Ordinal) || text.Contains("suscribio", StringComparison.Ordinal))
+                {
+                    return "Assets/Icons/action_subscription.png";
+                }
+
+                if (text.Contains("siguio", StringComparison.Ordinal) || text.Contains("seguidor", StringComparison.Ordinal))
+                {
+                    return "Assets/Icons/action_follower.png";
+                }
+
+                if (text.Contains("chat", StringComparison.Ordinal) || text.Contains("comando", StringComparison.Ordinal))
+                {
+                    return "Assets/Icons/action_message.png";
+                }
+
+                return "Assets/Icons/activity_notification.png";
+            }
+
+            if (kind == ActivityLogKind.Important)
+            {
+                return "Assets/Icons/status_important.png";
+            }
+
+            return ChooseServiceIconPath(sourceKey);
+        }
+
+        private static bool IsServiceIconPath(string iconPath)
+        {
+            return iconPath.Contains("/service_", StringComparison.OrdinalIgnoreCase)
+                || iconPath.Contains("\\service_", StringComparison.OrdinalIgnoreCase);
+        }
+
+        private static string ChooseSourceIconKey(string sourceKey)
+        {
+            return sourceKey switch
+            {
+                "EVENTO" => "Event",
+                "IMPORTANTE" => "Warning",
+                "SISTEMA" => "Settings",
+                _ => "Activity"
+            };
+        }
+
+        private static string ChooseStatusText(string message, ActivityLogKind kind)
+        {
+            var text = message.ToLowerInvariant();
+            if (text.Contains("error", StringComparison.Ordinal)
+                || text.Contains("fallo", StringComparison.Ordinal)
+                || text.Contains("no pude", StringComparison.Ordinal)
+                || text.Contains("no puedo", StringComparison.Ordinal)
+                || text.Contains("no hay", StringComparison.Ordinal)
+                || text.Contains("no encontre", StringComparison.Ordinal)
+                || text.Contains("no se pudo", StringComparison.Ordinal)
+                || text.Contains("tardo demasiado", StringComparison.Ordinal))
+            {
+                return "Error";
+            }
+
+            if (kind == ActivityLogKind.Important
+                || text.Contains("advertencia", StringComparison.Ordinal)
+                || text.Contains("aviso", StringComparison.Ordinal)
+                || text.Contains("descart", StringComparison.Ordinal)
+                || text.Contains("no coincide", StringComparison.Ordinal))
+            {
+                return "Aviso";
+            }
+
+            return "OK";
+        }
+
+        private static string StatusAccent(string statusText)
+        {
+            return statusText switch
+            {
+                "Error" => "#F43F5E",
+                "Aviso" => "#FFB020",
+                _ => "#22C55E"
+            };
+        }
+
+        private static string ChooseStatusIconPath(string statusText, string filterKey)
+        {
+            return statusText switch
+            {
+                "Error" => "Assets/Icons/status_error.png",
+                "Aviso" when string.Equals(filterKey, "IMPORTANTE", StringComparison.OrdinalIgnoreCase) => "Assets/Icons/status_important.png",
+                "Aviso" => "Assets/Icons/status_warning.png",
+                _ => "Assets/Icons/status_ok.png"
+            };
+        }
+
+        private static string ChooseIconKey(string message, ActivityLogKind kind)
+        {
+            var text = message.ToLowerInvariant();
+
+            if (kind == ActivityLogKind.Important)
+            {
+                return "Warning";
+            }
+
+            if (kind == ActivityLogKind.Event)
+            {
+                if (text.Contains("bits", StringComparison.Ordinal))
+                {
+                    return "Bits";
+                }
+
+                if (text.Contains("suscripcion", StringComparison.Ordinal) || text.Contains("suscribio", StringComparison.Ordinal))
+                {
+                    return "Star";
+                }
+
+                if (text.Contains("siguio", StringComparison.Ordinal) || text.Contains("seguidor", StringComparison.Ordinal))
+                {
+                    return "Users";
+                }
+
+                if (text.Contains("chat", StringComparison.Ordinal) || text.Contains("comando", StringComparison.Ordinal))
+                {
+                    return "Chat";
+                }
+
+                if (text.Contains("raid", StringComparison.Ordinal))
+                {
+                    return "Zap";
+                }
+
+                return "Event";
+            }
+
+            if (text.StartsWith("arduino", StringComparison.Ordinal))
+            {
+                return "Arduino";
+            }
+
+            if (text.StartsWith("fondo", StringComparison.Ordinal) || text.StartsWith("luces", StringComparison.Ordinal))
+            {
+                return "Sun";
+            }
+
+            return "Activity";
+        }
+
+        private static bool IsTwitchMessage(string text, ActivityLogKind kind)
+        {
+            return kind == ActivityLogKind.Twitch || text.StartsWith("twitch", StringComparison.Ordinal);
+        }
+
+        private static bool IsArduinoMessage(string text, ActivityLogKind kind)
+        {
+            return kind == ActivityLogKind.Arduino
+                || text.StartsWith("arduino", StringComparison.Ordinal)
+                || text.StartsWith("serial", StringComparison.Ordinal);
+        }
+
+        private static bool IsAlexaMessage(string text, ActivityLogKind kind)
+        {
+            return kind == ActivityLogKind.Alexa || text.StartsWith("alexa", StringComparison.Ordinal);
+        }
+
+        private static bool IsAudioMessage(string text, ActivityLogKind kind)
+        {
+            return kind == ActivityLogKind.Audio
+                || text.Contains("audio", StringComparison.Ordinal)
+                || text.Contains("sonido", StringComparison.Ordinal);
+        }
+
+        private static SolidColorBrush BackgroundBrushFrom(string accentColor)
+        {
+            return accentColor.StartsWith('#') && accentColor.Length == 7
+                ? FrozenBrushFrom($"#22{accentColor[1..]}")
+                : FrozenBrushFrom("#2200C7B7");
+        }
+
+        private static ImageSource? LoadActivityIcon(string path)
+        {
+            if (string.IsNullOrWhiteSpace(path))
+            {
+                return null;
+            }
+
+            foreach (var uri in new[]
+            {
+                $"pack://application:,,,/NeoTwitch;component/{path}",
+                $"pack://application:,,,/{path}"
+            })
+            {
+                try
+                {
+                    var image = new BitmapImage(new Uri(uri, UriKind.Absolute));
+                    image.Freeze();
+                    return image;
+                }
+                catch
+                {
+                    // Try the next pack URI format.
+                }
+            }
+
+            return null;
+        }
     }
 
     private static SolidColorBrush FrozenBrushFrom(string hex)
@@ -3104,6 +5871,12 @@ public partial class MainWindow : Window
         brush.Freeze();
         return brush;
     }
+
+    private sealed record RuleLedPreviewDot(
+        SolidColorBrush Fill,
+        System.Windows.Media.Color GlowColor,
+        double GlowOpacity,
+        double GlowRadius);
 
     [DllImport("dwmapi.dll")]
     private static extern int DwmSetWindowAttribute(
@@ -3135,48 +5908,48 @@ public partial class MainWindow : Window
         SolidColorBrush DangerBorder)
     {
         public static ThemePalette Light { get; } = new(
-            BrushFrom("#F7F4FF"),
-            BrushFrom("#8652F6"),
-            BrushFrom("#EFE8FF"),
+            BrushFrom("#F7FAFC"),
             BrushFrom("#FFFFFF"),
-            BrushFrom("#F5F3FF"),
-            BrushFrom("#CDBBFF"),
-            BrushFrom("#1F2330"),
-            BrushFrom("#6B647A"),
-            BrushFrom("#1A0B2E"),
-            BrushFrom("#2E1855"),
-            BrushFrom("#38FFFFFF"),
-            BrushFrom("#4FFFFFFF"),
-            BrushFrom("#171224"),
-            BrushFrom("#AFA4CC"),
-            BrushFrom("#241A0B2E"),
-            BrushFrom("#00A7A5"),
-            BrushFrom("#6D3BDF"),
-            BrushFrom("#FFF0F1"),
-            BrushFrom("#B42318"),
-            BrushFrom("#F4A7A0"));
+            BrushFrom("#FFFFFF"),
+            BrushFrom("#F8FAFC"),
+            BrushFrom("#EEF2F6"),
+            BrushFrom("#E2E8F0"),
+            BrushFrom("#0B1117"),
+            BrushFrom("#475569"),
+            BrushFrom("#0B1117"),
+            BrushFrom("#64748B"),
+            BrushFrom("#F8FAFC"),
+            BrushFrom("#E2E8F0"),
+            BrushFrom("#0B1117"),
+            BrushFrom("#94A3B8"),
+            BrushFrom("#E2E8F0"),
+            BrushFrom("#14B8A6"),
+            BrushFrom("#14B8A6"),
+            BrushFrom("#FFF1F2"),
+            BrushFrom("#B91C1C"),
+            BrushFrom("#FDA4AF"));
 
         public static ThemePalette Dark { get; } = new(
-            BrushFrom("#14101F"),
-            BrushFrom("#8652F6"),
-            BrushFrom("#2B2140"),
-            BrushFrom("#1C1429"),
-            BrushFrom("#33264C"),
-            BrushFrom("#4B3A6D"),
-            BrushFrom("#F4F1FF"),
-            BrushFrom("#B8AECF"),
-            BrushFrom("#1A0B2E"),
-            BrushFrom("#2E1855"),
-            BrushFrom("#38FFFFFF"),
-            BrushFrom("#4FFFFFFF"),
-            BrushFrom("#100B19"),
-            BrushFrom("#B4A8D2"),
-            BrushFrom("#2F241F3B"),
-            BrushFrom("#00B6B5"),
-            BrushFrom("#6D3BDF"),
-            BrushFrom("#3A1F25"),
-            BrushFrom("#FFB4A8"),
-            BrushFrom("#7A3D45"));
+            BrushFrom("#081117"),
+            BrushFrom("#0F1822"),
+            BrushFrom("#121A24"),
+            BrushFrom("#0F1822"),
+            BrushFrom("#162231"),
+            BrushFrom("#233142"),
+            BrushFrom("#E6EEF2"),
+            BrushFrom("#A7B4BE"),
+            BrushFrom("#E6EEF2"),
+            BrushFrom("#A7B4BE"),
+            BrushFrom("#162231"),
+            BrushFrom("#233142"),
+            BrushFrom("#050A0E"),
+            BrushFrom("#64748B"),
+            BrushFrom("#132330"),
+            BrushFrom("#14B8A6"),
+            BrushFrom("#092C2D"),
+            BrushFrom("#3A1418"),
+            BrushFrom("#FDA4AF"),
+            BrushFrom("#7F1D1D"));
 
         private static SolidColorBrush BrushFrom(string hex)
         {

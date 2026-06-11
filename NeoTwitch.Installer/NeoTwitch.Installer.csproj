@@ -1,0 +1,25 @@
+﻿<Project Sdk="Microsoft.NET.Sdk">
+
+  <PropertyGroup>
+    <OutputType>WinExe</OutputType>
+    <TargetFramework>net10.0-windows</TargetFramework>
+    <AssemblyName>NeoTwitch.Installer</AssemblyName>
+    <Product>Neo Twitch Installer</Product>
+    <FileDescription>Neo Twitch Installer</FileDescription>
+    <Version>2.0.0</Version>
+    <Nullable>enable</Nullable>
+    <ImplicitUsings>enable</ImplicitUsings>
+    <UseWPF>true</UseWPF>
+    <UseWindowsForms>true</UseWindowsForms>
+    <ApplicationIcon>..\NeoTwitch\Assets\AppIcon.ico</ApplicationIcon>
+    <ApplicationManifest>app.manifest</ApplicationManifest>
+    <DefaultItemExcludes>$(DefaultItemExcludes);bin\**;obj\**</DefaultItemExcludes>
+  </PropertyGroup>
+
+  <ItemGroup>
+    <Resource Include="..\NeoTwitch\Assets\AppIcon.ico" Link="Assets\AppIcon.ico" />
+    <Resource Include="..\NeoTwitch\Assets\AppIcon.png" Link="Assets\AppIcon.png" />
+    <Resource Include="..\NeoTwitch\Assets\Icons\appstate_ok.png" Link="Assets\Icons\appstate_ok.png" />
+  </ItemGroup>
+
+</Project>

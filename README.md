@@ -4,7 +4,11 @@ App de Windows en .NET/WPF para escuchar eventos de Twitch y activar audio local
 
 ## Descargar
 
-La forma mas facil de usar la app es descargar el release mas reciente desde GitHub:
+La forma más fácil de usar la app es descargar el instalador más reciente desde el siguiente enlace:
+
+[Descargar instalador](https://github.com/Dafovi/NeoTwtich/releases/latest/download/NeoTwitch.Installer.exe)
+
+O si lo prefieres, puedes descargar la versión portable en el Último Release:
 
 [Descargar ultimo release](https://github.com/Dafovi/NeoTwtich/releases/latest)
 
@@ -50,6 +54,7 @@ Esta es una regla de seguidor configurada para activar luces, reproducir audio y
 Y asi se ve el efecto cuando se activa en stream:
 
 ![Ejemplo del efecto activado](docs/images/muestra-seguidor-activado.gif)
+
 [Canal de Twtich](https://www.twitch.tv/cartafilou)
 
 ## Requisitos
@@ -246,6 +251,10 @@ Resumen corto:
 5. Activar `Send Alexa Events`.
 6. Crear una rutina en la app de Alexa.
 7. En Neo Twitch, pegar la Function URL y activar `Enviar evento a Alexa` en cada regla que lo necesite.
+
+## Creditos y atribuciones
+
+Los iconos y logos usados por Neo Twitch tienen sus creditos recopilados en [docs/ATRIBUCIONES_ICONOS.md](docs/ATRIBUCIONES_ICONOS.md).
 
 ## Documentacion oficial consultada
 

@@ -123,7 +123,9 @@ public partial class MainWindow : Window
     private bool _isTwitchConnecting;
     private bool _isArduinoConnecting;
     private bool _isAlexaConnecting;
+    private bool _isCustomMaximized;
     private bool? _lastAppliedStartWithWindows;
+    private Rect _restoreWindowBounds = Rect.Empty;
     private string _twitchConnectionError = "";
     private string _activitySearchText = "";
     private string _ruleSearchText = "";
@@ -2518,6 +2520,7 @@ public partial class MainWindow : Window
         UpdateSensitiveFieldVisibility();
         UpdateSliderLabels();
         UpdateStatusText();
+        RefreshRulesView();
         UpdateRuleOptionVisibility();
         ApplyBackgroundOutputMode();
         UpdateCloseBehaviorCards();
@@ -2546,6 +2549,7 @@ public partial class MainWindow : Window
         SaveConfig();
         UpdateAlexaStatusText();
         UpdateSensitiveFieldVisibility();
+        RefreshRulesView();
         UpdateRuleOptionVisibility();
     }
 
@@ -2925,6 +2929,7 @@ public partial class MainWindow : Window
 
     private void RefreshRulesView()
     {
+        UpdateRuleExternalActionAvailability();
         var selected = RulesList.SelectedItem as EventRule;
         _rulesViewSource.View?.Refresh();
 
@@ -2938,6 +2943,23 @@ public partial class MainWindow : Window
         }
 
         UpdateRulesCountText();
+    }
+
+    private void UpdateRuleExternalActionAvailability()
+    {
+        if (_config.Rules.Count == 0)
+        {
+            return;
+        }
+
+        var lightsAvailable = _config.ArduinoEnabled;
+        var alexaAvailable = _config.Alexa.IsConfigured;
+
+        foreach (var rule in _config.Rules)
+        {
+            rule.LightsActionAvailable = lightsAvailable;
+            rule.AlexaActionAvailable = alexaAvailable;
+        }
     }
 
     private void UpdateRulesCountText()
@@ -5710,6 +5732,11 @@ public partial class MainWindow : Window
             return;
         }
 
+        if (_isCustomMaximized)
+        {
+            RestoreWindowFromWorkArea();
+        }
+
         try
         {
             DragMove();
@@ -5737,9 +5764,48 @@ public partial class MainWindow : Window
 
     private void ToggleWindowState()
     {
-        WindowState = WindowState == WindowState.Maximized
-            ? WindowState.Normal
-            : WindowState.Maximized;
+        if (_isCustomMaximized)
+        {
+            RestoreWindowFromWorkArea();
+            return;
+        }
+
+        MaximizeWindowToWorkArea();
+    }
+
+    private void MaximizeWindowToWorkArea()
+    {
+        _restoreWindowBounds = new Rect(Left, Top, Width, Height);
+
+        var handle = new WindowInteropHelper(this).Handle;
+        var area = Forms.Screen.FromHandle(handle).WorkingArea;
+        var source = PresentationSource.FromVisual(this);
+        var transform = source?.CompositionTarget?.TransformFromDevice ?? Matrix.Identity;
+        var topLeft = transform.Transform(new System.Windows.Point(area.Left, area.Top));
+        var bottomRight = transform.Transform(new System.Windows.Point(area.Right, area.Bottom));
+
+        WindowState = WindowState.Normal;
+        Left = topLeft.X;
+        Top = topLeft.Y;
+        Width = Math.Max(MinWidth, bottomRight.X - topLeft.X);
+        Height = Math.Max(MinHeight, bottomRight.Y - topLeft.Y);
+        _isCustomMaximized = true;
+    }
+
+    private void RestoreWindowFromWorkArea()
+    {
+        WindowState = WindowState.Normal;
+        _isCustomMaximized = false;
+
+        if (_restoreWindowBounds.IsEmpty)
+        {
+            return;
+        }
+
+        Left = _restoreWindowBounds.Left;
+        Top = _restoreWindowBounds.Top;
+        Width = _restoreWindowBounds.Width;
+        Height = _restoreWindowBounds.Height;
     }
 
     private static bool IsInsideButton(DependencyObject? source)

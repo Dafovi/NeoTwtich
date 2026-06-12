@@ -1774,12 +1774,15 @@
                                                                    Style="{StaticResource MutedText}"
                                                                    FontSize="12"
                                                                    TextTrimming="CharacterEllipsis"
+                                                                   ToolTip="{Binding DisplayLabel}"
                                                                    Margin="0,2,0,0" />
                                                         <WrapPanel Margin="0,6,0,0">
                                                             <Image Source="Assets/Icons/nav_lights.png"
                                                                    Width="16"
                                                                    Height="16"
                                                                    Margin="0,0,10,0"
+                                                                   Opacity="{Binding LightsActionOpacity}"
+                                                                   ToolTip="{Binding LightsActionToolTip}"
                                                                    Visibility="{Binding LightsActionVisibility}" />
                                                             <Image Source="Assets/Icons/service_audio.png"
                                                                    Width="16"
@@ -1795,6 +1798,8 @@
                                                                    Width="16"
                                                                    Height="16"
                                                                    Margin="0,0,10,0"
+                                                                   Opacity="{Binding AlexaActionOpacity}"
+                                                                   ToolTip="{Binding AlexaActionToolTip}"
                                                                    Visibility="{Binding AlexaActionVisibility}" />
                                                         </WrapPanel>
                                                     </StackPanel>
@@ -2627,10 +2632,13 @@
                                         <DataTemplate>
                                             <Border Padding="9" Margin="2,3" CornerRadius="7">
                                                 <StackPanel>
-                                                    <TextBlock Text="{Binding Name}" FontWeight="SemiBold" />
+                                                    <TextBlock Text="{Binding Name}"
+                                                               FontWeight="SemiBold"
+                                                               TextTrimming="CharacterEllipsis" />
                                                     <TextBlock Text="{Binding DisplayLabel}"
                                                                Style="{StaticResource MutedText}"
                                                                FontSize="12"
+                                                               TextTrimming="CharacterEllipsis"
                                                                TextWrapping="Wrap" />
                                                 </StackPanel>
                                             </Border>
@@ -2681,10 +2689,12 @@
                                                                    VerticalAlignment="Center" />
                                                             <StackPanel Grid.Column="1">
                                                                 <TextBlock Text="{Binding Name}"
-                                                                           FontWeight="SemiBold" />
+                                                                           FontWeight="SemiBold"
+                                                                           TextTrimming="CharacterEllipsis" />
                                                                 <TextBlock Text="{Binding DisplayLabel}"
                                                                            Style="{StaticResource MutedText}"
                                                                            FontSize="12"
+                                                                           TextTrimming="CharacterEllipsis"
                                                                            TextWrapping="Wrap" />
                                                             </StackPanel>
                                                         </Grid>
@@ -3710,6 +3720,7 @@
                                                             <TextBlock Grid.Column="1"
                                                                        Text="{Binding Name}"
                                                                        FontWeight="SemiBold"
+                                                                       TextTrimming="CharacterEllipsis"
                                                                        VerticalAlignment="Center" />
                                                             <Border Grid.Column="2"
                                                                     CornerRadius="10"

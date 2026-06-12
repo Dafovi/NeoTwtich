@@ -31,6 +31,8 @@ public sealed class EventRule : INotifyPropertyChanged
     private int _durationMs = 4500;
     private int _cycleMs = 80;
     private int _stepMs = 120;
+    private bool _lightsActionAvailable = true;
+    private bool _alexaActionAvailable = true;
 
     public string Id { get; set; } = Guid.NewGuid().ToString("N");
 
@@ -239,6 +241,32 @@ public sealed class EventRule : INotifyPropertyChanged
         set => SetField(ref _stepMs, Math.Clamp(value, 10, 5000));
     }
 
+    public bool LightsActionAvailable
+    {
+        get => _lightsActionAvailable;
+        set
+        {
+            if (SetField(ref _lightsActionAvailable, value))
+            {
+                OnPropertyChanged(nameof(LightsActionOpacity));
+                OnPropertyChanged(nameof(LightsActionToolTip));
+            }
+        }
+    }
+
+    public bool AlexaActionAvailable
+    {
+        get => _alexaActionAvailable;
+        set
+        {
+            if (SetField(ref _alexaActionAvailable, value))
+            {
+                OnPropertyChanged(nameof(AlexaActionOpacity));
+                OnPropertyChanged(nameof(AlexaActionToolTip));
+            }
+        }
+    }
+
     public string DisplayLabel
     {
         get
@@ -315,11 +343,23 @@ public sealed class EventRule : INotifyPropertyChanged
 
     public Visibility LightsActionVisibility => UseLights ? Visibility.Visible : Visibility.Collapsed;
 
+    public double LightsActionOpacity => LightsActionAvailable ? 1d : 0.32d;
+
+    public string LightsActionToolTip => LightsActionAvailable
+        ? "Luces activas"
+        : "Luces configuradas, pero Arduino esta desactivado";
+
     public Visibility AudioActionVisibility => PlayAudio ? Visibility.Visible : Visibility.Collapsed;
 
     public Visibility ChatActionVisibility => SendChatMessage ? Visibility.Visible : Visibility.Collapsed;
 
     public Visibility AlexaActionVisibility => SendAlexaEvent ? Visibility.Visible : Visibility.Collapsed;
+
+    public double AlexaActionOpacity => AlexaActionAvailable ? 1d : 0.32d;
+
+    public string AlexaActionToolTip => AlexaActionAvailable
+        ? "Alexa activa"
+        : "Alexa configurada, pero esta desactivada o incompleta";
 
     public event PropertyChangedEventHandler? PropertyChanged;
 

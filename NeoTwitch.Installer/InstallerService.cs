@@ -201,7 +201,16 @@ internal sealed class InstallerService
             return;
         }
 
-        File.Copy(currentExe, Path.Combine(installPath, "NeoTwitch.Installer.exe"), overwrite: true);
+        var targetPath = Path.Combine(installPath, "NeoTwitch.Installer.exe");
+        if (string.Equals(
+            Path.GetFullPath(currentExe),
+            Path.GetFullPath(targetPath),
+            StringComparison.OrdinalIgnoreCase))
+        {
+            return;
+        }
+
+        File.Copy(currentExe, targetPath, overwrite: true);
     }
 
     private static void CreateShortcut(string shortcutPath, string targetPath)

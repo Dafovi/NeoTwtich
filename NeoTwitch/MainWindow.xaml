@@ -1460,7 +1460,8 @@
                                            Margin="0,8,0,0">
                                     <Button Content="Detectar puertos"
                                             Click="DetectPortsButton_Click" />
-                                    <Button Content="Conectar Arduino"
+                                    <Button x:Name="ConnectArduinoButton"
+                                            Content="Conectar Arduino"
                                             Style="{StaticResource PrimaryButton}"
                                             Click="ConnectArduinoButton_Click" />
                                 </WrapPanel>
@@ -1602,7 +1603,8 @@
                                                HorizontalAlignment="Right">
                                         <Button Content="Abrir Alexa Console"
                                                 Click="OpenAlexaConsoleButton_Click" />
-                                        <Button Content="Probar Alexa"
+                                        <Button x:Name="TestAlexaButton"
+                                                Content="Probar Alexa"
                                                 Style="{StaticResource PrimaryButton}"
                                                 Click="TestAlexaButton_Click" />
                                     </WrapPanel>

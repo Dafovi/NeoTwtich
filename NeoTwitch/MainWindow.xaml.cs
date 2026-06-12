@@ -120,6 +120,7 @@ public partial class MainWindow : Window
     private bool _showAlexaRelayUrl;
     private bool _showAlexaAuthToken;
     private bool _alexaRelayConnected;
+    private bool _isTwitchAuthorizing;
     private bool _isTwitchConnecting;
     private bool _isArduinoConnecting;
     private bool _isAlexaConnecting;
@@ -533,6 +534,11 @@ public partial class MainWindow : Window
 
     private async void TwitchButton_Click(object sender, RoutedEventArgs e)
     {
+        if (_isTwitchAuthorizing || _isTwitchConnecting)
+        {
+            return;
+        }
+
         try
         {
             SaveGlobalSettingsFromFields();
@@ -678,11 +684,12 @@ public partial class MainWindow : Window
         try
         {
             var installPath = AppContext.BaseDirectory.TrimEnd(System.IO.Path.DirectorySeparatorChar, System.IO.Path.AltDirectorySeparatorChar);
+            var launcherPath = PrepareInstallerLauncher(installerPath);
             Process.Start(new ProcessStartInfo
             {
-                FileName = installerPath,
+                FileName = launcherPath,
                 Arguments = $"--update --target \"{installPath}\" --version \"V{result.LatestVersion}\"",
-                WorkingDirectory = System.IO.Path.GetDirectoryName(installerPath),
+                WorkingDirectory = System.IO.Path.GetDirectoryName(launcherPath),
                 UseShellExecute = true
             });
             AddLog($"Version: iniciando actualizador a V{result.LatestVersion}.", ActivityLogKind.Important);
@@ -693,6 +700,21 @@ public partial class MainWindow : Window
             AddLog($"Version: no pude abrir el actualizador ({ex.Message}).", ActivityLogKind.Important);
             OpenReleasePage(result.ReleaseUrl);
         }
+    }
+
+    private static string PrepareInstallerLauncher(string installerPath)
+    {
+        var updaterDirectory = System.IO.Path.Combine(
+            System.IO.Path.GetTempPath(),
+            "NeoTwitch",
+            "Updater");
+        Directory.CreateDirectory(updaterDirectory);
+
+        var launcherPath = System.IO.Path.Combine(
+            updaterDirectory,
+            $"NeoTwitch.Installer.{Guid.NewGuid():N}.exe");
+        File.Copy(installerPath, launcherPath, overwrite: true);
+        return launcherPath;
     }
 
     private static string FindLocalInstallerPath()
@@ -728,8 +750,8 @@ public partial class MainWindow : Window
             throw new InvalidOperationException("Escribe primero el Client ID de Twitch.");
         }
 
-        TwitchButton.IsEnabled = false;
-        TwitchStatusText.Text = "Esperando autorizacion...";
+        _isTwitchAuthorizing = true;
+        UpdateStatusText();
 
         try
         {
@@ -750,7 +772,7 @@ public partial class MainWindow : Window
         }
         finally
         {
-            TwitchButton.IsEnabled = true;
+            _isTwitchAuthorizing = false;
             UpdateStatusText();
         }
     }
@@ -915,6 +937,11 @@ public partial class MainWindow : Window
 
     private async void ConnectArduinoButton_Click(object sender, RoutedEventArgs e)
     {
+        if (_isArduinoConnecting)
+        {
+            return;
+        }
+
         try
         {
             SaveGlobalSettingsFromFields();
@@ -949,12 +976,29 @@ public partial class MainWindow : Window
         try
         {
             await _lightController.ConfigureAsync(_config.SerialPort, _config.BaudRate, AddLog, CancellationToken.None);
+            await ConfirmArduinoConnectionAsync();
         }
         finally
         {
             _isArduinoConnecting = false;
             UpdateStatusText();
         }
+    }
+
+    private async Task ConfirmArduinoConnectionAsync()
+    {
+        if (!_config.ArduinoEnabled || !_lightController.HasOpenPort)
+        {
+            return;
+        }
+
+        var targets = LightCommand.ResolveTargets(_config, "");
+        if (targets.Count == 0)
+        {
+            return;
+        }
+
+        await _lightController.StopAsync(targets, AddLog, CancellationToken.None);
     }
 
     private async Task ApplyBackgroundAsync()
@@ -2555,6 +2599,11 @@ public partial class MainWindow : Window
 
     private async void TestAlexaButton_Click(object sender, RoutedEventArgs e)
     {
+        if (_isAlexaConnecting)
+        {
+            return;
+        }
+
         try
         {
             _isAlexaConnecting = true;
@@ -4391,7 +4440,9 @@ public partial class MainWindow : Window
 
         ChannelNameText.Text = channelName;
         ChannelLoginText.Text = login;
-        TwitchConnectionText.Text = _isTwitchConnecting
+        TwitchConnectionText.Text = _isTwitchAuthorizing
+            ? "Autorizando"
+            : _isTwitchConnecting
             ? "Conectando"
             : !string.IsNullOrWhiteSpace(_twitchConnectionError)
                 ? "Revisar conexion"
@@ -4412,10 +4463,10 @@ public partial class MainWindow : Window
             ? "Desactivado"
             : _isArduinoConnecting
                 ? "Conectando"
-            : _lightController.HasConfirmedAck
+            : _lightController.HasConfirmedAck || _lightController.IsCompatibleWithoutAck
                 ? $"Conectado en {_lightController.CurrentPort}"
                 : _lightController.HasOpenPort
-                    ? "Puerto abierto sin respuesta"
+                    ? "Verificando Arduino"
                 : "Sin conectar";
         ArduinoStatusText.Text = !_config.ArduinoEnabled
             ? "Las luces Arduino no se mostraran ni ejecutaran."
@@ -4423,14 +4474,16 @@ public partial class MainWindow : Window
                 ? $"Intentando conectar con {FirstNonEmpty(_config.SerialPort, "el puerto configurado")}."
             : _lightController.HasConfirmedAck
                 ? $"{_config.BaudRate} baudios. {_config.LedStrips.Count} tiras, {totalLeds} LEDs. {activeBackground}."
+                : _lightController.IsCompatibleWithoutAck
+                    ? $"{_config.BaudRate} baudios. Modo compatible sin ACK; las luces pueden funcionar, pero el sketch no confirmo comandos."
                 : _lightController.HasOpenPort
-                    ? "El puerto esta abierto, pero Arduino no ha confirmado ACK."
+                    ? "El puerto esta abierto; esperando confirmacion del sketch."
                 : $"Puerto: {FirstNonEmpty(_config.SerialPort, "sin COM")}. {_config.LedStrips.Count} tiras, {totalLeds} LEDs.";
         RefreshDashboardConnectionStates();
         UpdateDashboardSummary();
         UpdateLightsArduinoStatus();
 
-        TwitchButton.Content = _eventSubClient.IsRunning ? "Desconectar Twitch" : "Conectar Twitch";
+        UpdateConnectionButtons();
     }
 
     private void UpdateLightsArduinoStatus()
@@ -4453,10 +4506,10 @@ public partial class MainWindow : Window
 
         LightsArduinoDeviceText.Text = !_config.ArduinoEnabled
             ? "Desactivado"
-            : _lightController.HasConfirmedAck
+            : _lightController.HasConfirmedAck || _lightController.IsCompatibleWithoutAck
                 ? "Conectado"
-                : _lightController.HasOpenPort
-                    ? "Sin respuesta"
+            : _lightController.HasOpenPort
+                    ? "Verificando"
                     : "Desconectado";
         LightsArduinoPortText.Text = _lightController.HasOpenPort
             ? FirstNonEmpty(_lightController.CurrentPort, _config.SerialPort, "Sin COM")
@@ -4492,8 +4545,32 @@ public partial class MainWindow : Window
         AlexaSidebarStatusText.Text = _config.Alexa.IsConfigured
             ? BuildAlexaSidebarStatusText()
             : status;
+        UpdateConnectionButtons();
         RefreshDashboardConnectionStates();
         UpdateDashboardSummary();
+    }
+
+    private void UpdateConnectionButtons()
+    {
+        var twitchBusy = _isTwitchAuthorizing || _isTwitchConnecting;
+        TwitchButton.IsEnabled = !twitchBusy;
+        TwitchButton.Content = _isTwitchAuthorizing
+            ? "Autorizando..."
+            : _isTwitchConnecting
+                ? "Conectando..."
+                : _eventSubClient.IsRunning
+                    ? "Desconectar Twitch"
+                    : "Conectar Twitch";
+
+        ConnectArduinoButton.IsEnabled = !_isArduinoConnecting && _config.ArduinoEnabled;
+        ConnectArduinoButton.Content = _isArduinoConnecting
+            ? "Conectando..."
+            : "Conectar Arduino";
+
+        TestAlexaButton.IsEnabled = !_isAlexaConnecting && _config.Alexa.Enabled;
+        TestAlexaButton.Content = _isAlexaConnecting
+            ? "Probando..."
+            : "Probar Alexa";
     }
 
     private string BuildAlexaSidebarStatusText()
@@ -4534,7 +4611,7 @@ public partial class MainWindow : Window
 
     private void RefreshDashboardConnectionStates()
     {
-        var twitchState = _isTwitchConnecting
+        var twitchState = _isTwitchAuthorizing || _isTwitchConnecting
             ? ConnectionVisualState.Connecting
             : !string.IsNullOrWhiteSpace(_twitchConnectionError)
                 ? ConnectionVisualState.Warning
@@ -4545,10 +4622,10 @@ public partial class MainWindow : Window
             ? ConnectionVisualState.Disabled
             : _isArduinoConnecting
                 ? ConnectionVisualState.Connecting
-                : _lightController.HasConfirmedAck
+                : _lightController.HasConfirmedAck || _lightController.IsCompatibleWithoutAck
                     ? ConnectionVisualState.Connected
-                    : _lightController.HasOpenPort
-                        ? ConnectionVisualState.Warning
+                : _lightController.HasOpenPort
+                        ? ConnectionVisualState.Connecting
                         : ConnectionVisualState.Disconnected;
         var alexaState = !_config.Alexa.Enabled
             ? ConnectionVisualState.Disabled
@@ -4726,6 +4803,16 @@ public partial class MainWindow : Window
 
     private string BuildTwitchStatusText()
     {
+        if (_isTwitchAuthorizing)
+        {
+            return "Esperando autorizacion de Twitch.";
+        }
+
+        if (_isTwitchConnecting)
+        {
+            return "Conectando EventSub y chat de Twitch.";
+        }
+
         if (_streamStatus is { IsLive: true } live)
         {
             var game = string.IsNullOrWhiteSpace(live.GameName)

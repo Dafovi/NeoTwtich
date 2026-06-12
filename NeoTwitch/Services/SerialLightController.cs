@@ -27,6 +27,10 @@ public sealed class SerialLightController : IDisposable
 
     public bool HasConfirmedAck => HasOpenPort && _ackSupported == true;
 
+    public bool IsCompatibleWithoutAck => HasOpenPort && _ackSupported == false;
+
+    public bool IsReadyForCommands => HasOpenPort && _ackSupported is not null;
+
     public string CurrentPort => _port;
 
     public string AckStatusText => _ackSupported switch

@@ -35,6 +35,13 @@ Neo Twitch usa iconos y logos de terceros. Esta pagina recopila las atribuciones
 - Suscripcion: [Estrella iconos](https://www.flaticon.es/iconos-gratis/estrella), creados por Pixel perfect - Flaticon.
 - Bits: [Diamante iconos](https://www.flaticon.es/iconos-gratis/diamante), creados por Freepik - Flaticon.
 - Mensajes: [Ventana de chat iconos](https://www.flaticon.es/iconos-gratis/ventana-de-chat), creados por Graphics Plazza - Flaticon.
+- Musica: [Musica iconos](https://www.flaticon.es/iconos-gratis/musica), creados por Becris - Flaticon.
+- Grupo de musica: [Grupo de musica iconos](https://www.flaticon.es/iconos-gratis/grupo-de-musica), creados por Freepik - Flaticon.
+- Archivo de sonido: [Archivo de sonido iconos](https://www.flaticon.es/iconos-gratis/archivo-de-sonido), creados por Ramy W. - Flaticon.
+- Reproducir: [Tocar iconos](https://www.flaticon.es/iconos-gratis/tocar), creados por Freepik - Flaticon.
+- Pausa: [Pausa iconos](https://www.flaticon.es/iconos-gratis/pausa), creados por Slidicon - Flaticon.
+- Eliminar: [Tacho de basura iconos](https://www.flaticon.es/iconos-gratis/tacho-de-basura), creados por Freepik - Flaticon.
+- Guardar: [Disquete iconos](https://www.flaticon.es/iconos-gratis/disquete), creados por Hilmy Abiyyu A. - Flaticon.
 
 ## Logos y marcas
 

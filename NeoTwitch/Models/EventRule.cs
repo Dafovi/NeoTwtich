@@ -15,6 +15,9 @@ public sealed class EventRule : INotifyPropertyChanged
     private bool _useLights;
     private bool _playAudio;
     private string _audioPath = "";
+    private AudioSourceMode _audioSourceMode = AudioSourceMode.Single;
+    private string _audioAssetId = "";
+    private string _audioGroupId = "";
     private bool _sendChatMessage;
     private string _chatMessageTemplate = "";
     private bool _sendAlexaEvent;
@@ -124,6 +127,24 @@ public sealed class EventRule : INotifyPropertyChanged
     {
         get => _audioPath;
         set => SetField(ref _audioPath, value);
+    }
+
+    public AudioSourceMode AudioSourceMode
+    {
+        get => _audioSourceMode;
+        set => SetField(ref _audioSourceMode, value);
+    }
+
+    public string AudioAssetId
+    {
+        get => _audioAssetId;
+        set => SetField(ref _audioAssetId, value);
+    }
+
+    public string AudioGroupId
+    {
+        get => _audioGroupId;
+        set => SetField(ref _audioGroupId, value);
     }
 
     public bool SendChatMessage
@@ -342,6 +363,9 @@ public sealed class EventRule : INotifyPropertyChanged
             UseLights = UseLights,
             PlayAudio = PlayAudio,
             AudioPath = AudioPath,
+            AudioSourceMode = AudioSourceMode,
+            AudioAssetId = AudioAssetId,
+            AudioGroupId = AudioGroupId,
             SendChatMessage = SendChatMessage,
             ChatMessageTemplate = ChatMessageTemplate,
             SendAlexaEvent = SendAlexaEvent,
@@ -401,4 +425,10 @@ public sealed class EventRule : INotifyPropertyChanged
     {
         PropertyChanged?.Invoke(this, new PropertyChangedEventArgs(propertyName));
     }
+}
+
+public enum AudioSourceMode
+{
+    Single,
+    Group
 }

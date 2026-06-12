@@ -189,11 +189,14 @@ public sealed class SettingsStore
         config.ThemeMode = NormalizeThemeMode(config.ThemeMode);
         config.BaudRate = Math.Clamp(config.BaudRate, 300, 921600);
         config.AlertVolumePercent = Math.Clamp(config.AlertVolumePercent, 0, 100);
+        config.AudioGroups = NormalizeAudioGroups(config.AudioGroups);
+        config.AudioLibrary = NormalizeAudioLibrary(config.AudioLibrary);
         config.MaxQueuedSameRuleAlerts = Math.Clamp(config.MaxQueuedSameRuleAlerts, 0, 100);
         config.SameRuleQueueCooldownMs = Math.Clamp(config.SameRuleQueueCooldownMs, 0, 600000);
         config.MaxQueuedDifferentRuleAlerts = Math.Clamp(config.MaxQueuedDifferentRuleAlerts, 0, 100);
         config.DifferentRuleQueueCooldownMs = Math.Clamp(config.DifferentRuleQueueCooldownMs, 0, 600000);
         config.Rules = NormalizeRules(config.Rules, defaults.Rules);
+        MigrateRuleAudioLibrary(config);
         config.LedStrips = NormalizeStrips(config.LedStrips, defaults.LedStrips);
         config.BackgroundTargetPins ??= "";
         config.BackgroundPattern = Enum.IsDefined(config.BackgroundPattern)
@@ -240,6 +243,9 @@ public sealed class SettingsStore
             rule.CustomRewardTitle ??= "";
             rule.ChatCommand ??= "";
             rule.AudioPath ??= "";
+            rule.AudioAssetId ??= "";
+            rule.AudioGroupId ??= "";
+            rule.AudioSourceMode = Enum.IsDefined(rule.AudioSourceMode) ? rule.AudioSourceMode : AudioSourceMode.Single;
             rule.ChatMessageTemplate ??= "";
             rule.AlexaEventName ??= "";
             rule.TargetPins ??= "";
@@ -256,6 +262,83 @@ public sealed class SettingsStore
         }
 
         return rules;
+    }
+
+    private static ObservableCollection<AudioGroupConfig> NormalizeAudioGroups(ObservableCollection<AudioGroupConfig>? groups)
+    {
+        groups ??= [];
+
+        foreach (var group in groups)
+        {
+            group.Id = string.IsNullOrWhiteSpace(group.Id) ? Guid.NewGuid().ToString("N") : group.Id;
+            group.Name = string.IsNullOrWhiteSpace(group.Name) ? "Grupo de audio" : group.Name.Trim();
+        }
+
+        return groups;
+    }
+
+    private static ObservableCollection<AudioAssetConfig> NormalizeAudioLibrary(ObservableCollection<AudioAssetConfig>? library)
+    {
+        library ??= [];
+
+        foreach (var audio in library)
+        {
+            audio.Id = string.IsNullOrWhiteSpace(audio.Id) ? Guid.NewGuid().ToString("N") : audio.Id;
+            audio.Name = string.IsNullOrWhiteSpace(audio.Name) ? Path.GetFileNameWithoutExtension(audio.FilePath ?? "") : audio.Name.Trim();
+            audio.FilePath ??= "";
+            audio.GroupId ??= "";
+            audio.DurationMs = audio.DurationMs;
+        }
+
+        return library;
+    }
+
+    private static void MigrateRuleAudioLibrary(AppConfig config)
+    {
+        foreach (var rule in config.Rules)
+        {
+            rule.AudioAssetId ??= "";
+            rule.AudioGroupId ??= "";
+
+            if (rule.AudioSourceMode == AudioSourceMode.Group)
+            {
+                var groupExists = config.AudioGroups.Any(group => string.Equals(group.Id, rule.AudioGroupId, StringComparison.OrdinalIgnoreCase));
+                if (groupExists)
+                {
+                    continue;
+                }
+
+                rule.AudioSourceMode = AudioSourceMode.Single;
+                rule.AudioGroupId = "";
+            }
+
+            if (!string.IsNullOrWhiteSpace(rule.AudioAssetId)
+                && config.AudioLibrary.Any(audio => string.Equals(audio.Id, rule.AudioAssetId, StringComparison.OrdinalIgnoreCase)))
+            {
+                continue;
+            }
+
+            if (string.IsNullOrWhiteSpace(rule.AudioPath))
+            {
+                rule.AudioAssetId = "";
+                continue;
+            }
+
+            var existing = config.AudioLibrary.FirstOrDefault(audio =>
+                string.Equals(audio.FilePath, rule.AudioPath, StringComparison.OrdinalIgnoreCase));
+            if (existing is null)
+            {
+                existing = new AudioAssetConfig
+                {
+                    Name = Path.GetFileNameWithoutExtension(rule.AudioPath),
+                    FilePath = rule.AudioPath
+                };
+                config.AudioLibrary.Add(existing);
+            }
+
+            rule.AudioSourceMode = AudioSourceMode.Single;
+            rule.AudioAssetId = existing.Id;
+        }
     }
 
     private static ObservableCollection<LedStripConfig> NormalizeStrips(

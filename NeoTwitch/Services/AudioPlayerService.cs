@@ -8,6 +8,57 @@ public sealed class AudioPlayerService
 {
     private readonly List<MediaPlayer> _players = [];
 
+    public async Task<TimeSpan?> ProbeDurationAsync(string? audioPath)
+    {
+        if (string.IsNullOrWhiteSpace(audioPath) || !File.Exists(audioPath))
+        {
+            return null;
+        }
+
+        var completion = new TaskCompletionSource<TimeSpan?>();
+
+        _ = System.Windows.Application.Current.Dispatcher.BeginInvoke(() =>
+        {
+            var player = new MediaPlayer();
+
+            void Cleanup()
+            {
+                player.MediaOpened -= Opened;
+                player.MediaFailed -= Failed;
+                player.Close();
+            }
+
+            void Opened(object? sender, EventArgs args)
+            {
+                var duration = player.NaturalDuration.HasTimeSpan
+                    ? player.NaturalDuration.TimeSpan
+                    : (TimeSpan?)null;
+
+                completion.TrySetResult(duration);
+                Cleanup();
+            }
+
+            void Failed(object? sender, ExceptionEventArgs args)
+            {
+                completion.TrySetResult(null);
+                Cleanup();
+            }
+
+            player.MediaOpened += Opened;
+            player.MediaFailed += Failed;
+            player.Open(new Uri(audioPath, UriKind.Absolute));
+        });
+
+        try
+        {
+            return await completion.Task.WaitAsync(TimeSpan.FromSeconds(3));
+        }
+        catch (TimeoutException)
+        {
+            return null;
+        }
+    }
+
     public async Task<AudioPlayback?> PrepareAsync(string? audioPath, int volumePercent, Action<string> log)
     {
         if (string.IsNullOrWhiteSpace(audioPath))

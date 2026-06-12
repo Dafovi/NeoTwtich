@@ -22,6 +22,8 @@ public sealed class AppConfig
     public bool DarkMode { get; set; }
     public bool CloseToTray { get; set; } = true;
     public int AlertVolumePercent { get; set; } = 100;
+    public ObservableCollection<AudioAssetConfig> AudioLibrary { get; set; } = [];
+    public ObservableCollection<AudioGroupConfig> AudioGroups { get; set; } = [];
     public int MaxQueuedSameRuleAlerts { get; set; } = 1;
     public int SameRuleQueueCooldownMs { get; set; }
     public int MaxQueuedDifferentRuleAlerts { get; set; } = 3;

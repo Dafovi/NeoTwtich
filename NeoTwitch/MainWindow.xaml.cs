@@ -47,6 +47,8 @@ public partial class MainWindow : Window
     private readonly TwitchEventSubClient _eventSubClient;
     private readonly ObservableCollection<ActivityLogEntry> _activity = [];
     private readonly ObservableCollection<ActivityLogEntry> _dashboardActivity = [];
+    private readonly ObservableCollection<AudioLibraryRow> _audioLibraryRows = [];
+    private readonly ObservableCollection<AudioGroupRow> _audioGroupRows = [];
     private readonly ObservableCollection<RuleLedPreviewDot> _ruleLedPreviewDots = [];
     private readonly ObservableCollection<RuleLedPreviewDot> _backgroundLedPreviewDots = [];
     private readonly CollectionViewSource _activityViewSource = new();
@@ -54,6 +56,7 @@ public partial class MainWindow : Window
     private readonly DispatcherTimer _ruleLedPreviewTimer = new();
     private readonly DispatcherTimer _backgroundLedPreviewTimer = new();
     private readonly Random _previewRandom = new();
+    private readonly Random _audioRandom = new();
     private readonly SemaphoreSlim _effectGate = new(1, 1);
     private readonly object _alertQueueSync = new();
     private readonly List<QueuedAlertSlot> _pendingAlertSlots = [];
@@ -126,6 +129,14 @@ public partial class MainWindow : Window
     private string _ruleSearchText = "";
     private string _ruleStatusFilter = "ALL";
     private string _ruleCategoryFilter = "";
+    private string _audioSearchText = "";
+    private string _audioFilter = "ALL";
+    private string _audioGroupFilterId = "";
+    private string _newAudioPath = "";
+    private AudioSourceMode _ruleAudioMode = AudioSourceMode.Single;
+    private bool _refreshingAudioLibrary;
+    private string _audioGroupChoicesSignature = "";
+    private string _audioAlertChoicesSignature = "";
     private CancellationTokenSource? _backgroundApplyDebounce;
     private CancellationTokenSource? _twitchSubscriptionRefreshDebounce;
     private CancellationTokenSource? _currentEffectCts;
@@ -142,9 +153,15 @@ public partial class MainWindow : Window
     private int _ruleLedPreviewStep;
     private int _backgroundLedPreviewStep;
     private AudioPlayback? _currentPlayback;
+    private AudioPlayback? _audioPreviewPlayback;
+    private string _previewingAudioId = "";
     private TwitchStreamStatus? _streamStatus;
     private DrawingIcon? _trayIcon;
     private Forms.NotifyIcon? _notifyIcon;
+
+    public ObservableCollection<AudioGroupChoice> AudioGroupChoices { get; } = [];
+
+    public ObservableCollection<AudioAlertChoice> AudioAlertChoices { get; } = [];
 
     public MainWindow()
     {
@@ -172,6 +189,8 @@ public partial class MainWindow : Window
             _activityViewSource.Filter += ActivityViewSource_Filter;
             ActivityList.ItemsSource = _activityViewSource.View;
             DashboardActivityList.ItemsSource = _dashboardActivity;
+            AudioLibraryList.ItemsSource = _audioLibraryRows;
+            AudioGroupsList.ItemsSource = _audioGroupRows;
             for (var i = 0; i < 24; i++)
             {
                 _ruleLedPreviewDots.Add(PreviewDot(ParsePreviewColor("#334155", "#334155"), 0.08));
@@ -194,6 +213,18 @@ public partial class MainWindow : Window
             RuleCategoryFilterBox.DisplayMemberPath = nameof(UiOption<string>.Label);
             RuleCategoryFilterBox.SelectedValuePath = nameof(UiOption<string>.Value);
             RuleCategoryFilterBox.SelectedValue = "";
+            RuleAudioAssetBox.ItemsSource = _config.AudioLibrary;
+            RuleAudioAssetBox.DisplayMemberPath = nameof(AudioAssetConfig.DisplayName);
+            RuleAudioAssetBox.SelectedValuePath = nameof(AudioAssetConfig.Id);
+            RuleAudioGroupBox.ItemsSource = _config.AudioGroups;
+            RuleAudioGroupBox.DisplayMemberPath = nameof(AudioGroupConfig.Name);
+            RuleAudioGroupBox.SelectedValuePath = nameof(AudioGroupConfig.Id);
+            NewAudioAlertBox.ItemsSource = AudioAlertChoices;
+            NewAudioAlertBox.DisplayMemberPath = nameof(AudioAlertChoice.Name);
+            NewAudioAlertBox.SelectedValuePath = nameof(AudioAlertChoice.Id);
+            NewAudioGroupBox.ItemsSource = AudioGroupChoices;
+            NewAudioGroupBox.DisplayMemberPath = nameof(AudioGroupChoice.Name);
+            NewAudioGroupBox.SelectedValuePath = nameof(AudioGroupChoice.Id);
             PatternBox.ItemsSource = _patternOptions;
             PatternBox.DisplayMemberPath = nameof(UiOption<LightPattern>.Label);
             PatternBox.SelectedValuePath = nameof(UiOption<LightPattern>.Value);
@@ -306,6 +337,9 @@ public partial class MainWindow : Window
             ["Parar prueba"] = "Square",
             ["Guardar cambios"] = "Save",
             ["Eliminar alerta"] = "Trash",
+            ["Agregar audio"] = "Plus",
+            ["Guardar audio"] = "Save",
+            ["Nuevo grupo"] = "Plus",
             ["Buscar"] = "Search",
             ["Arduino Tira led ws2812b"] = "Arduino",
             ["Alexa"] = "Alexa",
@@ -1655,7 +1689,7 @@ public partial class MainWindow : Window
         }
 
         var missingAudio = activeRules
-            .Where(rule => rule.PlayAudio && (string.IsNullOrWhiteSpace(rule.AudioPath) || !File.Exists(rule.AudioPath)))
+            .Where(rule => rule.PlayAudio && !RuleHasValidAudio(rule))
             .Select(rule => rule.Name)
             .ToArray();
         if (missingAudio.Length > 0)
@@ -1934,7 +1968,7 @@ public partial class MainWindow : Window
 
     private bool ValidateSimulatedRun(EventRule rule, TwitchEvent twitchEvent)
     {
-        if (rule.PlayAudio && (string.IsNullOrWhiteSpace(rule.AudioPath) || !File.Exists(rule.AudioPath)))
+        if (rule.PlayAudio && !RuleHasValidAudio(rule))
         {
             var message = $"El audio de '{rule.Name}' no existe o no esta configurado.";
             AddLog($"Simulador: {message}", ActivityLogKind.Important);
@@ -2032,7 +2066,78 @@ public partial class MainWindow : Window
         return actions.Count == 0 ? "ninguna accion activa" : string.Join(", ", actions);
     }
 
-    private void BrowseAudioButton_Click(object sender, RoutedEventArgs e)
+    private void RuleAudioModeButton_Click(object sender, RoutedEventArgs e)
+    {
+        if (sender is not System.Windows.Controls.Button button
+            || button.Tag is not string value
+            || !Enum.TryParse<AudioSourceMode>(value, out var mode))
+        {
+            return;
+        }
+
+        _ruleAudioMode = mode;
+        UpdateRuleAudioModeSelection();
+        UpdateRuleOptionVisibility();
+        SaveCurrentRuleFromFields();
+        SaveConfig();
+    }
+
+    private void AudioSearchBox_TextChanged(object sender, TextChangedEventArgs e)
+    {
+        if (_loadingUi || sender is not System.Windows.Controls.TextBox textBox)
+        {
+            return;
+        }
+
+        _audioSearchText = textBox.Text.Trim();
+        RefreshAudioLibraryView();
+    }
+
+    private void AudioFilterButton_Click(object sender, RoutedEventArgs e)
+    {
+        if (sender is not System.Windows.Controls.Button button)
+        {
+            return;
+        }
+
+        _audioFilter = button.Tag?.ToString() ?? "ALL";
+        _audioGroupFilterId = "";
+        UpdateAudioFilterButtons();
+        RefreshAudioLibraryView();
+    }
+
+    private void AudioLibraryGroupBox_DropDownClosed(object sender, EventArgs e)
+    {
+        if (_refreshingAudioLibrary
+            || _loadingUi
+            || sender is not System.Windows.Controls.ComboBox comboBox
+            || comboBox.Tag is not string audioId)
+        {
+            return;
+        }
+
+        var audio = _config.AudioLibrary.FirstOrDefault(item => string.Equals(item.Id, audioId, StringComparison.OrdinalIgnoreCase));
+        if (audio is null)
+        {
+            return;
+        }
+
+        var selectedGroupId = comboBox.SelectedValue as string ?? "";
+        if (string.Equals(audio.GroupId, selectedGroupId, StringComparison.OrdinalIgnoreCase))
+        {
+            return;
+        }
+
+        audio.GroupId = selectedGroupId;
+        SaveConfig();
+        _ = Dispatcher.InvokeAsync(() =>
+        {
+            RefreshAudioLibraryView();
+            RefreshRulesView();
+        }, DispatcherPriority.Background);
+    }
+
+    private void BrowseNewAudioButton_Click(object sender, RoutedEventArgs e)
     {
         var dialog = new WpfOpenFileDialog
         {
@@ -2045,8 +2150,339 @@ public partial class MainWindow : Window
             return;
         }
 
-        AudioPathBox.Text = dialog.FileName;
-        SaveCurrentRuleFromFields();
+        _newAudioPath = dialog.FileName;
+        NewAudioPathBox.Text = dialog.FileName;
+        if (string.IsNullOrWhiteSpace(NewAudioNameBox.Text))
+        {
+            NewAudioNameBox.Text = System.IO.Path.GetFileNameWithoutExtension(dialog.FileName);
+        }
+    }
+
+    private async void SaveNewAudioButton_Click(object sender, RoutedEventArgs e)
+    {
+        if (string.IsNullOrWhiteSpace(_newAudioPath) || !File.Exists(_newAudioPath))
+        {
+            WpfMessageBox.Show(this, "Selecciona un archivo de audio valido.", "Audio", MessageBoxButton.OK, MessageBoxImage.Information);
+            return;
+        }
+
+        var existing = _config.AudioLibrary.FirstOrDefault(audio =>
+            string.Equals(audio.FilePath, _newAudioPath, StringComparison.OrdinalIgnoreCase));
+        var audio = existing ?? new AudioAssetConfig { FilePath = _newAudioPath };
+        audio.Name = string.IsNullOrWhiteSpace(NewAudioNameBox.Text)
+            ? System.IO.Path.GetFileNameWithoutExtension(_newAudioPath)
+            : NewAudioNameBox.Text.Trim();
+        audio.GroupId = NewAudioGroupBox.SelectedValue as string ?? "";
+
+        var duration = await _audioPlayer.ProbeDurationAsync(_newAudioPath);
+        if (duration is { TotalMilliseconds: > 0 })
+        {
+            audio.DurationMs = (int)Math.Round(duration.Value.TotalMilliseconds);
+        }
+
+        if (existing is null)
+        {
+            _config.AudioLibrary.Add(audio);
+        }
+
+        var selectedRuleId = NewAudioAlertBox.SelectedValue as string ?? "";
+        var rule = _config.Rules.FirstOrDefault(item => string.Equals(item.Id, selectedRuleId, StringComparison.OrdinalIgnoreCase));
+        if (rule is not null)
+        {
+            rule.PlayAudio = true;
+            rule.AudioSourceMode = AudioSourceMode.Single;
+            rule.AudioAssetId = audio.Id;
+            rule.AudioGroupId = "";
+            rule.AudioPath = audio.FilePath;
+            if (ReferenceEquals(RulesList.SelectedItem, rule))
+            {
+                LoadSelectedRuleIntoUi();
+            }
+        }
+
+        NewAudioPathBox.Text = "";
+        NewAudioNameBox.Text = "";
+        NewAudioAlertBox.SelectedValue = "";
+        NewAudioGroupBox.SelectedValue = "";
+        _newAudioPath = "";
+
+        SaveConfig();
+        RefreshAudioLibraryView();
+        RefreshRulesView();
+        AddLog($"Audio: guardado {audio.DisplayName}.", ActivityLogKind.Audio);
+    }
+
+    private void AddAudioGroupButton_Click(object sender, RoutedEventArgs e)
+    {
+        var name = NewAudioGroupNameBox.Text.Trim();
+        if (string.IsNullOrWhiteSpace(name))
+        {
+            WpfMessageBox.Show(this, "Escribe un nombre para el grupo.", "Audio", MessageBoxButton.OK, MessageBoxImage.Information);
+            return;
+        }
+
+        var existing = _config.AudioGroups.FirstOrDefault(group =>
+            string.Equals(group.Name, name, StringComparison.OrdinalIgnoreCase));
+        if (existing is not null)
+        {
+            NewAudioGroupBox.SelectedValue = existing.Id;
+            NewAudioGroupNameBox.Text = "";
+            return;
+        }
+
+        var group = new AudioGroupConfig { Name = name };
+        _config.AudioGroups.Add(group);
+        NewAudioGroupBox.SelectedValue = group.Id;
+        NewAudioGroupNameBox.Text = "";
+
+        SaveConfig();
+        RefreshAudioLibraryView();
+        UpdateRuleOptionVisibility();
+        AddLog($"Audio: grupo creado {group.Name}.", ActivityLogKind.Audio);
+    }
+
+    private void ViewAudioGroupButton_Click(object sender, RoutedEventArgs e)
+    {
+        if (sender is not FrameworkElement element || element.Tag is not string groupId)
+        {
+            return;
+        }
+
+        var group = _config.AudioGroups.FirstOrDefault(item => string.Equals(item.Id, groupId, StringComparison.OrdinalIgnoreCase));
+        if (group is null)
+        {
+            return;
+        }
+
+        _audioGroupFilterId = group.Id;
+        _audioFilter = "ALL";
+        AudioSearchBox.Text = "";
+        _audioSearchText = "";
+        UpdateAudioFilterButtons();
+        RefreshAudioLibraryView();
+        AddLog($"Audio: mostrando grupo {group.Name}.", ActivityLogKind.Audio);
+    }
+
+    private void DeleteAudioGroupButton_Click(object sender, RoutedEventArgs e)
+    {
+        if (sender is not FrameworkElement element || element.Tag is not string groupId)
+        {
+            return;
+        }
+
+        var group = _config.AudioGroups.FirstOrDefault(item => string.Equals(item.Id, groupId, StringComparison.OrdinalIgnoreCase));
+        if (group is null)
+        {
+            return;
+        }
+
+        var audioCount = _config.AudioLibrary.Count(audio => string.Equals(audio.GroupId, group.Id, StringComparison.OrdinalIgnoreCase));
+        if (WpfMessageBox.Show(
+                this,
+                $"Eliminar el grupo '{group.Name}'?\n\nLos {audioCount} audio(s) no se borran; solo quedaran sin grupo.",
+                "Audio",
+                MessageBoxButton.YesNo,
+                MessageBoxImage.Question) != MessageBoxResult.Yes)
+        {
+            return;
+        }
+
+        foreach (var audio in _config.AudioLibrary.Where(audio => string.Equals(audio.GroupId, group.Id, StringComparison.OrdinalIgnoreCase)))
+        {
+            audio.GroupId = "";
+        }
+
+        foreach (var rule in _config.Rules.Where(rule => rule.AudioSourceMode == AudioSourceMode.Group
+                     && string.Equals(rule.AudioGroupId, group.Id, StringComparison.OrdinalIgnoreCase)))
+        {
+            rule.AudioGroupId = "";
+            rule.PlayAudio = false;
+        }
+
+        _config.AudioGroups.Remove(group);
+        if (string.Equals(_audioGroupFilterId, group.Id, StringComparison.OrdinalIgnoreCase))
+        {
+            _audioGroupFilterId = "";
+        }
+
+        SaveConfig();
+        RefreshAudioLibraryView();
+        RefreshRulesView();
+        LoadSelectedRuleIntoUi();
+        AddLog($"Audio: grupo eliminado {group.Name}.", ActivityLogKind.Audio);
+    }
+
+    private async void PreviewAudioButton_Click(object sender, RoutedEventArgs e)
+    {
+        if (sender is not FrameworkElement element || element.Tag is not string audioId)
+        {
+            return;
+        }
+
+        var audio = _config.AudioLibrary.FirstOrDefault(item => string.Equals(item.Id, audioId, StringComparison.OrdinalIgnoreCase));
+        if (audio is null)
+        {
+            return;
+        }
+
+        if (_audioPreviewPlayback is not null && string.Equals(_previewingAudioId, audio.Id, StringComparison.OrdinalIgnoreCase))
+        {
+            _audioPreviewPlayback.Stop();
+            ClearAudioPreviewState(audio.Id);
+            return;
+        }
+
+        var playback = await _audioPlayer.PrepareAsync(audio.FilePath, _config.AlertVolumePercent, AddLog);
+        if (playback is null)
+        {
+            return;
+        }
+
+        _audioPreviewPlayback?.Stop();
+        _audioPreviewPlayback = playback;
+        _previewingAudioId = audio.Id;
+        MarkAudioAssetUsed(audio, playback.Duration);
+        playback.Play();
+        AddLog($"Audio: reproduciendo {audio.DisplayName}.", ActivityLogKind.Audio);
+        _ = WatchAudioPreviewCompletionAsync(playback, audio.Id);
+    }
+
+    private void DeleteAudioButton_Click(object sender, RoutedEventArgs e)
+    {
+        if (sender is not FrameworkElement element || element.Tag is not string audioId)
+        {
+            return;
+        }
+
+        var audio = _config.AudioLibrary.FirstOrDefault(item => string.Equals(item.Id, audioId, StringComparison.OrdinalIgnoreCase));
+        if (audio is null)
+        {
+            return;
+        }
+
+        if (WpfMessageBox.Show(this, $"Eliminar el audio '{audio.DisplayName}' de la biblioteca?", "Audio", MessageBoxButton.YesNo, MessageBoxImage.Question) != MessageBoxResult.Yes)
+        {
+            return;
+        }
+
+        if (string.Equals(_previewingAudioId, audio.Id, StringComparison.OrdinalIgnoreCase))
+        {
+            _audioPreviewPlayback?.Stop();
+            ClearAudioPreviewState(audio.Id);
+        }
+
+        _config.AudioLibrary.Remove(audio);
+        foreach (var rule in _config.Rules.Where(rule => string.Equals(rule.AudioAssetId, audio.Id, StringComparison.OrdinalIgnoreCase)))
+        {
+            rule.AudioAssetId = "";
+            rule.AudioPath = "";
+            rule.PlayAudio = rule.AudioSourceMode == AudioSourceMode.Group && !string.IsNullOrWhiteSpace(rule.AudioGroupId);
+        }
+
+        SaveConfig();
+        RefreshAudioLibraryView();
+        RefreshRulesView();
+        LoadSelectedRuleIntoUi();
+    }
+
+    private async Task WatchAudioPreviewCompletionAsync(AudioPlayback playback, string audioId)
+    {
+        try
+        {
+            await playback.Completion;
+        }
+        finally
+        {
+            await Dispatcher.InvokeAsync(() => ClearAudioPreviewState(audioId));
+        }
+    }
+
+    private void ClearAudioPreviewState(string audioId)
+    {
+        if (!string.Equals(_previewingAudioId, audioId, StringComparison.OrdinalIgnoreCase))
+        {
+            return;
+        }
+
+        _audioPreviewPlayback = null;
+        _previewingAudioId = "";
+        RefreshAudioLibraryView();
+    }
+
+    private void StopAudioPreview()
+    {
+        if (_audioPreviewPlayback is null)
+        {
+            return;
+        }
+
+        var audioId = _previewingAudioId;
+        _audioPreviewPlayback.Stop();
+        ClearAudioPreviewState(audioId);
+    }
+
+    private bool RuleHasValidAudio(EventRule rule)
+    {
+        if (!Dispatcher.CheckAccess())
+        {
+            return Dispatcher.Invoke(() => RuleHasValidAudio(rule));
+        }
+
+        var asset = ResolveRuleAudioAsset(rule);
+        if (asset is not null)
+        {
+            return File.Exists(asset.FilePath);
+        }
+
+        return rule.AudioSourceMode == AudioSourceMode.Single
+            && !string.IsNullOrWhiteSpace(rule.AudioPath)
+            && File.Exists(rule.AudioPath);
+    }
+
+    private AudioAssetConfig? ResolveRuleAudioAsset(EventRule rule)
+    {
+        if (!Dispatcher.CheckAccess())
+        {
+            return Dispatcher.Invoke(() => ResolveRuleAudioAsset(rule));
+        }
+
+        if (!rule.PlayAudio)
+        {
+            return null;
+        }
+
+        if (rule.AudioSourceMode == AudioSourceMode.Group)
+        {
+            var candidates = _config.AudioLibrary
+                .Where(audio => string.Equals(audio.GroupId, rule.AudioGroupId, StringComparison.OrdinalIgnoreCase))
+                .Where(audio => File.Exists(audio.FilePath))
+                .ToArray();
+            return candidates.Length == 0
+                ? null
+                : candidates[_audioRandom.Next(candidates.Length)];
+        }
+
+        return _config.AudioLibrary.FirstOrDefault(audio => string.Equals(audio.Id, rule.AudioAssetId, StringComparison.OrdinalIgnoreCase))
+            ?? _config.AudioLibrary.FirstOrDefault(audio => !string.IsNullOrWhiteSpace(rule.AudioPath)
+                && string.Equals(audio.FilePath, rule.AudioPath, StringComparison.OrdinalIgnoreCase));
+    }
+
+    private void MarkAudioAssetUsed(AudioAssetConfig audio, TimeSpan? duration)
+    {
+        if (!Dispatcher.CheckAccess())
+        {
+            _ = Dispatcher.InvokeAsync(() => MarkAudioAssetUsed(audio, duration));
+            return;
+        }
+
+        if (duration is { TotalMilliseconds: > 0 })
+        {
+            audio.DurationMs = (int)Math.Round(duration.Value.TotalMilliseconds);
+        }
+
+        audio.LastUsedAt = DateTimeOffset.Now;
+        SaveConfig();
+        RefreshAudioLibraryView();
     }
 
     private void RulesList_SelectionChanged(object sender, SelectionChangedEventArgs e)
@@ -2278,6 +2714,12 @@ public partial class MainWindow : Window
         }
 
         UpdateNavigationButtons();
+        if (int.TryParse(NavAudioButton.Tag?.ToString(), out var audioTabIndex)
+            && MainTabs.SelectedIndex != audioTabIndex)
+        {
+            StopAudioPreview();
+        }
+
         UpdateRuleLedPreviewTimerState();
         UpdateBackgroundLedPreviewTimerState();
         ConfigureActionIcons();
@@ -2507,6 +2949,210 @@ public partial class MainWindow : Window
 
         var visibleCount = _rulesViewSource.View?.Cast<EventRule>().Count() ?? 0;
         RulesCountText.Text = $"Mostrando {visibleCount} de {_config.Rules.Count} alertas";
+    }
+
+    private void RefreshAudioLibraryView()
+    {
+        if (_initializingComponent)
+        {
+            return;
+        }
+
+        if (!Dispatcher.CheckAccess())
+        {
+            _ = Dispatcher.InvokeAsync(RefreshAudioLibraryView);
+            return;
+        }
+
+        _refreshingAudioLibrary = true;
+        try
+        {
+            var groupsById = _config.AudioGroups.ToDictionary(group => group.Id, group => group.Name, StringComparer.OrdinalIgnoreCase);
+
+            RefreshAudioGroupChoicesIfNeeded();
+            RefreshAudioAlertChoicesIfNeeded();
+
+            var rows = _config.AudioLibrary
+                .Select((audio, index) => CreateAudioLibraryRow(audio, groupsById, index))
+                .Where(AudioRowMatchesFilters)
+                .ToArray();
+
+            _audioLibraryRows.Clear();
+            foreach (var row in rows)
+            {
+                _audioLibraryRows.Add(row);
+            }
+
+            _audioGroupRows.Clear();
+            var groupIndex = 0;
+            foreach (var group in _config.AudioGroups)
+            {
+                var count = _config.AudioLibrary.Count(audio => string.Equals(audio.GroupId, group.Id, StringComparison.OrdinalIgnoreCase));
+                _audioGroupRows.Add(new AudioGroupRow(
+                    group.Id,
+                    group.Name,
+                    $"{count} audio{(count == 1 ? "" : "s")}",
+                    FrozenBrushFrom((groupIndex++ % 4) switch
+                    {
+                        0 => "#14B8A6",
+                        1 => "#B56CFF",
+                        2 => "#37C7F3",
+                        _ => "#22C55E"
+                    })));
+            }
+
+            AudioSavedCountText.Text = _config.AudioLibrary.Count.ToString();
+            AudioGroupCountText.Text = _config.AudioGroups.Count.ToString();
+            var lastAudio = _config.AudioLibrary
+                .Where(audio => audio.LastUsedAt is not null)
+                .OrderByDescending(audio => audio.LastUsedAt)
+                .FirstOrDefault();
+            LastAudioText.Text = lastAudio?.DisplayName ?? "Sin uso";
+            var groupFilterText = string.IsNullOrWhiteSpace(_audioGroupFilterId)
+                ? ""
+                : $" del grupo {groupsById.GetValueOrDefault(_audioGroupFilterId, "seleccionado")}";
+            AudioLibraryFooterText.Text = $"Mostrando {rows.Length} de {_config.AudioLibrary.Count} audios{groupFilterText}";
+
+            RuleAudioAssetBox.Items.Refresh();
+            RuleAudioGroupBox.Items.Refresh();
+            NewAudioAlertBox.Items.Refresh();
+            NewAudioGroupBox.Items.Refresh();
+            UpdateAudioFilterButtons();
+        }
+        finally
+        {
+            _refreshingAudioLibrary = false;
+        }
+    }
+
+    private void RefreshAudioGroupChoicesIfNeeded()
+    {
+        var signature = string.Join("|", _config.AudioGroups.Select(group => $"{group.Id}:{group.Name}"));
+        if (string.Equals(signature, _audioGroupChoicesSignature, StringComparison.Ordinal))
+        {
+            return;
+        }
+
+        AudioGroupChoices.Clear();
+        AudioGroupChoices.Add(new AudioGroupChoice("", "Sin grupo"));
+        foreach (var group in _config.AudioGroups)
+        {
+            AudioGroupChoices.Add(new AudioGroupChoice(group.Id, group.Name));
+        }
+
+        _audioGroupChoicesSignature = signature;
+    }
+
+    private void RefreshAudioAlertChoicesIfNeeded()
+    {
+        var signature = string.Join("|", _config.Rules.Select(rule => $"{rule.Id}:{rule.Name}"));
+        if (string.Equals(signature, _audioAlertChoicesSignature, StringComparison.Ordinal))
+        {
+            return;
+        }
+
+        AudioAlertChoices.Clear();
+        AudioAlertChoices.Add(new AudioAlertChoice("", "Sin alerta asignada"));
+        foreach (var rule in _config.Rules)
+        {
+            AudioAlertChoices.Add(new AudioAlertChoice(rule.Id, string.IsNullOrWhiteSpace(rule.Name) ? rule.DisplayLabel : rule.Name));
+        }
+
+        _audioAlertChoicesSignature = signature;
+    }
+
+    private AudioLibraryRow CreateAudioLibraryRow(AudioAssetConfig audio, IReadOnlyDictionary<string, string> groupsById, int index)
+    {
+        var assignedRules = _config.Rules
+            .Where(rule => RuleUsesAudioAsset(rule, audio))
+            .ToArray();
+        var assignedText = assignedRules.Length switch
+        {
+            0 => "",
+            1 => assignedRules[0].Name,
+            _ => $"{assignedRules[0].Name} +{assignedRules.Length - 1}"
+        };
+        var accentColor = assignedRules.Length > 0
+            ? EventKindAccent(assignedRules[0].EventKind)
+            : "#64748B";
+
+        return new AudioLibraryRow(
+            audio.Id,
+            audio.DisplayName,
+            audio.FilePath,
+            audio.GroupId,
+            assignedText,
+            groupsById.TryGetValue(audio.GroupId, out var groupName) ? groupName : "Sin grupo",
+            audio.DurationText,
+            assignedRules.Length > 0,
+            string.Equals(_previewingAudioId, audio.Id, StringComparison.OrdinalIgnoreCase) && _audioPreviewPlayback is not null,
+            FrozenBrushFrom(accentColor),
+            TranslucentBrushFrom(accentColor),
+            index);
+    }
+
+    private bool AudioRowMatchesFilters(AudioLibraryRow row)
+    {
+        if (!string.IsNullOrWhiteSpace(_audioGroupFilterId)
+            && !string.Equals(row.GroupId, _audioGroupFilterId, StringComparison.OrdinalIgnoreCase))
+        {
+            return false;
+        }
+
+        if (_audioFilter == "WITH_ALERT" && !row.HasAssignedAlert)
+        {
+            return false;
+        }
+
+        if (_audioFilter == "NO_GROUP" && !string.Equals(row.GroupName, "Sin grupo", StringComparison.OrdinalIgnoreCase))
+        {
+            return false;
+        }
+
+        if (string.IsNullOrWhiteSpace(_audioSearchText))
+        {
+            return true;
+        }
+
+        return ContainsIgnoreCase(row.Name, _audioSearchText)
+            || ContainsIgnoreCase(row.FilePath, _audioSearchText)
+            || ContainsIgnoreCase(row.AssignedAlertText, _audioSearchText)
+            || ContainsIgnoreCase(row.GroupName, _audioSearchText);
+    }
+
+    private static bool RuleUsesAudioAsset(EventRule rule, AudioAssetConfig audio)
+    {
+        if (!rule.PlayAudio)
+        {
+            return false;
+        }
+
+        if (rule.AudioSourceMode == AudioSourceMode.Group)
+        {
+            return !string.IsNullOrWhiteSpace(rule.AudioGroupId)
+                && string.Equals(rule.AudioGroupId, audio.GroupId, StringComparison.OrdinalIgnoreCase);
+        }
+
+        return string.Equals(rule.AudioAssetId, audio.Id, StringComparison.OrdinalIgnoreCase)
+            || (!string.IsNullOrWhiteSpace(rule.AudioPath)
+                && string.Equals(rule.AudioPath, audio.FilePath, StringComparison.OrdinalIgnoreCase));
+    }
+
+    private void UpdateAudioFilterButtons()
+    {
+        if (_initializingComponent)
+        {
+            return;
+        }
+
+        var palette = _config.DarkMode ? ThemePalette.Dark : ThemePalette.Light;
+        foreach (var button in new[] { AudioFilterAllButton, AudioFilterWithAlertButton, AudioFilterNoGroupButton })
+        {
+            var active = string.Equals(button.Tag?.ToString(), _audioFilter, StringComparison.OrdinalIgnoreCase);
+            button.Background = active ? TranslucentBrushFrom("#14B8A6") : palette.Input;
+            button.Foreground = active ? FrozenBrushFrom("#14B8A6") : palette.Text;
+            button.BorderBrush = active ? FrozenBrushFrom("#14B8A6") : palette.Border;
+        }
     }
 
     private void ShowAllRuleFilters()
@@ -2868,10 +3514,17 @@ public partial class MainWindow : Window
             }
 
             AudioPlayback? playback = null;
+            AudioAssetConfig? playbackAsset = null;
             if (rule.PlayAudio)
             {
-                playback = await _audioPlayer.PrepareAsync(rule.AudioPath, _config.AlertVolumePercent, AddLog);
+                playbackAsset = ResolveRuleAudioAsset(rule);
+                var audioPath = playbackAsset?.FilePath ?? rule.AudioPath;
+                playback = await _audioPlayer.PrepareAsync(audioPath, _config.AlertVolumePercent, AddLog);
                 _currentPlayback = playback;
+                if (playbackAsset is not null)
+                {
+                    MarkAudioAssetUsed(playbackAsset, playback?.Duration);
+                }
             }
 
             var useLights = _config.ArduinoEnabled && rule.UseLights;
@@ -3026,6 +3679,10 @@ public partial class MainWindow : Window
             BackgroundStepSlider.Value = _config.BackgroundStepMs;
             _rulesViewSource.Source = _config.Rules;
             RulesList.ItemsSource = _rulesViewSource.View;
+            RuleAudioAssetBox.ItemsSource = _config.AudioLibrary;
+            RuleAudioGroupBox.ItemsSource = _config.AudioGroups;
+            NewAudioAlertBox.ItemsSource = AudioAlertChoices;
+            NewAudioGroupBox.ItemsSource = AudioGroupChoices;
             RefreshRulesView();
             StripsList.ItemsSource = _config.LedStrips;
             SettingsPathText.Text = _settingsStore.SettingsPath;
@@ -3048,6 +3705,8 @@ public partial class MainWindow : Window
             UpdateBackgroundOptionVisibility();
             UpdateBackgroundPatternTileSelection();
             UpdateBackgroundLedPreviewFrame();
+            RefreshAudioLibraryView();
+            UpdateAudioFilterButtons();
             UpdateLightsArduinoStatus();
             ApplyBackgroundOutputMode();
             UpdateAlexaStatusText();
@@ -3086,7 +3745,9 @@ public partial class MainWindow : Window
             AlexaEventCheck.IsChecked = rule.SendAlexaEvent;
             UseLightsCheck.IsChecked = rule.UseLights;
             PlayAudioCheck.IsChecked = rule.PlayAudio;
-            AudioPathBox.Text = rule.AudioPath;
+            _ruleAudioMode = rule.AudioSourceMode;
+            RuleAudioAssetBox.SelectedValue = rule.AudioAssetId;
+            RuleAudioGroupBox.SelectedValue = rule.AudioGroupId;
             PatternBox.SelectedValue = rule.Pattern;
             TargetPinsBox.Text = rule.TargetPins;
             PrimaryColorBox.Text = LightCommand.NormalizeColor(rule.PrimaryColor);
@@ -3215,10 +3876,15 @@ public partial class MainWindow : Window
         rule.MinimumBits = ParseInt(MinimumBitsBox.Text, 1, 1, 1_000_000);
         rule.SendChatMessage = ChatMessageCheck.IsChecked == true;
         rule.ChatMessageTemplate = ChatMessageBox.Text.Trim();
-        rule.SendAlexaEvent = AlexaEventCheck.IsChecked == true;
-        rule.UseLights = UseLightsCheck.IsChecked == true;
-        rule.PlayAudio = PlayAudioCheck.IsChecked == true;
-        rule.AudioPath = AudioPathBox.Text.Trim();
+            rule.SendAlexaEvent = AlexaEventCheck.IsChecked == true;
+            rule.UseLights = UseLightsCheck.IsChecked == true;
+            rule.PlayAudio = PlayAudioCheck.IsChecked == true;
+        rule.AudioSourceMode = _ruleAudioMode;
+        rule.AudioAssetId = RuleAudioAssetBox.SelectedValue as string ?? "";
+        rule.AudioGroupId = RuleAudioGroupBox.SelectedValue as string ?? "";
+        rule.AudioPath = rule.AudioSourceMode == AudioSourceMode.Single
+            ? _config.AudioLibrary.FirstOrDefault(audio => string.Equals(audio.Id, rule.AudioAssetId, StringComparison.OrdinalIgnoreCase))?.FilePath ?? ""
+            : "";
         rule.Pattern = PatternBox.SelectedValue is LightPattern pattern ? pattern : LightPattern.Pulse;
         rule.TargetPins = string.Join(", ", LightCommand.ParsePins(TargetPinsBox.Text));
         rule.PrimaryColor = LightCommand.NormalizeColor(PrimaryColorBox.Text);
@@ -3232,10 +3898,12 @@ public partial class MainWindow : Window
         UpdateColorButtons();
         UpdateSliderLabels();
         UpdatePatternTileSelection();
+        UpdateRuleAudioModeSelection();
         UpdateRuleLedPreviewFrame();
         UpdateRuleOptionVisibility();
         UpdateRuleLedPreviewTimerState();
         RefreshRulesView();
+        RefreshAudioLibraryView();
     }
 
     private void SaveBackgroundFromFields()
@@ -3298,7 +3966,12 @@ public partial class MainWindow : Window
         SetVisible(kind == TwitchEventKind.ChannelPointRedemption, RewardTitleLabel, RewardTitleBox);
         SetVisible(kind == TwitchEventKind.ChatCommand, ChatCommandLabel, ChatCommandBox);
         SetVisible(kind == TwitchEventKind.Cheer, MinimumBitsLabel, MinimumBitsBox);
+        var hasAudios = _config.AudioLibrary.Count > 0;
+        var hasGroups = _config.AudioGroups.Count > 0;
         SetVisible(playAudio, AudioDetailsPanel, AudioLabel, AudioPanel);
+        SetVisible(playAudio && _ruleAudioMode == AudioSourceMode.Single && hasAudios, RuleAudioSinglePanel);
+        SetVisible(playAudio && _ruleAudioMode == AudioSourceMode.Group && hasGroups, RuleAudioGroupPanel);
+        SetVisible(playAudio && ((_ruleAudioMode == AudioSourceMode.Single && !hasAudios) || (_ruleAudioMode == AudioSourceMode.Group && !hasGroups)), RuleAudioEmptyHintText);
         SetVisible(sendChat, ChatDetailsPanel, ChatMessageLabel, ChatMessageBox);
         SetVisible(arduinoAvailable, UseLightsActionCard);
         SetVisible(alexaAvailable, AlexaActionCard);
@@ -3312,6 +3985,7 @@ public partial class MainWindow : Window
         SetVisible(useLights && !playAudio, DurationGrid, DurationSlider);
         SetVisible(useLights && UsesCycle(pattern), CycleGrid, CycleSlider);
         SetVisible(useLights && UsesStep(pattern), StepGrid, StepSlider);
+        UpdateRuleAudioModeSelection();
         UpdateRuleLedPreviewFrame();
         UpdateRuleLedPreviewTimerState();
     }
@@ -4278,6 +4952,8 @@ public partial class MainWindow : Window
         UpdateEventKindTileSelection();
         UpdatePatternTileSelection();
         UpdateBackgroundPatternTileSelection();
+        UpdateRuleAudioModeSelection();
+        UpdateAudioFilterButtons();
         UpdateCloseBehaviorCards();
     }
 
@@ -4633,6 +5309,25 @@ public partial class MainWindow : Window
                 ? accent
                 : tileForeground;
         }
+    }
+
+    private void UpdateRuleAudioModeSelection()
+    {
+        if (_initializingComponent)
+        {
+            return;
+        }
+
+        var palette = _config.DarkMode ? ThemePalette.Dark : ThemePalette.Light;
+        ApplyRuleAudioModeButtonTheme(RuleSingleAudioModeButton, _ruleAudioMode == AudioSourceMode.Single, "#14B8A6", palette);
+        ApplyRuleAudioModeButtonTheme(RuleGroupAudioModeButton, _ruleAudioMode == AudioSourceMode.Group, "#B56CFF", palette);
+    }
+
+    private static void ApplyRuleAudioModeButtonTheme(System.Windows.Controls.Button button, bool active, string accentColor, ThemePalette palette)
+    {
+        button.Background = active ? TranslucentBrushFrom(accentColor) : palette.Input;
+        button.Foreground = active ? FrozenBrushFrom(accentColor) : palette.Text;
+        button.BorderBrush = active ? FrozenBrushFrom(accentColor) : palette.Border;
     }
 
     private IEnumerable<System.Windows.Controls.Button> PatternTileButtons()
@@ -5877,6 +6572,45 @@ public partial class MainWindow : Window
         System.Windows.Media.Color GlowColor,
         double GlowOpacity,
         double GlowRadius);
+
+    private sealed record AudioLibraryRow(
+        string Id,
+        string Name,
+        string FilePath,
+        string GroupId,
+        string AssignedAlertText,
+        string GroupName,
+        string DurationText,
+        bool HasAssignedAlert,
+        bool IsPreviewing,
+        SolidColorBrush AssignedAlertBrush,
+        SolidColorBrush AssignedAlertBackground,
+        int Index)
+    {
+        public Visibility AssignedAlertVisibility => HasAssignedAlert ? Visibility.Visible : Visibility.Collapsed;
+
+        public Visibility PlayIconVisibility => IsPreviewing ? Visibility.Collapsed : Visibility.Visible;
+
+        public Visibility PauseIconVisibility => IsPreviewing ? Visibility.Visible : Visibility.Collapsed;
+
+        public string PlayToolTip => IsPreviewing ? "Detener audio" : "Reproducir audio";
+    }
+
+    private sealed record AudioGroupRow(
+        string Id,
+        string Name,
+        string CountText,
+        SolidColorBrush AccentBrush);
+
+    public sealed record AudioGroupChoice(string Id, string Name)
+    {
+        public override string ToString() => Name;
+    }
+
+    public sealed record AudioAlertChoice(string Id, string Name)
+    {
+        public override string ToString() => Name;
+    }
 
     [DllImport("dwmapi.dll")]
     private static extern int DwmSetWindowAttribute(

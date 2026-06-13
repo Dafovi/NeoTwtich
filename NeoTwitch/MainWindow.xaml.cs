@@ -17,6 +17,7 @@ using System.Windows.Shapes;
 using System.Windows.Threading;
 using NeoTwitch.Models;
 using NeoTwitch.Services;
+using NeoTwitch.Services.Text;
 using NeoTwitch.ViewModels.Library;
 using Forms = System.Windows.Forms;
 using DrawingIcon = System.Drawing.Icon;
@@ -46,6 +47,7 @@ public partial class MainWindow : Window
     private readonly AlexaRelayService _alexaRelayService = new();
     private readonly ObsWebSocketService _obsService = new();
     private readonly VersionCheckService _versionCheckService = new();
+    private readonly IUiTextService _text = UiTextService.CreateDefault();
     private readonly TwitchEventSubClient _eventSubClient;
     private readonly ObservableCollection<ActivityLogEntry> _activity = [];
     private readonly ObservableCollection<ActivityLogEntry> _dashboardActivity = [];

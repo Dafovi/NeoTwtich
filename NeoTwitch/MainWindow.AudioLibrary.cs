@@ -4,6 +4,7 @@ using System.Windows.Controls;
 using System.Windows.Threading;
 using NeoTwitch.Models;
 using NeoTwitch.Services;
+using NeoTwitch.Services.Text;
 using NeoTwitch.ViewModels.Library;
 using WpfMessageBox = System.Windows.MessageBox;
 using WpfOpenFileDialog = Microsoft.Win32.OpenFileDialog;
@@ -92,7 +93,7 @@ public partial class MainWindow
     {
         if (string.IsNullOrWhiteSpace(_newAudioPath) || !File.Exists(_newAudioPath))
         {
-            WpfMessageBox.Show(this, "Selecciona un archivo de audio valido.", "Audio", MessageBoxButton.OK, MessageBoxImage.Information);
+            WpfMessageBox.Show(this, _text.Get(UiTextKeys.AudioPickValidFile), _text.Get(UiTextKeys.AudioTitle), MessageBoxButton.OK, MessageBoxImage.Information);
             return;
         }
 
@@ -139,7 +140,7 @@ public partial class MainWindow
         SaveConfig();
         RefreshAudioLibraryView();
         RefreshRulesView();
-        AddLog($"Audio: guardado {audio.DisplayName}.", ActivityLogKind.Audio);
+        AddLog(_text.Format(UiTextKeys.LibrarySavedLog, _text.Get(UiTextKeys.AudioTitle), audio.DisplayName), ActivityLogKind.Audio);
     }
 
     private void AddAudioGroupButton_Click(object sender, RoutedEventArgs e)
@@ -147,7 +148,7 @@ public partial class MainWindow
         var name = NewAudioGroupNameBox.Text.Trim();
         if (string.IsNullOrWhiteSpace(name))
         {
-            WpfMessageBox.Show(this, "Escribe un nombre para el grupo.", "Audio", MessageBoxButton.OK, MessageBoxImage.Information);
+            WpfMessageBox.Show(this, _text.Get(UiTextKeys.LibraryWriteGroupName), _text.Get(UiTextKeys.AudioTitle), MessageBoxButton.OK, MessageBoxImage.Information);
             return;
         }
 
@@ -168,7 +169,7 @@ public partial class MainWindow
         SaveConfig();
         RefreshAudioLibraryView();
         UpdateRuleOptionVisibility();
-        AddLog($"Audio: grupo creado {group.Name}.", ActivityLogKind.Audio);
+        AddLog(_text.Format(UiTextKeys.LibraryGroupCreatedLog, _text.Get(UiTextKeys.AudioTitle), group.Name), ActivityLogKind.Audio);
     }
 
     private void ViewAudioGroupButton_Click(object sender, RoutedEventArgs e)
@@ -190,7 +191,7 @@ public partial class MainWindow
         _audioSearchText = "";
         UpdateAudioFilterButtons();
         RefreshAudioLibraryView();
-        AddLog($"Audio: mostrando grupo {group.Name}.", ActivityLogKind.Audio);
+        AddLog(_text.Format(UiTextKeys.LibraryShowingGroupLog, _text.Get(UiTextKeys.AudioTitle), group.Name), ActivityLogKind.Audio);
     }
 
     private void DeleteAudioGroupButton_Click(object sender, RoutedEventArgs e)
@@ -209,8 +210,8 @@ public partial class MainWindow
         var audioCount = _config.AudioLibrary.Count(audio => string.Equals(audio.GroupId, group.Id, StringComparison.OrdinalIgnoreCase));
         if (WpfMessageBox.Show(
                 this,
-                $"Eliminar el grupo '{group.Name}'?\n\nLos {audioCount} audio(s) no se borran; solo quedaran sin grupo.",
-                "Audio",
+                _text.Format(UiTextKeys.LibraryDeleteGroupPrompt, group.Name, audioCount),
+                _text.Get(UiTextKeys.AudioTitle),
                 MessageBoxButton.YesNo,
                 MessageBoxImage.Question) != MessageBoxResult.Yes)
         {
@@ -239,7 +240,7 @@ public partial class MainWindow
         RefreshAudioLibraryView();
         RefreshRulesView();
         LoadSelectedRuleIntoUi();
-        AddLog($"Audio: grupo eliminado {group.Name}.", ActivityLogKind.Audio);
+        AddLog(_text.Format(UiTextKeys.LibraryGroupDeletedLog, _text.Get(UiTextKeys.AudioTitle), group.Name), ActivityLogKind.Audio);
     }
 
     private async void PreviewAudioButton_Click(object sender, RoutedEventArgs e)
@@ -273,7 +274,7 @@ public partial class MainWindow
         _previewingAudioId = audio.Id;
         MarkAudioAssetUsed(audio, playback.Duration);
         playback.Play();
-        AddLog($"Audio: reproduciendo {audio.DisplayName}.", ActivityLogKind.Audio);
+        AddLog(_text.Format(UiTextKeys.AudioPlayingLog, audio.DisplayName), ActivityLogKind.Audio);
         _ = WatchAudioPreviewCompletionAsync(playback, audio.Id);
     }
 
@@ -290,7 +291,7 @@ public partial class MainWindow
             return;
         }
 
-        if (WpfMessageBox.Show(this, $"Eliminar el audio '{audio.DisplayName}' de la biblioteca?", "Audio", MessageBoxButton.YesNo, MessageBoxImage.Question) != MessageBoxResult.Yes)
+        if (WpfMessageBox.Show(this, _text.Format(UiTextKeys.LibraryDeleteAssetPrompt, audio.DisplayName), _text.Get(UiTextKeys.AudioTitle), MessageBoxButton.YesNo, MessageBoxImage.Question) != MessageBoxResult.Yes)
         {
             return;
         }
@@ -498,7 +499,7 @@ public partial class MainWindow
         }
 
         AudioGroupChoices.Clear();
-        AudioGroupChoices.Add(new AudioGroupChoice("", "Sin grupo"));
+        AudioGroupChoices.Add(new AudioGroupChoice("", _text.Get(UiTextKeys.LibraryNoGroup)));
         foreach (var group in _config.AudioGroups)
         {
             AudioGroupChoices.Add(new AudioGroupChoice(group.Id, group.Name));
@@ -516,7 +517,7 @@ public partial class MainWindow
         }
 
         AudioAlertChoices.Clear();
-        AudioAlertChoices.Add(new AudioAlertChoice("", "Sin alerta asignada"));
+        AudioAlertChoices.Add(new AudioAlertChoice("", _text.Get(UiTextKeys.LibraryNoAlertAssigned)));
         foreach (var rule in _config.Rules)
         {
             AudioAlertChoices.Add(new AudioAlertChoice(rule.Id, string.IsNullOrWhiteSpace(rule.Name) ? rule.DisplayLabel : rule.Name));
@@ -546,7 +547,7 @@ public partial class MainWindow
             audio.FilePath,
             audio.GroupId,
             assignedText,
-            groupsById.TryGetValue(audio.GroupId, out var groupName) ? groupName : "Sin grupo",
+            groupsById.TryGetValue(audio.GroupId, out var groupName) ? groupName : _text.Get(UiTextKeys.LibraryNoGroup),
             audio.DurationText,
             assignedRules.Length > 0,
             string.Equals(_previewingAudioId, audio.Id, StringComparison.OrdinalIgnoreCase) && _audioPreviewPlayback is not null,
@@ -568,7 +569,7 @@ public partial class MainWindow
             return false;
         }
 
-        if (_audioFilter == "NO_GROUP" && !string.Equals(row.GroupName, "Sin grupo", StringComparison.OrdinalIgnoreCase))
+        if (_audioFilter == "NO_GROUP" && !string.Equals(row.GroupName, _text.Get(UiTextKeys.LibraryNoGroup), StringComparison.OrdinalIgnoreCase))
         {
             return false;
         }

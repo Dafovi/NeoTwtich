@@ -5,6 +5,7 @@ using System.Windows.Controls;
 using System.Windows.Threading;
 using NeoTwitch.Models;
 using NeoTwitch.Services.Library;
+using NeoTwitch.Services.Text;
 using NeoTwitch.ViewModels.Library;
 using WpfMessageBox = System.Windows.MessageBox;
 using WpfOpenFileDialog = Microsoft.Win32.OpenFileDialog;
@@ -164,10 +165,10 @@ public partial class MainWindow
     private void SaveNewMedia(MediaLibraryKind kind)
     {
         var path = kind == MediaLibraryKind.Image ? _newImagePath : _newVideoPath;
-        var title = kind == MediaLibraryKind.Image ? "Imagenes" : "Videos";
+        var title = MediaLibraryTitle(kind);
         if (string.IsNullOrWhiteSpace(path) || !File.Exists(path))
         {
-            WpfMessageBox.Show(this, $"Selecciona un archivo valido para {title.ToLowerInvariant()}.", title, MessageBoxButton.OK, MessageBoxImage.Information);
+            WpfMessageBox.Show(this, _text.Format(UiTextKeys.MediaPickValidFile, title.ToLowerInvariant()), title, MessageBoxButton.OK, MessageBoxImage.Information);
             return;
         }
 
@@ -210,7 +211,7 @@ public partial class MainWindow
 
         SaveConfig();
         RefreshMediaLibraryView(kind);
-        AddLog($"{title}: guardado {asset.DisplayName}.", ActivityLogKind.Info);
+        AddLog(_text.Format(UiTextKeys.LibrarySavedLog, title, asset.DisplayName), ActivityLogKind.Info);
     }
 
     private void AddImageGroupButton_Click(object sender, RoutedEventArgs e)
@@ -226,11 +227,11 @@ public partial class MainWindow
     private void AddMediaGroup(MediaLibraryKind kind)
     {
         var nameBox = kind == MediaLibraryKind.Image ? NewImageGroupNameBox : NewVideoGroupNameBox;
-        var title = kind == MediaLibraryKind.Image ? "Imagenes" : "Videos";
+        var title = MediaLibraryTitle(kind);
         var name = nameBox.Text.Trim();
         if (string.IsNullOrWhiteSpace(name))
         {
-            WpfMessageBox.Show(this, "Escribe un nombre para el grupo.", title, MessageBoxButton.OK, MessageBoxImage.Information);
+            WpfMessageBox.Show(this, _text.Get(UiTextKeys.LibraryWriteGroupName), title, MessageBoxButton.OK, MessageBoxImage.Information);
             return;
         }
 
@@ -265,7 +266,7 @@ public partial class MainWindow
         nameBox.Text = "";
         SaveConfig();
         RefreshMediaLibraryView(kind);
-        AddLog($"{title}: grupo creado {group.Name}.", ActivityLogKind.Info);
+        AddLog(_text.Format(UiTextKeys.LibraryGroupCreatedLog, title, group.Name), ActivityLogKind.Info);
     }
 
     private void ViewImageGroupButton_Click(object sender, RoutedEventArgs e)
@@ -336,10 +337,10 @@ public partial class MainWindow
 
         var library = GetMediaLibrary(kind);
         var count = library.Count(asset => string.Equals(asset.GroupId, group.Id, StringComparison.OrdinalIgnoreCase));
-        var title = kind == MediaLibraryKind.Image ? "Imagenes" : "Videos";
+        var title = MediaLibraryTitle(kind);
         if (WpfMessageBox.Show(
                 this,
-                $"Eliminar el grupo '{group.Name}'?\n\nLos {count} archivo(s) no se borran; solo quedaran sin grupo.",
+                _text.Format(UiTextKeys.LibraryDeleteGroupPrompt, group.Name, count),
                 title,
                 MessageBoxButton.YesNo,
                 MessageBoxImage.Question) != MessageBoxResult.Yes)
@@ -390,8 +391,8 @@ public partial class MainWindow
             return;
         }
 
-        var title = kind == MediaLibraryKind.Image ? "Imagenes" : "Videos";
-        if (WpfMessageBox.Show(this, $"Eliminar '{asset.DisplayName}' de la biblioteca?", title, MessageBoxButton.YesNo, MessageBoxImage.Question) != MessageBoxResult.Yes)
+        var title = MediaLibraryTitle(kind);
+        if (WpfMessageBox.Show(this, _text.Format(UiTextKeys.LibraryDeleteAssetPrompt, asset.DisplayName), title, MessageBoxButton.YesNo, MessageBoxImage.Question) != MessageBoxResult.Yes)
         {
             return;
         }
@@ -462,7 +463,7 @@ public partial class MainWindow
 
             var groupFilterText = string.IsNullOrWhiteSpace(groupFilterId)
                 ? ""
-                : $" del grupo {groupsById.GetValueOrDefault(groupFilterId, "seleccionado")}";
+                : $" del grupo {groupsById.GetValueOrDefault(groupFilterId, _text.Get(UiTextKeys.LibrarySelectedGroup))}";
 
             if (kind == MediaLibraryKind.Image)
             {
@@ -503,7 +504,7 @@ public partial class MainWindow
 
         var choices = kind == MediaLibraryKind.Image ? ImageGroupChoices : VideoGroupChoices;
         choices.Clear();
-        choices.Add(new MediaGroupChoice("", "Sin grupo asignado"));
+        choices.Add(new MediaGroupChoice("", _text.Get(UiTextKeys.LibraryNoGroupAssigned)));
         foreach (var group in groups)
         {
             choices.Add(new MediaGroupChoice(group.Id, group.Name));
@@ -535,7 +536,7 @@ public partial class MainWindow
             asset.DisplayName,
             asset.FilePath,
             asset.GroupId,
-            groupsById.TryGetValue(asset.GroupId, out var groupName) ? groupName : "Sin grupo",
+            groupsById.TryGetValue(asset.GroupId, out var groupName) ? groupName : _text.Get(UiTextKeys.LibraryNoGroup),
             metadata,
             kind == MediaLibraryKind.Image ? "Assets/Icons/media_image.png" : "Assets/Icons/media_video.png",
             FrozenBrushFrom(accentColor),
@@ -643,5 +644,12 @@ public partial class MainWindow
         {
             _refreshingVideoLibrary = refreshing;
         }
+    }
+
+    private string MediaLibraryTitle(MediaLibraryKind kind)
+    {
+        return kind == MediaLibraryKind.Image
+            ? _text.Get(UiTextKeys.ImagesTitle)
+            : _text.Get(UiTextKeys.VideosTitle);
     }
 }

@@ -42,6 +42,16 @@ Neo Twitch usa iconos y logos de terceros. Esta pagina recopila las atribuciones
 - Pausa: [Pausa iconos](https://www.flaticon.es/iconos-gratis/pausa), creados por Slidicon - Flaticon.
 - Eliminar: [Tacho de basura iconos](https://www.flaticon.es/iconos-gratis/tacho-de-basura), creados por Freepik - Flaticon.
 - Guardar: [Disquete iconos](https://www.flaticon.es/iconos-gratis/disquete), creados por Hilmy Abiyyu A. - Flaticon.
+- OBS Studio: [OBS Studio Logo](https://commons.wikimedia.org/wiki/File:OBS_Studio_Logo.svg), Wikimedia Commons.
+- Imagenes: [Imagen iconos](https://www.flaticon.es/iconos-gratis/imagen), creados por Pixel perfect - Flaticon.
+- Videos: [Video iconos](https://www.flaticon.es/iconos-gratis/video), creados por pictranoosa - Flaticon.
+- Archivo de imagen: [Comics de imagen iconos](https://www.flaticon.es/iconos-gratis/comics-de-imagen), creados por moogun - Flaticon.
+- Archivo de video: [Video iconos](https://www.flaticon.es/iconos-gratis/video), creados por Freepik - Flaticon.
+- Grupo de medios: [Video iconos](https://www.flaticon.es/iconos-gratis/video), creados por surang - Flaticon.
+- Escena OBS: [Escena iconos](https://www.flaticon.es/iconos-gratis/escena), creados por Freepik - Flaticon.
+- Aleatorio: [Aleatorio iconos](https://www.flaticon.es/iconos-gratis/aleatorio), creados por Afian Rochmah Afif - Flaticon.
+- Temporizador: [Hora y fecha iconos](https://www.flaticon.es/iconos-gratis/hora-y-fecha), creados por chehuna - Flaticon.
+- Sincronizacion: [Sincronizacion iconos](https://www.flaticon.es/iconos-gratis/sincronizacion), creados por Bamicon - Flaticon.
 
 ## Logos y marcas
 

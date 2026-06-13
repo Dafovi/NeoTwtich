@@ -183,6 +183,10 @@ public sealed class SettingsStore
         config.Alexa ??= new AlexaIntegrationConfig();
         config.Alexa.RelayUrl ??= "";
         config.Alexa.AuthToken ??= "";
+        config.Obs ??= new ObsIntegrationConfig();
+        config.Obs.Host = string.IsNullOrWhiteSpace(config.Obs.Host) ? "127.0.0.1" : config.Obs.Host.Trim();
+        config.Obs.Password ??= "";
+        config.Obs.Port = Math.Clamp(config.Obs.Port, 1, 65535);
         config.BackgroundAlexaOnEventName = NormalizeBackgroundAlexaEventName(config.BackgroundAlexaOnEventName, "luz_encendida");
         config.BackgroundAlexaOffEventName = NormalizeBackgroundAlexaEventName(config.BackgroundAlexaOffEventName, "luz_apagada");
         config.SerialPort ??= "";

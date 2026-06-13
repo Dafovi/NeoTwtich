@@ -43,12 +43,14 @@ public partial class MainWindow : Window
     private readonly TwitchAuthService _authService = new();
     private readonly TwitchChatService _chatService = new();
     private readonly AlexaRelayService _alexaRelayService = new();
+    private readonly ObsWebSocketService _obsService = new();
     private readonly VersionCheckService _versionCheckService = new();
     private readonly TwitchEventSubClient _eventSubClient;
     private readonly ObservableCollection<ActivityLogEntry> _activity = [];
     private readonly ObservableCollection<ActivityLogEntry> _dashboardActivity = [];
     private readonly ObservableCollection<AudioLibraryRow> _audioLibraryRows = [];
     private readonly ObservableCollection<AudioGroupRow> _audioGroupRows = [];
+    private readonly ObservableCollection<ObsSceneRow> _obsSceneRows = [];
     private readonly ObservableCollection<RuleLedPreviewDot> _ruleLedPreviewDots = [];
     private readonly ObservableCollection<RuleLedPreviewDot> _backgroundLedPreviewDots = [];
     private readonly CollectionViewSource _activityViewSource = new();
@@ -68,6 +70,7 @@ public partial class MainWindow : Window
         "ARDUINO",
         "ALEXA",
         "AUDIO",
+        "OBS",
         "EVENTO",
         "SISTEMA",
         "IMPORTANTE"
@@ -119,7 +122,9 @@ public partial class MainWindow : Window
     private bool _showClientSecret;
     private bool _showAlexaRelayUrl;
     private bool _showAlexaAuthToken;
+    private bool _showObsPassword;
     private bool _alexaRelayConnected;
+    private bool _isObsConnecting;
     private bool _isTwitchAuthorizing;
     private bool _isTwitchConnecting;
     private bool _isArduinoConnecting;
@@ -128,6 +133,7 @@ public partial class MainWindow : Window
     private bool? _lastAppliedStartWithWindows;
     private Rect _restoreWindowBounds = Rect.Empty;
     private string _twitchConnectionError = "";
+    private string _obsConnectionError = "";
     private string _activitySearchText = "";
     private string _ruleSearchText = "";
     private string _ruleStatusFilter = "ALL";
@@ -194,6 +200,7 @@ public partial class MainWindow : Window
             DashboardActivityList.ItemsSource = _dashboardActivity;
             AudioLibraryList.ItemsSource = _audioLibraryRows;
             AudioGroupsList.ItemsSource = _audioGroupRows;
+            ObsScenesList.ItemsSource = _obsSceneRows;
             for (var i = 0; i < 24; i++)
             {
                 _ruleLedPreviewDots.Add(PreviewDot(ParsePreviewColor("#334155", "#334155"), 0.08));
@@ -262,6 +269,7 @@ public partial class MainWindow : Window
         NavStripsButton.Content = CreateNavigationItem("Assets/Icons/nav_lights.png", "Luces");
         NavAlexaButton.Content = CreateNavigationItem("Assets/Icons/nav_alexa.png", "Alexa");
         NavAudioButton.Content = CreateNavigationItem("Assets/Icons/nav_audio.png", "Audio");
+        NavObsButton.Content = CreateNavigationItem("Assets/Icons/nav_obs.png", "OBS");
         NavPreferencesButton.Content = CreateNavigationItem("Assets/Icons/nav_settings.png", "Configuracion");
         NavActivityButton.Content = CreateNavigationItem("Assets/Icons/nav_activity.png", "Actividad");
     }
@@ -328,6 +336,12 @@ public partial class MainWindow : Window
             ["Detectar"] = "Search",
             ["Conectar"] = "Plug",
             ["Probar Alexa"] = "Play",
+            ["Probar OBS"] = "Play",
+            ["Conectar OBS"] = "Plug",
+            ["Desconectar OBS"] = "Plug",
+            ["Actualizar escenas"] = "Refresh",
+            ["Cambiar ahora"] = "Play",
+            ["Ver guia OBS"] = "Book",
             ["Abrir Alexa Console"] = "ExternalLink",
             ["Guardar configuracion"] = "Save",
             ["Ir a actividad"] = "Activity",
@@ -467,6 +481,7 @@ public partial class MainWindow : Window
             "Plug" => "M8,3 L8,9 M16,3 L16,9 M6,9 L18,9 L18,13 C18,16 16,18 13,18 L13,22 M10,22 L10,18 C7,18 5,16 5,13 L5,9",
             "Plus" => "M12,5 L12,19 M5,12 L19,12",
             "Power" => "M12,3 L12,11 M7,6 C5,8 4,10 4,13 C4,17 8,21 12,21 C16,21 20,17 20,13 C20,10 19,8 17,6",
+            "Refresh" => "M20,7 L20,13 L14,13 M4,17 L4,11 L10,11 M6,9 C7.2,5.5 10.5,3.5 14.2,4.2 C16.5,4.6 18.4,6 19.5,8 M17.8,15 C16.6,18.4 13.2,20.4 9.5,19.7 C7.2,19.3 5.3,18 4.2,16",
             "Save" => "M5,4 L17,4 L20,7 L20,20 L4,20 L4,4 Z M8,4 L8,10 L16,10 L16,4 M8,20 L8,14 L16,14 L16,20",
             "Search" => "M10.5,5 A5.5,5.5 0 1 1 10.5,16 A5.5,5.5 0 1 1 10.5,5 M15,15 L21,21",
             "Settings" => "M12,8 A4,4 0 1 1 12,16 A4,4 0 1 1 12,8 M12,2 L14,2 L15,5 L18,4 L20,6 L19,9 L22,11 L22,13 L19,15 L20,18 L18,20 L15,19 L14,22 L10,22 L9,19 L6,20 L4,18 L5,15 L2,13 L2,11 L5,9 L4,6 L6,4 L9,5 L10,2 Z",
@@ -528,6 +543,18 @@ public partial class MainWindow : Window
             catch (Exception ex)
             {
                 AddLog($"Twitch: {ex.Message}");
+            }
+        }
+
+        if (_config.Obs.Enabled && _config.Obs.AutoReconnect)
+        {
+            try
+            {
+                await ConnectObsAsync();
+            }
+            catch (Exception ex)
+            {
+                AddLog($"OBS: {ex.Message}", ActivityLogKind.Important);
             }
         }
     }
@@ -633,6 +660,16 @@ public partial class MainWindow : Window
             UseShellExecute = true
         });
         AddLog("Arduino: abriendo guia de conexion.", ActivityLogKind.Arduino);
+    }
+
+    private void OpenObsGuideButton_Click(object sender, RoutedEventArgs e)
+    {
+        Process.Start(new ProcessStartInfo
+        {
+            FileName = "https://github.com/obsproject/obs-websocket",
+            UseShellExecute = true
+        });
+        AddLog("OBS: abriendo guia de obs-websocket.", ActivityLogKind.Obs);
     }
 
     private async Task CheckForUpdatesAsync()
@@ -2597,6 +2634,142 @@ public partial class MainWindow : Window
         UpdateRuleOptionVisibility();
     }
 
+    private void ObsSettingsChanged(object sender, RoutedEventArgs e)
+    {
+        if (_initializingComponent || _loadingUi)
+        {
+            return;
+        }
+
+        SaveGlobalSettingsFromFields();
+        _obsConnectionError = "";
+        SaveConfig();
+        UpdateObsStatusText();
+        UpdateSensitiveFieldVisibility();
+    }
+
+    private async void ConnectObsButton_Click(object sender, RoutedEventArgs e)
+    {
+        if (_isObsConnecting)
+        {
+            return;
+        }
+
+        try
+        {
+            SaveGlobalSettingsFromFields();
+            SaveConfig();
+
+            if (_obsService.IsConnected)
+            {
+                await _obsService.DisconnectAsync();
+                _obsConnectionError = "";
+                _obsSceneRows.Clear();
+                AddLog("OBS desconectado.", ActivityLogKind.Obs);
+                UpdateObsStatusText();
+                return;
+            }
+
+            await ConnectObsAsync();
+        }
+        catch (Exception ex)
+        {
+            _obsConnectionError = ex.Message;
+            AddLog($"OBS: {ex.Message}", ActivityLogKind.Important);
+            WpfMessageBox.Show(this, ex.Message, "OBS", MessageBoxButton.OK, MessageBoxImage.Warning);
+            UpdateObsStatusText();
+        }
+    }
+
+    private async void TestObsButton_Click(object sender, RoutedEventArgs e)
+    {
+        if (_isObsConnecting)
+        {
+            return;
+        }
+
+        try
+        {
+            SaveGlobalSettingsFromFields();
+            SaveConfig();
+            if (!_obsService.IsConnected)
+            {
+                await ConnectObsAsync();
+                return;
+            }
+
+            _isObsConnecting = true;
+            UpdateObsStatusText();
+            var result = await _obsService.RefreshScenesAsync(CancellationToken.None);
+            ApplyObsResult(result);
+            AddLog("OBS: escenas actualizadas.", ActivityLogKind.Obs);
+        }
+        catch (Exception ex)
+        {
+            _obsConnectionError = ex.Message;
+            AddLog($"OBS: {ex.Message}", ActivityLogKind.Important);
+            WpfMessageBox.Show(this, ex.Message, "OBS", MessageBoxButton.OK, MessageBoxImage.Warning);
+        }
+        finally
+        {
+            _isObsConnecting = false;
+            UpdateObsStatusText();
+        }
+    }
+
+    private async void ObsSceneChangeButton_Click(object sender, RoutedEventArgs e)
+    {
+        if (sender is not FrameworkElement { DataContext: ObsSceneRow row })
+        {
+            return;
+        }
+
+        try
+        {
+            if (!_obsService.IsConnected)
+            {
+                await ConnectObsAsync();
+            }
+
+            var result = await _obsService.SetCurrentProgramSceneAsync(row.Name, CancellationToken.None);
+            ApplyObsResult(result);
+            AddLog($"OBS: escena cambiada a {row.Name}.", ActivityLogKind.Obs);
+        }
+        catch (Exception ex)
+        {
+            _obsConnectionError = ex.Message;
+            AddLog($"OBS: {ex.Message}", ActivityLogKind.Important);
+            WpfMessageBox.Show(this, ex.Message, "OBS", MessageBoxButton.OK, MessageBoxImage.Warning);
+            UpdateObsStatusText();
+        }
+    }
+
+    private async Task ConnectObsAsync()
+    {
+        if (!_config.Obs.Enabled)
+        {
+            AddLog("OBS esta desactivado en Conexiones.", ActivityLogKind.Obs);
+            UpdateObsStatusText();
+            return;
+        }
+
+        _isObsConnecting = true;
+        _obsConnectionError = "";
+        UpdateObsStatusText();
+
+        try
+        {
+            var result = await _obsService.ConnectAsync(_config.Obs, CancellationToken.None);
+            ApplyObsResult(result);
+            AddLog($"OBS conectado. Escena actual: {FirstNonEmpty(result.CurrentScene, "sin escena")}.", ActivityLogKind.Obs);
+        }
+        finally
+        {
+            _isObsConnecting = false;
+            UpdateObsStatusText();
+        }
+    }
+
     private async void TestAlexaButton_Click(object sender, RoutedEventArgs e)
     {
         if (_isAlexaConnecting)
@@ -2756,6 +2929,12 @@ public partial class MainWindow : Window
     private void ToggleAlexaAuthTokenVisibility_Click(object sender, RoutedEventArgs e)
     {
         _showAlexaAuthToken = !_showAlexaAuthToken;
+        UpdateSensitiveFieldVisibility();
+    }
+
+    private void ToggleObsPasswordVisibility_Click(object sender, RoutedEventArgs e)
+    {
+        _showObsPassword = !_showObsPassword;
         UpdateSensitiveFieldVisibility();
     }
 
@@ -3735,6 +3914,11 @@ public partial class MainWindow : Window
             AlexaEnabledCheck.IsChecked = _config.Alexa.Enabled;
             AlexaRelayUrlBox.Text = _config.Alexa.RelayUrl;
             AlexaAuthTokenBox.Text = _config.Alexa.AuthToken;
+            ObsEnabledCheck.IsChecked = _config.Obs.Enabled;
+            ObsHostBox.Text = _config.Obs.Host;
+            ObsPortBox.Text = _config.Obs.Port.ToString();
+            ObsPasswordBox.Text = _config.Obs.Password;
+            ObsAutoReconnectCheck.IsChecked = _config.Obs.AutoReconnect;
             BackgroundEnabledCheck.IsChecked = _config.BackgroundEnabled;
             BackgroundAlexaEnabledCheck.IsChecked = _config.BackgroundAlexaEnabled;
             BackgroundAlexaTurnOffAfterEventCheck.IsChecked = _config.BackgroundAlexaTurnOffAfterEvent;
@@ -3781,6 +3965,7 @@ public partial class MainWindow : Window
             UpdateLightsArduinoStatus();
             ApplyBackgroundOutputMode();
             UpdateAlexaStatusText();
+            UpdateObsStatusText();
             UpdateSensitiveFieldVisibility();
             ApplyTheme();
             UpdateStatusText();
@@ -3892,6 +4077,11 @@ public partial class MainWindow : Window
         _config.Alexa.Enabled = AlexaEnabledCheck.IsChecked == true;
         _config.Alexa.RelayUrl = AlexaRelayUrlBox.Text.Trim();
         _config.Alexa.AuthToken = AlexaAuthTokenBox.Text.Trim();
+        _config.Obs.Enabled = ObsEnabledCheck.IsChecked == true;
+        _config.Obs.Host = string.IsNullOrWhiteSpace(ObsHostBox.Text) ? "127.0.0.1" : ObsHostBox.Text.Trim();
+        _config.Obs.Port = ParseInt(ObsPortBox.Text, 4455, 1, 65535);
+        _config.Obs.Password = ObsPasswordBox.Text;
+        _config.Obs.AutoReconnect = ObsAutoReconnectCheck.IsChecked == true;
     }
 
     private void ApplyStartWithWindowsRegistration()
@@ -4550,6 +4740,50 @@ public partial class MainWindow : Window
         UpdateDashboardSummary();
     }
 
+    private void UpdateObsStatusText()
+    {
+        if (!Dispatcher.CheckAccess())
+        {
+            _ = Dispatcher.InvokeAsync(UpdateObsStatusText);
+            return;
+        }
+
+        if (_initializingComponent)
+        {
+            return;
+        }
+
+        var state = !_config.Obs.Enabled
+            ? "Desactivado"
+            : _isObsConnecting
+                ? "Conectando"
+                : _obsService.IsConnected
+                    ? "Conectado"
+                    : !string.IsNullOrWhiteSpace(_obsConnectionError)
+                        ? "Revisar conexion"
+                        : "Desconectado";
+
+        var statusText = !_config.Obs.Enabled
+            ? "OBS desactivado. Las acciones OBS no se mostraran ni ejecutaran."
+            : _obsService.IsConnected
+                ? $"OBS conectado en {_config.Obs.Host}:{_config.Obs.Port}."
+                : !string.IsNullOrWhiteSpace(_obsConnectionError)
+                    ? _obsConnectionError
+                    : "Conecta OBS Studio para leer escenas y preparar automatizaciones.";
+
+        ObsStatusText.Text = statusText;
+        ObsConnectionHelpText.Text = statusText;
+
+        ObsConnectionStateText.Text = state;
+        ObsCurrentSceneText.Text = FirstNonEmpty(_obsService.CurrentScene, "Sin escena");
+        ObsVersionText.Text = FirstNonEmpty(_obsService.Version, "Sin version");
+        ObsSceneCountText.Text = _obsService.Scenes.Count.ToString();
+        ObsStudioModeText.Text = _obsService.StudioMode ? "Activado" : "Desactivado";
+
+        UpdateConnectionButtons();
+        RefreshDashboardConnectionStates();
+    }
+
     private void UpdateConnectionButtons()
     {
         var twitchBusy = _isTwitchAuthorizing || _isTwitchConnecting;
@@ -4571,6 +4805,37 @@ public partial class MainWindow : Window
         TestAlexaButton.Content = _isAlexaConnecting
             ? "Probando..."
             : "Probar Alexa";
+
+        ConnectObsButton.IsEnabled = !_isObsConnecting && _config.Obs.Enabled;
+        ConnectObsButton.Content = _isObsConnecting
+            ? "Conectando..."
+            : _obsService.IsConnected
+                ? "Desconectar OBS"
+                : "Conectar OBS";
+        ConnectObsButtonPanel.IsEnabled = ConnectObsButton.IsEnabled;
+        ConnectObsButtonPanel.Content = ConnectObsButton.Content;
+
+        TestObsButton.IsEnabled = !_isObsConnecting && _config.Obs.Enabled;
+        TestObsButton.Content = _isObsConnecting
+            ? "Actualizando..."
+            : "Actualizar escenas";
+        TestObsButtonPanel.IsEnabled = TestObsButton.IsEnabled;
+        TestObsButtonPanel.Content = TestObsButton.Content;
+    }
+
+    private void ApplyObsResult(ObsConnectionResult result)
+    {
+        _obsConnectionError = "";
+        _obsSceneRows.Clear();
+        foreach (var scene in result.Scenes)
+        {
+            _obsSceneRows.Add(new ObsSceneRow(
+                scene.Name,
+                string.Equals(scene.Name, result.CurrentScene, StringComparison.OrdinalIgnoreCase),
+                scene.Name.Length > 24 ? $"{scene.Name[..24]}..." : scene.Name));
+        }
+
+        UpdateObsStatusText();
     }
 
     private string BuildAlexaSidebarStatusText()
@@ -4639,6 +4904,15 @@ public partial class MainWindow : Window
         var audioState = _config.AlertVolumePercent > 0
             ? ConnectionVisualState.Connected
             : ConnectionVisualState.Disabled;
+        var obsState = !_config.Obs.Enabled
+            ? ConnectionVisualState.Disabled
+            : _isObsConnecting
+                ? ConnectionVisualState.Connecting
+                : _obsService.IsConnected
+                    ? ConnectionVisualState.Connected
+                    : !string.IsNullOrWhiteSpace(_obsConnectionError)
+                        ? ConnectionVisualState.Warning
+                        : ConnectionVisualState.Disconnected;
 
         SetDashboardConnectionState(
             DashboardTwitchStateText,
@@ -4660,6 +4934,11 @@ public partial class MainWindow : Window
             DashboardAudioStatusIcon,
             audioState,
             connectedText: $"{_config.AlertVolumePercent}%");
+        SetDashboardConnectionState(
+            DashboardObsStateText,
+            DashboardObsStatusIcon,
+            obsState,
+            warningText: "Revisar");
 
         SetConnectionBadgeState(
             ConnectionsTwitchBadge,
@@ -4676,6 +4955,11 @@ public partial class MainWindow : Window
             ConnectionsAlexaBadgeText,
             alexaState,
             warningText: _config.Alexa.IsConfigured ? "Configurado" : "Incompleta");
+        SetConnectionBadgeState(
+            ConnectionsObsBadge,
+            ConnectionsObsBadgeText,
+            obsState,
+            warningText: "Revisar");
     }
 
     private static void SetDashboardConnectionState(
@@ -4964,6 +5248,7 @@ public partial class MainWindow : Window
         UpdateSensitiveField(ClientSecretBox, ClientSecretMaskText, ClientSecretRevealButton, _showClientSecret);
         UpdateSensitiveField(AlexaRelayUrlBox, AlexaRelayUrlMaskText, AlexaRelayUrlRevealButton, _showAlexaRelayUrl);
         UpdateSensitiveField(AlexaAuthTokenBox, AlexaAuthTokenMaskText, AlexaAuthTokenRevealButton, _showAlexaAuthToken);
+        UpdateSensitiveField(ObsPasswordBox, ObsPasswordMaskText, ObsPasswordRevealButton, _showObsPassword);
     }
 
     private static void UpdateSensitiveField(
@@ -5533,7 +5818,7 @@ public partial class MainWindow : Window
             ? ThemePalette.Dark
             : ThemePalette.Light;
 
-        foreach (var button in new[] { NavSettingsButton, NavConnectionsButton, NavRulesButton, NavStripsButton, NavAlexaButton, NavAudioButton, NavPreferencesButton, NavActivityButton })
+        foreach (var button in new[] { NavSettingsButton, NavConnectionsButton, NavRulesButton, NavStripsButton, NavAlexaButton, NavAudioButton, NavObsButton, NavPreferencesButton, NavActivityButton })
         {
             ApplyNavigationButtonTheme(button, palette);
         }
@@ -5567,6 +5852,7 @@ public partial class MainWindow : Window
             ActivityFilterArduinoButton,
             ActivityFilterAlexaButton,
             ActivityFilterAudioButton,
+            ActivityFilterObsButton,
             ActivityFilterEventButton,
             ActivityFilterSystemButton,
             ActivityFilterImportantButton
@@ -5581,6 +5867,7 @@ public partial class MainWindow : Window
             "ARDUINO" => "#00878F",
             "ALEXA" => "#2FB4E9",
             "AUDIO" => "#B56CFF",
+            "OBS" => "#22C55E",
             "EVENTO" => "#22C55E",
             "SISTEMA" => "#94A3B8",
             "IMPORTANTE" => "#FFB020",
@@ -5989,6 +6276,11 @@ public partial class MainWindow : Window
             return ActivityLogKind.Audio;
         }
 
+        if (text.StartsWith("obs", StringComparison.Ordinal))
+        {
+            return ActivityLogKind.Obs;
+        }
+
         if (text.Contains("siguio", StringComparison.Ordinal)
             || text.Contains("suscribio", StringComparison.Ordinal)
             || text.Contains("raid", StringComparison.Ordinal)
@@ -6066,6 +6358,7 @@ public partial class MainWindow : Window
         Arduino,
         Alexa,
         Audio,
+        Obs,
         Event,
         Important
     }
@@ -6231,6 +6524,11 @@ public partial class MainWindow : Window
                 return "AUDIO";
             }
 
+            if (IsObsMessage(text, kind))
+            {
+                return "OBS";
+            }
+
             return "SISTEMA";
         }
 
@@ -6242,6 +6540,7 @@ public partial class MainWindow : Window
                 "ARDUINO" => "Arduino",
                 "ALEXA" => "Alexa",
                 "AUDIO" => "Audio",
+                "OBS" => "OBS",
                 "EVENTO" => "Evento",
                 "IMPORTANTE" => "Importante",
                 _ => "Sistema"
@@ -6305,6 +6604,11 @@ public partial class MainWindow : Window
             if (IsAudioMessage(text, kind))
             {
                 return "AUDIO";
+            }
+
+            if (IsObsMessage(text, kind))
+            {
+                return "OBS";
             }
 
             return kind == ActivityLogKind.Important ? "IMPORTANTE" : "SISTEMA";
@@ -6374,6 +6678,11 @@ public partial class MainWindow : Window
                 return kind == ActivityLogKind.Important ? "Aviso de audio" : "Audio";
             }
 
+            if (IsObsMessage(text, kind))
+            {
+                return kind == ActivityLogKind.Important ? "Aviso de OBS" : "OBS";
+            }
+
             if (kind == ActivityLogKind.Important)
             {
                 return "Aviso importante";
@@ -6414,6 +6723,7 @@ public partial class MainWindow : Window
                     || string.Equals(prefix, "Alexa", StringComparison.OrdinalIgnoreCase)
                     || string.Equals(prefix, "Arduino", StringComparison.OrdinalIgnoreCase)
                     || string.Equals(prefix, "Audio", StringComparison.OrdinalIgnoreCase)
+                    || string.Equals(prefix, "OBS", StringComparison.OrdinalIgnoreCase)
                     || string.Equals(prefix, "Chat", StringComparison.OrdinalIgnoreCase)
                     || string.Equals(prefix, "Fondo", StringComparison.OrdinalIgnoreCase)
                     || string.Equals(prefix, "Luces", StringComparison.OrdinalIgnoreCase)
@@ -6484,6 +6794,11 @@ public partial class MainWindow : Window
                 return "#B56CFF";
             }
 
+            if (IsObsMessage(text, kind))
+            {
+                return "#22C55E";
+            }
+
             return kind == ActivityLogKind.Important ? "#FFB020" : "#AFA4CC";
         }
 
@@ -6495,6 +6810,7 @@ public partial class MainWindow : Window
                 "ARDUINO" => "Assets/Icons/service_arduino.png",
                 "ALEXA" => "Assets/Icons/service_alexa.png",
                 "AUDIO" => "Assets/Icons/service_audio.png",
+                "OBS" => "Assets/ServiceObs.png",
                 _ => ""
             };
         }
@@ -6677,6 +6993,12 @@ public partial class MainWindow : Window
                 || text.Contains("sonido", StringComparison.Ordinal);
         }
 
+        private static bool IsObsMessage(string text, ActivityLogKind kind)
+        {
+            return kind == ActivityLogKind.Obs
+                || text.StartsWith("obs", StringComparison.Ordinal);
+        }
+
         private static SolidColorBrush BackgroundBrushFrom(string accentColor)
         {
             return accentColor.StartsWith('#') && accentColor.Length == 7
@@ -6754,6 +7076,16 @@ public partial class MainWindow : Window
         string Name,
         string CountText,
         SolidColorBrush AccentBrush);
+
+    private sealed record ObsSceneRow(
+        string Name,
+        bool IsCurrent,
+        string ShortName)
+    {
+        public string StatusText => IsCurrent ? "Actual" : "Disponible";
+
+        public Visibility ChangeButtonVisibility => IsCurrent ? Visibility.Collapsed : Visibility.Visible;
+    }
 
     public sealed record AudioGroupChoice(string Id, string Name)
     {

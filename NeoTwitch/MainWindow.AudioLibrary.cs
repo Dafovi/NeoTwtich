@@ -5,6 +5,7 @@ using System.Windows.Threading;
 using NeoTwitch.Models;
 using NeoTwitch.Services;
 using NeoTwitch.Services.Text;
+using NeoTwitch.ViewModels.Activity;
 using NeoTwitch.ViewModels.Library;
 using WpfMessageBox = System.Windows.MessageBox;
 using WpfOpenFileDialog = Microsoft.Win32.OpenFileDialog;

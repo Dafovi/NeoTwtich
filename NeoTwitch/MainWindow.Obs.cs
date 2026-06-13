@@ -2,6 +2,7 @@ using System.Diagnostics;
 using System.Windows;
 using NeoTwitch.Models;
 using NeoTwitch.Services;
+using NeoTwitch.ViewModels.Activity;
 using NeoTwitch.ViewModels.Obs;
 using WpfMessageBox = System.Windows.MessageBox;
 

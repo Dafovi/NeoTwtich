@@ -1,0 +1,378 @@
+using NeoTwitch.Models;
+using NeoTwitch.Services;
+using NeoTwitch.ViewModels.Activity;
+using NeoTwitch.ViewModels.Obs;
+
+namespace NeoTwitch;
+
+public partial class MainWindow
+{
+    private async void EventSubClient_EventReceived(TwitchEvent twitchEvent)
+    {
+        try
+        {
+            RegisterDashboardTwitchEvent(twitchEvent);
+            var matchingRules = ResolveMatchingRules(twitchEvent);
+            if (matchingRules.Length == 0)
+            {
+                if (twitchEvent.Kind != TwitchEventKind.ChatCommand)
+                {
+                    AddLog(twitchEvent.Title, ActivityLogKind.Event);
+                    AddLog("El evento no coincide con alertas activas.");
+                }
+
+                return;
+            }
+
+            AddLog(twitchEvent.Title, ActivityLogKind.Event);
+            RegisterDashboardMatchedRules(matchingRules.Length);
+
+            foreach (var rule in matchingRules)
+            {
+                await QueueAndRunRuleAsync(rule, twitchEvent);
+            }
+        }
+        catch (Exception ex)
+        {
+            CrashReporter.Log(ex, $"No se pudo procesar evento Twitch '{twitchEvent.Title}'.");
+            AddLog($"Twitch evento: {ex.Message}", ActivityLogKind.Important);
+        }
+    }
+
+    private async Task QueueAndRunRuleAsync(EventRule rule, TwitchEvent twitchEvent)
+    {
+        var slot = TryReserveAlertSlot(rule, twitchEvent, out var reason);
+        if (slot is null)
+        {
+            AddLog($"Cola: descarte '{rule.Name}'. {reason}", ActivityLogKind.Important);
+            return;
+        }
+
+        await RunRuleAsync(rule, twitchEvent, queueSlot: slot);
+    }
+
+    private QueuedAlertSlot? TryReserveAlertSlot(EventRule rule, TwitchEvent twitchEvent, out string reason)
+    {
+        lock (_alertQueueSync)
+        {
+            var now = DateTimeOffset.UtcNow;
+            var busy = _effectGate.CurrentCount == 0 || _pendingAlertSlots.Count > 0;
+            var samePending = _pendingAlertSlots.Count(slot => string.Equals(slot.RuleId, rule.Id, StringComparison.OrdinalIgnoreCase));
+            var sameLimit = Math.Clamp(_config.MaxQueuedSameRuleAlerts, 0, 100);
+            var differentLimit = Math.Clamp(_config.MaxQueuedDifferentRuleAlerts, 0, 100);
+
+            if (busy)
+            {
+                if (samePending >= sameLimit)
+                {
+                    reason = sameLimit == 0
+                        ? "No se permite acumular alertas repetidas."
+                        : $"Ya hay {samePending} alerta(s) repetida(s) esperando.";
+                    return null;
+                }
+
+                var isDifferentFromRunning = !string.IsNullOrWhiteSpace(_runningRuleId)
+                    && !string.Equals(_runningRuleId, rule.Id, StringComparison.OrdinalIgnoreCase);
+                var isDifferentWhileManualIsRunning = string.IsNullOrWhiteSpace(_runningRuleId)
+                    && _effectGate.CurrentCount == 0;
+                var isDifferentWhileQueueIsWaiting = string.IsNullOrWhiteSpace(_runningRuleId)
+                    && _pendingAlertSlots.Count > 0;
+                var differentPending = _pendingAlertSlots.Count(slot => !string.Equals(slot.RuleId, rule.Id, StringComparison.OrdinalIgnoreCase));
+
+                if ((isDifferentFromRunning || isDifferentWhileManualIsRunning || isDifferentWhileQueueIsWaiting) && differentPending >= differentLimit)
+                {
+                    reason = differentLimit == 0
+                        ? "No se permite acumular alertas distintas mientras otra esta activa."
+                        : $"Ya hay {differentPending} alerta(s) distinta(s) esperando.";
+                    return null;
+                }
+            }
+
+            var sameCooldownMs = Math.Clamp(_config.SameRuleQueueCooldownMs, 0, 600000);
+            if (sameCooldownMs > 0
+                && _lastRuleStartTimes.TryGetValue(rule.Id, out var lastSameStart)
+                && now - lastSameStart < TimeSpan.FromMilliseconds(sameCooldownMs))
+            {
+                var remainingMs = sameCooldownMs - (int)(now - lastSameStart).TotalMilliseconds;
+                reason = $"Repetida en enfriamiento por {Math.Max(0, remainingMs)} ms.";
+                return null;
+            }
+
+            var differentCooldownMs = Math.Clamp(_config.DifferentRuleQueueCooldownMs, 0, 600000);
+            if (differentCooldownMs > 0
+                && !string.IsNullOrWhiteSpace(_lastStartedRuleId)
+                && !string.Equals(_lastStartedRuleId, rule.Id, StringComparison.OrdinalIgnoreCase)
+                && now - _lastAlertStartAt < TimeSpan.FromMilliseconds(differentCooldownMs))
+            {
+                var remainingMs = differentCooldownMs - (int)(now - _lastAlertStartAt).TotalMilliseconds;
+                reason = $"Distinta en enfriamiento por {Math.Max(0, remainingMs)} ms.";
+                return null;
+            }
+
+            var slot = new QueuedAlertSlot(Guid.NewGuid().ToString("N"), rule.Id, rule.Name, twitchEvent.Kind);
+            _pendingAlertSlots.Add(slot);
+            reason = "";
+            return slot;
+        }
+    }
+
+    private void MarkQueuedAlertStarted(QueuedAlertSlot? slot)
+    {
+        if (slot is null)
+        {
+            return;
+        }
+
+        lock (_alertQueueSync)
+        {
+            _pendingAlertSlots.RemoveAll(candidate => string.Equals(candidate.Id, slot.Id, StringComparison.OrdinalIgnoreCase));
+            var now = DateTimeOffset.UtcNow;
+            _runningRuleId = slot.RuleId;
+            _lastStartedRuleId = slot.RuleId;
+            _lastAlertStartAt = now;
+            _lastRuleStartTimes[slot.RuleId] = now;
+        }
+    }
+
+    private void MarkQueuedAlertFinished(QueuedAlertSlot? slot)
+    {
+        if (slot is null)
+        {
+            return;
+        }
+
+        lock (_alertQueueSync)
+        {
+            if (string.Equals(_runningRuleId, slot.RuleId, StringComparison.OrdinalIgnoreCase))
+            {
+                _runningRuleId = "";
+            }
+        }
+    }
+
+    private EventRule[] ResolveMatchingRules(TwitchEvent twitchEvent)
+    {
+        var matchingRules = _config.Rules
+            .Where(rule => rule.Matches(twitchEvent))
+            .ToArray();
+
+        if (twitchEvent.Kind != TwitchEventKind.Cheer || matchingRules.Length == 0)
+        {
+            return matchingRules;
+        }
+
+        var highestThreshold = matchingRules.Max(rule => rule.MinimumBits);
+        return matchingRules
+            .Where(rule => rule.MinimumBits == highestThreshold)
+            .ToArray();
+    }
+
+    private async Task SendRuleChatMessageAsync(EventRule rule, TwitchEvent twitchEvent)
+    {
+        if (!rule.SendChatMessage)
+        {
+            return;
+        }
+
+        var message = TwitchChatService.FormatMessage(rule.ChatMessageTemplate, twitchEvent);
+        if (string.IsNullOrWhiteSpace(message))
+        {
+            return;
+        }
+
+        try
+        {
+            await _authService.EnsureValidTokenAsync(_config, AddLog, CancellationToken.None);
+            SaveConfig();
+            await _chatService.SendMessageAsync(_config, message, CancellationToken.None);
+            AddLog($"Chat enviado: {message}", ActivityLogKind.Twitch);
+        }
+        catch (Exception ex)
+        {
+            CrashReporter.Log(ex, $"No se pudo enviar mensaje de chat para la regla '{rule.Name}'.");
+            AddLog($"Chat: {ex.Message}");
+        }
+    }
+
+    private async Task SendRuleAlexaEventAsync(EventRule rule, TwitchEvent twitchEvent)
+    {
+        if (!rule.SendAlexaEvent || !_config.Alexa.IsConfigured)
+        {
+            return;
+        }
+
+        try
+        {
+            await _alexaRelayService.SendRuleEventAsync(_config, rule, twitchEvent, CancellationToken.None);
+            _alexaRelayConnected = true;
+            AddLog($"Alexa: evento enviado para '{rule.Name}'.", ActivityLogKind.Alexa);
+        }
+        catch (Exception ex)
+        {
+            _alexaRelayConnected = false;
+            CrashReporter.Log(ex, $"No se pudo enviar evento Alexa para la regla '{rule.Name}'.");
+            AddLog($"Alexa: {ex.Message}", ActivityLogKind.Important);
+        }
+        finally
+        {
+            UpdateAlexaStatusText();
+        }
+    }
+
+    private async Task RunRuleAsync(
+        EventRule rule,
+        TwitchEvent twitchEvent,
+        bool sendChatMessage = true,
+        bool sendAlexaEvent = true,
+        QueuedAlertSlot? queueSlot = null)
+    {
+        await _effectGate.WaitAsync();
+        MarkQueuedAlertStarted(queueSlot);
+        var effectCts = new CancellationTokenSource();
+        _currentEffectCts = effectCts;
+        UpdateRuleTestButtonState();
+        var wasCancelled = false;
+        var shouldRestoreBackground = false;
+        ObsSceneRestoreRequest? obsRestore = null;
+
+        try
+        {
+            if (sendChatMessage)
+            {
+                _ = SendRuleChatMessageAsync(rule, twitchEvent);
+            }
+
+            if (sendAlexaEvent)
+            {
+                _ = SendRuleAlexaEventAsync(rule, twitchEvent);
+            }
+
+            obsRestore = await SendRuleObsSceneAsync(rule, effectCts.Token);
+
+            AudioPlayback? playback = null;
+            AudioAssetConfig? playbackAsset = null;
+            if (rule.PlayAudio)
+            {
+                playbackAsset = ResolveRuleAudioAsset(rule);
+                var audioPath = playbackAsset?.FilePath ?? rule.AudioPath;
+                playback = await _audioPlayer.PrepareAsync(audioPath, _config.AlertVolumePercent, AddLog);
+                _currentPlayback = playback;
+                if (playbackAsset is not null)
+                {
+                    MarkAudioAssetUsed(playbackAsset, playback?.Duration);
+                }
+            }
+
+            var useLights = _config.ArduinoEnabled && rule.UseLights;
+
+            if (!useLights)
+            {
+                playback?.Play();
+                if (playback is not null)
+                {
+                    await playback.Completion.WaitAsync(effectCts.Token);
+                }
+
+                return;
+            }
+
+            if (useLights && !_lightController.HasOpenPort && !string.IsNullOrWhiteSpace(_config.SerialPort))
+            {
+                await ConnectArduinoAsync();
+            }
+
+            shouldRestoreBackground = true;
+            var targets = LightCommand.ResolveTargets(_config, rule.TargetPins);
+            if (useLights)
+            {
+                await StopLightsAsync(LightCommand.ResolveTargets(_config, ""));
+                await Task.Delay(LightStopSettleMs);
+            }
+
+            var audioDuration = playback?.Duration;
+            var syncedDurationMs = audioDuration is { TotalMilliseconds: > 0 }
+                ? (int)Math.Round(audioDuration.Value.TotalMilliseconds)
+                : (int?)null;
+
+            LightCommand? command = null;
+            if (useLights)
+            {
+                command = LightCommand.FromRule(rule, _config, syncedDurationMs);
+                await _lightController.SendAsync(command, AddLog, CancellationToken.None);
+                UpdateStatusText();
+            }
+
+            playback?.Play();
+
+            if (playback is not null)
+            {
+                await playback.Completion.WaitAsync(effectCts.Token);
+            }
+            else if (command is not null)
+            {
+                await Task.Delay(command.DurationMs, effectCts.Token);
+            }
+            else
+            {
+                await Task.Delay(500, effectCts.Token);
+            }
+
+            if (command is not null)
+            {
+                await StopLightsAsync(targets);
+                AddLog($"Luces: {DisplayNames.For(rule.Pattern)} por {command.DurationMs} ms para {DisplayNames.For(twitchEvent.Kind)}.");
+            }
+        }
+        catch (OperationCanceledException)
+        {
+            wasCancelled = true;
+            AddLog("Prueba detenida.");
+        }
+        catch (Exception ex)
+        {
+            CrashReporter.Log(ex, $"Error ejecutando la regla '{rule.Name}'.");
+            AddLog($"Regla '{rule.Name}': {ex.Message}");
+        }
+        finally
+        {
+            _currentPlayback = null;
+            if (ReferenceEquals(_currentEffectCts, effectCts))
+            {
+                _currentEffectCts = null;
+            }
+            UpdateRuleTestButtonState();
+
+            if (shouldRestoreBackground || wasCancelled)
+            {
+                try
+                {
+                    await RestoreBackgroundStateAsync();
+                }
+                catch (Exception ex)
+                {
+                    CrashReporter.Log(ex, "No se pudo restaurar el fondo despues de una regla.");
+                    AddLog($"Fondo: {ex.Message}");
+                }
+            }
+
+            await RestoreRuleObsSceneAsync(obsRestore, wasCancelled);
+
+            effectCts.Dispose();
+            MarkQueuedAlertFinished(queueSlot);
+            _effectGate.Release();
+        }
+    }
+
+    private async Task StopCurrentEffectAsync()
+    {
+        _currentEffectCts?.Cancel();
+        _currentPlayback?.Stop();
+        await StopLightsAsync(LightCommand.ResolveTargets(_config, ""));
+        await SendBackgroundAlexaEventAsync(_config.BackgroundAlexaOffEventName, "Fondo Alexa apagado");
+
+        if (_effectGate.CurrentCount > 0)
+        {
+            await ApplyBackgroundStateAsync();
+        }
+    }
+}

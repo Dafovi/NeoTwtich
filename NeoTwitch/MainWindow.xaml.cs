@@ -2711,74 +2711,6 @@ public partial class MainWindow : Window
         _ruleSearchText = "";
     }
 
-    private void ActivityFilterButton_CheckedChanged(object sender, RoutedEventArgs e)
-    {
-        if (_initializingComponent || sender is not ToggleButton button)
-        {
-            return;
-        }
-
-        var filter = button.Tag?.ToString() ?? "";
-        if (string.IsNullOrWhiteSpace(filter))
-        {
-            return;
-        }
-
-        if (button.IsChecked == true)
-        {
-            _activityEnabledFilters.Add(filter);
-        }
-        else
-        {
-            _activityEnabledFilters.Remove(filter);
-        }
-
-        ApplyActivityFilterButtonTheme(button, _config.DarkMode ? ThemePalette.Dark : ThemePalette.Light);
-        _activityViewSource.View?.Refresh();
-    }
-
-    private void ActivitySearchBox_TextChanged(object sender, TextChangedEventArgs e)
-    {
-        if (_loadingUi || sender is not System.Windows.Controls.TextBox textBox)
-        {
-            return;
-        }
-
-        _activitySearchText = textBox.Text.Trim();
-        _activityViewSource.View?.Refresh();
-    }
-
-    private void ClearActivityFiltersButton_Click(object sender, RoutedEventArgs e)
-    {
-        _activityEnabledFilters.Clear();
-        foreach (var button in ActivityFilterButtons())
-        {
-            var filter = button.Tag?.ToString() ?? "";
-            if (!string.IsNullOrWhiteSpace(filter))
-            {
-                _activityEnabledFilters.Add(filter);
-            }
-
-            button.IsChecked = true;
-            ApplyActivityFilterButtonTheme(button, _config.DarkMode ? ThemePalette.Dark : ThemePalette.Light);
-        }
-
-        ActivitySearchBox.Text = "";
-        _activitySearchText = "";
-        _activityViewSource.View?.Refresh();
-    }
-
-    private void ActivityViewSource_Filter(object sender, FilterEventArgs e)
-    {
-        if (e.Item is not ActivityLogEntry entry)
-        {
-            e.Accepted = false;
-            return;
-        }
-
-        e.Accepted = entry.MatchesFilter(_activityEnabledFilters, _activitySearchText);
-    }
-
     private async void EventSubClient_EventReceived(TwitchEvent twitchEvent)
     {
         try
@@ -4400,24 +4332,6 @@ public partial class MainWindow : Window
         button.BorderBrush = palette.Border;
     }
 
-    private void ApplyActivityFilterButtonTheme(ToggleButton button, ThemePalette palette)
-    {
-        var filter = button.Tag?.ToString() ?? "";
-        var accentColor = ActivityFilterAccent(filter);
-        var accent = FrozenBrushFrom(accentColor);
-        var active = button.IsChecked == true;
-
-        button.Background = active
-            ? TranslucentBrushFrom(accentColor)
-            : palette.Input;
-        button.Foreground = active
-            ? accent
-            : palette.MutedText;
-        button.BorderBrush = active
-            ? accent
-            : palette.Border;
-    }
-
     private void ApplyRuleStatusFilterButtonTheme(ToggleButton button, ThemePalette palette)
     {
         var active = button.IsChecked == true;
@@ -4695,37 +4609,6 @@ public partial class MainWindow : Window
     {
         return !string.IsNullOrWhiteSpace(button.Name)
             && button.Name.EndsWith("ColorButton", StringComparison.OrdinalIgnoreCase);
-    }
-
-    private IEnumerable<ToggleButton> ActivityFilterButtons()
-    {
-        return
-        [
-            ActivityFilterTwitchButton,
-            ActivityFilterArduinoButton,
-            ActivityFilterAlexaButton,
-            ActivityFilterAudioButton,
-            ActivityFilterObsButton,
-            ActivityFilterEventButton,
-            ActivityFilterSystemButton,
-            ActivityFilterImportantButton
-        ];
-    }
-
-    private static string ActivityFilterAccent(string filter)
-    {
-        return filter.ToUpperInvariant() switch
-        {
-            "TWITCH" => "#9146FF",
-            "ARDUINO" => "#00878F",
-            "ALEXA" => "#2FB4E9",
-            "AUDIO" => "#B56CFF",
-            "OBS" => "#22C55E",
-            "EVENTO" => "#22C55E",
-            "SISTEMA" => "#94A3B8",
-            "IMPORTANTE" => "#FFB020",
-            _ => "#14B8A6"
-        };
     }
 
     private static SolidColorBrush TranslucentBrushFrom(string accentColor)
@@ -5069,92 +4952,6 @@ public partial class MainWindow : Window
         {
             AddLog($"No pude guardar la configuracion: {ex.Message}");
         }
-    }
-
-    private void AddLog(string message)
-    {
-        AddLog(message, ClassifyLogMessage(message));
-    }
-
-    private void AddLog(string message, ActivityLogKind kind)
-    {
-        Dispatcher.BeginInvoke(() =>
-        {
-            var entry = new ActivityLogEntry(message, kind);
-            _activity.Insert(0, entry);
-            _dashboardActivity.Insert(0, entry);
-
-            while (_activity.Count > 250)
-            {
-                _activity.RemoveAt(_activity.Count - 1);
-            }
-
-            while (_dashboardActivity.Count > 10)
-            {
-                _dashboardActivity.RemoveAt(_dashboardActivity.Count - 1);
-            }
-        });
-    }
-
-    private static ActivityLogKind ClassifyLogMessage(string message)
-    {
-        var text = message.ToLowerInvariant();
-
-        if (text.StartsWith("twitch", StringComparison.Ordinal)
-            || text.StartsWith("chat", StringComparison.Ordinal)
-            || text.Contains("autorizado", StringComparison.Ordinal)
-            || text.Contains("escuchando eventos", StringComparison.Ordinal))
-        {
-            return ActivityLogKind.Twitch;
-        }
-
-        if (text.StartsWith("alexa", StringComparison.Ordinal))
-        {
-            return ActivityLogKind.Alexa;
-        }
-
-        if (text.StartsWith("arduino", StringComparison.Ordinal)
-            || text.StartsWith("serial", StringComparison.Ordinal)
-            || text.StartsWith("fondo", StringComparison.Ordinal)
-            || text.StartsWith("luces", StringComparison.Ordinal)
-            || text.Contains("puerto com", StringComparison.Ordinal)
-            || text.Contains("puertos com", StringComparison.Ordinal))
-        {
-            return ActivityLogKind.Arduino;
-        }
-
-        if (text.StartsWith("audio", StringComparison.Ordinal)
-            || text.StartsWith("sonido", StringComparison.Ordinal))
-        {
-            return ActivityLogKind.Audio;
-        }
-
-        if (text.StartsWith("obs", StringComparison.Ordinal))
-        {
-            return ActivityLogKind.Obs;
-        }
-
-        if (text.Contains("siguio", StringComparison.Ordinal)
-            || text.Contains("suscribio", StringComparison.Ordinal)
-            || text.Contains("raid", StringComparison.Ordinal)
-            || text.Contains("bits", StringComparison.Ordinal)
-            || text.Contains("canjeo", StringComparison.Ordinal)
-            || text.StartsWith("prueba de", StringComparison.Ordinal))
-        {
-            return ActivityLogKind.Event;
-        }
-
-        if (text.Contains("error", StringComparison.Ordinal)
-            || text.Contains("fallo", StringComparison.Ordinal)
-            || text.Contains("no pude", StringComparison.Ordinal)
-            || text.Contains("no puedo", StringComparison.Ordinal)
-            || text.Contains("no hay", StringComparison.Ordinal)
-            || text.Contains("no encontre", StringComparison.Ordinal))
-        {
-            return ActivityLogKind.Important;
-        }
-
-        return ActivityLogKind.Info;
     }
 
     private static string ParsePort(string text)

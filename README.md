@@ -30,6 +30,7 @@ Despues de descargar el `.zip`:
 - Puede enviar mensajes personalizados al chat por regla.
 - Puede enviar eventos opcionales a una Skill/relay de Alexa para activar rutinas.
 - Puede mantener un fondo opcional con Alexa, por ejemplo enviando eventos de luz encendida o luz apagada.
+- Puede conectarse a OBS Studio por WebSocket para leer escenas y cambiar de escena desde Neo Twitch.
 - Las reglas nuevas vienen activas, pero con luces, audio y chat desactivados para configurar solo lo necesario.
 - La interfaz oculta opciones que no aplican al evento, patron o fondo seleccionado.
 - Guarda la configuracion en `%AppData%\NeoTwitch\settings.json`.
@@ -62,6 +63,7 @@ Y asi se ve el efecto cuando se activa en stream:
 - Windows con .NET Desktop Runtime compatible con el proyecto.
 - Una app creada en Twitch Developer Console para obtener el Client ID. El Client Secret es opcional, pero ayuda a refrescar la sesion sin autorizar de nuevo.
 - Opcional: una Skill/relay de Alexa con endpoint HTTPS para recibir eventos de Neo Twitch.
+- Opcional: OBS Studio con el servidor WebSocket activado para cambiar escenas desde alertas.
 - Arduino IDE con la libreria `Adafruit NeoPixel`.
 - Arduino conectado por USB y una tira NeoPixel en el pin configurado en el sketch.
 
@@ -81,8 +83,9 @@ Y asi se ve el efecto cuando se activa en stream:
 12. Para bits, crea varias reglas `Bits` con distintos `Bits minimos`; si llega una cantidad alta, se usa el umbral mas alto que aplique.
 13. Si quieres chat automatico, activa `Enviar mensaje al chat` y usa variables como `{user}`, `{bits}`, `{reward}`, `{viewers}`, `{message}` o `{event}`.
 14. Si tienes Alexa configurada, activa `Enviar evento a Alexa`. Neo Twitch enviara el nombre de la regla como evento.
-15. Usa `Probar regla` antes de salir en vivo. La prueba ejecuta luces, audio, chat y Alexa si estan activados en esa regla.
-16. En `Configuracion`, ajusta volumen, modo oscuro, comportamiento de cierre y cola de alertas.
+15. Si tienes OBS configurado, activa `OBS` en la alerta, elige la escena y decide si debe volver a la escena anterior.
+16. Usa `Probar regla` antes de salir en vivo. La prueba ejecuta luces, audio, chat, Alexa y OBS si estan activados en esa regla.
+17. En `Configuracion`, ajusta volumen, modo oscuro, comportamiento de cierre y cola de alertas.
 
 ## Configuracion general
 
@@ -252,6 +255,43 @@ Resumen corto:
 6. Crear una rutina en la app de Alexa.
 7. En Neo Twitch, pegar la Function URL y activar `Enviar evento a Alexa` en cada regla que lo necesite.
 
+## Conexion con OBS Studio
+
+Neo Twitch puede conectarse a OBS Studio usando `obs-websocket`, que es el sistema oficial para controlar OBS desde otras apps. En versiones recientes de OBS suele venir incluido; si tu OBS es antiguo, puede que tengas que actualizarlo.
+
+Flujo esperado:
+
+```text
+Evento Twitch -> Regla Neo Twitch -> Accion OBS -> Cambio de escena en OBS
+```
+
+Pasos recomendados:
+
+1. Abre OBS Studio antes de conectar Neo Twitch.
+2. En OBS, entra a `Herramientas` -> `Ajustes del servidor WebSocket`.
+3. Activa el servidor WebSocket si aparece desactivado.
+4. Deja el puerto por defecto `4455`, salvo que ya uses otro.
+5. Si OBS tiene contraseña WebSocket activada, copiala o cambiala por una que recuerdes.
+6. En Neo Twitch, entra a `Conexiones`.
+7. Activa `OBS`.
+8. Usa estos valores iniciales:
+   - `Host`: `127.0.0.1`
+   - `Puerto`: `4455`
+   - `Contraseña`: la contraseña WebSocket de OBS, si la tienes activada.
+9. Presiona `Conectar OBS` o `Actualizar escenas`.
+10. En la pestaña `OBS`, revisa que aparezca la escena actual y la lista de escenas disponibles.
+11. En una alerta, activa la accion `OBS`, elige la escena y marca si quieres volver a la escena anterior despues de unos milisegundos.
+
+Si no conecta, revisa esto:
+
+- OBS debe estar abierto.
+- Neo Twitch y OBS deben estar en el mismo PC si usas `127.0.0.1`.
+- El puerto debe coincidir con el configurado en OBS.
+- Si hay contraseña, debe ser exactamente la misma.
+- Si Windows Firewall pregunta por permisos de OBS, permite la conexion en redes privadas.
+
+Guia oficial de OBS WebSocket, en ingles: [obs-websocket](https://github.com/obsproject/obs-websocket).
+
 ## Creditos y atribuciones
 
 Los iconos y logos usados por Neo Twitch tienen sus creditos recopilados en [docs/ATRIBUCIONES_ICONOS.md](docs/ATRIBUCIONES_ICONOS.md).
@@ -269,3 +309,4 @@ Los iconos y logos usados por Neo Twitch tienen sus creditos recopilados en [doc
 - Request access to Alexa Event Gateway: https://developer.amazon.com/en-US/docs/alexa/smarthome/authenticate-a-customer-permissions.html
 - AWS Lambda Function URLs: https://docs.aws.amazon.com/lambda/latest/dg/urls-configuration.html
 - Alexa SimpleEventSource: https://developer.amazon.com/en-US/docs/alexa/device-apis/alexa-simpleeventsource.html
+- OBS WebSocket: https://github.com/obsproject/obs-websocket

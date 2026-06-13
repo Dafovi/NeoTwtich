@@ -1991,6 +1991,13 @@
                                                                    Opacity="{Binding AlexaActionOpacity}"
                                                                    ToolTip="{Binding AlexaActionToolTip}"
                                                                    Visibility="{Binding AlexaActionVisibility}" />
+                                                            <Image Source="Assets/ServiceObs.png"
+                                                                   Width="16"
+                                                                   Height="16"
+                                                                   Margin="0,0,10,0"
+                                                                   Opacity="{Binding ObsActionOpacity}"
+                                                                   ToolTip="{Binding ObsActionToolTip}"
+                                                                   Visibility="{Binding ObsActionVisibility}" />
                                                         </WrapPanel>
                                                     </StackPanel>
 
@@ -2737,6 +2744,73 @@
                                                                    FontSize="11"
                                                                    TextWrapping="Wrap"
                                                                    Margin="0" />
+                                                    </StackPanel>
+                                                </StackPanel>
+                                            </Border>
+
+                                            <Border x:Name="ObsActionCard"
+                                                    BorderBrush="{DynamicResource ThemeBorderBrush}"
+                                                    BorderThickness="1"
+                                                    CornerRadius="12"
+                                                    Padding="12"
+                                                    Margin="0,0,0,10"
+                                                    Background="{DynamicResource ThemeInputBrush}">
+                                                <StackPanel>
+                                                    <Grid>
+                                                        <Grid.ColumnDefinitions>
+                                                            <ColumnDefinition Width="42" />
+                                                            <ColumnDefinition Width="*" />
+                                                            <ColumnDefinition Width="Auto" />
+                                                        </Grid.ColumnDefinitions>
+                                                        <Image Source="Assets/ServiceObs.png"
+                                                               Width="26"
+                                                               Height="26"
+                                                               Stretch="Uniform" />
+                                                        <StackPanel Grid.Column="1">
+                                                            <TextBlock Text="OBS"
+                                                                       FontWeight="SemiBold" />
+                                                            <TextBlock Text="Cambia escena durante la alerta."
+                                                                       Style="{StaticResource MutedText}"
+                                                                       FontSize="12" />
+                                                        </StackPanel>
+                                                        <CheckBox x:Name="ObsSceneCheck"
+                                                                  Grid.Column="2"
+                                                                  Content=""
+                                                                  Checked="RuleFieldChanged"
+                                                                  Unchecked="RuleFieldChanged" />
+                                                    </Grid>
+                                                    <StackPanel x:Name="ObsDetailsPanel"
+                                                                Margin="42,12,0,0">
+                                                        <TextBlock Text="Escena de OBS"
+                                                                   Style="{StaticResource MutedText}" />
+                                                        <ComboBox x:Name="RuleObsSceneBox"
+                                                                  Margin="0,4,0,0"
+                                                                  SelectionChanged="RuleFieldChanged" />
+
+                                                        <Grid Margin="0,10,0,0">
+                                                            <Grid.ColumnDefinitions>
+                                                                <ColumnDefinition Width="*" />
+                                                                <ColumnDefinition Width="12" />
+                                                                <ColumnDefinition Width="170" />
+                                                            </Grid.ColumnDefinitions>
+                                                            <CheckBox x:Name="ObsReturnCheck"
+                                                                      Content="Volver a la escena anterior"
+                                                                      Checked="RuleFieldChanged"
+                                                                      Unchecked="RuleFieldChanged" />
+                                                            <StackPanel Grid.Column="2">
+                                                                <TextBlock Text="Regresar despues de (ms)"
+                                                                           Style="{StaticResource MutedText}" />
+                                                                <TextBox x:Name="ObsReturnDelayBox"
+                                                                         TextChanged="RuleFieldChanged" />
+                                                            </StackPanel>
+                                                        </Grid>
+
+                                                        <TextBlock x:Name="RuleObsEmptyHintText"
+                                                                   Text="Conecta OBS desde Conexiones para cargar las escenas disponibles."
+                                                                   Style="{StaticResource MutedText}"
+                                                                   FontSize="11"
+                                                                   TextWrapping="Wrap"
+                                                                   Margin="0,8,0,0" />
                                                     </StackPanel>
                                                 </StackPanel>
                                             </Border>

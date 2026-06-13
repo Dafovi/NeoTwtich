@@ -229,6 +229,9 @@ public partial class MainWindow : Window
             RuleAudioGroupBox.ItemsSource = _config.AudioGroups;
             RuleAudioGroupBox.DisplayMemberPath = nameof(AudioGroupConfig.Name);
             RuleAudioGroupBox.SelectedValuePath = nameof(AudioGroupConfig.Id);
+            RuleObsSceneBox.ItemsSource = _obsSceneRows;
+            RuleObsSceneBox.DisplayMemberPath = nameof(ObsSceneRow.Name);
+            RuleObsSceneBox.SelectedValuePath = nameof(ObsSceneRow.Name);
             NewAudioAlertBox.ItemsSource = AudioAlertChoices;
             NewAudioAlertBox.DisplayMemberPath = nameof(AudioAlertChoice.Name);
             NewAudioAlertBox.SelectedValuePath = nameof(AudioAlertChoice.Id);
@@ -3182,11 +3185,13 @@ public partial class MainWindow : Window
 
         var lightsAvailable = _config.ArduinoEnabled;
         var alexaAvailable = _config.Alexa.IsConfigured;
+        var obsAvailable = _config.Obs.IsConfigured;
 
         foreach (var rule in _config.Rules)
         {
             rule.LightsActionAvailable = lightsAvailable;
             rule.AlexaActionAvailable = alexaAvailable;
+            rule.ObsActionAvailable = obsAvailable;
         }
     }
 
@@ -3736,6 +3741,104 @@ public partial class MainWindow : Window
         }
     }
 
+    private async Task<ObsSceneRestoreRequest?> SendRuleObsSceneAsync(EventRule rule, CancellationToken cancellationToken)
+    {
+        if (!rule.SendObsScene || !_config.Obs.IsConfigured || string.IsNullOrWhiteSpace(rule.ObsSceneName))
+        {
+            return null;
+        }
+
+        try
+        {
+            if (!_obsService.IsConnected)
+            {
+                await ConnectObsAsync();
+            }
+
+            if (!_obsService.IsConnected)
+            {
+                return null;
+            }
+
+            var previousScene = _obsService.CurrentScene;
+            var targetScene = rule.ObsSceneName.Trim();
+            var result = await _obsService.SetCurrentProgramSceneAsync(targetScene, cancellationToken);
+            ApplyObsResult(result);
+            AddLog($"OBS: escena '{targetScene}' enviada para '{rule.Name}'.", ActivityLogKind.Obs);
+
+            if (!rule.ObsReturnToPreviousScene
+                || string.IsNullOrWhiteSpace(previousScene)
+                || string.Equals(previousScene, targetScene, StringComparison.OrdinalIgnoreCase))
+            {
+                return null;
+            }
+
+            return new ObsSceneRestoreRequest(
+                previousScene,
+                targetScene,
+                TimeSpan.FromMilliseconds(Math.Clamp(rule.ObsReturnDelayMs, 0, 600000)),
+                DateTimeOffset.UtcNow);
+        }
+        catch (OperationCanceledException)
+        {
+            throw;
+        }
+        catch (Exception ex)
+        {
+            _obsConnectionError = ex.Message;
+            CrashReporter.Log(ex, $"No se pudo enviar escena OBS para la regla '{rule.Name}'.");
+            AddLog($"OBS: {ex.Message}", ActivityLogKind.Important);
+            UpdateObsStatusText();
+            return null;
+        }
+    }
+
+    private async Task RestoreRuleObsSceneAsync(ObsSceneRestoreRequest? restore, bool restoreImmediately)
+    {
+        if (restore is null)
+        {
+            return;
+        }
+
+        try
+        {
+            if (!restoreImmediately)
+            {
+                var remaining = restore.Delay - (DateTimeOffset.UtcNow - restore.StartedAt);
+                if (remaining > TimeSpan.Zero)
+                {
+                    await Task.Delay(remaining);
+                }
+            }
+
+            if (!_config.Obs.IsConfigured)
+            {
+                return;
+            }
+
+            if (!_obsService.IsConnected)
+            {
+                await ConnectObsAsync();
+            }
+
+            if (!_obsService.IsConnected)
+            {
+                return;
+            }
+
+            var result = await _obsService.SetCurrentProgramSceneAsync(restore.PreviousScene, CancellationToken.None);
+            ApplyObsResult(result);
+            AddLog($"OBS: escena restaurada a '{restore.PreviousScene}'.", ActivityLogKind.Obs);
+        }
+        catch (Exception ex)
+        {
+            _obsConnectionError = ex.Message;
+            CrashReporter.Log(ex, $"No se pudo restaurar la escena OBS '{restore.PreviousScene}'.");
+            AddLog($"OBS: {ex.Message}", ActivityLogKind.Important);
+            UpdateObsStatusText();
+        }
+    }
+
     private async Task RunRuleAsync(
         EventRule rule,
         TwitchEvent twitchEvent,
@@ -3750,6 +3853,7 @@ public partial class MainWindow : Window
         UpdateRuleTestButtonState();
         var wasCancelled = false;
         var shouldRestoreBackground = false;
+        ObsSceneRestoreRequest? obsRestore = null;
 
         try
         {
@@ -3762,6 +3866,8 @@ public partial class MainWindow : Window
             {
                 _ = SendRuleAlexaEventAsync(rule, twitchEvent);
             }
+
+            obsRestore = await SendRuleObsSceneAsync(rule, effectCts.Token);
 
             AudioPlayback? playback = null;
             AudioAssetConfig? playbackAsset = null;
@@ -3868,6 +3974,8 @@ public partial class MainWindow : Window
                     AddLog($"Fondo: {ex.Message}");
                 }
             }
+
+            await RestoreRuleObsSceneAsync(obsRestore, wasCancelled);
 
             effectCts.Dispose();
             MarkQueuedAlertFinished(queueSlot);
@@ -3999,6 +4107,10 @@ public partial class MainWindow : Window
             ChatMessageCheck.IsChecked = rule.SendChatMessage;
             ChatMessageBox.Text = rule.ChatMessageTemplate;
             AlexaEventCheck.IsChecked = rule.SendAlexaEvent;
+            ObsSceneCheck.IsChecked = rule.SendObsScene;
+            RuleObsSceneBox.SelectedValue = rule.ObsSceneName;
+            ObsReturnCheck.IsChecked = rule.ObsReturnToPreviousScene;
+            ObsReturnDelayBox.Text = rule.ObsReturnDelayMs.ToString();
             UseLightsCheck.IsChecked = rule.UseLights;
             PlayAudioCheck.IsChecked = rule.PlayAudio;
             _ruleAudioMode = rule.AudioSourceMode;
@@ -4137,9 +4249,13 @@ public partial class MainWindow : Window
         rule.MinimumBits = ParseInt(MinimumBitsBox.Text, 1, 1, 1_000_000);
         rule.SendChatMessage = ChatMessageCheck.IsChecked == true;
         rule.ChatMessageTemplate = ChatMessageBox.Text.Trim();
-            rule.SendAlexaEvent = AlexaEventCheck.IsChecked == true;
-            rule.UseLights = UseLightsCheck.IsChecked == true;
-            rule.PlayAudio = PlayAudioCheck.IsChecked == true;
+        rule.SendAlexaEvent = AlexaEventCheck.IsChecked == true;
+        rule.SendObsScene = ObsSceneCheck.IsChecked == true;
+        rule.ObsSceneName = RuleObsSceneBox.SelectedValue as string ?? RuleObsSceneBox.Text.Trim();
+        rule.ObsReturnToPreviousScene = ObsReturnCheck.IsChecked == true;
+        rule.ObsReturnDelayMs = ParseInt(ObsReturnDelayBox.Text, 15000, 0, 600000);
+        rule.UseLights = UseLightsCheck.IsChecked == true;
+        rule.PlayAudio = PlayAudioCheck.IsChecked == true;
         rule.AudioSourceMode = _ruleAudioMode;
         rule.AudioAssetId = RuleAudioAssetBox.SelectedValue as string ?? "";
         rule.AudioGroupId = RuleAudioGroupBox.SelectedValue as string ?? "";
@@ -4220,6 +4336,8 @@ public partial class MainWindow : Window
         var sendChat = ChatMessageCheck.IsChecked == true;
         var alexaAvailable = _config.Alexa.IsConfigured;
         var sendAlexa = AlexaEventCheck.IsChecked == true;
+        var obsAvailable = _config.Obs.IsConfigured;
+        var sendObs = ObsSceneCheck.IsChecked == true;
         var pattern = PatternBox.SelectedValue is LightPattern selectedPattern
             ? selectedPattern
             : LightPattern.Pulse;
@@ -4237,6 +4355,9 @@ public partial class MainWindow : Window
         SetVisible(arduinoAvailable, UseLightsActionCard);
         SetVisible(alexaAvailable, AlexaActionCard);
         SetVisible(alexaAvailable && sendAlexa, AlexaDetailsPanel, AlexaRuleHintText);
+        SetVisible(obsAvailable, ObsActionCard);
+        SetVisible(obsAvailable && sendObs, ObsDetailsPanel);
+        SetVisible(obsAvailable && sendObs && _obsSceneRows.Count == 0, RuleObsEmptyHintText);
 
         SetVisible(useLights, LightConfigurationPanel, LightOptionsSeparator, TargetPinsLabel, TargetPinsBox, PatternGrid, RuleLedPreviewPanel);
         SetVisible(useLights && UsesPrimaryColor(pattern), PrimaryColorPanel);
@@ -4825,6 +4946,12 @@ public partial class MainWindow : Window
 
     private void ApplyObsResult(ObsConnectionResult result)
     {
+        if (!Dispatcher.CheckAccess())
+        {
+            _ = Dispatcher.InvokeAsync(() => ApplyObsResult(result));
+            return;
+        }
+
         _obsConnectionError = "";
         _obsSceneRows.Clear();
         foreach (var scene in result.Scenes)
@@ -4835,6 +4962,15 @@ public partial class MainWindow : Window
                 scene.Name.Length > 24 ? $"{scene.Name[..24]}..." : scene.Name));
         }
 
+        if (RulesList.SelectedItem is EventRule rule
+            && !string.IsNullOrWhiteSpace(rule.ObsSceneName)
+            && _obsSceneRows.Any(scene => string.Equals(scene.Name, rule.ObsSceneName, StringComparison.OrdinalIgnoreCase)))
+        {
+            RuleObsSceneBox.SelectedValue = rule.ObsSceneName;
+        }
+
+        RefreshRulesView();
+        UpdateRuleOptionVisibility();
         UpdateObsStatusText();
     }
 
@@ -7086,6 +7222,12 @@ public partial class MainWindow : Window
 
         public Visibility ChangeButtonVisibility => IsCurrent ? Visibility.Collapsed : Visibility.Visible;
     }
+
+    private sealed record ObsSceneRestoreRequest(
+        string PreviousScene,
+        string TargetScene,
+        TimeSpan Delay,
+        DateTimeOffset StartedAt);
 
     public sealed record AudioGroupChoice(string Id, string Name)
     {

@@ -22,6 +22,10 @@ public sealed class EventRule : INotifyPropertyChanged
     private string _chatMessageTemplate = "";
     private bool _sendAlexaEvent;
     private string _alexaEventName = "";
+    private bool _sendObsScene;
+    private string _obsSceneName = "";
+    private bool _obsReturnToPreviousScene = true;
+    private int _obsReturnDelayMs = 15000;
     private LightPattern _pattern = LightPattern.Pulse;
     private string _targetPins = "";
     private string _primaryColor = "#FF2D55";
@@ -33,6 +37,7 @@ public sealed class EventRule : INotifyPropertyChanged
     private int _stepMs = 120;
     private bool _lightsActionAvailable = true;
     private bool _alexaActionAvailable = true;
+    private bool _obsActionAvailable = true;
 
     public string Id { get; set; } = Guid.NewGuid().ToString("N");
 
@@ -187,6 +192,37 @@ public sealed class EventRule : INotifyPropertyChanged
         set => SetField(ref _alexaEventName, value);
     }
 
+    public bool SendObsScene
+    {
+        get => _sendObsScene;
+        set
+        {
+            if (SetField(ref _sendObsScene, value))
+            {
+                OnPropertyChanged(nameof(ActionsSummary));
+                OnPropertyChanged(nameof(ObsActionVisibility));
+            }
+        }
+    }
+
+    public string ObsSceneName
+    {
+        get => _obsSceneName;
+        set => SetField(ref _obsSceneName, value);
+    }
+
+    public bool ObsReturnToPreviousScene
+    {
+        get => _obsReturnToPreviousScene;
+        set => SetField(ref _obsReturnToPreviousScene, value);
+    }
+
+    public int ObsReturnDelayMs
+    {
+        get => _obsReturnDelayMs;
+        set => SetField(ref _obsReturnDelayMs, Math.Clamp(value, 0, 600000));
+    }
+
     public LightPattern Pattern
     {
         get => _pattern;
@@ -267,6 +303,19 @@ public sealed class EventRule : INotifyPropertyChanged
         }
     }
 
+    public bool ObsActionAvailable
+    {
+        get => _obsActionAvailable;
+        set
+        {
+            if (SetField(ref _obsActionAvailable, value))
+            {
+                OnPropertyChanged(nameof(ObsActionOpacity));
+                OnPropertyChanged(nameof(ObsActionToolTip));
+            }
+        }
+    }
+
     public string DisplayLabel
     {
         get
@@ -335,6 +384,11 @@ public sealed class EventRule : INotifyPropertyChanged
                 actions.Add("Alexa");
             }
 
+            if (SendObsScene)
+            {
+                actions.Add("OBS");
+            }
+
             return actions.Count == 0
                 ? "Sin acciones"
                 : string.Join(" / ", actions);
@@ -360,6 +414,14 @@ public sealed class EventRule : INotifyPropertyChanged
     public string AlexaActionToolTip => AlexaActionAvailable
         ? "Alexa activa"
         : "Alexa configurada, pero esta desactivada o incompleta";
+
+    public Visibility ObsActionVisibility => SendObsScene ? Visibility.Visible : Visibility.Collapsed;
+
+    public double ObsActionOpacity => ObsActionAvailable ? 1d : 0.32d;
+
+    public string ObsActionToolTip => ObsActionAvailable
+        ? "OBS activo"
+        : "OBS configurado, pero esta desactivado o incompleto";
 
     public event PropertyChangedEventHandler? PropertyChanged;
 
@@ -410,6 +472,10 @@ public sealed class EventRule : INotifyPropertyChanged
             ChatMessageTemplate = ChatMessageTemplate,
             SendAlexaEvent = SendAlexaEvent,
             AlexaEventName = AlexaEventName,
+            SendObsScene = SendObsScene,
+            ObsSceneName = ObsSceneName,
+            ObsReturnToPreviousScene = ObsReturnToPreviousScene,
+            ObsReturnDelayMs = ObsReturnDelayMs,
             Pattern = Pattern,
             TargetPins = TargetPins,
             PrimaryColor = PrimaryColor,

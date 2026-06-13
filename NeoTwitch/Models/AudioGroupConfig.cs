@@ -1,9 +1,10 @@
 using System.ComponentModel;
 using System.Runtime.CompilerServices;
+using NeoTwitch.Models.Library;
 
 namespace NeoTwitch.Models;
 
-public sealed class AudioGroupConfig : INotifyPropertyChanged
+public sealed class AudioGroupConfig : ILibraryGroupConfig, INotifyPropertyChanged
 {
     private string _name = "";
 

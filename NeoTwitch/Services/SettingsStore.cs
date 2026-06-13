@@ -3,6 +3,7 @@ using System.IO;
 using System.Text.Json;
 using System.Text.Json.Serialization;
 using NeoTwitch.Models;
+using NeoTwitch.Services.Library;
 
 namespace NeoTwitch.Services;
 
@@ -193,12 +194,22 @@ public sealed class SettingsStore
         config.ThemeMode = NormalizeThemeMode(config.ThemeMode);
         config.BaudRate = Math.Clamp(config.BaudRate, 300, 921600);
         config.AlertVolumePercent = Math.Clamp(config.AlertVolumePercent, 0, 100);
-        config.AudioGroups = NormalizeAudioGroups(config.AudioGroups);
-        config.AudioLibrary = NormalizeAudioLibrary(config.AudioLibrary);
-        config.ImageGroups = NormalizeMediaGroups(config.ImageGroups, "Grupo de imagenes");
-        config.ImageLibrary = NormalizeMediaLibrary(config.ImageLibrary);
-        config.VideoGroups = NormalizeMediaGroups(config.VideoGroups, "Grupo de videos");
-        config.VideoLibrary = NormalizeMediaLibrary(config.VideoLibrary);
+        config.AudioGroups = LibraryConfigNormalizer.NormalizeGroups(config.AudioGroups, "Grupo de audio");
+        config.AudioLibrary = LibraryConfigNormalizer.NormalizeAssets(config.AudioLibrary, audio => audio.DurationMs = audio.DurationMs);
+        config.ImageGroups = LibraryConfigNormalizer.NormalizeGroups(config.ImageGroups, "Grupo de imagenes");
+        config.ImageLibrary = LibraryConfigNormalizer.NormalizeAssets(config.ImageLibrary, asset =>
+        {
+            asset.DurationMs = asset.DurationMs;
+            asset.Width = asset.Width;
+            asset.Height = asset.Height;
+        });
+        config.VideoGroups = LibraryConfigNormalizer.NormalizeGroups(config.VideoGroups, "Grupo de videos");
+        config.VideoLibrary = LibraryConfigNormalizer.NormalizeAssets(config.VideoLibrary, asset =>
+        {
+            asset.DurationMs = asset.DurationMs;
+            asset.Width = asset.Width;
+            asset.Height = asset.Height;
+        });
         config.MaxQueuedSameRuleAlerts = Math.Clamp(config.MaxQueuedSameRuleAlerts, 0, 100);
         config.SameRuleQueueCooldownMs = Math.Clamp(config.SameRuleQueueCooldownMs, 0, 600000);
         config.MaxQueuedDifferentRuleAlerts = Math.Clamp(config.MaxQueuedDifferentRuleAlerts, 0, 100);
@@ -270,68 +281,6 @@ public sealed class SettingsStore
         }
 
         return rules;
-    }
-
-    private static ObservableCollection<AudioGroupConfig> NormalizeAudioGroups(ObservableCollection<AudioGroupConfig>? groups)
-    {
-        groups ??= [];
-
-        foreach (var group in groups)
-        {
-            group.Id = string.IsNullOrWhiteSpace(group.Id) ? Guid.NewGuid().ToString("N") : group.Id;
-            group.Name = string.IsNullOrWhiteSpace(group.Name) ? "Grupo de audio" : group.Name.Trim();
-        }
-
-        return groups;
-    }
-
-    private static ObservableCollection<AudioAssetConfig> NormalizeAudioLibrary(ObservableCollection<AudioAssetConfig>? library)
-    {
-        library ??= [];
-
-        foreach (var audio in library)
-        {
-            audio.Id = string.IsNullOrWhiteSpace(audio.Id) ? Guid.NewGuid().ToString("N") : audio.Id;
-            audio.Name = string.IsNullOrWhiteSpace(audio.Name) ? Path.GetFileNameWithoutExtension(audio.FilePath ?? "") : audio.Name.Trim();
-            audio.FilePath ??= "";
-            audio.GroupId ??= "";
-            audio.DurationMs = audio.DurationMs;
-        }
-
-        return library;
-    }
-
-    private static ObservableCollection<MediaGroupConfig> NormalizeMediaGroups(
-        ObservableCollection<MediaGroupConfig>? groups,
-        string fallbackName)
-    {
-        groups ??= [];
-
-        foreach (var group in groups)
-        {
-            group.Id = string.IsNullOrWhiteSpace(group.Id) ? Guid.NewGuid().ToString("N") : group.Id;
-            group.Name = string.IsNullOrWhiteSpace(group.Name) ? fallbackName : group.Name.Trim();
-        }
-
-        return groups;
-    }
-
-    private static ObservableCollection<MediaAssetConfig> NormalizeMediaLibrary(ObservableCollection<MediaAssetConfig>? library)
-    {
-        library ??= [];
-
-        foreach (var asset in library)
-        {
-            asset.Id = string.IsNullOrWhiteSpace(asset.Id) ? Guid.NewGuid().ToString("N") : asset.Id;
-            asset.Name = string.IsNullOrWhiteSpace(asset.Name) ? Path.GetFileNameWithoutExtension(asset.FilePath ?? "") : asset.Name.Trim();
-            asset.FilePath ??= "";
-            asset.GroupId ??= "";
-            asset.DurationMs = asset.DurationMs;
-            asset.Width = asset.Width;
-            asset.Height = asset.Height;
-        }
-
-        return library;
     }
 
     private static void MigrateRuleAudioLibrary(AppConfig config)

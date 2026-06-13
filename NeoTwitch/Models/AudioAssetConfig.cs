@@ -1,10 +1,11 @@
 using System.ComponentModel;
 using System.IO;
 using System.Runtime.CompilerServices;
+using NeoTwitch.Models.Library;
 
 namespace NeoTwitch.Models;
 
-public sealed class AudioAssetConfig : INotifyPropertyChanged
+public sealed class AudioAssetConfig : ILibraryAssetConfig, INotifyPropertyChanged
 {
     private string _name = "";
     private string _filePath = "";

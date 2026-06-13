@@ -50,6 +50,10 @@ public partial class MainWindow : Window
     private readonly ObservableCollection<ActivityLogEntry> _dashboardActivity = [];
     private readonly ObservableCollection<AudioLibraryRow> _audioLibraryRows = [];
     private readonly ObservableCollection<AudioGroupRow> _audioGroupRows = [];
+    private readonly ObservableCollection<MediaLibraryRow> _imageLibraryRows = [];
+    private readonly ObservableCollection<MediaGroupRow> _imageGroupRows = [];
+    private readonly ObservableCollection<MediaLibraryRow> _videoLibraryRows = [];
+    private readonly ObservableCollection<MediaGroupRow> _videoGroupRows = [];
     private readonly ObservableCollection<ObsSceneRow> _obsSceneRows = [];
     private readonly ObservableCollection<RuleLedPreviewDot> _ruleLedPreviewDots = [];
     private readonly ObservableCollection<RuleLedPreviewDot> _backgroundLedPreviewDots = [];
@@ -142,10 +146,22 @@ public partial class MainWindow : Window
     private string _audioFilter = "ALL";
     private string _audioGroupFilterId = "";
     private string _newAudioPath = "";
+    private string _imageSearchText = "";
+    private string _imageFilter = "ALL";
+    private string _imageGroupFilterId = "";
+    private string _newImagePath = "";
+    private string _videoSearchText = "";
+    private string _videoFilter = "ALL";
+    private string _videoGroupFilterId = "";
+    private string _newVideoPath = "";
     private AudioSourceMode _ruleAudioMode = AudioSourceMode.Single;
     private bool _refreshingAudioLibrary;
+    private bool _refreshingImageLibrary;
+    private bool _refreshingVideoLibrary;
     private string _audioGroupChoicesSignature = "";
     private string _audioAlertChoicesSignature = "";
+    private string _imageGroupChoicesSignature = "";
+    private string _videoGroupChoicesSignature = "";
     private CancellationTokenSource? _backgroundApplyDebounce;
     private CancellationTokenSource? _twitchSubscriptionRefreshDebounce;
     private CancellationTokenSource? _currentEffectCts;
@@ -171,6 +187,10 @@ public partial class MainWindow : Window
     public ObservableCollection<AudioGroupChoice> AudioGroupChoices { get; } = [];
 
     public ObservableCollection<AudioAlertChoice> AudioAlertChoices { get; } = [];
+
+    public ObservableCollection<MediaGroupChoice> ImageGroupChoices { get; } = [];
+
+    public ObservableCollection<MediaGroupChoice> VideoGroupChoices { get; } = [];
 
     public MainWindow()
     {
@@ -200,6 +220,10 @@ public partial class MainWindow : Window
             DashboardActivityList.ItemsSource = _dashboardActivity;
             AudioLibraryList.ItemsSource = _audioLibraryRows;
             AudioGroupsList.ItemsSource = _audioGroupRows;
+            ImageLibraryList.ItemsSource = _imageLibraryRows;
+            ImageGroupsList.ItemsSource = _imageGroupRows;
+            VideoLibraryList.ItemsSource = _videoLibraryRows;
+            VideoGroupsList.ItemsSource = _videoGroupRows;
             ObsScenesList.ItemsSource = _obsSceneRows;
             for (var i = 0; i < 24; i++)
             {
@@ -238,6 +262,12 @@ public partial class MainWindow : Window
             NewAudioGroupBox.ItemsSource = AudioGroupChoices;
             NewAudioGroupBox.DisplayMemberPath = nameof(AudioGroupChoice.Name);
             NewAudioGroupBox.SelectedValuePath = nameof(AudioGroupChoice.Id);
+            NewImageGroupBox.ItemsSource = ImageGroupChoices;
+            NewImageGroupBox.DisplayMemberPath = nameof(MediaGroupChoice.Name);
+            NewImageGroupBox.SelectedValuePath = nameof(MediaGroupChoice.Id);
+            NewVideoGroupBox.ItemsSource = VideoGroupChoices;
+            NewVideoGroupBox.DisplayMemberPath = nameof(MediaGroupChoice.Name);
+            NewVideoGroupBox.SelectedValuePath = nameof(MediaGroupChoice.Id);
             PatternBox.ItemsSource = _patternOptions;
             PatternBox.DisplayMemberPath = nameof(UiOption<LightPattern>.Label);
             PatternBox.SelectedValuePath = nameof(UiOption<LightPattern>.Value);
@@ -272,6 +302,8 @@ public partial class MainWindow : Window
         NavStripsButton.Content = CreateNavigationItem("Assets/Icons/nav_lights.png", "Luces");
         NavAlexaButton.Content = CreateNavigationItem("Assets/Icons/nav_alexa.png", "Alexa");
         NavAudioButton.Content = CreateNavigationItem("Assets/Icons/nav_audio.png", "Audio");
+        NavImagesButton.Content = CreateNavigationItem("Assets/Icons/nav_images.png", "Imagenes");
+        NavVideosButton.Content = CreateNavigationItem("Assets/Icons/nav_videos.png", "Videos");
         NavObsButton.Content = CreateNavigationItem("Assets/Icons/nav_obs.png", "OBS");
         NavPreferencesButton.Content = CreateNavigationItem("Assets/Icons/nav_settings.png", "Configuracion");
         NavActivityButton.Content = CreateNavigationItem("Assets/Icons/nav_activity.png", "Actividad");
@@ -2507,6 +2539,394 @@ public partial class MainWindow : Window
         ClearAudioPreviewState(audioId);
     }
 
+    private void ImageSearchBox_TextChanged(object sender, TextChangedEventArgs e)
+    {
+        if (_loadingUi || sender is not System.Windows.Controls.TextBox textBox)
+        {
+            return;
+        }
+
+        _imageSearchText = textBox.Text.Trim();
+        RefreshMediaLibraryView(MediaLibraryKind.Image);
+    }
+
+    private void VideoSearchBox_TextChanged(object sender, TextChangedEventArgs e)
+    {
+        if (_loadingUi || sender is not System.Windows.Controls.TextBox textBox)
+        {
+            return;
+        }
+
+        _videoSearchText = textBox.Text.Trim();
+        RefreshMediaLibraryView(MediaLibraryKind.Video);
+    }
+
+    private void ImageFilterButton_Click(object sender, RoutedEventArgs e)
+    {
+        SetMediaFilter(MediaLibraryKind.Image, sender);
+    }
+
+    private void VideoFilterButton_Click(object sender, RoutedEventArgs e)
+    {
+        SetMediaFilter(MediaLibraryKind.Video, sender);
+    }
+
+    private void SetMediaFilter(MediaLibraryKind kind, object sender)
+    {
+        if (sender is not System.Windows.Controls.Button button)
+        {
+            return;
+        }
+
+        if (kind == MediaLibraryKind.Image)
+        {
+            _imageFilter = button.Tag?.ToString() ?? "ALL";
+            _imageGroupFilterId = "";
+        }
+        else
+        {
+            _videoFilter = button.Tag?.ToString() ?? "ALL";
+            _videoGroupFilterId = "";
+        }
+
+        UpdateMediaFilterButtons(kind);
+        RefreshMediaLibraryView(kind);
+    }
+
+    private void ImageLibraryGroupBox_DropDownClosed(object sender, EventArgs e)
+    {
+        UpdateMediaAssetGroup(MediaLibraryKind.Image, sender);
+    }
+
+    private void VideoLibraryGroupBox_DropDownClosed(object sender, EventArgs e)
+    {
+        UpdateMediaAssetGroup(MediaLibraryKind.Video, sender);
+    }
+
+    private void UpdateMediaAssetGroup(MediaLibraryKind kind, object sender)
+    {
+        if ((kind == MediaLibraryKind.Image && _refreshingImageLibrary)
+            || (kind == MediaLibraryKind.Video && _refreshingVideoLibrary)
+            || _loadingUi
+            || sender is not System.Windows.Controls.ComboBox comboBox
+            || comboBox.Tag is not string assetId)
+        {
+            return;
+        }
+
+        var library = GetMediaLibrary(kind);
+        var asset = library.FirstOrDefault(item => string.Equals(item.Id, assetId, StringComparison.OrdinalIgnoreCase));
+        if (asset is null)
+        {
+            return;
+        }
+
+        var selectedGroupId = comboBox.SelectedValue as string ?? "";
+        if (string.Equals(asset.GroupId, selectedGroupId, StringComparison.OrdinalIgnoreCase))
+        {
+            return;
+        }
+
+        asset.GroupId = selectedGroupId;
+        SaveConfig();
+        _ = Dispatcher.InvokeAsync(() => RefreshMediaLibraryView(kind), DispatcherPriority.Background);
+    }
+
+    private void BrowseNewImageButton_Click(object sender, RoutedEventArgs e)
+    {
+        BrowseNewMedia(MediaLibraryKind.Image);
+    }
+
+    private void BrowseNewVideoButton_Click(object sender, RoutedEventArgs e)
+    {
+        BrowseNewMedia(MediaLibraryKind.Video);
+    }
+
+    private void BrowseNewMedia(MediaLibraryKind kind)
+    {
+        var dialog = new WpfOpenFileDialog
+        {
+            Filter = kind == MediaLibraryKind.Image
+                ? "Imagenes|*.png;*.jpg;*.jpeg;*.gif;*.bmp;*.webp|Todos los archivos|*.*"
+                : "Videos|*.mp4;*.mov;*.webm;*.mkv;*.avi;*.wmv|Todos los archivos|*.*",
+            CheckFileExists = true
+        };
+
+        if (dialog.ShowDialog(this) != true)
+        {
+            return;
+        }
+
+        if (kind == MediaLibraryKind.Image)
+        {
+            _newImagePath = dialog.FileName;
+            NewImagePathBox.Text = dialog.FileName;
+            if (string.IsNullOrWhiteSpace(NewImageNameBox.Text))
+            {
+                NewImageNameBox.Text = System.IO.Path.GetFileNameWithoutExtension(dialog.FileName);
+            }
+        }
+        else
+        {
+            _newVideoPath = dialog.FileName;
+            NewVideoPathBox.Text = dialog.FileName;
+            if (string.IsNullOrWhiteSpace(NewVideoNameBox.Text))
+            {
+                NewVideoNameBox.Text = System.IO.Path.GetFileNameWithoutExtension(dialog.FileName);
+            }
+        }
+    }
+
+    private void SaveNewImageButton_Click(object sender, RoutedEventArgs e)
+    {
+        SaveNewMedia(MediaLibraryKind.Image);
+    }
+
+    private void SaveNewVideoButton_Click(object sender, RoutedEventArgs e)
+    {
+        SaveNewMedia(MediaLibraryKind.Video);
+    }
+
+    private void SaveNewMedia(MediaLibraryKind kind)
+    {
+        var path = kind == MediaLibraryKind.Image ? _newImagePath : _newVideoPath;
+        var title = kind == MediaLibraryKind.Image ? "Imagenes" : "Videos";
+        if (string.IsNullOrWhiteSpace(path) || !File.Exists(path))
+        {
+            WpfMessageBox.Show(this, $"Selecciona un archivo valido para {title.ToLowerInvariant()}.", title, MessageBoxButton.OK, MessageBoxImage.Information);
+            return;
+        }
+
+        var library = GetMediaLibrary(kind);
+        var existing = library.FirstOrDefault(asset => string.Equals(asset.FilePath, path, StringComparison.OrdinalIgnoreCase));
+        var asset = existing ?? new MediaAssetConfig { FilePath = path };
+        asset.Name = kind == MediaLibraryKind.Image
+            ? string.IsNullOrWhiteSpace(NewImageNameBox.Text) ? System.IO.Path.GetFileNameWithoutExtension(path) : NewImageNameBox.Text.Trim()
+            : string.IsNullOrWhiteSpace(NewVideoNameBox.Text) ? System.IO.Path.GetFileNameWithoutExtension(path) : NewVideoNameBox.Text.Trim();
+        asset.GroupId = kind == MediaLibraryKind.Image
+            ? NewImageGroupBox.SelectedValue as string ?? ""
+            : NewVideoGroupBox.SelectedValue as string ?? "";
+
+        if (kind == MediaLibraryKind.Image)
+        {
+            var size = ProbeImageSize(path);
+            asset.Width = size.Width;
+            asset.Height = size.Height;
+        }
+
+        if (existing is null)
+        {
+            library.Add(asset);
+        }
+
+        if (kind == MediaLibraryKind.Image)
+        {
+            _newImagePath = "";
+            NewImagePathBox.Text = "";
+            NewImageNameBox.Text = "";
+            NewImageGroupBox.SelectedValue = "";
+        }
+        else
+        {
+            _newVideoPath = "";
+            NewVideoPathBox.Text = "";
+            NewVideoNameBox.Text = "";
+            NewVideoGroupBox.SelectedValue = "";
+        }
+
+        SaveConfig();
+        RefreshMediaLibraryView(kind);
+        AddLog($"{title}: guardado {asset.DisplayName}.", ActivityLogKind.Info);
+    }
+
+    private void AddImageGroupButton_Click(object sender, RoutedEventArgs e)
+    {
+        AddMediaGroup(MediaLibraryKind.Image);
+    }
+
+    private void AddVideoGroupButton_Click(object sender, RoutedEventArgs e)
+    {
+        AddMediaGroup(MediaLibraryKind.Video);
+    }
+
+    private void AddMediaGroup(MediaLibraryKind kind)
+    {
+        var nameBox = kind == MediaLibraryKind.Image ? NewImageGroupNameBox : NewVideoGroupNameBox;
+        var title = kind == MediaLibraryKind.Image ? "Imagenes" : "Videos";
+        var name = nameBox.Text.Trim();
+        if (string.IsNullOrWhiteSpace(name))
+        {
+            WpfMessageBox.Show(this, "Escribe un nombre para el grupo.", title, MessageBoxButton.OK, MessageBoxImage.Information);
+            return;
+        }
+
+        var groups = GetMediaGroups(kind);
+        var existing = groups.FirstOrDefault(group => string.Equals(group.Name, name, StringComparison.OrdinalIgnoreCase));
+        if (existing is not null)
+        {
+            if (kind == MediaLibraryKind.Image)
+            {
+                NewImageGroupBox.SelectedValue = existing.Id;
+            }
+            else
+            {
+                NewVideoGroupBox.SelectedValue = existing.Id;
+            }
+
+            nameBox.Text = "";
+            return;
+        }
+
+        var group = new MediaGroupConfig { Name = name };
+        groups.Add(group);
+        if (kind == MediaLibraryKind.Image)
+        {
+            NewImageGroupBox.SelectedValue = group.Id;
+        }
+        else
+        {
+            NewVideoGroupBox.SelectedValue = group.Id;
+        }
+
+        nameBox.Text = "";
+        SaveConfig();
+        RefreshMediaLibraryView(kind);
+        AddLog($"{title}: grupo creado {group.Name}.", ActivityLogKind.Info);
+    }
+
+    private void ViewImageGroupButton_Click(object sender, RoutedEventArgs e)
+    {
+        ViewMediaGroup(MediaLibraryKind.Image, sender);
+    }
+
+    private void ViewVideoGroupButton_Click(object sender, RoutedEventArgs e)
+    {
+        ViewMediaGroup(MediaLibraryKind.Video, sender);
+    }
+
+    private void ViewMediaGroup(MediaLibraryKind kind, object sender)
+    {
+        if (sender is not FrameworkElement element || element.Tag is not string groupId)
+        {
+            return;
+        }
+
+        var group = GetMediaGroups(kind).FirstOrDefault(item => string.Equals(item.Id, groupId, StringComparison.OrdinalIgnoreCase));
+        if (group is null)
+        {
+            return;
+        }
+
+        if (kind == MediaLibraryKind.Image)
+        {
+            _imageGroupFilterId = group.Id;
+            _imageFilter = "ALL";
+            ImageSearchBox.Text = "";
+            _imageSearchText = "";
+        }
+        else
+        {
+            _videoGroupFilterId = group.Id;
+            _videoFilter = "ALL";
+            VideoSearchBox.Text = "";
+            _videoSearchText = "";
+        }
+
+        UpdateMediaFilterButtons(kind);
+        RefreshMediaLibraryView(kind);
+    }
+
+    private void DeleteImageGroupButton_Click(object sender, RoutedEventArgs e)
+    {
+        DeleteMediaGroup(MediaLibraryKind.Image, sender);
+    }
+
+    private void DeleteVideoGroupButton_Click(object sender, RoutedEventArgs e)
+    {
+        DeleteMediaGroup(MediaLibraryKind.Video, sender);
+    }
+
+    private void DeleteMediaGroup(MediaLibraryKind kind, object sender)
+    {
+        if (sender is not FrameworkElement element || element.Tag is not string groupId)
+        {
+            return;
+        }
+
+        var groups = GetMediaGroups(kind);
+        var group = groups.FirstOrDefault(item => string.Equals(item.Id, groupId, StringComparison.OrdinalIgnoreCase));
+        if (group is null)
+        {
+            return;
+        }
+
+        var library = GetMediaLibrary(kind);
+        var count = library.Count(asset => string.Equals(asset.GroupId, group.Id, StringComparison.OrdinalIgnoreCase));
+        var title = kind == MediaLibraryKind.Image ? "Imagenes" : "Videos";
+        if (WpfMessageBox.Show(
+                this,
+                $"Eliminar el grupo '{group.Name}'?\n\nLos {count} archivo(s) no se borran; solo quedaran sin grupo.",
+                title,
+                MessageBoxButton.YesNo,
+                MessageBoxImage.Question) != MessageBoxResult.Yes)
+        {
+            return;
+        }
+
+        foreach (var asset in library.Where(asset => string.Equals(asset.GroupId, group.Id, StringComparison.OrdinalIgnoreCase)))
+        {
+            asset.GroupId = "";
+        }
+
+        groups.Remove(group);
+        if (kind == MediaLibraryKind.Image && string.Equals(_imageGroupFilterId, group.Id, StringComparison.OrdinalIgnoreCase))
+        {
+            _imageGroupFilterId = "";
+        }
+        else if (kind == MediaLibraryKind.Video && string.Equals(_videoGroupFilterId, group.Id, StringComparison.OrdinalIgnoreCase))
+        {
+            _videoGroupFilterId = "";
+        }
+
+        SaveConfig();
+        RefreshMediaLibraryView(kind);
+    }
+
+    private void DeleteImageButton_Click(object sender, RoutedEventArgs e)
+    {
+        DeleteMediaAsset(MediaLibraryKind.Image, sender);
+    }
+
+    private void DeleteVideoButton_Click(object sender, RoutedEventArgs e)
+    {
+        DeleteMediaAsset(MediaLibraryKind.Video, sender);
+    }
+
+    private void DeleteMediaAsset(MediaLibraryKind kind, object sender)
+    {
+        if (sender is not FrameworkElement element || element.Tag is not string assetId)
+        {
+            return;
+        }
+
+        var library = GetMediaLibrary(kind);
+        var asset = library.FirstOrDefault(item => string.Equals(item.Id, assetId, StringComparison.OrdinalIgnoreCase));
+        if (asset is null)
+        {
+            return;
+        }
+
+        var title = kind == MediaLibraryKind.Image ? "Imagenes" : "Videos";
+        if (WpfMessageBox.Show(this, $"Eliminar '{asset.DisplayName}' de la biblioteca?", title, MessageBoxButton.YesNo, MessageBoxImage.Question) != MessageBoxResult.Yes)
+        {
+            return;
+        }
+
+        library.Remove(asset);
+        SaveConfig();
+        RefreshMediaLibraryView(kind);
+    }
+
     private bool RuleHasValidAudio(EventRule rule)
     {
         if (!Dispatcher.CheckAccess())
@@ -2978,7 +3398,11 @@ public partial class MainWindow : Window
 
     private void GoToActivityButton_Click(object sender, RoutedEventArgs e)
     {
-        MainTabs.SelectedIndex = 7;
+        if (int.TryParse(NavActivityButton.Tag?.ToString(), out var activityTabIndex))
+        {
+            MainTabs.SelectedIndex = activityTabIndex;
+        }
+
         UpdateNavigationButtons();
     }
 
@@ -3407,6 +3831,276 @@ public partial class MainWindow : Window
             button.Background = active ? TranslucentBrushFrom("#14B8A6") : palette.Input;
             button.Foreground = active ? FrozenBrushFrom("#14B8A6") : palette.Text;
             button.BorderBrush = active ? FrozenBrushFrom("#14B8A6") : palette.Border;
+        }
+    }
+
+    private void RefreshMediaLibraryView(MediaLibraryKind kind)
+    {
+        if (_initializingComponent)
+        {
+            return;
+        }
+
+        if (!Dispatcher.CheckAccess())
+        {
+            _ = Dispatcher.InvokeAsync(() => RefreshMediaLibraryView(kind));
+            return;
+        }
+
+        SetMediaRefreshing(kind, true);
+        try
+        {
+            var library = GetMediaLibrary(kind);
+            var groups = GetMediaGroups(kind);
+            var groupFilterId = GetMediaGroupFilterId(kind);
+            var groupsById = groups.ToDictionary(group => group.Id, group => group.Name, StringComparer.OrdinalIgnoreCase);
+
+            RefreshMediaGroupChoicesIfNeeded(kind);
+
+            var rows = library
+                .Select((asset, index) => CreateMediaLibraryRow(kind, asset, groupsById, index))
+                .Where(row => MediaRowMatchesFilters(kind, row))
+                .ToArray();
+
+            var rowTarget = GetMediaRows(kind);
+            rowTarget.Clear();
+            foreach (var row in rows)
+            {
+                rowTarget.Add(row);
+            }
+
+            var groupRows = GetMediaGroupRows(kind);
+            groupRows.Clear();
+            var groupIndex = 0;
+            foreach (var group in groups)
+            {
+                var count = library.Count(asset => string.Equals(asset.GroupId, group.Id, StringComparison.OrdinalIgnoreCase));
+                groupRows.Add(new MediaGroupRow(
+                    group.Id,
+                    group.Name,
+                    $"{count} archivo{(count == 1 ? "" : "s")}",
+                    FrozenBrushFrom((groupIndex++ % 4) switch
+                    {
+                        0 => "#14B8A6",
+                        1 => "#B56CFF",
+                        2 => "#37C7F3",
+                        _ => "#22C55E"
+                    })));
+            }
+
+            var lastAsset = library
+                .Where(asset => asset.LastUsedAt is not null)
+                .OrderByDescending(asset => asset.LastUsedAt)
+                .FirstOrDefault();
+
+            var groupFilterText = string.IsNullOrWhiteSpace(groupFilterId)
+                ? ""
+                : $" del grupo {groupsById.GetValueOrDefault(groupFilterId, "seleccionado")}";
+
+            if (kind == MediaLibraryKind.Image)
+            {
+                ImageSavedCountText.Text = library.Count.ToString();
+                ImageGroupCountText.Text = groups.Count.ToString();
+                LastImageText.Text = lastAsset?.DisplayName ?? "Sin uso";
+                ImageLibraryFooterText.Text = $"Mostrando {rows.Length} de {library.Count} imagenes{groupFilterText}";
+                NewImageGroupBox.Items.Refresh();
+            }
+            else
+            {
+                VideoSavedCountText.Text = library.Count.ToString();
+                VideoGroupCountText.Text = groups.Count.ToString();
+                LastVideoText.Text = lastAsset?.DisplayName ?? "Sin uso";
+                VideoLibraryFooterText.Text = $"Mostrando {rows.Length} de {library.Count} videos{groupFilterText}";
+                NewVideoGroupBox.Items.Refresh();
+            }
+
+            UpdateMediaFilterButtons(kind);
+        }
+        finally
+        {
+            SetMediaRefreshing(kind, false);
+        }
+    }
+
+    private void RefreshMediaGroupChoicesIfNeeded(MediaLibraryKind kind)
+    {
+        var groups = GetMediaGroups(kind);
+        var signature = string.Join("|", groups.Select(group => $"{group.Id}:{group.Name}"));
+        var currentSignature = kind == MediaLibraryKind.Image
+            ? _imageGroupChoicesSignature
+            : _videoGroupChoicesSignature;
+        if (string.Equals(signature, currentSignature, StringComparison.Ordinal))
+        {
+            return;
+        }
+
+        var choices = kind == MediaLibraryKind.Image ? ImageGroupChoices : VideoGroupChoices;
+        choices.Clear();
+        choices.Add(new MediaGroupChoice("", "Sin grupo asignado"));
+        foreach (var group in groups)
+        {
+            choices.Add(new MediaGroupChoice(group.Id, group.Name));
+        }
+
+        if (kind == MediaLibraryKind.Image)
+        {
+            _imageGroupChoicesSignature = signature;
+        }
+        else
+        {
+            _videoGroupChoicesSignature = signature;
+        }
+    }
+
+    private MediaLibraryRow CreateMediaLibraryRow(
+        MediaLibraryKind kind,
+        MediaAssetConfig asset,
+        IReadOnlyDictionary<string, string> groupsById,
+        int index)
+    {
+        var accentColor = kind == MediaLibraryKind.Image ? "#37C7F3" : "#B56CFF";
+        var metadata = kind == MediaLibraryKind.Image
+            ? asset.ResolutionText
+            : BuildVideoMetadata(asset);
+
+        return new MediaLibraryRow(
+            asset.Id,
+            asset.DisplayName,
+            asset.FilePath,
+            asset.GroupId,
+            groupsById.TryGetValue(asset.GroupId, out var groupName) ? groupName : "Sin grupo",
+            metadata,
+            kind == MediaLibraryKind.Image ? "Assets/Icons/media_image.png" : "Assets/Icons/media_video.png",
+            FrozenBrushFrom(accentColor),
+            TranslucentBrushFrom(accentColor),
+            index);
+    }
+
+    private bool MediaRowMatchesFilters(MediaLibraryKind kind, MediaLibraryRow row)
+    {
+        var groupFilterId = GetMediaGroupFilterId(kind);
+        if (!string.IsNullOrWhiteSpace(groupFilterId)
+            && !string.Equals(row.GroupId, groupFilterId, StringComparison.OrdinalIgnoreCase))
+        {
+            return false;
+        }
+
+        var filter = GetMediaFilter(kind);
+        if (filter == "WITH_GROUP" && string.IsNullOrWhiteSpace(row.GroupId))
+        {
+            return false;
+        }
+
+        if (filter == "NO_GROUP" && !string.IsNullOrWhiteSpace(row.GroupId))
+        {
+            return false;
+        }
+
+        var search = GetMediaSearchText(kind);
+        if (string.IsNullOrWhiteSpace(search))
+        {
+            return true;
+        }
+
+        return ContainsIgnoreCase(row.Name, search)
+            || ContainsIgnoreCase(row.FilePath, search)
+            || ContainsIgnoreCase(row.GroupName, search)
+            || ContainsIgnoreCase(row.MetadataText, search);
+    }
+
+    private void UpdateMediaFilterButtons(MediaLibraryKind kind)
+    {
+        if (_initializingComponent)
+        {
+            return;
+        }
+
+        var palette = _config.DarkMode ? ThemePalette.Dark : ThemePalette.Light;
+        var accentColor = kind == MediaLibraryKind.Image ? "#37C7F3" : "#B56CFF";
+        var filter = GetMediaFilter(kind);
+        var buttons = kind == MediaLibraryKind.Image
+            ? new[] { ImageFilterAllButton, ImageFilterWithGroupButton, ImageFilterNoGroupButton }
+            : new[] { VideoFilterAllButton, VideoFilterWithGroupButton, VideoFilterNoGroupButton };
+
+        foreach (var button in buttons)
+        {
+            var active = string.Equals(button.Tag?.ToString(), filter, StringComparison.OrdinalIgnoreCase);
+            button.Background = active ? TranslucentBrushFrom(accentColor) : palette.Input;
+            button.Foreground = active ? FrozenBrushFrom(accentColor) : palette.Text;
+            button.BorderBrush = active ? FrozenBrushFrom(accentColor) : palette.Border;
+        }
+    }
+
+    private ObservableCollection<MediaAssetConfig> GetMediaLibrary(MediaLibraryKind kind)
+    {
+        return kind == MediaLibraryKind.Image ? _config.ImageLibrary : _config.VideoLibrary;
+    }
+
+    private ObservableCollection<MediaGroupConfig> GetMediaGroups(MediaLibraryKind kind)
+    {
+        return kind == MediaLibraryKind.Image ? _config.ImageGroups : _config.VideoGroups;
+    }
+
+    private ObservableCollection<MediaLibraryRow> GetMediaRows(MediaLibraryKind kind)
+    {
+        return kind == MediaLibraryKind.Image ? _imageLibraryRows : _videoLibraryRows;
+    }
+
+    private ObservableCollection<MediaGroupRow> GetMediaGroupRows(MediaLibraryKind kind)
+    {
+        return kind == MediaLibraryKind.Image ? _imageGroupRows : _videoGroupRows;
+    }
+
+    private string GetMediaSearchText(MediaLibraryKind kind)
+    {
+        return kind == MediaLibraryKind.Image ? _imageSearchText : _videoSearchText;
+    }
+
+    private string GetMediaFilter(MediaLibraryKind kind)
+    {
+        return kind == MediaLibraryKind.Image ? _imageFilter : _videoFilter;
+    }
+
+    private string GetMediaGroupFilterId(MediaLibraryKind kind)
+    {
+        return kind == MediaLibraryKind.Image ? _imageGroupFilterId : _videoGroupFilterId;
+    }
+
+    private void SetMediaRefreshing(MediaLibraryKind kind, bool refreshing)
+    {
+        if (kind == MediaLibraryKind.Image)
+        {
+            _refreshingImageLibrary = refreshing;
+        }
+        else
+        {
+            _refreshingVideoLibrary = refreshing;
+        }
+    }
+
+    private static string BuildVideoMetadata(MediaAssetConfig asset)
+    {
+        if (asset.DurationMs > 0)
+        {
+            return asset.DurationText;
+        }
+
+        var extension = System.IO.Path.GetExtension(asset.FilePath);
+        return string.IsNullOrWhiteSpace(extension)
+            ? "Video"
+            : extension.TrimStart('.').ToUpperInvariant();
+    }
+
+    private static (int Width, int Height) ProbeImageSize(string path)
+    {
+        try
+        {
+            var frame = BitmapFrame.Create(new Uri(path), BitmapCreateOptions.DelayCreation, BitmapCacheOption.None);
+            return (frame.PixelWidth, frame.PixelHeight);
+        }
+        catch
+        {
+            return (0, 0);
         }
     }
 
@@ -4077,6 +4771,8 @@ public partial class MainWindow : Window
             UpdateSensitiveFieldVisibility();
             ApplyTheme();
             UpdateStatusText();
+            RefreshMediaLibraryView(MediaLibraryKind.Image);
+            RefreshMediaLibraryView(MediaLibraryKind.Video);
         }
         finally
         {
@@ -5484,6 +6180,8 @@ public partial class MainWindow : Window
         UpdateBackgroundPatternTileSelection();
         UpdateRuleAudioModeSelection();
         UpdateAudioFilterButtons();
+        UpdateMediaFilterButtons(MediaLibraryKind.Image);
+        UpdateMediaFilterButtons(MediaLibraryKind.Video);
         UpdateCloseBehaviorCards();
     }
 
@@ -5954,7 +6652,7 @@ public partial class MainWindow : Window
             ? ThemePalette.Dark
             : ThemePalette.Light;
 
-        foreach (var button in new[] { NavSettingsButton, NavConnectionsButton, NavRulesButton, NavStripsButton, NavAlexaButton, NavAudioButton, NavObsButton, NavPreferencesButton, NavActivityButton })
+        foreach (var button in new[] { NavSettingsButton, NavConnectionsButton, NavRulesButton, NavStripsButton, NavAlexaButton, NavAudioButton, NavImagesButton, NavVideosButton, NavObsButton, NavPreferencesButton, NavActivityButton })
         {
             ApplyNavigationButtonTheme(button, palette);
         }
@@ -7213,6 +7911,24 @@ public partial class MainWindow : Window
         string CountText,
         SolidColorBrush AccentBrush);
 
+    private sealed record MediaLibraryRow(
+        string Id,
+        string Name,
+        string FilePath,
+        string GroupId,
+        string GroupName,
+        string MetadataText,
+        string IconPath,
+        SolidColorBrush AccentBrush,
+        SolidColorBrush AccentBackground,
+        int Index);
+
+    private sealed record MediaGroupRow(
+        string Id,
+        string Name,
+        string CountText,
+        SolidColorBrush AccentBrush);
+
     private sealed record ObsSceneRow(
         string Name,
         bool IsCurrent,
@@ -7237,6 +7953,17 @@ public partial class MainWindow : Window
     public sealed record AudioAlertChoice(string Id, string Name)
     {
         public override string ToString() => Name;
+    }
+
+    public sealed record MediaGroupChoice(string Id, string Name)
+    {
+        public override string ToString() => Name;
+    }
+
+    private enum MediaLibraryKind
+    {
+        Image,
+        Video
     }
 
     [DllImport("dwmapi.dll")]

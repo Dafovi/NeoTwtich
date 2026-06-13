@@ -195,6 +195,10 @@ public sealed class SettingsStore
         config.AlertVolumePercent = Math.Clamp(config.AlertVolumePercent, 0, 100);
         config.AudioGroups = NormalizeAudioGroups(config.AudioGroups);
         config.AudioLibrary = NormalizeAudioLibrary(config.AudioLibrary);
+        config.ImageGroups = NormalizeMediaGroups(config.ImageGroups, "Grupo de imagenes");
+        config.ImageLibrary = NormalizeMediaLibrary(config.ImageLibrary);
+        config.VideoGroups = NormalizeMediaGroups(config.VideoGroups, "Grupo de videos");
+        config.VideoLibrary = NormalizeMediaLibrary(config.VideoLibrary);
         config.MaxQueuedSameRuleAlerts = Math.Clamp(config.MaxQueuedSameRuleAlerts, 0, 100);
         config.SameRuleQueueCooldownMs = Math.Clamp(config.SameRuleQueueCooldownMs, 0, 600000);
         config.MaxQueuedDifferentRuleAlerts = Math.Clamp(config.MaxQueuedDifferentRuleAlerts, 0, 100);
@@ -292,6 +296,39 @@ public sealed class SettingsStore
             audio.FilePath ??= "";
             audio.GroupId ??= "";
             audio.DurationMs = audio.DurationMs;
+        }
+
+        return library;
+    }
+
+    private static ObservableCollection<MediaGroupConfig> NormalizeMediaGroups(
+        ObservableCollection<MediaGroupConfig>? groups,
+        string fallbackName)
+    {
+        groups ??= [];
+
+        foreach (var group in groups)
+        {
+            group.Id = string.IsNullOrWhiteSpace(group.Id) ? Guid.NewGuid().ToString("N") : group.Id;
+            group.Name = string.IsNullOrWhiteSpace(group.Name) ? fallbackName : group.Name.Trim();
+        }
+
+        return groups;
+    }
+
+    private static ObservableCollection<MediaAssetConfig> NormalizeMediaLibrary(ObservableCollection<MediaAssetConfig>? library)
+    {
+        library ??= [];
+
+        foreach (var asset in library)
+        {
+            asset.Id = string.IsNullOrWhiteSpace(asset.Id) ? Guid.NewGuid().ToString("N") : asset.Id;
+            asset.Name = string.IsNullOrWhiteSpace(asset.Name) ? Path.GetFileNameWithoutExtension(asset.FilePath ?? "") : asset.Name.Trim();
+            asset.FilePath ??= "";
+            asset.GroupId ??= "";
+            asset.DurationMs = asset.DurationMs;
+            asset.Width = asset.Width;
+            asset.Height = asset.Height;
         }
 
         return library;

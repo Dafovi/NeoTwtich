@@ -25,6 +25,10 @@ public sealed class AppConfig
     public int AlertVolumePercent { get; set; } = 100;
     public ObservableCollection<AudioAssetConfig> AudioLibrary { get; set; } = [];
     public ObservableCollection<AudioGroupConfig> AudioGroups { get; set; } = [];
+    public ObservableCollection<MediaAssetConfig> ImageLibrary { get; set; } = [];
+    public ObservableCollection<MediaGroupConfig> ImageGroups { get; set; } = [];
+    public ObservableCollection<MediaAssetConfig> VideoLibrary { get; set; } = [];
+    public ObservableCollection<MediaGroupConfig> VideoGroups { get; set; } = [];
     public int MaxQueuedSameRuleAlerts { get; set; } = 1;
     public int SameRuleQueueCooldownMs { get; set; }
     public int MaxQueuedDifferentRuleAlerts { get; set; } = 3;

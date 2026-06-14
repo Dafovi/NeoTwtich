@@ -105,6 +105,7 @@ public partial class MainWindow
     private WpfCheckBox ObsSceneCheck => AlertsView.ObsSceneCheck;
     private WpfStackPanel ObsDetailsPanel => AlertsView.ObsDetailsPanel;
     private WpfComboBox RuleObsSceneBox => AlertsView.RuleObsSceneBox;
+    private WpfTextBox ObsSceneDelayBox => AlertsView.ObsSceneDelayBox;
     private WpfCheckBox ObsReturnCheck => AlertsView.ObsReturnCheck;
     private WpfTextBox ObsReturnDelayBox => AlertsView.ObsReturnDelayBox;
     private WpfTextBlock RuleObsEmptyHintText => AlertsView.RuleObsEmptyHintText;

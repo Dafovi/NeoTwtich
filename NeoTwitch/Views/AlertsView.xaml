@@ -991,6 +991,8 @@
                                                             <Grid.ColumnDefinitions>
                                                                 <ColumnDefinition Width="*" />
                                                                 <ColumnDefinition Width="12" />
+                                                                <ColumnDefinition Width="150" />
+                                                                <ColumnDefinition Width="12" />
                                                                 <ColumnDefinition Width="170" />
                                                             </Grid.ColumnDefinitions>
                                                             <CheckBox x:Name="ObsReturnCheck"
@@ -998,6 +1000,12 @@
                                                                       Checked="RuleFieldChanged"
                                                                       Unchecked="RuleFieldChanged" />
                                                             <StackPanel Grid.Column="2">
+                                                                <TextBlock Text="Esperar antes (ms)"
+                                                                           Style="{StaticResource MutedText}" />
+                                                                <TextBox x:Name="ObsSceneDelayBox"
+                                                                         TextChanged="RuleFieldChanged" />
+                                                            </StackPanel>
+                                                            <StackPanel Grid.Column="4">
                                                                 <TextBlock Text="Regresar despues de (ms)"
                                                                            Style="{StaticResource MutedText}" />
                                                                 <TextBox x:Name="ObsReturnDelayBox"

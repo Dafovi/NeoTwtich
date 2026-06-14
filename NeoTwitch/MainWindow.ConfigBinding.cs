@@ -124,6 +124,7 @@ public partial class MainWindow
             AlexaEventCheck.IsChecked = rule.SendAlexaEvent;
             ObsSceneCheck.IsChecked = rule.SendObsScene;
             RuleObsSceneBox.SelectedValue = rule.ObsSceneName;
+            ObsSceneDelayBox.Text = rule.ObsSceneDelayMs.ToString();
             ObsReturnCheck.IsChecked = rule.ObsReturnToPreviousScene;
             ObsReturnDelayBox.Text = rule.ObsReturnDelayMs.ToString();
             UseLightsCheck.IsChecked = rule.UseLights;
@@ -267,6 +268,7 @@ public partial class MainWindow
         rule.SendAlexaEvent = AlexaEventCheck.IsChecked == true;
         rule.SendObsScene = ObsSceneCheck.IsChecked == true;
         rule.ObsSceneName = RuleObsSceneBox.SelectedValue as string ?? RuleObsSceneBox.Text.Trim();
+        rule.ObsSceneDelayMs = ParseInt(ObsSceneDelayBox.Text, 0, 0, 600000);
         rule.ObsReturnToPreviousScene = ObsReturnCheck.IsChecked == true;
         rule.ObsReturnDelayMs = ParseInt(ObsReturnDelayBox.Text, 15000, 0, 600000);
         rule.UseLights = UseLightsCheck.IsChecked == true;

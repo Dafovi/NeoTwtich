@@ -24,6 +24,7 @@ public sealed class EventRule : INotifyPropertyChanged
     private string _alexaEventName = "";
     private bool _sendObsScene;
     private string _obsSceneName = "";
+    private int _obsSceneDelayMs;
     private bool _obsReturnToPreviousScene = true;
     private int _obsReturnDelayMs = 15000;
     private LightPattern _pattern = LightPattern.Pulse;
@@ -209,6 +210,12 @@ public sealed class EventRule : INotifyPropertyChanged
     {
         get => _obsSceneName;
         set => SetField(ref _obsSceneName, value);
+    }
+
+    public int ObsSceneDelayMs
+    {
+        get => _obsSceneDelayMs;
+        set => SetField(ref _obsSceneDelayMs, Math.Clamp(value, 0, 600000));
     }
 
     public bool ObsReturnToPreviousScene
@@ -474,6 +481,7 @@ public sealed class EventRule : INotifyPropertyChanged
             AlexaEventName = AlexaEventName,
             SendObsScene = SendObsScene,
             ObsSceneName = ObsSceneName,
+            ObsSceneDelayMs = ObsSceneDelayMs,
             ObsReturnToPreviousScene = ObsReturnToPreviousScene,
             ObsReturnDelayMs = ObsReturnDelayMs,
             Pattern = Pattern,

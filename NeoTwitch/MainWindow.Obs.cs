@@ -243,6 +243,11 @@ public partial class MainWindow
                 return null;
             }
 
+            if (rule.ObsSceneDelayMs > 0)
+            {
+                await Task.Delay(rule.ObsSceneDelayMs, cancellationToken);
+            }
+
             var previousScene = _obsService.CurrentScene;
             var targetScene = rule.ObsSceneName.Trim();
             var result = await _obsService.SetCurrentProgramSceneAsync(targetScene, cancellationToken);

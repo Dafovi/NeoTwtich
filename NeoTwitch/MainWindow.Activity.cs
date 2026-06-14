@@ -9,7 +9,7 @@ namespace NeoTwitch;
 
 public partial class MainWindow
 {
-    private void ActivityFilterButton_CheckedChanged(object sender, RoutedEventArgs e)
+    internal void ActivityFilterButton_CheckedChanged(object sender, RoutedEventArgs e)
     {
         if (_initializingComponent || sender is not ToggleButton button)
         {
@@ -35,7 +35,7 @@ public partial class MainWindow
         _activityViewSource.View?.Refresh();
     }
 
-    private void ActivitySearchBox_TextChanged(object sender, TextChangedEventArgs e)
+    internal void ActivitySearchBox_TextChanged(object sender, TextChangedEventArgs e)
     {
         if (_loadingUi || sender is not System.Windows.Controls.TextBox textBox)
         {
@@ -46,7 +46,7 @@ public partial class MainWindow
         _activityViewSource.View?.Refresh();
     }
 
-    private void ClearActivityFiltersButton_Click(object sender, RoutedEventArgs e)
+    internal void ClearActivityFiltersButton_Click(object sender, RoutedEventArgs e)
     {
         _activityEnabledFilters.Clear();
         foreach (var button in ActivityFilterButtons())

@@ -39,7 +39,8 @@ public partial class MainWindow
             ? "Probando..."
             : "Probar Alexa";
 
-        ConnectObsButton.IsEnabled = !_isObsConnecting && _config.Obs.Enabled;
+        var obsBusy = _isObsConnecting || _isObsSceneActionRunning;
+        ConnectObsButton.IsEnabled = !obsBusy && _config.Obs.Enabled;
         ConnectObsButton.Content = _isObsConnecting
             ? "Conectando..."
             : _obsService.IsConnected
@@ -48,7 +49,7 @@ public partial class MainWindow
         ConnectObsButtonPanel.IsEnabled = ConnectObsButton.IsEnabled;
         ConnectObsButtonPanel.Content = ConnectObsButton.Content;
 
-        TestObsButton.IsEnabled = !_isObsConnecting && _config.Obs.Enabled;
+        TestObsButton.IsEnabled = !obsBusy && _config.Obs.Enabled;
         TestObsButton.Content = _isObsConnecting
             ? "Actualizando..."
             : "Actualizar escenas";

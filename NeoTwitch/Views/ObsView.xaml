@@ -261,7 +261,7 @@
                                                     <Grid.ColumnDefinitions>
                                                         <ColumnDefinition Width="52" />
                                                         <ColumnDefinition Width="*" />
-                                                        <ColumnDefinition Width="120" />
+                                                        <ColumnDefinition Width="210" />
                                                     </Grid.ColumnDefinitions>
                                                     <Border Width="40"
                                                             Height="40"
@@ -289,12 +289,17 @@
                                                                    Style="{StaticResource MutedText}"
                                                                    FontSize="12" />
                                                     </StackPanel>
-                                                    <Button Grid.Column="2"
-                                                            Content="Cambiar ahora"
-                                                            Visibility="{Binding ChangeButtonVisibility}"
-                                                            HorizontalAlignment="Right"
-                                                            VerticalAlignment="Center"
-                                                            Click="ObsSceneChangeButton_Click" />
+                                                    <WrapPanel Grid.Column="2"
+                                                               HorizontalAlignment="Right"
+                                                               VerticalAlignment="Center">
+                                                        <Button Content="Probar 5s"
+                                                                Visibility="{Binding ChangeButtonVisibility}"
+                                                                Click="ObsScenePreviewButton_Click" />
+                                                        <Button Content="Cambiar"
+                                                                Visibility="{Binding ChangeButtonVisibility}"
+                                                                Style="{StaticResource PrimaryButton}"
+                                                                Click="ObsSceneChangeButton_Click" />
+                                                    </WrapPanel>
                                                 </Grid>
                                             </Border>
                                         </DataTemplate>

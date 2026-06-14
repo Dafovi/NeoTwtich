@@ -139,6 +139,7 @@ public partial class MainWindow : Window
     private bool _isArduinoConnecting;
     private bool _isAlexaConnecting;
     private bool _isCustomMaximized;
+    private bool _isObsSceneActionRunning;
     private bool? _lastAppliedStartWithWindows;
     private Rect _restoreWindowBounds = Rect.Empty;
     private string _twitchConnectionError = "";

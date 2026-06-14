@@ -619,7 +619,7 @@ public partial class MainWindow
         UpdateNavigationButtons();
     }
 
-    private void GoToActivityButton_Click(object sender, RoutedEventArgs e)
+    internal void GoToActivityButton_Click(object sender, RoutedEventArgs e)
     {
         if (int.TryParse(NavActivityButton.Tag?.ToString(), out var activityTabIndex))
         {

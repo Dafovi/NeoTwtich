@@ -33,7 +33,7 @@ public partial class MainWindow
         ScheduleTwitchSubscriptionRefreshIfNeeded();
     }
 
-    private void AddStripButton_Click(object sender, RoutedEventArgs e)
+    internal void AddStripButton_Click(object sender, RoutedEventArgs e)
     {
         var nextPin = Enumerable.Range(2, 52)
             .FirstOrDefault(pin => _config.LedStrips.All(strip => strip.Pin != pin));
@@ -50,7 +50,7 @@ public partial class MainWindow
         SaveConfig();
     }
 
-    private void DuplicateStripButton_Click(object sender, RoutedEventArgs e)
+    internal void DuplicateStripButton_Click(object sender, RoutedEventArgs e)
     {
         if (StripsList.SelectedItem is not LedStripConfig strip)
         {
@@ -63,7 +63,7 @@ public partial class MainWindow
         SaveConfig();
     }
 
-    private void RemoveStripButton_Click(object sender, RoutedEventArgs e)
+    internal void RemoveStripButton_Click(object sender, RoutedEventArgs e)
     {
         if (StripsList.SelectedItem is not LedStripConfig strip)
         {
@@ -360,7 +360,7 @@ public partial class MainWindow
         LoadSelectedRuleIntoUi();
     }
 
-    private void StripsList_SelectionChanged(object sender, SelectionChangedEventArgs e)
+    internal void StripsList_SelectionChanged(object sender, SelectionChangedEventArgs e)
     {
         if (_initializingComponent || _loadingUi)
         {
@@ -490,7 +490,7 @@ public partial class MainWindow
         UpdateRuleLedPreviewFrame();
     }
 
-    private void BackgroundPatternTile_Click(object sender, RoutedEventArgs e)
+    internal void BackgroundPatternTile_Click(object sender, RoutedEventArgs e)
     {
         if (sender is not System.Windows.Controls.Button button
             || button.Tag is not string value
@@ -504,7 +504,7 @@ public partial class MainWindow
         UpdateBackgroundLedPreviewFrame();
     }
 
-    private void StripFieldChanged(object sender, RoutedEventArgs e)
+    internal void StripFieldChanged(object sender, RoutedEventArgs e)
     {
         if (_initializingComponent || _loadingStrip)
         {
@@ -536,7 +536,7 @@ public partial class MainWindow
         UpdateRuleLedPreviewTimerState();
     }
 
-    private void BackgroundLedPreviewPanel_IsVisibleChanged(object sender, DependencyPropertyChangedEventArgs e)
+    internal void BackgroundLedPreviewPanel_IsVisibleChanged(object sender, DependencyPropertyChangedEventArgs e)
     {
         UpdateBackgroundLedPreviewTimerState();
     }
@@ -649,22 +649,22 @@ public partial class MainWindow
         PickColor(TertiaryColorBox);
     }
 
-    private void BackgroundPrimaryColorButton_Click(object sender, RoutedEventArgs e)
+    internal void BackgroundPrimaryColorButton_Click(object sender, RoutedEventArgs e)
     {
         PickColor(BackgroundPrimaryColorBox);
     }
 
-    private void BackgroundSecondaryColorButton_Click(object sender, RoutedEventArgs e)
+    internal void BackgroundSecondaryColorButton_Click(object sender, RoutedEventArgs e)
     {
         PickColor(BackgroundSecondaryColorBox);
     }
 
-    private void BackgroundTertiaryColorButton_Click(object sender, RoutedEventArgs e)
+    internal void BackgroundTertiaryColorButton_Click(object sender, RoutedEventArgs e)
     {
         PickColor(BackgroundTertiaryColorBox);
     }
 
-    private async void ApplyArduinoBackgroundButton_Click(object sender, RoutedEventArgs e)
+    internal async void ApplyArduinoBackgroundButton_Click(object sender, RoutedEventArgs e)
     {
         SaveGlobalSettingsFromFields();
         SaveCurrentStripFromFields();
@@ -685,7 +685,7 @@ public partial class MainWindow
         }
     }
 
-    private async void StopArduinoBackgroundButton_Click(object sender, RoutedEventArgs e)
+    internal async void StopArduinoBackgroundButton_Click(object sender, RoutedEventArgs e)
     {
         SaveGlobalSettingsFromFields();
         SaveBackgroundFromFields();

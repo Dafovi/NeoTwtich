@@ -95,7 +95,7 @@ public partial class MainWindow
         AddLog("Alexa Developer Console abierta.", ActivityLogKind.Alexa);
     }
 
-    private void OpenArduinoSketchButton_Click(object sender, RoutedEventArgs e)
+    internal void OpenArduinoSketchButton_Click(object sender, RoutedEventArgs e)
     {
         Process.Start(new ProcessStartInfo
         {
@@ -105,7 +105,7 @@ public partial class MainWindow
         AddLog("Arduino: abriendo sketch NeoPixel.", ActivityLogKind.Arduino);
     }
 
-    private void OpenArduinoGuideButton_Click(object sender, RoutedEventArgs e)
+    internal void OpenArduinoGuideButton_Click(object sender, RoutedEventArgs e)
     {
         Process.Start(new ProcessStartInfo
         {

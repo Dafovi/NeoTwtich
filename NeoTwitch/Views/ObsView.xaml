@@ -44,7 +44,7 @@
                                         Height="48"
                                         CornerRadius="16"
                                         Background="#1A22C55E">
-                                    <Image Source="Assets/ServiceObs.png"
+                                    <Image Source="/Assets/ServiceObs.png"
                                            Stretch="Uniform"
                                            Margin="8" />
                                 </Border>
@@ -73,7 +73,7 @@
                                         Background="#14B8A6"
                                         Tag="StaticBrush">
                                     <Border.OpacityMask>
-                                        <ImageBrush ImageSource="Assets/Icons/nav_obs.png"
+                                        <ImageBrush ImageSource="/Assets/Icons/nav_obs.png"
                                                     Stretch="Uniform" />
                                     </Border.OpacityMask>
                                 </Border>
@@ -103,7 +103,7 @@
                                         Background="#B56CFF"
                                         Tag="StaticBrush">
                                     <Border.OpacityMask>
-                                        <ImageBrush ImageSource="Assets/Icons/media_group.png"
+                                        <ImageBrush ImageSource="/Assets/Icons/media_group.png"
                                                     Stretch="Uniform" />
                                     </Border.OpacityMask>
                                 </Border>
@@ -132,7 +132,7 @@
                                         Background="#FACC15"
                                         Tag="StaticBrush">
                                     <Border.OpacityMask>
-                                        <ImageBrush ImageSource="Assets/Icons/icon_sync.png"
+                                        <ImageBrush ImageSource="/Assets/Icons/icon_sync.png"
                                                     Stretch="Uniform" />
                                     </Border.OpacityMask>
                                 </Border>
@@ -275,7 +275,7 @@
                                                                 VerticalAlignment="Center"
                                                                 Tag="StaticBrush">
                                                             <Border.OpacityMask>
-                                                                <ImageBrush ImageSource="Assets/Icons/nav_obs.png"
+                                                                <ImageBrush ImageSource="/Assets/Icons/nav_obs.png"
                                                                             Stretch="Uniform" />
                                                             </Border.OpacityMask>
                                                         </Border>

@@ -59,7 +59,7 @@
                                             VerticalAlignment="Center"
                                             Tag="StaticBrush">
                                         <Border.OpacityMask>
-                                            <ImageBrush ImageSource="Assets/Icons/nav_audio.png"
+                                            <ImageBrush ImageSource="/Assets/Icons/nav_audio.png"
                                                         Stretch="Uniform" />
                                         </Border.OpacityMask>
                                     </Border>
@@ -105,7 +105,7 @@
                                             VerticalAlignment="Center"
                                             Tag="StaticBrush">
                                         <Border.OpacityMask>
-                                            <ImageBrush ImageSource="Assets/Icons/sound_music.png"
+                                            <ImageBrush ImageSource="/Assets/Icons/sound_music.png"
                                                         Stretch="Uniform" />
                                         </Border.OpacityMask>
                                     </Border>
@@ -142,7 +142,7 @@
                                             VerticalAlignment="Center"
                                             Tag="StaticBrush">
                                         <Border.OpacityMask>
-                                            <ImageBrush ImageSource="Assets/Icons/sound_group.png"
+                                            <ImageBrush ImageSource="/Assets/Icons/sound_group.png"
                                                         Stretch="Uniform" />
                                         </Border.OpacityMask>
                                     </Border>
@@ -294,7 +294,7 @@
                                                                         VerticalAlignment="Center"
                                                                         Tag="StaticBrush">
                                                                     <Border.OpacityMask>
-                                                                        <ImageBrush ImageSource="Assets/Icons/sound_file.png"
+                                                                        <ImageBrush ImageSource="/Assets/Icons/sound_file.png"
                                                                                     Stretch="Uniform" />
                                                                     </Border.OpacityMask>
                                                                 </Border>
@@ -351,7 +351,7 @@
                                                                             Tag="StaticBrush"
                                                                             Visibility="{Binding PlayIconVisibility}">
                                                                         <Border.OpacityMask>
-                                                                            <ImageBrush ImageSource="Assets/Icons/sound_play.png"
+                                                                            <ImageBrush ImageSource="/Assets/Icons/sound_play.png"
                                                                                         Stretch="Uniform" />
                                                                         </Border.OpacityMask>
                                                                     </Border>
@@ -359,7 +359,7 @@
                                                                             Tag="StaticBrush"
                                                                             Visibility="{Binding PauseIconVisibility}">
                                                                         <Border.OpacityMask>
-                                                                            <ImageBrush ImageSource="Assets/Icons/sound_pause.png"
+                                                                            <ImageBrush ImageSource="/Assets/Icons/sound_pause.png"
                                                                                         Stretch="Uniform" />
                                                                         </Border.OpacityMask>
                                                                     </Border>
@@ -379,7 +379,7 @@
                                                                         Background="#F43F5E"
                                                                         Tag="StaticBrush">
                                                                     <Border.OpacityMask>
-                                                                        <ImageBrush ImageSource="Assets/Icons/icon_delete.png"
+                                                                        <ImageBrush ImageSource="/Assets/Icons/icon_delete.png"
                                                                                     Stretch="Uniform" />
                                                                     </Border.OpacityMask>
                                                                 </Border>
@@ -433,7 +433,7 @@
                                                     HorizontalAlignment="Center"
                                                     Tag="StaticBrush">
                                                 <Border.OpacityMask>
-                                                    <ImageBrush ImageSource="Assets/Icons/sound_file.png"
+                                                    <ImageBrush ImageSource="/Assets/Icons/sound_file.png"
                                                                 Stretch="Uniform" />
                                                 </Border.OpacityMask>
                                             </Border>
@@ -483,7 +483,7 @@
                                                             Background="White"
                                                             Tag="StaticBrush">
                                                         <Border.OpacityMask>
-                                                            <ImageBrush ImageSource="Assets/Icons/icon_save.png"
+                                                            <ImageBrush ImageSource="/Assets/Icons/icon_save.png"
                                                                         Stretch="Uniform" />
                                                         </Border.OpacityMask>
                                                     </Border>
@@ -563,7 +563,7 @@
                                                                     Background="{Binding AccentBrush}"
                                                                     Tag="StaticBrush">
                                                                 <Border.OpacityMask>
-                                                                    <ImageBrush ImageSource="Assets/Icons/sound_group.png"
+                                                                    <ImageBrush ImageSource="/Assets/Icons/sound_group.png"
                                                                                 Stretch="Uniform" />
                                                                 </Border.OpacityMask>
                                                             </Border>
@@ -616,7 +616,7 @@
                                                                             Background="#F43F5E"
                                                                             Tag="StaticBrush">
                                                                         <Border.OpacityMask>
-                                                                            <ImageBrush ImageSource="Assets/Icons/icon_delete.png"
+                                                                            <ImageBrush ImageSource="/Assets/Icons/icon_delete.png"
                                                                                         Stretch="Uniform" />
                                                                         </Border.OpacityMask>
                                                                     </Border>

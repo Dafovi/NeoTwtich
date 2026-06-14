@@ -48,7 +48,7 @@
                                         CornerRadius="14"
                                         Background="#1A9146FF"
                                         HorizontalAlignment="Left">
-                                    <Image Source="Assets/Icons/service_twitch.png"
+                                    <Image Source="/Assets/Icons/service_twitch.png"
                                            Stretch="Uniform"
                                            Margin="8" />
                                 </Border>
@@ -86,7 +86,7 @@
                                         CornerRadius="14"
                                         Background="#1A148A86"
                                         HorizontalAlignment="Left">
-                                    <Image Source="Assets/Icons/service_arduino.png"
+                                    <Image Source="/Assets/Icons/service_arduino.png"
                                            Stretch="Uniform"
                                            Margin="7" />
                                 </Border>
@@ -124,7 +124,7 @@
                                         CornerRadius="14"
                                         Background="#1A2FB4E9"
                                         HorizontalAlignment="Left">
-                                    <Image Source="Assets/Icons/service_alexa.png"
+                                    <Image Source="/Assets/Icons/service_alexa.png"
                                            Stretch="Uniform"
                                            Margin="8" />
                                 </Border>
@@ -162,7 +162,7 @@
                                         CornerRadius="14"
                                         Background="#1AB56CFF"
                                         HorizontalAlignment="Left">
-                                    <Image Source="Assets/Icons/service_audio.png"
+                                    <Image Source="/Assets/Icons/service_audio.png"
                                            Stretch="Uniform"
                                            Margin="7" />
                                 </Border>
@@ -200,7 +200,7 @@
                                         CornerRadius="14"
                                         Background="#1A22C55E"
                                         HorizontalAlignment="Left">
-                                    <Image Source="Assets/ServiceObs.png"
+                                    <Image Source="/Assets/ServiceObs.png"
                                            Stretch="Uniform"
                                            Margin="8" />
                                 </Border>
@@ -246,7 +246,7 @@
                                     Style="{StaticResource Card}"
                                     Padding="14">
                                 <StackPanel>
-                                    <Image Source="Assets/Icons/action_follower_teal.png"
+                                    <Image Source="/Assets/Icons/action_follower_teal.png"
                                            Width="22"
                                            Height="22"
                                            Stretch="Uniform"
@@ -270,7 +270,7 @@
                                     Style="{StaticResource Card}"
                                     Padding="14">
                                 <StackPanel>
-                                    <Image Source="Assets/Icons/action_subscription_purple.png"
+                                    <Image Source="/Assets/Icons/action_subscription_purple.png"
                                            Width="22"
                                            Height="22"
                                            Stretch="Uniform"
@@ -294,7 +294,7 @@
                                     Style="{StaticResource Card}"
                                     Padding="14">
                                 <StackPanel>
-                                    <Image Source="Assets/Icons/action_bits_blue.png"
+                                    <Image Source="/Assets/Icons/action_bits_blue.png"
                                            Width="22"
                                            Height="22"
                                            Stretch="Uniform"
@@ -318,7 +318,7 @@
                                     Style="{StaticResource Card}"
                                     Padding="14">
                                 <StackPanel>
-                                    <Image Source="Assets/Icons/action_message_green.png"
+                                    <Image Source="/Assets/Icons/action_message_green.png"
                                            Width="22"
                                            Height="22"
                                            Stretch="Uniform"
@@ -342,7 +342,7 @@
                                     Style="{StaticResource Card}"
                                     Padding="14">
                                 <StackPanel>
-                                    <Image Source="Assets/Icons/activity_notification_lime.png"
+                                    <Image Source="/Assets/Icons/activity_notification_lime.png"
                                            Width="22"
                                            Height="22"
                                            Stretch="Uniform"

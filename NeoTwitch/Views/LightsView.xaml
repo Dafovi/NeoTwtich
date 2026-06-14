@@ -122,7 +122,7 @@
                                                                 <ColumnDefinition Width="42" />
                                                                 <ColumnDefinition Width="*" />
                                                             </Grid.ColumnDefinitions>
-                                                            <Image Source="Assets/Icons/service_arduino.png"
+                                                            <Image Source="/Assets/Icons/service_arduino.png"
                                                                    Width="26"
                                                                    Height="26"
                                                                    Stretch="Uniform"
@@ -212,7 +212,7 @@
                                                     Tag="Solid"
                                                     Click="BackgroundPatternTile_Click">
                                                 <StackPanel HorizontalAlignment="Center">
-                                                    <Image Source="Assets/Icons/lights_fx_static.png" Width="22" Height="22" Margin="0,0,0,6" />
+                                                    <Image Source="/Assets/Icons/lights_fx_static.png" Width="22" Height="22" Margin="0,0,0,6" />
                                                     <TextBlock Text="Fijo" FontSize="12" FontWeight="SemiBold" TextAlignment="Center" />
                                                 </StackPanel>
                                             </Button>
@@ -221,7 +221,7 @@
                                                     Tag="Pulse"
                                                     Click="BackgroundPatternTile_Click">
                                                 <StackPanel HorizontalAlignment="Center">
-                                                    <Image Source="Assets/Icons/lights_fx_pulse.png" Width="22" Height="22" Margin="0,0,0,6" />
+                                                    <Image Source="/Assets/Icons/lights_fx_pulse.png" Width="22" Height="22" Margin="0,0,0,6" />
                                                     <TextBlock Text="Pulso" FontSize="12" FontWeight="SemiBold" TextAlignment="Center" />
                                                 </StackPanel>
                                             </Button>
@@ -230,7 +230,7 @@
                                                     Tag="Rainbow"
                                                     Click="BackgroundPatternTile_Click">
                                                 <StackPanel HorizontalAlignment="Center">
-                                                    <Image Source="Assets/Icons/lights_fx_rainbow.png" Width="22" Height="22" Margin="0,0,0,6" />
+                                                    <Image Source="/Assets/Icons/lights_fx_rainbow.png" Width="22" Height="22" Margin="0,0,0,6" />
                                                     <TextBlock Text="Arcoiris" FontSize="12" FontWeight="SemiBold" TextAlignment="Center" />
                                                 </StackPanel>
                                             </Button>
@@ -239,7 +239,7 @@
                                                     Tag="Chase"
                                                     Click="BackgroundPatternTile_Click">
                                                 <StackPanel HorizontalAlignment="Center">
-                                                    <Image Source="Assets/Icons/lights_fx_wave.png" Width="22" Height="22" Margin="0,0,0,6" />
+                                                    <Image Source="/Assets/Icons/lights_fx_wave.png" Width="22" Height="22" Margin="0,0,0,6" />
                                                     <TextBlock Text="Carrera" FontSize="12" FontWeight="SemiBold" TextAlignment="Center" />
                                                 </StackPanel>
                                             </Button>
@@ -249,7 +249,7 @@
                                                     Tag="Theater"
                                                     Click="BackgroundPatternTile_Click">
                                                 <StackPanel HorizontalAlignment="Center">
-                                                    <Image Source="Assets/Icons/lights_fx_breathe.png" Width="22" Height="22" Margin="0,0,0,6" />
+                                                    <Image Source="/Assets/Icons/lights_fx_breathe.png" Width="22" Height="22" Margin="0,0,0,6" />
                                                     <TextBlock Text="Teatro" FontSize="12" FontWeight="SemiBold" TextAlignment="Center" />
                                                 </StackPanel>
                                             </Button>
@@ -259,7 +259,7 @@
                                                     Tag="Sparkle"
                                                     Click="BackgroundPatternTile_Click">
                                                 <StackPanel HorizontalAlignment="Center">
-                                                    <Image Source="Assets/Icons/activity_notification_lime.png" Width="22" Height="22" Margin="0,0,0,6" />
+                                                    <Image Source="/Assets/Icons/activity_notification_lime.png" Width="22" Height="22" Margin="0,0,0,6" />
                                                     <TextBlock Text="Destellos" FontSize="12" FontWeight="SemiBold" TextAlignment="Center" />
                                                 </StackPanel>
                                             </Button>
@@ -269,7 +269,7 @@
                                                     Tag="Rave"
                                                     Click="BackgroundPatternTile_Click">
                                                 <StackPanel HorizontalAlignment="Center">
-                                                    <Image Source="Assets/Icons/lights_fx_rave.png" Width="22" Height="22" Margin="0,0,0,6" />
+                                                    <Image Source="/Assets/Icons/lights_fx_rave.png" Width="22" Height="22" Margin="0,0,0,6" />
                                                     <TextBlock Text="Rave" FontSize="12" FontWeight="SemiBold" TextAlignment="Center" />
                                                 </StackPanel>
                                             </Button>
@@ -446,7 +446,7 @@
                                                 <ColumnDefinition Width="46" />
                                                 <ColumnDefinition Width="*" />
                                             </Grid.ColumnDefinitions>
-                                            <Image Source="Assets/Icons/nav_arduino.png"
+                                            <Image Source="/Assets/Icons/nav_arduino.png"
                                                    Width="30"
                                                    Height="30"
                                                    Stretch="Uniform"

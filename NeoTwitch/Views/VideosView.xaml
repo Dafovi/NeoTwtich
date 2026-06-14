@@ -50,7 +50,7 @@
                                             VerticalAlignment="Center"
                                             Tag="StaticBrush">
                                         <Border.OpacityMask>
-                                            <ImageBrush ImageSource="Assets/Icons/media_video.png"
+                                            <ImageBrush ImageSource="/Assets/Icons/media_video.png"
                                                         Stretch="Uniform" />
                                         </Border.OpacityMask>
                                     </Border>
@@ -87,7 +87,7 @@
                                             VerticalAlignment="Center"
                                             Tag="StaticBrush">
                                         <Border.OpacityMask>
-                                            <ImageBrush ImageSource="Assets/Icons/media_group.png"
+                                            <ImageBrush ImageSource="/Assets/Icons/media_group.png"
                                                         Stretch="Uniform" />
                                         </Border.OpacityMask>
                                     </Border>
@@ -124,7 +124,7 @@
                                             VerticalAlignment="Center"
                                             Tag="StaticBrush">
                                         <Border.OpacityMask>
-                                            <ImageBrush ImageSource="Assets/Icons/icon_timer.png"
+                                            <ImageBrush ImageSource="/Assets/Icons/icon_timer.png"
                                                         Stretch="Uniform" />
                                         </Border.OpacityMask>
                                     </Border>
@@ -260,7 +260,7 @@
                                                                     Background="#F43F5E"
                                                                     Tag="StaticBrush">
                                                                 <Border.OpacityMask>
-                                                                    <ImageBrush ImageSource="Assets/Icons/icon_delete.png"
+                                                                    <ImageBrush ImageSource="/Assets/Icons/icon_delete.png"
                                                                                 Stretch="Uniform" />
                                                                 </Border.OpacityMask>
                                                             </Border>
@@ -305,7 +305,7 @@
                                                         Background="#B56CFF"
                                                         Tag="StaticBrush">
                                                     <Border.OpacityMask>
-                                                        <ImageBrush ImageSource="Assets/Icons/media_video.png"
+                                                        <ImageBrush ImageSource="/Assets/Icons/media_video.png"
                                                                     Stretch="Uniform" />
                                                     </Border.OpacityMask>
                                                 </Border>
@@ -387,7 +387,7 @@
                                                                     Background="{Binding AccentBrush}"
                                                                     Tag="StaticBrush">
                                                                 <Border.OpacityMask>
-                                                                    <ImageBrush ImageSource="Assets/Icons/media_group.png"
+                                                                    <ImageBrush ImageSource="/Assets/Icons/media_group.png"
                                                                                 Stretch="Uniform" />
                                                                 </Border.OpacityMask>
                                                             </Border>
@@ -432,7 +432,7 @@
                                                                             Background="#F43F5E"
                                                                             Tag="StaticBrush">
                                                                         <Border.OpacityMask>
-                                                                            <ImageBrush ImageSource="Assets/Icons/icon_delete.png"
+                                                                            <ImageBrush ImageSource="/Assets/Icons/icon_delete.png"
                                                                                         Stretch="Uniform" />
                                                                         </Border.OpacityMask>
                                                                     </Border>

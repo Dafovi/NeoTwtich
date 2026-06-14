@@ -167,31 +167,31 @@
                                                                    ToolTip="{Binding DisplayLabel}"
                                                                    Margin="0,2,0,0" />
                                                         <WrapPanel Margin="0,6,0,0">
-                                                            <Image Source="Assets/Icons/nav_lights.png"
+                                                            <Image Source="/Assets/Icons/nav_lights.png"
                                                                    Width="16"
                                                                    Height="16"
                                                                    Margin="0,0,10,0"
                                                                    Opacity="{Binding LightsActionOpacity}"
                                                                    ToolTip="{Binding LightsActionToolTip}"
                                                                    Visibility="{Binding LightsActionVisibility}" />
-                                                            <Image Source="Assets/Icons/service_audio.png"
+                                                            <Image Source="/Assets/Icons/service_audio.png"
                                                                    Width="16"
                                                                    Height="16"
                                                                    Margin="0,0,10,0"
                                                                    Visibility="{Binding AudioActionVisibility}" />
-                                                            <Image Source="Assets/Icons/action_message_green.png"
+                                                            <Image Source="/Assets/Icons/action_message_green.png"
                                                                    Width="16"
                                                                    Height="16"
                                                                    Margin="0,0,10,0"
                                                                    Visibility="{Binding ChatActionVisibility}" />
-                                                            <Image Source="Assets/Icons/service_alexa.png"
+                                                            <Image Source="/Assets/Icons/service_alexa.png"
                                                                    Width="16"
                                                                    Height="16"
                                                                    Margin="0,0,10,0"
                                                                    Opacity="{Binding AlexaActionOpacity}"
                                                                    ToolTip="{Binding AlexaActionToolTip}"
                                                                    Visibility="{Binding AlexaActionVisibility}" />
-                                                            <Image Source="Assets/ServiceObs.png"
+                                                            <Image Source="/Assets/ServiceObs.png"
                                                                    Width="16"
                                                                    Height="16"
                                                                    Margin="0,0,10,0"
@@ -308,7 +308,7 @@
                                                     Tag="Follow"
                                                     Click="EventKindTile_Click">
                                                 <StackPanel HorizontalAlignment="Center">
-                                                    <Image Source="Assets/Icons/action_follower_teal.png"
+                                                    <Image Source="/Assets/Icons/action_follower_teal.png"
                                                            Width="26"
                                                            Height="26"
                                                            Margin="0,0,0,8" />
@@ -323,7 +323,7 @@
                                                     Tag="Subscription"
                                                     Click="EventKindTile_Click">
                                                 <StackPanel HorizontalAlignment="Center">
-                                                    <Image Source="Assets/Icons/action_subscription_purple.png"
+                                                    <Image Source="/Assets/Icons/action_subscription_purple.png"
                                                            Width="26"
                                                            Height="26"
                                                            Margin="0,0,0,8" />
@@ -338,7 +338,7 @@
                                                     Tag="Raid"
                                                     Click="EventKindTile_Click">
                                                 <StackPanel HorizontalAlignment="Center">
-                                                    <Image Source="Assets/Icons/activity_notification.png"
+                                                    <Image Source="/Assets/Icons/activity_notification.png"
                                                            Width="26"
                                                            Height="26"
                                                            Margin="0,0,0,8" />
@@ -353,7 +353,7 @@
                                                     Tag="Cheer"
                                                     Click="EventKindTile_Click">
                                                 <StackPanel HorizontalAlignment="Center">
-                                                    <Image Source="Assets/Icons/action_bits_blue.png"
+                                                    <Image Source="/Assets/Icons/action_bits_blue.png"
                                                            Width="26"
                                                            Height="26"
                                                            Margin="0,0,0,8" />
@@ -369,7 +369,7 @@
                                                     Tag="ChatCommand"
                                                     Click="EventKindTile_Click">
                                                 <StackPanel HorizontalAlignment="Center">
-                                                    <Image Source="Assets/Icons/action_message_green.png"
+                                                    <Image Source="/Assets/Icons/action_message_green.png"
                                                            Width="26"
                                                            Height="26"
                                                            Margin="0,0,0,8" />
@@ -385,7 +385,7 @@
                                                     Tag="ChannelPointRedemption"
                                                     Click="EventKindTile_Click">
                                                 <StackPanel HorizontalAlignment="Center">
-                                                    <Image Source="Assets/Icons/activity_notification_lime.png"
+                                                    <Image Source="/Assets/Icons/activity_notification_lime.png"
                                                            Width="26"
                                                            Height="26"
                                                            Margin="0,0,0,8" />
@@ -444,7 +444,7 @@
                                                             <ColumnDefinition Width="*" />
                                                             <ColumnDefinition Width="Auto" />
                                                         </Grid.ColumnDefinitions>
-                                                        <Image Source="Assets/Icons/nav_lights.png"
+                                                        <Image Source="/Assets/Icons/nav_lights.png"
                                                                Width="26"
                                                                Height="26"
                                                                Stretch="Uniform" />
@@ -508,7 +508,7 @@
                                                                             Tag="Solid"
                                                                             Click="PatternTile_Click">
                                                                         <StackPanel HorizontalAlignment="Center">
-                                                                            <Image Source="Assets/Icons/lights_fx_static.png"
+                                                                            <Image Source="/Assets/Icons/lights_fx_static.png"
                                                                                    Width="22"
                                                                                    Height="22"
                                                                                    Margin="0,0,0,6" />
@@ -523,7 +523,7 @@
                                                                             Tag="Pulse"
                                                                             Click="PatternTile_Click">
                                                                         <StackPanel HorizontalAlignment="Center">
-                                                                            <Image Source="Assets/Icons/lights_fx_pulse.png"
+                                                                            <Image Source="/Assets/Icons/lights_fx_pulse.png"
                                                                                    Width="22"
                                                                                    Height="22"
                                                                                    Margin="0,0,0,6" />
@@ -538,7 +538,7 @@
                                                                             Tag="Rainbow"
                                                                             Click="PatternTile_Click">
                                                                         <StackPanel HorizontalAlignment="Center">
-                                                                            <Image Source="Assets/Icons/lights_fx_rainbow.png"
+                                                                            <Image Source="/Assets/Icons/lights_fx_rainbow.png"
                                                                                    Width="22"
                                                                                    Height="22"
                                                                                    Margin="0,0,0,6" />
@@ -553,7 +553,7 @@
                                                                             Tag="Chase"
                                                                             Click="PatternTile_Click">
                                                                         <StackPanel HorizontalAlignment="Center">
-                                                                            <Image Source="Assets/Icons/lights_fx_wave.png"
+                                                                            <Image Source="/Assets/Icons/lights_fx_wave.png"
                                                                                    Width="22"
                                                                                    Height="22"
                                                                                    Margin="0,0,0,6" />
@@ -568,7 +568,7 @@
                                                                             Tag="Theater"
                                                                             Click="PatternTile_Click">
                                                                         <StackPanel HorizontalAlignment="Center">
-                                                                            <Image Source="Assets/Icons/lights_fx_breathe.png"
+                                                                            <Image Source="/Assets/Icons/lights_fx_breathe.png"
                                                                                    Width="22"
                                                                                    Height="22"
                                                                                    Margin="0,0,0,6" />
@@ -584,7 +584,7 @@
                                                                             Tag="Sparkle"
                                                                             Click="PatternTile_Click">
                                                                         <StackPanel HorizontalAlignment="Center">
-                                                                            <Image Source="Assets/Icons/activity_notification_lime.png"
+                                                                            <Image Source="/Assets/Icons/activity_notification_lime.png"
                                                                                    Width="22"
                                                                                    Height="22"
                                                                                    Margin="0,0,0,6" />
@@ -601,7 +601,7 @@
                                                                             Tag="Rave"
                                                                             Click="PatternTile_Click">
                                                                         <StackPanel HorizontalAlignment="Center">
-                                                                            <Image Source="Assets/Icons/lights_fx_rave.png"
+                                                                            <Image Source="/Assets/Icons/lights_fx_rave.png"
                                                                                    Width="22"
                                                                                    Height="22"
                                                                                    Margin="0,0,0,6" />
@@ -784,7 +784,7 @@
                                                             <ColumnDefinition Width="*" />
                                                             <ColumnDefinition Width="Auto" />
                                                         </Grid.ColumnDefinitions>
-                                                        <Image Source="Assets/Icons/service_audio.png"
+                                                        <Image Source="/Assets/Icons/service_audio.png"
                                                                Width="26"
                                                                Height="26"
                                                                Stretch="Uniform" />
@@ -874,7 +874,7 @@
                                                             <ColumnDefinition Width="*" />
                                                             <ColumnDefinition Width="Auto" />
                                                         </Grid.ColumnDefinitions>
-                                                        <Image Source="Assets/Icons/action_message_green.png"
+                                                        <Image Source="/Assets/Icons/action_message_green.png"
                                                                Width="26"
                                                                Height="26"
                                                                Stretch="Uniform" />
@@ -919,7 +919,7 @@
                                                             <ColumnDefinition Width="*" />
                                                             <ColumnDefinition Width="Auto" />
                                                         </Grid.ColumnDefinitions>
-                                                        <Image Source="Assets/Icons/service_alexa.png"
+                                                        <Image Source="/Assets/Icons/service_alexa.png"
                                                                Width="26"
                                                                Height="26"
                                                                Stretch="Uniform" />
@@ -962,7 +962,7 @@
                                                             <ColumnDefinition Width="*" />
                                                             <ColumnDefinition Width="Auto" />
                                                         </Grid.ColumnDefinitions>
-                                                        <Image Source="Assets/ServiceObs.png"
+                                                        <Image Source="/Assets/ServiceObs.png"
                                                                Width="26"
                                                                Height="26"
                                                                Stretch="Uniform" />

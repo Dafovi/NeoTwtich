@@ -50,7 +50,7 @@
                                       Checked="ActivityFilterButton_CheckedChanged"
                                       Unchecked="ActivityFilterButton_CheckedChanged">
                             <StackPanel Orientation="Horizontal">
-                                <Image Source="Assets/Icons/service_twitch.png"
+                                <Image Source="/Assets/Icons/service_twitch.png"
                                        Width="16"
                                        Height="16"
                                        Margin="0,0,7,0" />
@@ -65,7 +65,7 @@
                                       Checked="ActivityFilterButton_CheckedChanged"
                                       Unchecked="ActivityFilterButton_CheckedChanged">
                             <StackPanel Orientation="Horizontal">
-                                <Image Source="Assets/Icons/service_arduino.png"
+                                <Image Source="/Assets/Icons/service_arduino.png"
                                        Width="18"
                                        Height="16"
                                        Margin="0,0,7,0" />
@@ -80,7 +80,7 @@
                                       Checked="ActivityFilterButton_CheckedChanged"
                                       Unchecked="ActivityFilterButton_CheckedChanged">
                             <StackPanel Orientation="Horizontal">
-                                <Image Source="Assets/Icons/service_alexa.png"
+                                <Image Source="/Assets/Icons/service_alexa.png"
                                        Width="16"
                                        Height="16"
                                        Margin="0,0,7,0" />
@@ -95,7 +95,7 @@
                                       Checked="ActivityFilterButton_CheckedChanged"
                                       Unchecked="ActivityFilterButton_CheckedChanged">
                             <StackPanel Orientation="Horizontal">
-                                <Image Source="Assets/Icons/service_audio.png"
+                                <Image Source="/Assets/Icons/service_audio.png"
                                        Width="16"
                                        Height="16"
                                        Margin="0,0,7,0" />
@@ -110,7 +110,7 @@
                                       Checked="ActivityFilterButton_CheckedChanged"
                                       Unchecked="ActivityFilterButton_CheckedChanged">
                             <StackPanel Orientation="Horizontal">
-                                <Image Source="Assets/ServiceObs.png"
+                                <Image Source="/Assets/ServiceObs.png"
                                        Width="16"
                                        Height="16"
                                        Margin="0,0,7,0" />
@@ -168,7 +168,7 @@
                                         Background="{Binding Foreground, RelativeSource={RelativeSource AncestorType=ToggleButton}}"
                                         Margin="0,0,7,0">
                                     <Border.OpacityMask>
-                                        <ImageBrush ImageSource="Assets/Icons/status_important.png"
+                                        <ImageBrush ImageSource="/Assets/Icons/status_important.png"
                                                     Stretch="Uniform" />
                                     </Border.OpacityMask>
                                 </Border>

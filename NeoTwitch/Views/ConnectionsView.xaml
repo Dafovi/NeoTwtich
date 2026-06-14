@@ -70,7 +70,7 @@
                                             CornerRadius="14"
                                             Background="#1A9146FF"
                                             HorizontalAlignment="Left">
-                                        <Image Source="Assets/Icons/service_twitch.png"
+                                        <Image Source="/Assets/Icons/service_twitch.png"
                                                Stretch="Uniform"
                                                Margin="8" />
                                     </Border>
@@ -196,7 +196,7 @@
                                             CornerRadius="14"
                                             Background="#1A148A86"
                                             HorizontalAlignment="Left">
-                                        <Image Source="Assets/Icons/service_arduino.png"
+                                        <Image Source="/Assets/Icons/service_arduino.png"
                                                Stretch="Uniform"
                                                Margin="7" />
                                     </Border>
@@ -291,7 +291,7 @@
                                             CornerRadius="14"
                                             Background="#1A2FB4E9"
                                             HorizontalAlignment="Left">
-                                        <Image Source="Assets/Icons/service_alexa.png"
+                                        <Image Source="/Assets/Icons/service_alexa.png"
                                                Stretch="Uniform"
                                                Margin="8" />
                                     </Border>
@@ -435,7 +435,7 @@
                                             CornerRadius="14"
                                             Background="#1A22C55E"
                                             HorizontalAlignment="Left">
-                                        <Image Source="Assets/ServiceObs.png"
+                                        <Image Source="/Assets/ServiceObs.png"
                                                Stretch="Uniform"
                                                Margin="8" />
                                     </Border>

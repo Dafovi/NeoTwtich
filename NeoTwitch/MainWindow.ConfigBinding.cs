@@ -40,6 +40,13 @@ public partial class MainWindow
             ObsPortBox.Text = _config.Obs.Port.ToString();
             ObsPasswordBox.Text = _config.Obs.Password;
             ObsAutoReconnectCheck.IsChecked = _config.Obs.AutoReconnect;
+            ObsOverlayWidthBox.Text = _config.Obs.OverlayWidth.ToString();
+            ObsOverlayHeightBox.Text = _config.Obs.OverlayHeight.ToString();
+            ObsOverlayMediaWidthBox.Text = _config.Obs.OverlayMediaWidth.ToString();
+            ObsOverlayMediaHeightBox.Text = _config.Obs.OverlayMediaHeight.ToString();
+            ObsOverlayPositionBox.SelectedValue = _config.Obs.OverlayPositionMode;
+            ObsOverlayXBox.Text = _config.Obs.OverlayX.ToString();
+            ObsOverlayYBox.Text = _config.Obs.OverlayY.ToString();
             BackgroundEnabledCheck.IsChecked = _config.BackgroundEnabled;
             BackgroundAlexaEnabledCheck.IsChecked = _config.BackgroundAlexaEnabled;
             BackgroundAlexaTurnOffAfterEventCheck.IsChecked = _config.BackgroundAlexaTurnOffAfterEvent;
@@ -220,6 +227,13 @@ public partial class MainWindow
         _config.Obs.Port = ParseInt(ObsPortBox.Text, 4455, 1, 65535);
         _config.Obs.Password = ObsPasswordBox.Text;
         _config.Obs.AutoReconnect = ObsAutoReconnectCheck.IsChecked == true;
+        _config.Obs.OverlayWidth = ParseInt(ObsOverlayWidthBox.Text, 1920, 320, 7680);
+        _config.Obs.OverlayHeight = ParseInt(ObsOverlayHeightBox.Text, 1080, 180, 4320);
+        _config.Obs.OverlayMediaWidth = ParseInt(ObsOverlayMediaWidthBox.Text, 720, 32, 7680);
+        _config.Obs.OverlayMediaHeight = ParseInt(ObsOverlayMediaHeightBox.Text, 420, 32, 4320);
+        _config.Obs.OverlayPositionMode = ObsOverlayPositionBox.SelectedValue as string ?? "Center";
+        _config.Obs.OverlayX = ParseInt(ObsOverlayXBox.Text, 0, 0, 7680);
+        _config.Obs.OverlayY = ParseInt(ObsOverlayYBox.Text, 0, 0, 4320);
     }
 
     private void ApplyStartWithWindowsRegistration()

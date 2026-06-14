@@ -46,15 +46,10 @@ public partial class MainWindow
             : _obsService.IsConnected
                 ? "Desconectar OBS"
                 : "Conectar OBS";
-        ConnectObsButtonPanel.IsEnabled = ConnectObsButton.IsEnabled;
-        ConnectObsButtonPanel.Content = ConnectObsButton.Content;
-
         TestObsButton.IsEnabled = !obsBusy && _config.Obs.Enabled;
         TestObsButton.Content = _isObsConnecting
             ? "Actualizando..."
             : "Actualizar escenas";
-        TestObsButtonPanel.IsEnabled = TestObsButton.IsEnabled;
-        TestObsButtonPanel.Content = TestObsButton.Content;
     }
 
     private string BuildAlexaSidebarStatusText()

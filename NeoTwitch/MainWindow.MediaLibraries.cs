@@ -430,8 +430,10 @@ public partial class MainWindow
                 sourceName,
                 asset.FilePath,
                 obsKind,
+                _config.Obs,
                 CancellationToken.None);
             ApplyObsResult(result);
+            WriteObsOverlayState(asset, obsKind, TimeSpan.FromSeconds(5));
             MarkObsMediaAssetUsed(obsKind, asset);
             AddLog($"OBS: probando {MediaLibraryTitle(kind).ToLowerInvariant()} '{asset.DisplayName}' por 5 segundos.", ActivityLogKind.Obs);
 
@@ -440,6 +442,7 @@ public partial class MainWindow
             {
                 result = await _obsService.HideSceneSourceAsync(sceneName, sourceName, CancellationToken.None);
                 ApplyObsResult(result);
+                ClearObsOverlayState();
             }
         }
         catch (Exception ex)

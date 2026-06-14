@@ -159,64 +159,129 @@
 
                         <Border Style="{StaticResource Card}">
                             <StackPanel>
-                                <TextBlock Text="Conexión con OBS"
+                                <TextBlock Text="Fuente de navegador"
                                            FontSize="18"
                                            Style="{StaticResource TitleText}"
                                            FontWeight="SemiBold" />
-                                <TextBlock Text="Usa la configuración de Conexiones. OBS Studio debe tener WebSocket activo."
+                                <TextBlock Text="Usa este enlace si quieres preparar un overlay de medios en OBS."
                                            Style="{StaticResource MutedText}"
                                            TextWrapping="Wrap"
                                            Margin="0,6,0,16" />
+                                <TextBlock Text="URL para OBS"
+                                           Style="{StaticResource MutedText}" />
+                                <Grid Margin="0,4,0,10">
+                                    <Grid.ColumnDefinitions>
+                                        <ColumnDefinition Width="*" />
+                                        <ColumnDefinition Width="10" />
+                                        <ColumnDefinition Width="120" />
+                                    </Grid.ColumnDefinitions>
+                                    <TextBox x:Name="ObsOverlayUrlBox"
+                                             IsReadOnly="True"
+                                             Margin="0" />
+                                    <Button Grid.Column="2"
+                                            Content="Copiar"
+                                            Margin="0"
+                                            Click="CopyObsOverlayUrlButton_Click" />
+                                </Grid>
                                 <Grid>
                                     <Grid.ColumnDefinitions>
                                         <ColumnDefinition Width="*" />
-                                        <ColumnDefinition Width="12" />
-                                        <ColumnDefinition Width="90" />
+                                        <ColumnDefinition Width="10" />
+                                        <ColumnDefinition Width="*" />
                                     </Grid.ColumnDefinitions>
                                     <StackPanel>
-                                        <TextBlock Text="Host"
+                                        <TextBlock Text="Ancho overlay"
                                                    Style="{StaticResource MutedText}" />
-                                        <TextBlock x:Name="ObsHostSummaryText"
-                                                   Text="127.0.0.1"
-                                                   FontWeight="SemiBold"
-                                                   TextTrimming="CharacterEllipsis" />
+                                        <TextBox x:Name="ObsOverlayWidthBox"
+                                                 TextChanged="ObsOverlaySettingsChanged" />
                                     </StackPanel>
                                     <StackPanel Grid.Column="2">
-                                        <TextBlock Text="Puerto"
+                                        <TextBlock Text="Alto overlay"
                                                    Style="{StaticResource MutedText}" />
-                                        <TextBlock x:Name="ObsPortSummaryText"
-                                                   Text="4455"
-                                                   FontWeight="SemiBold" />
+                                        <TextBox x:Name="ObsOverlayHeightBox"
+                                                 TextChanged="ObsOverlaySettingsChanged" />
+                                    </StackPanel>
+                                </Grid>
+                                <Grid Margin="0,8,0,0">
+                                    <Grid.ColumnDefinitions>
+                                        <ColumnDefinition Width="*" />
+                                        <ColumnDefinition Width="10" />
+                                        <ColumnDefinition Width="*" />
+                                    </Grid.ColumnDefinitions>
+                                    <StackPanel>
+                                        <TextBlock Text="Ancho medio"
+                                                   Style="{StaticResource MutedText}" />
+                                        <TextBox x:Name="ObsOverlayMediaWidthBox"
+                                                 TextChanged="ObsOverlaySettingsChanged" />
+                                    </StackPanel>
+                                    <StackPanel Grid.Column="2">
+                                        <TextBlock Text="Alto medio"
+                                                   Style="{StaticResource MutedText}" />
+                                        <TextBox x:Name="ObsOverlayMediaHeightBox"
+                                                 TextChanged="ObsOverlaySettingsChanged" />
+                                    </StackPanel>
+                                </Grid>
+                                <TextBlock Text="Posición"
+                                           Style="{StaticResource MutedText}"
+                                           Margin="0,8,0,0" />
+                                <ComboBox x:Name="ObsOverlayPositionBox"
+                                          Margin="0,4,0,8"
+                                          SelectedValuePath="Tag"
+                                          SelectionChanged="ObsOverlaySettingsChanged">
+                                    <ComboBoxItem Content="Centrada" Tag="Center" />
+                                    <ComboBoxItem Content="Aleatoria" Tag="Random" />
+                                    <ComboBoxItem Content="Personalizada" Tag="Custom" />
+                                </ComboBox>
+                                <Grid>
+                                    <Grid.ColumnDefinitions>
+                                        <ColumnDefinition Width="*" />
+                                        <ColumnDefinition Width="10" />
+                                        <ColumnDefinition Width="*" />
+                                    </Grid.ColumnDefinitions>
+                                    <StackPanel>
+                                        <TextBlock Text="X"
+                                                   Style="{StaticResource MutedText}" />
+                                        <TextBox x:Name="ObsOverlayXBox"
+                                                 TextChanged="ObsOverlaySettingsChanged" />
+                                    </StackPanel>
+                                    <StackPanel Grid.Column="2">
+                                        <TextBlock Text="Y"
+                                                   Style="{StaticResource MutedText}" />
+                                        <TextBox x:Name="ObsOverlayYBox"
+                                                 TextChanged="ObsOverlaySettingsChanged" />
                                     </StackPanel>
                                 </Grid>
                                 <Separator Margin="0,16,0,14" />
-                                <Grid>
-                                    <Grid.ColumnDefinitions>
-                                        <ColumnDefinition Width="120" />
-                                        <ColumnDefinition Width="*" />
-                                    </Grid.ColumnDefinitions>
-                                    <TextBlock Text="Version"
-                                               Style="{StaticResource MutedText}" />
-                                    <TextBlock x:Name="ObsVersionText"
-                                               Grid.Column="1"
-                                               Text="Sin version"
-                                               FontWeight="SemiBold" />
-                                </Grid>
+                                <TextBlock Text="Estado de conexión"
+                                           FontWeight="SemiBold" />
                                 <TextBlock x:Name="ObsStatusText"
                                            Style="{StaticResource MutedText}"
                                            TextWrapping="Wrap"
-                                           Margin="0,12,0,14" />
-                                <WrapPanel HorizontalAlignment="Right">
-                                    <Button Content="Ver guia OBS"
-                                            Click="OpenObsGuideButton_Click" />
-                                    <Button x:Name="TestObsButtonPanel"
-                                            Content="Actualizar escenas"
-                                            Click="TestObsButton_Click" />
-                                    <Button x:Name="ConnectObsButtonPanel"
-                                            Content="Conectar OBS"
-                                            Style="{StaticResource PrimaryButton}"
-                                            Click="ConnectObsButton_Click" />
-                                </WrapPanel>
+                                           Margin="0,6,0,10" />
+                                <Grid>
+                                    <Grid.ColumnDefinitions>
+                                        <ColumnDefinition Width="*" />
+                                        <ColumnDefinition Width="*" />
+                                        <ColumnDefinition Width="*" />
+                                    </Grid.ColumnDefinitions>
+                                    <StackPanel Orientation="Horizontal">
+                                        <TextBlock Text="Host: " />
+                                        <TextBlock x:Name="ObsHostSummaryText"
+                                                   Text="127.0.0.1" />
+                                    </StackPanel>
+                                    <StackPanel Grid.Column="1"
+                                                Orientation="Horizontal">
+                                        <TextBlock Text="Puerto: " />
+                                        <TextBlock x:Name="ObsPortSummaryText"
+                                                   Text="4455" />
+                                    </StackPanel>
+                                    <StackPanel Grid.Column="2"
+                                                Orientation="Horizontal">
+                                        <TextBlock Text="Version: " />
+                                        <TextBlock x:Name="ObsVersionText"
+                                                   Text="Sin version" />
+                                    </StackPanel>
+                                </Grid>
                             </StackPanel>
                         </Border>
 

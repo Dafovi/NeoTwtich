@@ -156,6 +156,7 @@ public sealed class ObsWebSocketService : IAsyncDisposable
         string sourceName,
         string filePath,
         ObsMediaKind kind,
+        ObsIntegrationConfig? overlayConfig,
         CancellationToken cancellationToken)
     {
         if (string.IsNullOrWhiteSpace(sceneName))
@@ -211,6 +212,11 @@ public sealed class ObsWebSocketService : IAsyncDisposable
             }
 
             await SetSceneItemEnabledAsync(sceneName, sourceName, enabled: true, token);
+            if (overlayConfig is not null)
+            {
+                await ApplySceneItemTransformAsync(sceneName, sourceName, overlayConfig, token);
+            }
+
             await RefreshScenesCoreAsync(token);
             return Snapshot();
         }
@@ -345,6 +351,35 @@ public sealed class ObsWebSocketService : IAsyncDisposable
                 ["sceneName"] = sceneName.Trim(),
                 ["sceneItemId"] = sceneItemId,
                 ["sceneItemEnabled"] = enabled
+            },
+            cancellationToken);
+    }
+
+    private async Task ApplySceneItemTransformAsync(
+        string sceneName,
+        string sourceName,
+        ObsIntegrationConfig config,
+        CancellationToken cancellationToken)
+    {
+        var sceneItemId = await GetSceneItemIdAsync(sceneName, sourceName, cancellationToken);
+        var mediaWidth = Math.Clamp(config.OverlayMediaWidth, 32, Math.Max(32, config.OverlayWidth));
+        var mediaHeight = Math.Clamp(config.OverlayMediaHeight, 32, Math.Max(32, config.OverlayHeight));
+        var (positionX, positionY) = ResolveOverlayPosition(config, mediaWidth, mediaHeight);
+
+        await SendRequestAsync(
+            "SetSceneItemTransform",
+            new Dictionary<string, object?>
+            {
+                ["sceneName"] = sceneName.Trim(),
+                ["sceneItemId"] = sceneItemId,
+                ["sceneItemTransform"] = new Dictionary<string, object?>
+                {
+                    ["positionX"] = positionX,
+                    ["positionY"] = positionY,
+                    ["boundsType"] = "OBS_BOUNDS_SCALE_INNER",
+                    ["boundsWidth"] = mediaWidth,
+                    ["boundsHeight"] = mediaHeight
+                }
             },
             cancellationToken);
     }
@@ -514,6 +549,18 @@ public sealed class ObsWebSocketService : IAsyncDisposable
                 ["restart_on_activate"] = true,
                 ["close_when_inactive"] = true
             };
+    }
+
+    private static (int X, int Y) ResolveOverlayPosition(ObsIntegrationConfig config, int mediaWidth, int mediaHeight)
+    {
+        var maxX = Math.Max(0, config.OverlayWidth - mediaWidth);
+        var maxY = Math.Max(0, config.OverlayHeight - mediaHeight);
+        return config.OverlayPositionMode switch
+        {
+            "Custom" => (Math.Clamp(config.OverlayX, 0, maxX), Math.Clamp(config.OverlayY, 0, maxY)),
+            "Random" => (Random.Shared.Next(0, maxX + 1), Random.Shared.Next(0, maxY + 1)),
+            _ => (maxX / 2, maxY / 2)
+        };
     }
 
     private static Uri BuildUri(ObsIntegrationConfig config)

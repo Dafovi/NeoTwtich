@@ -12,6 +12,20 @@ public sealed class ObsIntegrationConfig
 
     public bool AutoReconnect { get; set; } = true;
 
+    public int OverlayWidth { get; set; } = 1920;
+
+    public int OverlayHeight { get; set; } = 1080;
+
+    public int OverlayMediaWidth { get; set; } = 720;
+
+    public int OverlayMediaHeight { get; set; } = 420;
+
+    public string OverlayPositionMode { get; set; } = "Center";
+
+    public int OverlayX { get; set; }
+
+    public int OverlayY { get; set; }
+
     public bool IsConfigured =>
         Enabled
         && !string.IsNullOrWhiteSpace(Host)

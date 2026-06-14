@@ -15,7 +15,7 @@ namespace NeoTwitch;
 
 public partial class MainWindow
 {
-    private void ImageSearchBox_TextChanged(object sender, TextChangedEventArgs e)
+    internal void ImageSearchBox_TextChanged(object sender, TextChangedEventArgs e)
     {
         if (_loadingUi || sender is not System.Windows.Controls.TextBox textBox)
         {
@@ -37,7 +37,7 @@ public partial class MainWindow
         RefreshMediaLibraryView(MediaLibraryKind.Video);
     }
 
-    private void ImageFilterButton_Click(object sender, RoutedEventArgs e)
+    internal void ImageFilterButton_Click(object sender, RoutedEventArgs e)
     {
         SetMediaFilter(MediaLibraryKind.Image, sender);
     }
@@ -69,7 +69,7 @@ public partial class MainWindow
         RefreshMediaLibraryView(kind);
     }
 
-    private void ImageLibraryGroupBox_DropDownClosed(object sender, EventArgs e)
+    internal void ImageLibraryGroupBox_DropDownClosed(object sender, EventArgs e)
     {
         UpdateMediaAssetGroup(MediaLibraryKind.Image, sender);
     }
@@ -108,7 +108,7 @@ public partial class MainWindow
         _ = Dispatcher.InvokeAsync(() => RefreshMediaLibraryView(kind), DispatcherPriority.Background);
     }
 
-    private void BrowseNewImageButton_Click(object sender, RoutedEventArgs e)
+    internal void BrowseNewImageButton_Click(object sender, RoutedEventArgs e)
     {
         BrowseNewMedia(MediaLibraryKind.Image);
     }
@@ -153,7 +153,7 @@ public partial class MainWindow
         }
     }
 
-    private void SaveNewImageButton_Click(object sender, RoutedEventArgs e)
+    internal void SaveNewImageButton_Click(object sender, RoutedEventArgs e)
     {
         SaveNewMedia(MediaLibraryKind.Image);
     }
@@ -215,7 +215,7 @@ public partial class MainWindow
         AddLog(_text.Format(UiTextKeys.LibrarySavedLog, title, asset.DisplayName), ActivityLogKind.Info);
     }
 
-    private void AddImageGroupButton_Click(object sender, RoutedEventArgs e)
+    internal void AddImageGroupButton_Click(object sender, RoutedEventArgs e)
     {
         AddMediaGroup(MediaLibraryKind.Image);
     }
@@ -270,7 +270,7 @@ public partial class MainWindow
         AddLog(_text.Format(UiTextKeys.LibraryGroupCreatedLog, title, group.Name), ActivityLogKind.Info);
     }
 
-    private void ViewImageGroupButton_Click(object sender, RoutedEventArgs e)
+    internal void ViewImageGroupButton_Click(object sender, RoutedEventArgs e)
     {
         ViewMediaGroup(MediaLibraryKind.Image, sender);
     }
@@ -312,7 +312,7 @@ public partial class MainWindow
         RefreshMediaLibraryView(kind);
     }
 
-    private void DeleteImageGroupButton_Click(object sender, RoutedEventArgs e)
+    internal void DeleteImageGroupButton_Click(object sender, RoutedEventArgs e)
     {
         DeleteMediaGroup(MediaLibraryKind.Image, sender);
     }
@@ -368,7 +368,7 @@ public partial class MainWindow
         RefreshMediaLibraryView(kind);
     }
 
-    private void DeleteImageButton_Click(object sender, RoutedEventArgs e)
+    internal void DeleteImageButton_Click(object sender, RoutedEventArgs e)
     {
         DeleteMediaAsset(MediaLibraryKind.Image, sender);
     }

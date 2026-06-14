@@ -15,7 +15,7 @@ namespace NeoTwitch;
 
 public partial class MainWindow
 {
-    private async void SaveButton_Click(object sender, RoutedEventArgs e)
+    internal async void SaveButton_Click(object sender, RoutedEventArgs e)
     {
         SaveGlobalSettingsFromFields();
         SaveCurrentRuleFromFields();

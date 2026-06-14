@@ -370,7 +370,7 @@ public partial class MainWindow
         LoadSelectedStripIntoUi();
     }
 
-    private void GlobalSettingsChanged(object sender, RoutedEventArgs e)
+    internal void GlobalSettingsChanged(object sender, RoutedEventArgs e)
     {
         if (_initializingComponent || _loadingUi)
         {
@@ -400,7 +400,7 @@ public partial class MainWindow
         GlobalSettingsChanged(sender, e);
     }
 
-    private void AlexaSettingsChanged(object sender, RoutedEventArgs e)
+    internal void AlexaSettingsChanged(object sender, RoutedEventArgs e)
     {
         if (_initializingComponent || _loadingUi)
         {
@@ -416,7 +416,7 @@ public partial class MainWindow
         UpdateRuleOptionVisibility();
     }
 
-    private async void TestAlexaButton_Click(object sender, RoutedEventArgs e)
+    internal async void TestAlexaButton_Click(object sender, RoutedEventArgs e)
     {
         if (_isAlexaConnecting)
         {
@@ -554,31 +554,31 @@ public partial class MainWindow
         UpdateCloseBehaviorCards();
     }
 
-    private void ToggleClientIdVisibility_Click(object sender, RoutedEventArgs e)
+    internal void ToggleClientIdVisibility_Click(object sender, RoutedEventArgs e)
     {
         _showClientId = !_showClientId;
         UpdateSensitiveFieldVisibility();
     }
 
-    private void ToggleClientSecretVisibility_Click(object sender, RoutedEventArgs e)
+    internal void ToggleClientSecretVisibility_Click(object sender, RoutedEventArgs e)
     {
         _showClientSecret = !_showClientSecret;
         UpdateSensitiveFieldVisibility();
     }
 
-    private void ToggleAlexaRelayUrlVisibility_Click(object sender, RoutedEventArgs e)
+    internal void ToggleAlexaRelayUrlVisibility_Click(object sender, RoutedEventArgs e)
     {
         _showAlexaRelayUrl = !_showAlexaRelayUrl;
         UpdateSensitiveFieldVisibility();
     }
 
-    private void ToggleAlexaAuthTokenVisibility_Click(object sender, RoutedEventArgs e)
+    internal void ToggleAlexaAuthTokenVisibility_Click(object sender, RoutedEventArgs e)
     {
         _showAlexaAuthToken = !_showAlexaAuthToken;
         UpdateSensitiveFieldVisibility();
     }
 
-    private void ToggleObsPasswordVisibility_Click(object sender, RoutedEventArgs e)
+    internal void ToggleObsPasswordVisibility_Click(object sender, RoutedEventArgs e)
     {
         _showObsPassword = !_showObsPassword;
         UpdateSensitiveFieldVisibility();

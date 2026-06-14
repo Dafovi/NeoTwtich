@@ -12,7 +12,7 @@ namespace NeoTwitch;
 
 public partial class MainWindow
 {
-    private async void TwitchButton_Click(object sender, RoutedEventArgs e)
+    internal async void TwitchButton_Click(object sender, RoutedEventArgs e)
     {
         if (_isTwitchAuthorizing || _isTwitchConnecting)
         {
@@ -50,7 +50,7 @@ public partial class MainWindow
         }
     }
 
-    private void OpenTwitchConsoleButton_Click(object sender, RoutedEventArgs e)
+    internal void OpenTwitchConsoleButton_Click(object sender, RoutedEventArgs e)
     {
         Process.Start(new ProcessStartInfo
         {
@@ -85,7 +85,7 @@ public partial class MainWindow
         AddLog($"Twitch: abriendo perfil de {channel}.", ActivityLogKind.Twitch);
     }
 
-    private void OpenAlexaConsoleButton_Click(object sender, RoutedEventArgs e)
+    internal void OpenAlexaConsoleButton_Click(object sender, RoutedEventArgs e)
     {
         Process.Start(new ProcessStartInfo
         {
@@ -415,7 +415,7 @@ public partial class MainWindow
         UpdateStatusText();
     }
 
-    private async void ConnectArduinoButton_Click(object sender, RoutedEventArgs e)
+    internal async void ConnectArduinoButton_Click(object sender, RoutedEventArgs e)
     {
         if (_isArduinoConnecting)
         {
@@ -682,7 +682,7 @@ public partial class MainWindow
         UpdateStatusText();
     }
 
-    private void DetectPortsButton_Click(object sender, RoutedEventArgs e)
+    internal void DetectPortsButton_Click(object sender, RoutedEventArgs e)
     {
         RefreshPortList(choosePreferred: true);
         if (_availablePorts.Count == 0)
@@ -694,7 +694,7 @@ public partial class MainWindow
         AddLog($"Puertos detectados: {string.Join(", ", _availablePorts.Select(port => port.DisplayName))}");
     }
 
-    private void PortComboBox_DropDownOpened(object sender, EventArgs e)
+    internal void PortComboBox_DropDownOpened(object sender, EventArgs e)
     {
         RefreshPortList(choosePreferred: false);
     }

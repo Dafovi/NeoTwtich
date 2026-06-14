@@ -10,7 +10,7 @@ namespace NeoTwitch;
 
 public partial class MainWindow
 {
-    private void OpenObsGuideButton_Click(object sender, RoutedEventArgs e)
+    internal void OpenObsGuideButton_Click(object sender, RoutedEventArgs e)
     {
         Process.Start(new ProcessStartInfo
         {
@@ -20,7 +20,7 @@ public partial class MainWindow
         AddLog("OBS: abriendo guia de obs-websocket.", ActivityLogKind.Obs);
     }
 
-    private void ObsSettingsChanged(object sender, RoutedEventArgs e)
+    internal void ObsSettingsChanged(object sender, RoutedEventArgs e)
     {
         if (_initializingComponent || _loadingUi)
         {
@@ -34,7 +34,7 @@ public partial class MainWindow
         UpdateSensitiveFieldVisibility();
     }
 
-    private async void ConnectObsButton_Click(object sender, RoutedEventArgs e)
+    internal async void ConnectObsButton_Click(object sender, RoutedEventArgs e)
     {
         if (_isObsConnecting)
         {
@@ -67,7 +67,7 @@ public partial class MainWindow
         }
     }
 
-    private async void TestObsButton_Click(object sender, RoutedEventArgs e)
+    internal async void TestObsButton_Click(object sender, RoutedEventArgs e)
     {
         if (_isObsConnecting)
         {

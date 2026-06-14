@@ -26,7 +26,7 @@ public partial class MainWindow
         AddLog("Configuracion guardada.");
     }
 
-    private void ExportSettingsButton_Click(object sender, RoutedEventArgs e)
+    internal void ExportSettingsButton_Click(object sender, RoutedEventArgs e)
     {
         try
         {
@@ -68,7 +68,7 @@ public partial class MainWindow
         }
     }
 
-    private void CreateBackupButton_Click(object sender, RoutedEventArgs e)
+    internal void CreateBackupButton_Click(object sender, RoutedEventArgs e)
     {
         try
         {
@@ -93,7 +93,7 @@ public partial class MainWindow
         }
     }
 
-    private async void ImportSettingsButton_Click(object sender, RoutedEventArgs e)
+    internal async void ImportSettingsButton_Click(object sender, RoutedEventArgs e)
     {
         var dialog = new WpfOpenFileDialog
         {
@@ -146,7 +146,7 @@ public partial class MainWindow
         }
     }
 
-    private async void RestoreBackupButton_Click(object sender, RoutedEventArgs e)
+    internal async void RestoreBackupButton_Click(object sender, RoutedEventArgs e)
     {
         var dialog = new WpfOpenFileDialog
         {
@@ -202,7 +202,7 @@ public partial class MainWindow
         }
     }
 
-    private async void RunDiagnosticsButton_Click(object sender, RoutedEventArgs e)
+    internal async void RunDiagnosticsButton_Click(object sender, RoutedEventArgs e)
     {
         try
         {

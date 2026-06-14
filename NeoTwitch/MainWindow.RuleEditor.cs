@@ -389,7 +389,7 @@ public partial class MainWindow
         UpdateCloseBehaviorCards();
     }
 
-    private void CloseBehaviorRadio_Checked(object sender, RoutedEventArgs e)
+    internal void CloseBehaviorRadio_Checked(object sender, RoutedEventArgs e)
     {
         if (_initializingComponent || _loadingUi)
         {
@@ -541,7 +541,7 @@ public partial class MainWindow
         UpdateBackgroundLedPreviewTimerState();
     }
 
-    private void ThemeModeChanged(object sender, SelectionChangedEventArgs e)
+    internal void ThemeModeChanged(object sender, SelectionChangedEventArgs e)
     {
         if (_initializingComponent || _loadingUi)
         {

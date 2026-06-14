@@ -1,8 +1,10 @@
 using System.Diagnostics;
+using System.IO;
 using System.Windows;
 using NeoTwitch.Models;
 using NeoTwitch.Services;
 using NeoTwitch.ViewModels.Activity;
+using NeoTwitch.ViewModels.Library;
 using NeoTwitch.ViewModels.Obs;
 using WpfMessageBox = System.Windows.MessageBox;
 
@@ -325,6 +327,160 @@ public partial class MainWindow
             AddLog($"OBS: {ex.Message}", ActivityLogKind.Important);
             UpdateObsStatusText();
         }
+    }
+
+    private async Task<ObsMediaHideRequest?> SendRuleObsMediaAsync(EventRule rule, CancellationToken cancellationToken)
+    {
+        if (!rule.SendObsMedia || !_config.Obs.IsConfigured)
+        {
+            return null;
+        }
+
+        var asset = ResolveRuleObsMediaAsset(rule);
+        if (asset is null)
+        {
+            AddLog($"OBS: la regla '{rule.Name}' no tiene un archivo valido para mostrar.", ActivityLogKind.Important);
+            return null;
+        }
+
+        try
+        {
+            if (!_obsService.IsConnected)
+            {
+                await ConnectObsAsync();
+            }
+
+            if (!_obsService.IsConnected)
+            {
+                return null;
+            }
+
+            var sceneName = rule.SendObsScene && !string.IsNullOrWhiteSpace(rule.ObsSceneName)
+                ? rule.ObsSceneName.Trim()
+                : _obsService.CurrentScene;
+
+            if (string.IsNullOrWhiteSpace(sceneName))
+            {
+                AddLog("OBS: no hay una escena actual para mostrar el medio.", ActivityLogKind.Important);
+                return null;
+            }
+
+            var sourceName = rule.ObsMediaKind == ObsMediaKind.Image
+                ? "Neo Twitch - Imagen de alerta"
+                : "Neo Twitch - Video de alerta";
+            var result = await _obsService.ShowMediaSourceAsync(
+                sceneName,
+                sourceName,
+                asset.FilePath,
+                rule.ObsMediaKind,
+                cancellationToken);
+
+            ApplyObsResult(result);
+            MarkObsMediaAssetUsed(rule.ObsMediaKind, asset);
+            AddLog($"OBS: medio '{asset.DisplayName}' mostrado en '{sceneName}'.", ActivityLogKind.Obs);
+
+            return new ObsMediaHideRequest(
+                sceneName,
+                sourceName,
+                TimeSpan.FromMilliseconds(rule.ObsMediaDurationMs),
+                DateTimeOffset.UtcNow);
+        }
+        catch (OperationCanceledException)
+        {
+            throw;
+        }
+        catch (Exception ex)
+        {
+            _obsConnectionError = ex.Message;
+            CrashReporter.Log(ex, $"No se pudo mostrar medio OBS para la regla '{rule.Name}'.");
+            AddLog($"OBS: {ex.Message}", ActivityLogKind.Important);
+            UpdateObsStatusText();
+            return null;
+        }
+    }
+
+    private MediaAssetConfig? ResolveRuleObsMediaAsset(EventRule rule)
+    {
+        if (!Dispatcher.CheckAccess())
+        {
+            return Dispatcher.Invoke(() => ResolveRuleObsMediaAsset(rule));
+        }
+
+        var library = rule.ObsMediaKind == ObsMediaKind.Image
+            ? _config.ImageLibrary
+            : _config.VideoLibrary;
+
+        if (rule.ObsMediaSourceMode == MediaSourceMode.Group)
+        {
+            var candidates = library
+                .Where(asset => string.Equals(asset.GroupId, rule.ObsMediaGroupId, StringComparison.OrdinalIgnoreCase))
+                .Where(asset => File.Exists(asset.FilePath))
+                .ToArray();
+
+            return candidates.Length == 0
+                ? null
+                : candidates[_previewRandom.Next(candidates.Length)];
+        }
+
+        return library
+            .Where(asset => string.Equals(asset.Id, rule.ObsMediaAssetId, StringComparison.OrdinalIgnoreCase))
+            .FirstOrDefault(asset => File.Exists(asset.FilePath));
+    }
+
+    private void MarkObsMediaAssetUsed(ObsMediaKind kind, MediaAssetConfig asset)
+    {
+        if (!Dispatcher.CheckAccess())
+        {
+            _ = Dispatcher.InvokeAsync(() => MarkObsMediaAssetUsed(kind, asset));
+            return;
+        }
+
+        asset.LastUsedAt = DateTimeOffset.Now;
+        SaveConfig();
+        RefreshMediaLibraryView(kind == ObsMediaKind.Image ? MediaLibraryKind.Image : MediaLibraryKind.Video);
+    }
+
+    private async Task HideRuleObsMediaAfterDelayAsync(ObsMediaHideRequest request, CancellationToken cancellationToken)
+    {
+        try
+        {
+            var remaining = request.Duration - (DateTimeOffset.UtcNow - request.StartedAt);
+            if (remaining > TimeSpan.Zero)
+            {
+                await Task.Delay(remaining, cancellationToken);
+            }
+
+            await HideRuleObsMediaAsync(request, CancellationToken.None);
+        }
+        catch (OperationCanceledException)
+        {
+            // The caller hides the media immediately when the alert is cancelled.
+        }
+    }
+
+    private async Task HideRuleObsMediaAsync(ObsMediaHideRequest request, CancellationToken cancellationToken)
+    {
+        if (!_config.Obs.IsConfigured)
+        {
+            return;
+        }
+
+        if (!_obsService.IsConnected)
+        {
+            await ConnectObsAsync();
+        }
+
+        if (!_obsService.IsConnected)
+        {
+            return;
+        }
+
+        var result = await _obsService.HideSceneSourceAsync(
+            request.SceneName,
+            request.SourceName,
+            cancellationToken);
+        ApplyObsResult(result);
+        AddLog($"OBS: medio oculto en '{request.SceneName}'.", ActivityLogKind.Obs);
     }
 
     private void UpdateObsStatusText()

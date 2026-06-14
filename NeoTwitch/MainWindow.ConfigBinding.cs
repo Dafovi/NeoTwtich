@@ -127,6 +127,13 @@ public partial class MainWindow
             ObsSceneDelayBox.Text = rule.ObsSceneDelayMs.ToString();
             ObsReturnCheck.IsChecked = rule.ObsReturnToPreviousScene;
             ObsReturnDelayBox.Text = rule.ObsReturnDelayMs.ToString();
+            ObsMediaCheck.IsChecked = rule.SendObsMedia;
+            RuleObsMediaKindBox.SelectedValue = rule.ObsMediaKind;
+            RuleObsMediaSourceModeBox.SelectedValue = rule.ObsMediaSourceMode;
+            RefreshRuleObsMediaChoices();
+            RuleObsMediaAssetBox.SelectedValue = rule.ObsMediaAssetId;
+            RuleObsMediaGroupBox.SelectedValue = rule.ObsMediaGroupId;
+            ObsMediaDurationBox.Text = rule.ObsMediaDurationMs.ToString();
             UseLightsCheck.IsChecked = rule.UseLights;
             PlayAudioCheck.IsChecked = rule.PlayAudio;
             _ruleAudioMode = rule.AudioSourceMode;
@@ -271,6 +278,17 @@ public partial class MainWindow
         rule.ObsSceneDelayMs = ParseInt(ObsSceneDelayBox.Text, 0, 0, 600000);
         rule.ObsReturnToPreviousScene = ObsReturnCheck.IsChecked == true;
         rule.ObsReturnDelayMs = ParseInt(ObsReturnDelayBox.Text, 15000, 0, 600000);
+        rule.SendObsMedia = ObsMediaCheck.IsChecked == true;
+        rule.ObsMediaKind = RuleObsMediaKindBox.SelectedValue is ObsMediaKind mediaKind
+            ? mediaKind
+            : ObsMediaKind.Image;
+        rule.ObsMediaSourceMode = RuleObsMediaSourceModeBox.SelectedValue is MediaSourceMode mediaSourceMode
+            ? mediaSourceMode
+            : MediaSourceMode.Single;
+        RefreshRuleObsMediaChoices();
+        rule.ObsMediaAssetId = RuleObsMediaAssetBox.SelectedValue as string ?? "";
+        rule.ObsMediaGroupId = RuleObsMediaGroupBox.SelectedValue as string ?? "";
+        rule.ObsMediaDurationMs = ParseInt(ObsMediaDurationBox.Text, 5000, 250, 600000);
         rule.UseLights = UseLightsCheck.IsChecked == true;
         rule.PlayAudio = PlayAudioCheck.IsChecked == true;
         rule.AudioSourceMode = _ruleAudioMode;
@@ -354,7 +372,16 @@ public partial class MainWindow
         var alexaAvailable = _config.Alexa.IsConfigured;
         var sendAlexa = AlexaEventCheck.IsChecked == true;
         var obsAvailable = _config.Obs.IsConfigured;
-        var sendObs = ObsSceneCheck.IsChecked == true;
+        var sendObsScene = ObsSceneCheck.IsChecked == true;
+        var sendObsMedia = ObsMediaCheck.IsChecked == true;
+        var obsMediaKind = RuleObsMediaKindBox.SelectedValue is ObsMediaKind selectedObsMediaKind
+            ? selectedObsMediaKind
+            : ObsMediaKind.Image;
+        var obsMediaSourceMode = RuleObsMediaSourceModeBox.SelectedValue is MediaSourceMode selectedObsMediaSourceMode
+            ? selectedObsMediaSourceMode
+            : MediaSourceMode.Single;
+        var obsMediaHasAssets = (obsMediaKind == ObsMediaKind.Image ? _config.ImageLibrary.Count : _config.VideoLibrary.Count) > 0;
+        var obsMediaHasGroups = (obsMediaKind == ObsMediaKind.Image ? _config.ImageGroups.Count : _config.VideoGroups.Count) > 0;
         var pattern = PatternBox.SelectedValue is LightPattern selectedPattern
             ? selectedPattern
             : LightPattern.Pulse;
@@ -373,8 +400,15 @@ public partial class MainWindow
         SetVisible(alexaAvailable, AlexaActionCard);
         SetVisible(alexaAvailable && sendAlexa, AlexaDetailsPanel, AlexaRuleHintText);
         SetVisible(obsAvailable, ObsActionCard);
-        SetVisible(obsAvailable && sendObs, ObsDetailsPanel);
-        SetVisible(obsAvailable && sendObs && _obsSceneRows.Count == 0, RuleObsEmptyHintText);
+        SetVisible(obsAvailable, ObsDetailsPanel);
+        SetVisible(obsAvailable && sendObsScene, ObsSceneDetailsPanel);
+        SetVisible(obsAvailable && sendObsScene && _obsSceneRows.Count == 0, RuleObsEmptyHintText);
+        SetVisible(obsAvailable && sendObsMedia, ObsMediaDetailsPanel);
+        SetVisible(obsAvailable && sendObsMedia && obsMediaSourceMode == MediaSourceMode.Single && obsMediaHasAssets, RuleObsMediaAssetPanel);
+        SetVisible(obsAvailable && sendObsMedia && obsMediaSourceMode == MediaSourceMode.Group && obsMediaHasGroups, RuleObsMediaGroupPanel);
+        SetVisible(obsAvailable && sendObsMedia
+            && ((obsMediaSourceMode == MediaSourceMode.Single && !obsMediaHasAssets)
+                || (obsMediaSourceMode == MediaSourceMode.Group && !obsMediaHasGroups)), RuleObsMediaEmptyHintText);
 
         SetVisible(useLights, LightConfigurationPanel, LightOptionsSeparator, TargetPinsLabel, TargetPinsBox, PatternGrid, RuleLedPreviewPanel);
         SetVisible(useLights && UsesPrimaryColor(pattern), PrimaryColorPanel);
@@ -385,8 +419,37 @@ public partial class MainWindow
         SetVisible(useLights && UsesCycle(pattern), CycleGrid, CycleSlider);
         SetVisible(useLights && UsesStep(pattern), StepGrid, StepSlider);
         UpdateRuleAudioModeSelection();
+        RefreshRuleObsMediaChoices();
         UpdateRuleLedPreviewFrame();
         UpdateRuleLedPreviewTimerState();
+    }
+
+    private void RefreshRuleObsMediaChoices()
+    {
+        if (_initializingComponent)
+        {
+            return;
+        }
+
+        var kind = RuleObsMediaKindBox.SelectedValue is ObsMediaKind selectedKind
+            ? selectedKind
+            : ObsMediaKind.Image;
+
+        if (kind == ObsMediaKind.Image)
+        {
+            RuleObsMediaAssetBox.ItemsSource = _config.ImageLibrary;
+            RuleObsMediaGroupBox.ItemsSource = _config.ImageGroups;
+        }
+        else
+        {
+            RuleObsMediaAssetBox.ItemsSource = _config.VideoLibrary;
+            RuleObsMediaGroupBox.ItemsSource = _config.VideoGroups;
+        }
+
+        RuleObsMediaAssetBox.DisplayMemberPath = nameof(MediaAssetConfig.DisplayName);
+        RuleObsMediaAssetBox.SelectedValuePath = nameof(MediaAssetConfig.Id);
+        RuleObsMediaGroupBox.DisplayMemberPath = nameof(MediaGroupConfig.Name);
+        RuleObsMediaGroupBox.SelectedValuePath = nameof(MediaGroupConfig.Id);
     }
 
     private void UpdateBackgroundOptionVisibility()

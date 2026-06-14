@@ -141,6 +141,8 @@ public partial class MainWindow
         var wasCancelled = false;
         var shouldRestoreBackground = false;
         ObsSceneRestoreRequest? obsRestore = null;
+        ObsMediaHideRequest? obsMediaHide = null;
+        Task? obsMediaHideTask = null;
 
         try
         {
@@ -155,6 +157,11 @@ public partial class MainWindow
             }
 
             obsRestore = await SendRuleObsSceneAsync(rule, effectCts.Token);
+            obsMediaHide = await SendRuleObsMediaAsync(rule, effectCts.Token);
+            if (obsMediaHide is not null)
+            {
+                obsMediaHideTask = HideRuleObsMediaAfterDelayAsync(obsMediaHide, effectCts.Token);
+            }
 
             AudioPlayback? playback = null;
             AudioAssetConfig? playbackAsset = null;
@@ -259,6 +266,26 @@ public partial class MainWindow
                 {
                     CrashReporter.Log(ex, "No se pudo restaurar el fondo despues de una regla.");
                     AddLog($"Fondo: {ex.Message}");
+                }
+            }
+
+            if (obsMediaHide is not null)
+            {
+                try
+                {
+                    if (wasCancelled)
+                    {
+                        await HideRuleObsMediaAsync(obsMediaHide, CancellationToken.None);
+                    }
+                    else if (obsMediaHideTask is not null)
+                    {
+                        await obsMediaHideTask;
+                    }
+                }
+                catch (Exception ex)
+                {
+                    CrashReporter.Log(ex, "No se pudo ocultar el medio OBS despues de una regla.");
+                    AddLog($"OBS: {ex.Message}", ActivityLogKind.Important);
                 }
             }
 

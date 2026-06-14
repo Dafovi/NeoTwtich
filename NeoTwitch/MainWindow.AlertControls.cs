@@ -104,9 +104,20 @@ public partial class MainWindow
     private WpfBorder ObsActionCard => AlertsView.ObsActionCard;
     private WpfCheckBox ObsSceneCheck => AlertsView.ObsSceneCheck;
     private WpfStackPanel ObsDetailsPanel => AlertsView.ObsDetailsPanel;
+    private WpfStackPanel ObsSceneDetailsPanel => AlertsView.ObsSceneDetailsPanel;
     private WpfComboBox RuleObsSceneBox => AlertsView.RuleObsSceneBox;
     private WpfTextBox ObsSceneDelayBox => AlertsView.ObsSceneDelayBox;
     private WpfCheckBox ObsReturnCheck => AlertsView.ObsReturnCheck;
     private WpfTextBox ObsReturnDelayBox => AlertsView.ObsReturnDelayBox;
     private WpfTextBlock RuleObsEmptyHintText => AlertsView.RuleObsEmptyHintText;
+    private WpfCheckBox ObsMediaCheck => AlertsView.ObsMediaCheck;
+    private WpfStackPanel ObsMediaDetailsPanel => AlertsView.ObsMediaDetailsPanel;
+    private WpfComboBox RuleObsMediaKindBox => AlertsView.RuleObsMediaKindBox;
+    private WpfComboBox RuleObsMediaSourceModeBox => AlertsView.RuleObsMediaSourceModeBox;
+    private WpfStackPanel RuleObsMediaAssetPanel => AlertsView.RuleObsMediaAssetPanel;
+    private WpfComboBox RuleObsMediaAssetBox => AlertsView.RuleObsMediaAssetBox;
+    private WpfStackPanel RuleObsMediaGroupPanel => AlertsView.RuleObsMediaGroupPanel;
+    private WpfComboBox RuleObsMediaGroupBox => AlertsView.RuleObsMediaGroupBox;
+    private WpfTextBox ObsMediaDurationBox => AlertsView.ObsMediaDurationBox;
+    private WpfTextBlock RuleObsMediaEmptyHintText => AlertsView.RuleObsMediaEmptyHintText;
 }

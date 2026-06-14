@@ -27,6 +27,12 @@ public sealed class EventRule : INotifyPropertyChanged
     private int _obsSceneDelayMs;
     private bool _obsReturnToPreviousScene = true;
     private int _obsReturnDelayMs = 15000;
+    private bool _sendObsMedia;
+    private ObsMediaKind _obsMediaKind = ObsMediaKind.Image;
+    private MediaSourceMode _obsMediaSourceMode = MediaSourceMode.Single;
+    private string _obsMediaAssetId = "";
+    private string _obsMediaGroupId = "";
+    private int _obsMediaDurationMs = 5000;
     private LightPattern _pattern = LightPattern.Pulse;
     private string _targetPins = "";
     private string _primaryColor = "#FF2D55";
@@ -230,6 +236,49 @@ public sealed class EventRule : INotifyPropertyChanged
         set => SetField(ref _obsReturnDelayMs, Math.Clamp(value, 0, 600000));
     }
 
+    public bool SendObsMedia
+    {
+        get => _sendObsMedia;
+        set
+        {
+            if (SetField(ref _sendObsMedia, value))
+            {
+                OnPropertyChanged(nameof(ActionsSummary));
+                OnPropertyChanged(nameof(ObsActionVisibility));
+            }
+        }
+    }
+
+    public ObsMediaKind ObsMediaKind
+    {
+        get => _obsMediaKind;
+        set => SetField(ref _obsMediaKind, value);
+    }
+
+    public MediaSourceMode ObsMediaSourceMode
+    {
+        get => _obsMediaSourceMode;
+        set => SetField(ref _obsMediaSourceMode, value);
+    }
+
+    public string ObsMediaAssetId
+    {
+        get => _obsMediaAssetId;
+        set => SetField(ref _obsMediaAssetId, value);
+    }
+
+    public string ObsMediaGroupId
+    {
+        get => _obsMediaGroupId;
+        set => SetField(ref _obsMediaGroupId, value);
+    }
+
+    public int ObsMediaDurationMs
+    {
+        get => _obsMediaDurationMs;
+        set => SetField(ref _obsMediaDurationMs, Math.Clamp(value, 250, 600000));
+    }
+
     public LightPattern Pattern
     {
         get => _pattern;
@@ -391,7 +440,7 @@ public sealed class EventRule : INotifyPropertyChanged
                 actions.Add("Alexa");
             }
 
-            if (SendObsScene)
+            if (SendObsScene || SendObsMedia)
             {
                 actions.Add("OBS");
             }
@@ -422,7 +471,7 @@ public sealed class EventRule : INotifyPropertyChanged
         ? "Alexa activa"
         : "Alexa configurada, pero esta desactivada o incompleta";
 
-    public Visibility ObsActionVisibility => SendObsScene ? Visibility.Visible : Visibility.Collapsed;
+    public Visibility ObsActionVisibility => SendObsScene || SendObsMedia ? Visibility.Visible : Visibility.Collapsed;
 
     public double ObsActionOpacity => ObsActionAvailable ? 1d : 0.32d;
 
@@ -484,6 +533,12 @@ public sealed class EventRule : INotifyPropertyChanged
             ObsSceneDelayMs = ObsSceneDelayMs,
             ObsReturnToPreviousScene = ObsReturnToPreviousScene,
             ObsReturnDelayMs = ObsReturnDelayMs,
+            SendObsMedia = SendObsMedia,
+            ObsMediaKind = ObsMediaKind,
+            ObsMediaSourceMode = ObsMediaSourceMode,
+            ObsMediaAssetId = ObsMediaAssetId,
+            ObsMediaGroupId = ObsMediaGroupId,
+            ObsMediaDurationMs = ObsMediaDurationMs,
             Pattern = Pattern,
             TargetPins = TargetPins,
             PrimaryColor = PrimaryColor,
@@ -542,6 +597,12 @@ public sealed class EventRule : INotifyPropertyChanged
 }
 
 public enum AudioSourceMode
+{
+    Single,
+    Group
+}
+
+public enum MediaSourceMode
 {
     Single,
     Group

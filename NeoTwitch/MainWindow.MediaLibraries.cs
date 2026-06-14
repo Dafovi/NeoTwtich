@@ -484,6 +484,7 @@ public partial class MainWindow
             }
 
             UpdateMediaFilterButtons(kind);
+            RefreshRuleObsMediaChoices();
         }
         finally
         {

@@ -969,7 +969,7 @@
                                                         <StackPanel Grid.Column="1">
                                                             <TextBlock Text="OBS"
                                                                        FontWeight="SemiBold" />
-                                                            <TextBlock Text="Cambia escena durante la alerta."
+                                                            <TextBlock Text="Cambia escenas o muestra imagenes/videos."
                                                                        Style="{StaticResource MutedText}"
                                                                        FontSize="12" />
                                                         </StackPanel>
@@ -981,44 +981,106 @@
                                                     </Grid>
                                                     <StackPanel x:Name="ObsDetailsPanel"
                                                                 Margin="42,12,0,0">
-                                                        <TextBlock Text="Escena de OBS"
-                                                                   Style="{StaticResource MutedText}" />
-                                                        <ComboBox x:Name="RuleObsSceneBox"
-                                                                  Margin="0,4,0,0"
-                                                                  SelectionChanged="RuleFieldChanged" />
+                                                        <StackPanel x:Name="ObsSceneDetailsPanel">
+                                                            <TextBlock Text="Escena de OBS"
+                                                                       Style="{StaticResource MutedText}" />
+                                                            <ComboBox x:Name="RuleObsSceneBox"
+                                                                      Margin="0,4,0,0"
+                                                                      SelectionChanged="RuleFieldChanged" />
 
-                                                        <Grid Margin="0,10,0,0">
-                                                            <Grid.ColumnDefinitions>
-                                                                <ColumnDefinition Width="*" />
-                                                                <ColumnDefinition Width="12" />
-                                                                <ColumnDefinition Width="150" />
-                                                                <ColumnDefinition Width="12" />
-                                                                <ColumnDefinition Width="170" />
-                                                            </Grid.ColumnDefinitions>
-                                                            <CheckBox x:Name="ObsReturnCheck"
-                                                                      Content="Volver a la escena anterior"
-                                                                      Checked="RuleFieldChanged"
-                                                                      Unchecked="RuleFieldChanged" />
-                                                            <StackPanel Grid.Column="2">
-                                                                <TextBlock Text="Esperar antes (ms)"
-                                                                           Style="{StaticResource MutedText}" />
-                                                                <TextBox x:Name="ObsSceneDelayBox"
-                                                                         TextChanged="RuleFieldChanged" />
-                                                            </StackPanel>
-                                                            <StackPanel Grid.Column="4">
-                                                                <TextBlock Text="Regresar despues de (ms)"
-                                                                           Style="{StaticResource MutedText}" />
-                                                                <TextBox x:Name="ObsReturnDelayBox"
-                                                                         TextChanged="RuleFieldChanged" />
-                                                            </StackPanel>
-                                                        </Grid>
+                                                            <Grid Margin="0,10,0,0">
+                                                                <Grid.ColumnDefinitions>
+                                                                    <ColumnDefinition Width="*" />
+                                                                    <ColumnDefinition Width="12" />
+                                                                    <ColumnDefinition Width="150" />
+                                                                    <ColumnDefinition Width="12" />
+                                                                    <ColumnDefinition Width="170" />
+                                                                </Grid.ColumnDefinitions>
+                                                                <CheckBox x:Name="ObsReturnCheck"
+                                                                          Content="Volver a la escena anterior"
+                                                                          Checked="RuleFieldChanged"
+                                                                          Unchecked="RuleFieldChanged" />
+                                                                <StackPanel Grid.Column="2">
+                                                                    <TextBlock Text="Esperar antes (ms)"
+                                                                               Style="{StaticResource MutedText}" />
+                                                                    <TextBox x:Name="ObsSceneDelayBox"
+                                                                             TextChanged="RuleFieldChanged" />
+                                                                </StackPanel>
+                                                                <StackPanel Grid.Column="4">
+                                                                    <TextBlock Text="Regresar despues de (ms)"
+                                                                               Style="{StaticResource MutedText}" />
+                                                                    <TextBox x:Name="ObsReturnDelayBox"
+                                                                             TextChanged="RuleFieldChanged" />
+                                                                </StackPanel>
+                                                            </Grid>
 
-                                                        <TextBlock x:Name="RuleObsEmptyHintText"
-                                                                   Text="Conecta OBS desde Conexiones para cargar las escenas disponibles."
-                                                                   Style="{StaticResource MutedText}"
-                                                                   FontSize="11"
-                                                                   TextWrapping="Wrap"
-                                                                   Margin="0,8,0,0" />
+                                                            <TextBlock x:Name="RuleObsEmptyHintText"
+                                                                       Text="Conecta OBS desde Conexiones para cargar las escenas disponibles."
+                                                                       Style="{StaticResource MutedText}"
+                                                                       FontSize="11"
+                                                                       TextWrapping="Wrap"
+                                                                       Margin="0,8,0,0" />
+                                                        </StackPanel>
+
+                                                        <CheckBox x:Name="ObsMediaCheck"
+                                                                  Content="Mostrar imagen o video"
+                                                                  Margin="0,14,0,0"
+                                                                  Checked="RuleFieldChanged"
+                                                                  Unchecked="RuleFieldChanged" />
+
+                                                        <StackPanel x:Name="ObsMediaDetailsPanel"
+                                                                    Margin="22,8,0,0">
+                                                            <Grid>
+                                                                <Grid.ColumnDefinitions>
+                                                                    <ColumnDefinition Width="*" />
+                                                                    <ColumnDefinition Width="12" />
+                                                                    <ColumnDefinition Width="*" />
+                                                                    <ColumnDefinition Width="12" />
+                                                                    <ColumnDefinition Width="150" />
+                                                                </Grid.ColumnDefinitions>
+                                                                <StackPanel>
+                                                                    <TextBlock Text="Tipo"
+                                                                               Style="{StaticResource MutedText}" />
+                                                                    <ComboBox x:Name="RuleObsMediaKindBox"
+                                                                              SelectionChanged="RuleFieldChanged" />
+                                                                </StackPanel>
+                                                                <StackPanel Grid.Column="2">
+                                                                    <TextBlock Text="Fuente"
+                                                                               Style="{StaticResource MutedText}" />
+                                                                    <ComboBox x:Name="RuleObsMediaSourceModeBox"
+                                                                              SelectionChanged="RuleFieldChanged" />
+                                                                </StackPanel>
+                                                                <StackPanel Grid.Column="4">
+                                                                    <TextBlock Text="Duracion (ms)"
+                                                                               Style="{StaticResource MutedText}" />
+                                                                    <TextBox x:Name="ObsMediaDurationBox"
+                                                                             TextChanged="RuleFieldChanged" />
+                                                                </StackPanel>
+                                                            </Grid>
+
+                                                            <StackPanel x:Name="RuleObsMediaAssetPanel"
+                                                                        Margin="0,10,0,0">
+                                                                <TextBlock Text="Archivo"
+                                                                           Style="{StaticResource MutedText}" />
+                                                                <ComboBox x:Name="RuleObsMediaAssetBox"
+                                                                          SelectionChanged="RuleFieldChanged" />
+                                                            </StackPanel>
+
+                                                            <StackPanel x:Name="RuleObsMediaGroupPanel"
+                                                                        Margin="0,10,0,0">
+                                                                <TextBlock Text="Grupo"
+                                                                           Style="{StaticResource MutedText}" />
+                                                                <ComboBox x:Name="RuleObsMediaGroupBox"
+                                                                          SelectionChanged="RuleFieldChanged" />
+                                                            </StackPanel>
+
+                                                            <TextBlock x:Name="RuleObsMediaEmptyHintText"
+                                                                       Text="Agrega imagenes o videos en sus bibliotecas para usarlos en OBS."
+                                                                       Style="{StaticResource MutedText}"
+                                                                       FontSize="11"
+                                                                       TextWrapping="Wrap"
+                                                                       Margin="0,8,0,0" />
+                                                        </StackPanel>
                                                     </StackPanel>
                                                 </StackPanel>
                                             </Border>

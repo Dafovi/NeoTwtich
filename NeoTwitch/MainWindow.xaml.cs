@@ -120,6 +120,16 @@ public partial class MainWindow : Window
         new("Claro", "Light"),
         new("Oscuro", "Dark")
     ];
+    private readonly UiOption<ObsMediaKind>[] _obsMediaKindOptions =
+    [
+        new("Imagen", ObsMediaKind.Image),
+        new("Video", ObsMediaKind.Video)
+    ];
+    private readonly UiOption<MediaSourceMode>[] _mediaSourceModeOptions =
+    [
+        new("Un archivo", MediaSourceMode.Single),
+        new("Grupo aleatorio", MediaSourceMode.Group)
+    ];
 
     private AppConfig _config = AppConfig.CreateDefault();
     private bool _initializingComponent;
@@ -259,6 +269,16 @@ public partial class MainWindow : Window
             RuleObsSceneBox.ItemsSource = _obsSceneRows;
             RuleObsSceneBox.DisplayMemberPath = nameof(ObsSceneRow.Name);
             RuleObsSceneBox.SelectedValuePath = nameof(ObsSceneRow.Name);
+            RuleObsMediaKindBox.ItemsSource = _obsMediaKindOptions;
+            RuleObsMediaKindBox.DisplayMemberPath = nameof(UiOption<ObsMediaKind>.Label);
+            RuleObsMediaKindBox.SelectedValuePath = nameof(UiOption<ObsMediaKind>.Value);
+            RuleObsMediaSourceModeBox.ItemsSource = _mediaSourceModeOptions;
+            RuleObsMediaSourceModeBox.DisplayMemberPath = nameof(UiOption<MediaSourceMode>.Label);
+            RuleObsMediaSourceModeBox.SelectedValuePath = nameof(UiOption<MediaSourceMode>.Value);
+            RuleObsMediaAssetBox.DisplayMemberPath = nameof(MediaAssetConfig.DisplayName);
+            RuleObsMediaAssetBox.SelectedValuePath = nameof(MediaAssetConfig.Id);
+            RuleObsMediaGroupBox.DisplayMemberPath = nameof(MediaGroupConfig.Name);
+            RuleObsMediaGroupBox.SelectedValuePath = nameof(MediaGroupConfig.Id);
             NewAudioAlertBox.ItemsSource = AudioAlertChoices;
             NewAudioAlertBox.DisplayMemberPath = nameof(AudioAlertChoice.Name);
             NewAudioAlertBox.SelectedValuePath = nameof(AudioAlertChoice.Id);

@@ -12,7 +12,7 @@ namespace NeoTwitch;
 
 public partial class MainWindow
 {
-    private void AddRuleButton_Click(object sender, RoutedEventArgs e)
+    internal void AddRuleButton_Click(object sender, RoutedEventArgs e)
     {
         var rule = new EventRule
         {
@@ -82,7 +82,7 @@ public partial class MainWindow
         SaveConfig();
     }
 
-    private void DuplicateRuleButton_Click(object sender, RoutedEventArgs e)
+    internal void DuplicateRuleButton_Click(object sender, RoutedEventArgs e)
     {
         if (RulesList.SelectedItem is not EventRule rule)
         {
@@ -98,7 +98,7 @@ public partial class MainWindow
         ScheduleTwitchSubscriptionRefreshIfNeeded();
     }
 
-    private void RemoveRuleButton_Click(object sender, RoutedEventArgs e)
+    internal void RemoveRuleButton_Click(object sender, RoutedEventArgs e)
     {
         if (RulesList.SelectedItem is not EventRule rule)
         {
@@ -135,7 +135,7 @@ public partial class MainWindow
         ScheduleTwitchSubscriptionRefreshIfNeeded();
     }
 
-    private async void RuleTestButton_Click(object sender, RoutedEventArgs e)
+    internal async void RuleTestButton_Click(object sender, RoutedEventArgs e)
     {
         try
         {
@@ -334,7 +334,7 @@ public partial class MainWindow
         return actions.Count == 0 ? "ninguna accion activa" : string.Join(", ", actions);
     }
 
-    private void RuleAudioModeButton_Click(object sender, RoutedEventArgs e)
+    internal void RuleAudioModeButton_Click(object sender, RoutedEventArgs e)
     {
         if (sender is not System.Windows.Controls.Button button
             || button.Tag is not string value
@@ -350,7 +350,7 @@ public partial class MainWindow
         SaveConfig();
     }
 
-    private void RulesList_SelectionChanged(object sender, SelectionChangedEventArgs e)
+    internal void RulesList_SelectionChanged(object sender, SelectionChangedEventArgs e)
     {
         if (_initializingComponent || _loadingUi)
         {
@@ -447,7 +447,7 @@ public partial class MainWindow
         }
     }
 
-    private void RuleFieldChanged(object sender, RoutedEventArgs e)
+    internal void RuleFieldChanged(object sender, RoutedEventArgs e)
     {
         if (_initializingComponent || _loadingRule)
         {
@@ -463,7 +463,7 @@ public partial class MainWindow
         ScheduleTwitchSubscriptionRefreshIfNeeded();
     }
 
-    private void EventKindTile_Click(object sender, RoutedEventArgs e)
+    internal void EventKindTile_Click(object sender, RoutedEventArgs e)
     {
         if (sender is not System.Windows.Controls.Button button
             || button.Tag is not string value
@@ -476,7 +476,7 @@ public partial class MainWindow
         UpdateEventKindTileSelection();
     }
 
-    private void PatternTile_Click(object sender, RoutedEventArgs e)
+    internal void PatternTile_Click(object sender, RoutedEventArgs e)
     {
         if (sender is not System.Windows.Controls.Button button
             || button.Tag is not string value
@@ -531,7 +531,7 @@ public partial class MainWindow
         UpdateBackgroundLedPreviewTimerState();
     }
 
-    private void RuleLedPreviewPanel_IsVisibleChanged(object sender, DependencyPropertyChangedEventArgs e)
+    internal void RuleLedPreviewPanel_IsVisibleChanged(object sender, DependencyPropertyChangedEventArgs e)
     {
         UpdateRuleLedPreviewTimerState();
     }
@@ -634,17 +634,17 @@ public partial class MainWindow
         await ExitApplicationAsync();
     }
 
-    private void PrimaryColorButton_Click(object sender, RoutedEventArgs e)
+    internal void PrimaryColorButton_Click(object sender, RoutedEventArgs e)
     {
         PickColor(PrimaryColorBox);
     }
 
-    private void SecondaryColorButton_Click(object sender, RoutedEventArgs e)
+    internal void SecondaryColorButton_Click(object sender, RoutedEventArgs e)
     {
         PickColor(SecondaryColorBox);
     }
 
-    private void TertiaryColorButton_Click(object sender, RoutedEventArgs e)
+    internal void TertiaryColorButton_Click(object sender, RoutedEventArgs e)
     {
         PickColor(TertiaryColorBox);
     }
@@ -711,7 +711,7 @@ public partial class MainWindow
         _activity.Clear();
     }
 
-    private void RuleSearchBox_TextChanged(object sender, TextChangedEventArgs e)
+    internal void RuleSearchBox_TextChanged(object sender, TextChangedEventArgs e)
     {
         if (_loadingUi || sender is not System.Windows.Controls.TextBox textBox)
         {
@@ -722,7 +722,7 @@ public partial class MainWindow
         RefreshRulesView();
     }
 
-    private void RuleStatusFilterButton_Click(object sender, RoutedEventArgs e)
+    internal void RuleStatusFilterButton_Click(object sender, RoutedEventArgs e)
     {
         if (_loadingUi || sender is not ToggleButton button)
         {
@@ -745,7 +745,7 @@ public partial class MainWindow
         RefreshRulesView();
     }
 
-    private void RuleCategoryFilterBox_SelectionChanged(object sender, SelectionChangedEventArgs e)
+    internal void RuleCategoryFilterBox_SelectionChanged(object sender, SelectionChangedEventArgs e)
     {
         if (_loadingUi)
         {

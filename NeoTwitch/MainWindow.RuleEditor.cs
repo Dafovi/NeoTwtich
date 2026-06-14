@@ -350,6 +350,39 @@ public partial class MainWindow
         SaveConfig();
     }
 
+    internal void RuleObsMediaKindButton_Click(object sender, RoutedEventArgs e)
+    {
+        if (sender is not System.Windows.Controls.Button button
+            || button.Tag is not string value
+            || !Enum.TryParse<ObsMediaKind>(value, out var kind))
+        {
+            return;
+        }
+
+        RuleObsMediaKindBox.SelectedValue = kind;
+        RefreshRuleObsMediaChoices();
+        UpdateRuleObsMediaModeSelection();
+        UpdateRuleOptionVisibility();
+        SaveCurrentRuleFromFields();
+        SaveConfig();
+    }
+
+    internal void RuleObsMediaSourceModeButton_Click(object sender, RoutedEventArgs e)
+    {
+        if (sender is not System.Windows.Controls.Button button
+            || button.Tag is not string value
+            || !Enum.TryParse<MediaSourceMode>(value, out var mode))
+        {
+            return;
+        }
+
+        RuleObsMediaSourceModeBox.SelectedValue = mode;
+        UpdateRuleObsMediaModeSelection();
+        UpdateRuleOptionVisibility();
+        SaveCurrentRuleFromFields();
+        SaveConfig();
+    }
+
     internal void RulesList_SelectionChanged(object sender, SelectionChangedEventArgs e)
     {
         if (_initializingComponent || _loadingUi)

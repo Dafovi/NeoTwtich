@@ -82,6 +82,7 @@ public partial class MainWindow
     private WpfSlider StepSlider => AlertsView.StepSlider;
     private WpfBorder RuleLedPreviewPanel => AlertsView.RuleLedPreviewPanel;
     private WpfItemsControl RuleLedPreviewList => AlertsView.RuleLedPreviewList;
+    private WpfBorder AudioActionCard => AlertsView.AudioActionCard;
     private WpfCheckBox PlayAudioCheck => AlertsView.PlayAudioCheck;
     private WpfStackPanel AudioDetailsPanel => AlertsView.AudioDetailsPanel;
     private WpfTextBlock AudioLabel => AlertsView.AudioLabel;
@@ -93,6 +94,7 @@ public partial class MainWindow
     private WpfStackPanel RuleAudioGroupPanel => AlertsView.RuleAudioGroupPanel;
     private WpfComboBox RuleAudioGroupBox => AlertsView.RuleAudioGroupBox;
     private WpfTextBlock RuleAudioEmptyHintText => AlertsView.RuleAudioEmptyHintText;
+    private WpfBorder ChatActionCard => AlertsView.ChatActionCard;
     private WpfCheckBox ChatMessageCheck => AlertsView.ChatMessageCheck;
     private WpfStackPanel ChatDetailsPanel => AlertsView.ChatDetailsPanel;
     private WpfTextBlock ChatMessageLabel => AlertsView.ChatMessageLabel;
@@ -106,6 +108,7 @@ public partial class MainWindow
     private WpfStackPanel ObsDetailsPanel => AlertsView.ObsDetailsPanel;
     private WpfStackPanel ObsSceneDetailsPanel => AlertsView.ObsSceneDetailsPanel;
     private WpfComboBox RuleObsSceneBox => AlertsView.RuleObsSceneBox;
+    private WpfGrid ObsSceneTimingGrid => AlertsView.ObsSceneTimingGrid;
     private WpfTextBox ObsSceneDelayBox => AlertsView.ObsSceneDelayBox;
     private WpfCheckBox ObsReturnCheck => AlertsView.ObsReturnCheck;
     private WpfTextBox ObsReturnDelayBox => AlertsView.ObsReturnDelayBox;
@@ -113,7 +116,11 @@ public partial class MainWindow
     private WpfCheckBox ObsMediaCheck => AlertsView.ObsMediaCheck;
     private WpfStackPanel ObsMediaDetailsPanel => AlertsView.ObsMediaDetailsPanel;
     private WpfComboBox RuleObsMediaKindBox => AlertsView.RuleObsMediaKindBox;
+    private WpfButton RuleObsImageModeButton => AlertsView.RuleObsImageModeButton;
+    private WpfButton RuleObsVideoModeButton => AlertsView.RuleObsVideoModeButton;
     private WpfComboBox RuleObsMediaSourceModeBox => AlertsView.RuleObsMediaSourceModeBox;
+    private WpfButton RuleObsSingleMediaModeButton => AlertsView.RuleObsSingleMediaModeButton;
+    private WpfButton RuleObsGroupMediaModeButton => AlertsView.RuleObsGroupMediaModeButton;
     private WpfStackPanel RuleObsMediaAssetPanel => AlertsView.RuleObsMediaAssetPanel;
     private WpfComboBox RuleObsMediaAssetBox => AlertsView.RuleObsMediaAssetBox;
     private WpfStackPanel RuleObsMediaGroupPanel => AlertsView.RuleObsMediaGroupPanel;

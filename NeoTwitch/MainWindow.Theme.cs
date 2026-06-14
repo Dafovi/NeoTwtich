@@ -87,6 +87,7 @@ public partial class MainWindow
         UpdatePatternTileSelection();
         UpdateBackgroundPatternTileSelection();
         UpdateRuleAudioModeSelection();
+        UpdateRuleObsMediaModeSelection();
         UpdateAudioFilterButtons();
         UpdateMediaFilterButtons(MediaLibraryKind.Image);
         UpdateMediaFilterButtons(MediaLibraryKind.Video);
@@ -449,6 +450,27 @@ public partial class MainWindow
         button.Background = active ? TranslucentBrushFrom(accentColor) : palette.Input;
         button.Foreground = active ? FrozenBrushFrom(accentColor) : palette.Text;
         button.BorderBrush = active ? FrozenBrushFrom(accentColor) : palette.Border;
+    }
+
+    private void UpdateRuleObsMediaModeSelection()
+    {
+        if (_initializingComponent)
+        {
+            return;
+        }
+
+        var palette = _config.DarkMode ? ThemePalette.Dark : ThemePalette.Light;
+        var mediaKind = RuleObsMediaKindBox.SelectedValue is ObsMediaKind kind
+            ? kind
+            : ObsMediaKind.Image;
+        var sourceMode = RuleObsMediaSourceModeBox.SelectedValue is MediaSourceMode mode
+            ? mode
+            : MediaSourceMode.Single;
+
+        ApplyRuleAudioModeButtonTheme(RuleObsImageModeButton, mediaKind == ObsMediaKind.Image, "#37C7F3", palette);
+        ApplyRuleAudioModeButtonTheme(RuleObsVideoModeButton, mediaKind == ObsMediaKind.Video, "#B56CFF", palette);
+        ApplyRuleAudioModeButtonTheme(RuleObsSingleMediaModeButton, sourceMode == MediaSourceMode.Single, "#14B8A6", palette);
+        ApplyRuleAudioModeButtonTheme(RuleObsGroupMediaModeButton, sourceMode == MediaSourceMode.Group, "#22C55E", palette);
     }
 
     private IEnumerable<System.Windows.Controls.Button> PatternTileButtons()

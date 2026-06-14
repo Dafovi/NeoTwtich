@@ -62,6 +62,7 @@ public partial class MainWindow : Window
     private readonly ObservableCollection<MediaLibraryRow> _videoLibraryRows = [];
     private readonly ObservableCollection<MediaGroupRow> _videoGroupRows = [];
     private readonly ObservableCollection<ObsSceneRow> _obsSceneRows = [];
+    private readonly ObservableCollection<ObsSceneChoice> _obsSceneChoices = [];
     private readonly ObservableCollection<RuleLedPreviewDot> _ruleLedPreviewDots = [];
     private readonly ObservableCollection<RuleLedPreviewDot> _backgroundLedPreviewDots = [];
     private readonly CollectionViewSource _activityViewSource = new();
@@ -266,9 +267,9 @@ public partial class MainWindow : Window
             RuleAudioGroupBox.ItemsSource = _config.AudioGroups;
             RuleAudioGroupBox.DisplayMemberPath = nameof(AudioGroupConfig.Name);
             RuleAudioGroupBox.SelectedValuePath = nameof(AudioGroupConfig.Id);
-            RuleObsSceneBox.ItemsSource = _obsSceneRows;
-            RuleObsSceneBox.DisplayMemberPath = nameof(ObsSceneRow.Name);
-            RuleObsSceneBox.SelectedValuePath = nameof(ObsSceneRow.Name);
+            RuleObsSceneBox.ItemsSource = _obsSceneChoices;
+            RuleObsSceneBox.DisplayMemberPath = nameof(ObsSceneChoice.Label);
+            RuleObsSceneBox.SelectedValuePath = nameof(ObsSceneChoice.Name);
             RuleObsMediaKindBox.ItemsSource = _obsMediaKindOptions;
             RuleObsMediaKindBox.DisplayMemberPath = nameof(UiOption<ObsMediaKind>.Label);
             RuleObsMediaKindBox.SelectedValuePath = nameof(UiOption<ObsMediaKind>.Value);
@@ -306,6 +307,7 @@ public partial class MainWindow : Window
             VersionText.Text = $"V{VersionCheckService.CurrentVersionText}";
             ConfigureNavigationIcons();
             ConfigureActionIcons();
+            ArrangeAlertActionCards();
             RefreshPortList(choosePreferred: false);
         }
         finally
@@ -330,6 +332,39 @@ public partial class MainWindow : Window
         NavObsButton.Content = CreateNavigationItem("Assets/Icons/nav_obs.png", "OBS");
         NavPreferencesButton.Content = CreateNavigationItem("Assets/Icons/nav_settings.png", "Configuracion");
         NavActivityButton.Content = CreateNavigationItem("Assets/Icons/nav_activity.png", "Actividad");
+    }
+
+    private void ArrangeAlertActionCards()
+    {
+        if (ObsActionCard.Parent is not StackPanel parent)
+        {
+            return;
+        }
+
+        var insertIndex = parent.Children.IndexOf(UseLightsActionCard);
+        if (insertIndex < 0)
+        {
+            return;
+        }
+
+        var orderedCards = new UIElement[]
+        {
+            ObsActionCard,
+            AudioActionCard,
+            ChatActionCard,
+            UseLightsActionCard,
+            AlexaActionCard
+        };
+
+        foreach (var card in orderedCards)
+        {
+            parent.Children.Remove(card);
+        }
+
+        for (var index = 0; index < orderedCards.Length; index++)
+        {
+            parent.Children.Insert(insertIndex + index, orderedCards[index]);
+        }
     }
 
     private static System.Windows.Shapes.Path CreateNavigationIcon(string data)

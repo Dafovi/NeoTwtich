@@ -555,6 +555,8 @@ public partial class MainWindow
                 scene.Name.Length > 24 ? $"{scene.Name[..24]}..." : scene.Name));
         }
 
+        RefreshObsSceneChoices();
+
         if (RulesList.SelectedItem is EventRule rule
             && !string.IsNullOrWhiteSpace(rule.ObsSceneName)
             && _obsSceneRows.Any(scene => string.Equals(scene.Name, rule.ObsSceneName, StringComparison.OrdinalIgnoreCase)))
@@ -570,5 +572,20 @@ public partial class MainWindow
     private string ObsConnectionSignature()
     {
         return $"{_config.Obs.Enabled}|{_config.Obs.Host.Trim()}|{_config.Obs.Port}|{_config.Obs.Password}";
+    }
+
+    private void RefreshObsSceneChoices()
+    {
+        var selected = RuleObsSceneBox.SelectedValue as string ?? "";
+        _obsSceneChoices.Clear();
+        _obsSceneChoices.Add(new ObsSceneChoice("", "Mantener escena actual"));
+        foreach (var scene in _obsSceneRows)
+        {
+            _obsSceneChoices.Add(new ObsSceneChoice(scene.Name, scene.Name));
+        }
+
+        RuleObsSceneBox.SelectedValue = _obsSceneChoices.Any(choice => string.Equals(choice.Name, selected, StringComparison.OrdinalIgnoreCase))
+            ? selected
+            : "";
     }
 }

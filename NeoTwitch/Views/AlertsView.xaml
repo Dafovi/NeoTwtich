@@ -771,7 +771,8 @@
                                                 </StackPanel>
                                             </Border>
 
-                                            <Border BorderBrush="{DynamicResource ThemeBorderBrush}"
+                                            <Border x:Name="AudioActionCard"
+                                                    BorderBrush="{DynamicResource ThemeBorderBrush}"
                                                     BorderThickness="1"
                                                     CornerRadius="12"
                                                     Padding="12"
@@ -861,7 +862,8 @@
                                                 </StackPanel>
                                             </Border>
 
-                                            <Border BorderBrush="{DynamicResource ThemeBorderBrush}"
+                                            <Border x:Name="ChatActionCard"
+                                                    BorderBrush="{DynamicResource ThemeBorderBrush}"
                                                     BorderThickness="1"
                                                     CornerRadius="12"
                                                     Padding="12"
@@ -988,7 +990,8 @@
                                                                       Margin="0,4,0,0"
                                                                       SelectionChanged="RuleFieldChanged" />
 
-                                                            <Grid Margin="0,10,0,0">
+                                                            <Grid x:Name="ObsSceneTimingGrid"
+                                                                  Margin="0,10,0,0">
                                                                 <Grid.ColumnDefinitions>
                                                                     <ColumnDefinition Width="*" />
                                                                     <ColumnDefinition Width="12" />
@@ -1030,33 +1033,56 @@
 
                                                         <StackPanel x:Name="ObsMediaDetailsPanel"
                                                                     Margin="22,8,0,0">
-                                                            <Grid>
+                                                            <TextBlock Text="Tipo de medio"
+                                                                       Style="{StaticResource MutedText}" />
+                                                            <Grid Margin="0,4,0,8">
                                                                 <Grid.ColumnDefinitions>
                                                                     <ColumnDefinition Width="*" />
-                                                                    <ColumnDefinition Width="12" />
+                                                                    <ColumnDefinition Width="10" />
                                                                     <ColumnDefinition Width="*" />
-                                                                    <ColumnDefinition Width="12" />
-                                                                    <ColumnDefinition Width="150" />
                                                                 </Grid.ColumnDefinitions>
-                                                                <StackPanel>
-                                                                    <TextBlock Text="Tipo"
-                                                                               Style="{StaticResource MutedText}" />
-                                                                    <ComboBox x:Name="RuleObsMediaKindBox"
-                                                                              SelectionChanged="RuleFieldChanged" />
-                                                                </StackPanel>
-                                                                <StackPanel Grid.Column="2">
-                                                                    <TextBlock Text="Fuente"
-                                                                               Style="{StaticResource MutedText}" />
-                                                                    <ComboBox x:Name="RuleObsMediaSourceModeBox"
-                                                                              SelectionChanged="RuleFieldChanged" />
-                                                                </StackPanel>
-                                                                <StackPanel Grid.Column="4">
-                                                                    <TextBlock Text="Duracion (ms)"
-                                                                               Style="{StaticResource MutedText}" />
-                                                                    <TextBox x:Name="ObsMediaDurationBox"
-                                                                             TextChanged="RuleFieldChanged" />
-                                                                </StackPanel>
+                                                                <Button x:Name="RuleObsImageModeButton"
+                                                                        Content="Imagen"
+                                                                        Tag="Image"
+                                                                        Click="RuleObsMediaKindButton_Click" />
+                                                                <Button x:Name="RuleObsVideoModeButton"
+                                                                        Grid.Column="2"
+                                                                        Content="Video"
+                                                                        Tag="Video"
+                                                                        Click="RuleObsMediaKindButton_Click" />
                                                             </Grid>
+                                                            <ComboBox x:Name="RuleObsMediaKindBox"
+                                                                      Visibility="Collapsed"
+                                                                      SelectionChanged="RuleFieldChanged" />
+
+                                                            <TextBlock Text="Seleccion"
+                                                                       Style="{StaticResource MutedText}" />
+                                                            <Grid Margin="0,4,0,8">
+                                                                <Grid.ColumnDefinitions>
+                                                                    <ColumnDefinition Width="*" />
+                                                                    <ColumnDefinition Width="10" />
+                                                                    <ColumnDefinition Width="*" />
+                                                                </Grid.ColumnDefinitions>
+                                                                <Button x:Name="RuleObsSingleMediaModeButton"
+                                                                        Content="Individual"
+                                                                        Tag="Single"
+                                                                        Click="RuleObsMediaSourceModeButton_Click" />
+                                                                <Button x:Name="RuleObsGroupMediaModeButton"
+                                                                        Grid.Column="2"
+                                                                        Content="Grupo aleatorio"
+                                                                        Tag="Group"
+                                                                        Click="RuleObsMediaSourceModeButton_Click" />
+                                                            </Grid>
+                                                            <ComboBox x:Name="RuleObsMediaSourceModeBox"
+                                                                      Visibility="Collapsed"
+                                                                      SelectionChanged="RuleFieldChanged" />
+
+                                                            <StackPanel>
+                                                                <TextBlock Text="Duracion (ms)"
+                                                                           Style="{StaticResource MutedText}" />
+                                                                <TextBox x:Name="ObsMediaDurationBox"
+                                                                         TextChanged="RuleFieldChanged" />
+                                                            </StackPanel>
 
                                                             <StackPanel x:Name="RuleObsMediaAssetPanel"
                                                                         Margin="0,10,0,0">

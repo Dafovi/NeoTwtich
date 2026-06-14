@@ -48,5 +48,9 @@ public partial class AlertsView : NeoTwitchView
 
     private void RuleAudioModeButton_Click(object sender, RoutedEventArgs e) => Host?.RuleAudioModeButton_Click(sender, e);
 
+    private void RuleObsMediaKindButton_Click(object sender, RoutedEventArgs e) => Host?.RuleObsMediaKindButton_Click(sender, e);
+
+    private void RuleObsMediaSourceModeButton_Click(object sender, RoutedEventArgs e) => Host?.RuleObsMediaSourceModeButton_Click(sender, e);
+
     private void RemoveRuleButton_Click(object sender, RoutedEventArgs e) => Host?.RemoveRuleButton_Click(sender, e);
 }

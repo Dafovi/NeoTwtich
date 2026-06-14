@@ -59,6 +59,7 @@ public partial class MainWindow
             RuleAudioGroupBox.ItemsSource = _config.AudioGroups;
             NewAudioAlertBox.ItemsSource = AudioAlertChoices;
             NewAudioGroupBox.ItemsSource = AudioGroupChoices;
+            RefreshObsSceneChoices();
             RefreshRulesView();
             StripsList.ItemsSource = _config.LedStrips;
             SettingsPathText.Text = _settingsStore.SettingsPath;
@@ -152,6 +153,7 @@ public partial class MainWindow
             UpdateColorButtons();
             UpdateSliderLabels();
             UpdatePatternTileSelection();
+            UpdateRuleObsMediaModeSelection();
             UpdateRuleLedPreviewFrame();
         }
         finally
@@ -312,6 +314,7 @@ public partial class MainWindow
         UpdateSliderLabels();
         UpdatePatternTileSelection();
         UpdateRuleAudioModeSelection();
+        UpdateRuleObsMediaModeSelection();
         UpdateRuleLedPreviewFrame();
         UpdateRuleOptionVisibility();
         UpdateRuleLedPreviewTimerState();
@@ -374,6 +377,7 @@ public partial class MainWindow
         var sendAlexa = AlexaEventCheck.IsChecked == true;
         var obsAvailable = _config.Obs.IsConfigured;
         var sendObsScene = ObsSceneCheck.IsChecked == true;
+        var selectedObsSceneName = RuleObsSceneBox.SelectedValue as string ?? "";
         var sendObsMedia = ObsMediaCheck.IsChecked == true;
         var obsMediaKind = RuleObsMediaKindBox.SelectedValue is ObsMediaKind selectedObsMediaKind
             ? selectedObsMediaKind
@@ -403,6 +407,7 @@ public partial class MainWindow
         SetVisible(obsAvailable, ObsActionCard);
         SetVisible(obsAvailable, ObsDetailsPanel);
         SetVisible(obsAvailable && sendObsScene, ObsSceneDetailsPanel);
+        SetVisible(obsAvailable && sendObsScene && !string.IsNullOrWhiteSpace(selectedObsSceneName), ObsSceneTimingGrid);
         SetVisible(obsAvailable && sendObsScene && _obsSceneRows.Count == 0, RuleObsEmptyHintText);
         SetVisible(obsAvailable && sendObsMedia, ObsMediaDetailsPanel);
         SetVisible(obsAvailable && sendObsMedia && obsMediaSourceMode == MediaSourceMode.Single && obsMediaHasAssets, RuleObsMediaAssetPanel);
@@ -420,6 +425,7 @@ public partial class MainWindow
         SetVisible(useLights && UsesCycle(pattern), CycleGrid, CycleSlider);
         SetVisible(useLights && UsesStep(pattern), StepGrid, StepSlider);
         UpdateRuleAudioModeSelection();
+        UpdateRuleObsMediaModeSelection();
         RefreshRuleObsMediaChoices();
         UpdateRuleLedPreviewFrame();
         UpdateRuleLedPreviewTimerState();

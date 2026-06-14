@@ -103,7 +103,7 @@ public partial class MainWindow
         }
     }
 
-    private async void ObsSceneChangeButton_Click(object sender, RoutedEventArgs e)
+    internal async void ObsSceneChangeButton_Click(object sender, RoutedEventArgs e)
     {
         if (sender is not FrameworkElement { DataContext: ObsSceneRow row })
         {
@@ -290,6 +290,8 @@ public partial class MainWindow
 
         ObsConnectionStateText.Text = state;
         ObsCurrentSceneText.Text = FirstNonEmpty(_obsService.CurrentScene, "Sin escena");
+        ObsHostSummaryText.Text = FirstNonEmpty(_config.Obs.Host, "127.0.0.1");
+        ObsPortSummaryText.Text = _config.Obs.Port.ToString();
         ObsVersionText.Text = FirstNonEmpty(_obsService.Version, "Sin version");
         ObsSceneCountText.Text = _obsService.Scenes.Count.ToString();
         ObsStudioModeText.Text = _obsService.StudioMode ? "Activado" : "Desactivado";

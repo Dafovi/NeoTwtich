@@ -4,6 +4,7 @@ using System.Windows;
 using System.Windows.Controls;
 using System.Windows.Threading;
 using NeoTwitch.Models;
+using NeoTwitch.Services;
 using NeoTwitch.Services.Library;
 using NeoTwitch.Services.Text;
 using NeoTwitch.ViewModels.Activity;
@@ -378,6 +379,79 @@ public partial class MainWindow
         DeleteMediaAsset(MediaLibraryKind.Video, sender);
     }
 
+    internal async void PreviewImageButton_Click(object sender, RoutedEventArgs e)
+    {
+        await PreviewMediaAssetAsync(MediaLibraryKind.Image, sender);
+    }
+
+    internal async void PreviewVideoButton_Click(object sender, RoutedEventArgs e)
+    {
+        await PreviewMediaAssetAsync(MediaLibraryKind.Video, sender);
+    }
+
+    private async Task PreviewMediaAssetAsync(MediaLibraryKind kind, object sender)
+    {
+        if (sender is not FrameworkElement element || element.Tag is not string assetId)
+        {
+            return;
+        }
+
+        if (!_config.Obs.IsConfigured || !_obsService.IsConnected)
+        {
+            AddLog("OBS: conecta OBS antes de probar imagenes o videos.", ActivityLogKind.Important);
+            WpfMessageBox.Show(this, "Conecta OBS desde Conexiones antes de probar imagenes o videos.", "OBS", MessageBoxButton.OK, MessageBoxImage.Information);
+            return;
+        }
+
+        var library = GetMediaLibrary(kind);
+        var asset = library.FirstOrDefault(item => string.Equals(item.Id, assetId, StringComparison.OrdinalIgnoreCase));
+        if (asset is null || !File.Exists(asset.FilePath))
+        {
+            AddLog("OBS: el archivo seleccionado no existe.", ActivityLogKind.Important);
+            return;
+        }
+
+        var sceneName = _obsService.CurrentScene;
+        if (string.IsNullOrWhiteSpace(sceneName))
+        {
+            AddLog("OBS: no hay una escena actual para probar el medio.", ActivityLogKind.Important);
+            return;
+        }
+
+        var obsKind = kind == MediaLibraryKind.Image ? ObsMediaKind.Image : ObsMediaKind.Video;
+        var sourceName = kind == MediaLibraryKind.Image
+            ? "Neo Twitch - Prueba imagen"
+            : "Neo Twitch - Prueba video";
+
+        try
+        {
+            var result = await _obsService.ShowMediaSourceAsync(
+                sceneName,
+                sourceName,
+                asset.FilePath,
+                obsKind,
+                CancellationToken.None);
+            ApplyObsResult(result);
+            MarkObsMediaAssetUsed(obsKind, asset);
+            AddLog($"OBS: probando {MediaLibraryTitle(kind).ToLowerInvariant()} '{asset.DisplayName}' por 5 segundos.", ActivityLogKind.Obs);
+
+            await Task.Delay(TimeSpan.FromSeconds(5));
+            if (_obsService.IsConnected)
+            {
+                result = await _obsService.HideSceneSourceAsync(sceneName, sourceName, CancellationToken.None);
+                ApplyObsResult(result);
+            }
+        }
+        catch (Exception ex)
+        {
+            _obsConnectionError = ex.Message;
+            CrashReporter.Log(ex, $"No se pudo probar medio OBS '{asset.DisplayName}'.");
+            AddLog($"OBS: {ex.Message}", ActivityLogKind.Important);
+            UpdateObsStatusText();
+            WpfMessageBox.Show(this, ex.Message, "OBS", MessageBoxButton.OK, MessageBoxImage.Warning);
+        }
+    }
+
     private void DeleteMediaAsset(MediaLibraryKind kind, object sender)
     {
         if (sender is not FrameworkElement element || element.Tag is not string assetId)
@@ -543,7 +617,8 @@ public partial class MainWindow
             kind == MediaLibraryKind.Image ? "Assets/Icons/media_image.png" : "Assets/Icons/media_video.png",
             FrozenBrushFrom(accentColor),
             TranslucentBrushFrom(accentColor),
-            index);
+            index,
+            _config.Obs.IsConfigured && _obsService.IsConnected && !_isObsConnecting);
     }
 
     private bool MediaRowMatchesFilters(MediaLibraryKind kind, MediaLibraryRow row)

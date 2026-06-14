@@ -12,4 +12,8 @@ public sealed record MediaLibraryRow(
     string IconPath,
     SolidColorBrush AccentBrush,
     SolidColorBrush AccentBackground,
-    int Index);
+    int Index,
+    bool CanPreview)
+{
+    public double PreviewOpacity => CanPreview ? 1d : 0.42d;
+}

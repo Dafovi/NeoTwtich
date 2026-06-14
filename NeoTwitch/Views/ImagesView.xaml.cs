@@ -27,5 +27,7 @@ public partial class ImagesView : NeoTwitchView
 
     private void DeleteImageGroupButton_Click(object sender, RoutedEventArgs e) => Host?.DeleteImageGroupButton_Click(sender, e);
 
+    private void PreviewImageButton_Click(object sender, RoutedEventArgs e) => Host?.PreviewImageButton_Click(sender, e);
+
     private void DeleteImageButton_Click(object sender, RoutedEventArgs e) => Host?.DeleteImageButton_Click(sender, e);
 }

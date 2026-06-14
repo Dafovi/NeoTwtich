@@ -34,10 +34,6 @@
                             <ColumnDefinition Width="*" />
                             <ColumnDefinition Width="12" />
                             <ColumnDefinition Width="*" />
-                            <ColumnDefinition Width="12" />
-                            <ColumnDefinition Width="*" />
-                            <ColumnDefinition Width="12" />
-                            <ColumnDefinition Width="*" />
                         </Grid.ColumnDefinitions>
 
                         <Border Style="{StaticResource Card}">
@@ -172,15 +168,17 @@
                                         CornerRadius="12"
                                         Background="#182FB4E9"
                                         Tag="StaticBrush">
-                                    <Path Width="26"
-                                          Height="26"
-                                          Stretch="Uniform"
-                                          Stroke="#2FB4E9"
-                                          StrokeThickness="2"
-                                          StrokeStartLineCap="Round"
-                                          StrokeEndLineCap="Round"
-                                          StrokeLineJoin="Round"
-                                          Data="M12,5 A7,7 0 1 0 19,12 M19,5 L19,12 L13,12" />
+                                    <Border Width="26"
+                                            Height="26"
+                                            Background="#2FB4E9"
+                                            HorizontalAlignment="Center"
+                                            VerticalAlignment="Center"
+                                            Tag="StaticBrush">
+                                        <Border.OpacityMask>
+                                            <ImageBrush ImageSource="/Assets/Icons/icon_timer.png"
+                                                        Stretch="Uniform" />
+                                        </Border.OpacityMask>
+                                    </Border>
                                 </Border>
                                 <StackPanel Grid.Column="1"
                                             VerticalAlignment="Center">

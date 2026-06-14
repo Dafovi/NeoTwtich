@@ -27,5 +27,7 @@ public partial class VideosView : NeoTwitchView
 
     private void DeleteVideoGroupButton_Click(object sender, RoutedEventArgs e) => Host?.DeleteVideoGroupButton_Click(sender, e);
 
+    private void PreviewVideoButton_Click(object sender, RoutedEventArgs e) => Host?.PreviewVideoButton_Click(sender, e);
+
     private void DeleteVideoButton_Click(object sender, RoutedEventArgs e) => Host?.DeleteVideoButton_Click(sender, e);
 }

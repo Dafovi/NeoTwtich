@@ -531,6 +531,8 @@ public partial class MainWindow
             && !_isObsSceneActionRunning;
         ObsScenesList.Opacity = ObsScenesList.IsEnabled ? 1d : 0.58d;
 
+        RefreshMediaLibraryView(MediaLibraryKind.Image);
+        RefreshMediaLibraryView(MediaLibraryKind.Video);
         UpdateConnectionButtons();
         RefreshDashboardConnectionStates();
     }

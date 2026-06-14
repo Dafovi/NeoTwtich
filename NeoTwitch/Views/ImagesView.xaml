@@ -156,6 +156,7 @@
                                 <Grid.RowDefinitions>
                                     <RowDefinition Height="Auto" />
                                     <RowDefinition Height="Auto" />
+                                    <RowDefinition Height="Auto" />
                                     <RowDefinition Height="*" />
                                     <RowDefinition Height="Auto" />
                                 </Grid.RowDefinitions>
@@ -190,7 +191,21 @@
                                     </WrapPanel>
                                 </Grid>
 
-                                <ScrollViewer Grid.Row="2"
+                                <Grid Grid.Row="2"
+                                      Margin="0,0,0,8">
+                                    <Grid.ColumnDefinitions>
+                                        <ColumnDefinition Width="2*" />
+                                        <ColumnDefinition Width="1.25*" />
+                                        <ColumnDefinition Width="1.05*" />
+                                        <ColumnDefinition Width="104" />
+                                    </Grid.ColumnDefinitions>
+                                    <TextBlock Text="Nombre de la imagen" Style="{StaticResource MutedText}" />
+                                    <TextBlock Grid.Column="1" Text="Grupo" Style="{StaticResource MutedText}" />
+                                    <TextBlock Grid.Column="2" Text="Resolución" Style="{StaticResource MutedText}" />
+                                    <TextBlock Grid.Column="3" Text="Acciones" Style="{StaticResource MutedText}" />
+                                </Grid>
+
+                                <ScrollViewer Grid.Row="3"
                                               VerticalScrollBarVisibility="Auto"
                                               HorizontalScrollBarVisibility="Disabled">
                                     <ItemsControl x:Name="ImageLibraryList">
@@ -204,7 +219,7 @@
                                                             <ColumnDefinition Width="2*" />
                                                             <ColumnDefinition Width="1.25*" />
                                                             <ColumnDefinition Width="1.05*" />
-                                                            <ColumnDefinition Width="58" />
+                                                            <ColumnDefinition Width="104" />
                                                         </Grid.ColumnDefinitions>
                                                         <StackPanel Orientation="Horizontal"
                                                                     VerticalAlignment="Center">
@@ -237,7 +252,7 @@
                                                         </StackPanel>
                                                         <ComboBox Grid.Column="1"
                                                                   Tag="{Binding Id}"
-                                                                  ItemsSource="{Binding DataContext.ImageGroupChoices, RelativeSource={RelativeSource AncestorType=Window}}"
+                                                                  ItemsSource="{Binding ImageGroupChoices, RelativeSource={RelativeSource AncestorType=Window}}"
                                                                   DisplayMemberPath="Name"
                                                                   SelectedValuePath="Id"
                                                                   SelectedValue="{Binding GroupId}"
@@ -246,25 +261,47 @@
                                                                    Text="{Binding MetadataText}"
                                                                    Style="{StaticResource MutedText}"
                                                                    VerticalAlignment="Center" />
-                                                        <Button Grid.Column="3"
-                                                                Width="34"
-                                                                Height="32"
-                                                                Padding="0"
-                                                                Background="{DynamicResource ThemeInputBrush}"
-                                                                BorderBrush="#F43F5E"
-                                                                Tag="{Binding Id}"
-                                                                ToolTip="Eliminar imagen"
-                                                                Click="DeleteImageButton_Click">
-                                                            <Border Width="16"
-                                                                    Height="16"
-                                                                    Background="#F43F5E"
-                                                                    Tag="StaticBrush">
-                                                                <Border.OpacityMask>
-                                                                    <ImageBrush ImageSource="/Assets/Icons/icon_delete.png"
-                                                                                Stretch="Uniform" />
-                                                                </Border.OpacityMask>
-                                                            </Border>
-                                                        </Button>
+                                                        <StackPanel Grid.Column="3"
+                                                                    Orientation="Horizontal"
+                                                                    HorizontalAlignment="Right">
+                                                            <Button Width="38"
+                                                                    Height="32"
+                                                                    Padding="0"
+                                                                    Margin="0,0,6,0"
+                                                                    Tag="{Binding Id}"
+                                                                    IsEnabled="{Binding CanPreview}"
+                                                                    Opacity="{Binding PreviewOpacity}"
+                                                                    ToolTip="Probar imagen en OBS"
+                                                                    Click="PreviewImageButton_Click">
+                                                                <Border Width="16"
+                                                                        Height="16"
+                                                                        Background="#14B8A6"
+                                                                        Tag="StaticBrush">
+                                                                    <Border.OpacityMask>
+                                                                        <ImageBrush ImageSource="/Assets/Icons/sound_play.png"
+                                                                                    Stretch="Uniform" />
+                                                                    </Border.OpacityMask>
+                                                                </Border>
+                                                            </Button>
+                                                            <Button Width="38"
+                                                                    Height="32"
+                                                                    Padding="0"
+                                                                    Background="{DynamicResource ThemeInputBrush}"
+                                                                    BorderBrush="#F43F5E"
+                                                                    Tag="{Binding Id}"
+                                                                    ToolTip="Eliminar imagen"
+                                                                    Click="DeleteImageButton_Click">
+                                                                <Border Width="16"
+                                                                        Height="16"
+                                                                        Background="#F43F5E"
+                                                                        Tag="StaticBrush">
+                                                                    <Border.OpacityMask>
+                                                                        <ImageBrush ImageSource="/Assets/Icons/icon_delete.png"
+                                                                                    Stretch="Uniform" />
+                                                                    </Border.OpacityMask>
+                                                                </Border>
+                                                            </Button>
+                                                        </StackPanel>
                                                     </Grid>
                                                 </Border>
                                             </DataTemplate>
@@ -272,7 +309,7 @@
                                     </ItemsControl>
                                 </ScrollViewer>
                                 <TextBlock x:Name="ImageLibraryFooterText"
-                                           Grid.Row="3"
+                                           Grid.Row="4"
                                            Text="Mostrando 0 imagenes"
                                            Style="{StaticResource MutedText}"
                                            Margin="0,12,0,0" />

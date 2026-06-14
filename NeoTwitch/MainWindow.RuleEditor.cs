@@ -202,8 +202,8 @@ public partial class MainWindow
 
         var isRunning = _currentEffectCts is not null;
         RuleTestButton.Style = isRunning
-            ? Resources["DangerButton"] as Style
-            : Resources["PrimaryButton"] as Style;
+            ? TryFindResource("DangerButton") as Style
+            : TryFindResource("PrimaryButton") as Style;
         SetButtonIcon(RuleTestButton, isRunning ? "Parar prueba" : "Probar alerta", isRunning ? "Square" : "Play");
         ApplyButtonTheme(RuleTestButton, _config.DarkMode ? ThemePalette.Dark : ThemePalette.Light);
     }

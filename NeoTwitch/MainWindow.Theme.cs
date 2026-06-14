@@ -254,7 +254,8 @@ public partial class MainWindow
 
     private void ApplyButtonTheme(System.Windows.Controls.Button button, ThemePalette palette)
     {
-        if (ReferenceEquals(button.Style, Resources["NavButton"]))
+        if (TryFindResource("NavButton") is Style navButtonStyle &&
+            ReferenceEquals(button.Style, navButtonStyle))
         {
             ApplyNavigationButtonTheme(button, palette);
             return;
@@ -268,7 +269,8 @@ public partial class MainWindow
             return;
         }
 
-        if (ReferenceEquals(button.Style, Resources["PrimaryButton"]))
+        if (TryFindResource("PrimaryButton") is Style primaryButtonStyle &&
+            ReferenceEquals(button.Style, primaryButtonStyle))
         {
             button.Background = palette.Accent;
             button.Foreground = System.Windows.Media.Brushes.White;
@@ -276,7 +278,8 @@ public partial class MainWindow
             return;
         }
 
-        if (ReferenceEquals(button.Style, Resources["DangerButton"]))
+        if (TryFindResource("DangerButton") is Style dangerButtonStyle &&
+            ReferenceEquals(button.Style, dangerButtonStyle))
         {
             button.Background = palette.DangerSurface;
             button.Foreground = palette.DangerText;

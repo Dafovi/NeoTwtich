@@ -17,6 +17,7 @@ using System.Windows.Shapes;
 using System.Windows.Threading;
 using NeoTwitch.Models;
 using NeoTwitch.Services;
+using NeoTwitch.Services.Alerts;
 using NeoTwitch.Services.Text;
 using NeoTwitch.ViewModels.Activity;
 using NeoTwitch.ViewModels.Library;
@@ -70,9 +71,7 @@ public partial class MainWindow : Window
     private readonly Random _previewRandom = new();
     private readonly Random _audioRandom = new();
     private readonly SemaphoreSlim _effectGate = new(1, 1);
-    private readonly object _alertQueueSync = new();
-    private readonly List<QueuedAlertSlot> _pendingAlertSlots = [];
-    private readonly Dictionary<string, DateTimeOffset> _lastRuleStartTimes = new(StringComparer.OrdinalIgnoreCase);
+    private readonly AlertQueueService _alertQueue = new();
     private IReadOnlyList<SerialPortInfo> _availablePorts = [];
     private readonly HashSet<string> _activityEnabledFilters = new(StringComparer.OrdinalIgnoreCase)
     {
@@ -172,9 +171,6 @@ public partial class MainWindow : Window
     private CancellationTokenSource? _twitchSubscriptionRefreshDebounce;
     private CancellationTokenSource? _currentEffectCts;
     private string _eventSubscriptionSignature = "";
-    private string _runningRuleId = "";
-    private string _lastStartedRuleId = "";
-    private DateTimeOffset _lastAlertStartAt = DateTimeOffset.MinValue;
     private bool _hasShownTrayNotice;
     private int _dashboardFollowersToday;
     private int _dashboardSubscriptionsToday;
@@ -669,8 +665,6 @@ public partial class MainWindow : Window
     }
 
     private sealed record DiagnosticResult(string Report, int WarningCount);
-
-    private sealed record QueuedAlertSlot(string Id, string RuleId, string RuleName, TwitchEventKind EventKind);
 
     private static SolidColorBrush FrozenBrushFrom(string hex)
     {

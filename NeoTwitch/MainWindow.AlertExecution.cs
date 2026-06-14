@@ -1,5 +1,6 @@
 using NeoTwitch.Models;
 using NeoTwitch.Services;
+using NeoTwitch.Services.Alerts;
 using NeoTwitch.ViewModels.Activity;
 using NeoTwitch.ViewModels.Obs;
 
@@ -41,7 +42,12 @@ public partial class MainWindow
 
     private async Task QueueAndRunRuleAsync(EventRule rule, TwitchEvent twitchEvent)
     {
-        var slot = TryReserveAlertSlot(rule, twitchEvent, out var reason);
+        var slot = _alertQueue.TryReserve(
+            rule,
+            twitchEvent,
+            _effectGate.CurrentCount == 0,
+            AlertQueueOptions.FromConfig(_config),
+            out var reason);
         if (slot is null)
         {
             AddLog($"Cola: descarte '{rule.Name}'. {reason}", ActivityLogKind.Important);
@@ -49,105 +55,6 @@ public partial class MainWindow
         }
 
         await RunRuleAsync(rule, twitchEvent, queueSlot: slot);
-    }
-
-    private QueuedAlertSlot? TryReserveAlertSlot(EventRule rule, TwitchEvent twitchEvent, out string reason)
-    {
-        lock (_alertQueueSync)
-        {
-            var now = DateTimeOffset.UtcNow;
-            var busy = _effectGate.CurrentCount == 0 || _pendingAlertSlots.Count > 0;
-            var samePending = _pendingAlertSlots.Count(slot => string.Equals(slot.RuleId, rule.Id, StringComparison.OrdinalIgnoreCase));
-            var sameLimit = Math.Clamp(_config.MaxQueuedSameRuleAlerts, 0, 100);
-            var differentLimit = Math.Clamp(_config.MaxQueuedDifferentRuleAlerts, 0, 100);
-
-            if (busy)
-            {
-                if (samePending >= sameLimit)
-                {
-                    reason = sameLimit == 0
-                        ? "No se permite acumular alertas repetidas."
-                        : $"Ya hay {samePending} alerta(s) repetida(s) esperando.";
-                    return null;
-                }
-
-                var isDifferentFromRunning = !string.IsNullOrWhiteSpace(_runningRuleId)
-                    && !string.Equals(_runningRuleId, rule.Id, StringComparison.OrdinalIgnoreCase);
-                var isDifferentWhileManualIsRunning = string.IsNullOrWhiteSpace(_runningRuleId)
-                    && _effectGate.CurrentCount == 0;
-                var isDifferentWhileQueueIsWaiting = string.IsNullOrWhiteSpace(_runningRuleId)
-                    && _pendingAlertSlots.Count > 0;
-                var differentPending = _pendingAlertSlots.Count(slot => !string.Equals(slot.RuleId, rule.Id, StringComparison.OrdinalIgnoreCase));
-
-                if ((isDifferentFromRunning || isDifferentWhileManualIsRunning || isDifferentWhileQueueIsWaiting) && differentPending >= differentLimit)
-                {
-                    reason = differentLimit == 0
-                        ? "No se permite acumular alertas distintas mientras otra esta activa."
-                        : $"Ya hay {differentPending} alerta(s) distinta(s) esperando.";
-                    return null;
-                }
-            }
-
-            var sameCooldownMs = Math.Clamp(_config.SameRuleQueueCooldownMs, 0, 600000);
-            if (sameCooldownMs > 0
-                && _lastRuleStartTimes.TryGetValue(rule.Id, out var lastSameStart)
-                && now - lastSameStart < TimeSpan.FromMilliseconds(sameCooldownMs))
-            {
-                var remainingMs = sameCooldownMs - (int)(now - lastSameStart).TotalMilliseconds;
-                reason = $"Repetida en enfriamiento por {Math.Max(0, remainingMs)} ms.";
-                return null;
-            }
-
-            var differentCooldownMs = Math.Clamp(_config.DifferentRuleQueueCooldownMs, 0, 600000);
-            if (differentCooldownMs > 0
-                && !string.IsNullOrWhiteSpace(_lastStartedRuleId)
-                && !string.Equals(_lastStartedRuleId, rule.Id, StringComparison.OrdinalIgnoreCase)
-                && now - _lastAlertStartAt < TimeSpan.FromMilliseconds(differentCooldownMs))
-            {
-                var remainingMs = differentCooldownMs - (int)(now - _lastAlertStartAt).TotalMilliseconds;
-                reason = $"Distinta en enfriamiento por {Math.Max(0, remainingMs)} ms.";
-                return null;
-            }
-
-            var slot = new QueuedAlertSlot(Guid.NewGuid().ToString("N"), rule.Id, rule.Name, twitchEvent.Kind);
-            _pendingAlertSlots.Add(slot);
-            reason = "";
-            return slot;
-        }
-    }
-
-    private void MarkQueuedAlertStarted(QueuedAlertSlot? slot)
-    {
-        if (slot is null)
-        {
-            return;
-        }
-
-        lock (_alertQueueSync)
-        {
-            _pendingAlertSlots.RemoveAll(candidate => string.Equals(candidate.Id, slot.Id, StringComparison.OrdinalIgnoreCase));
-            var now = DateTimeOffset.UtcNow;
-            _runningRuleId = slot.RuleId;
-            _lastStartedRuleId = slot.RuleId;
-            _lastAlertStartAt = now;
-            _lastRuleStartTimes[slot.RuleId] = now;
-        }
-    }
-
-    private void MarkQueuedAlertFinished(QueuedAlertSlot? slot)
-    {
-        if (slot is null)
-        {
-            return;
-        }
-
-        lock (_alertQueueSync)
-        {
-            if (string.Equals(_runningRuleId, slot.RuleId, StringComparison.OrdinalIgnoreCase))
-            {
-                _runningRuleId = "";
-            }
-        }
     }
 
     private EventRule[] ResolveMatchingRules(TwitchEvent twitchEvent)
@@ -227,7 +134,7 @@ public partial class MainWindow
         QueuedAlertSlot? queueSlot = null)
     {
         await _effectGate.WaitAsync();
-        MarkQueuedAlertStarted(queueSlot);
+        _alertQueue.MarkStarted(queueSlot);
         var effectCts = new CancellationTokenSource();
         _currentEffectCts = effectCts;
         UpdateRuleTestButtonState();
@@ -358,7 +265,7 @@ public partial class MainWindow
             await RestoreRuleObsSceneAsync(obsRestore, wasCancelled);
 
             effectCts.Dispose();
-            MarkQueuedAlertFinished(queueSlot);
+            _alertQueue.MarkFinished(queueSlot);
             _effectGate.Release();
         }
     }

@@ -26,7 +26,7 @@ public partial class MainWindow
         RefreshMediaLibraryView(MediaLibraryKind.Image);
     }
 
-    private void VideoSearchBox_TextChanged(object sender, TextChangedEventArgs e)
+    internal void VideoSearchBox_TextChanged(object sender, TextChangedEventArgs e)
     {
         if (_loadingUi || sender is not System.Windows.Controls.TextBox textBox)
         {
@@ -42,7 +42,7 @@ public partial class MainWindow
         SetMediaFilter(MediaLibraryKind.Image, sender);
     }
 
-    private void VideoFilterButton_Click(object sender, RoutedEventArgs e)
+    internal void VideoFilterButton_Click(object sender, RoutedEventArgs e)
     {
         SetMediaFilter(MediaLibraryKind.Video, sender);
     }
@@ -74,7 +74,7 @@ public partial class MainWindow
         UpdateMediaAssetGroup(MediaLibraryKind.Image, sender);
     }
 
-    private void VideoLibraryGroupBox_DropDownClosed(object sender, EventArgs e)
+    internal void VideoLibraryGroupBox_DropDownClosed(object sender, EventArgs e)
     {
         UpdateMediaAssetGroup(MediaLibraryKind.Video, sender);
     }
@@ -113,7 +113,7 @@ public partial class MainWindow
         BrowseNewMedia(MediaLibraryKind.Image);
     }
 
-    private void BrowseNewVideoButton_Click(object sender, RoutedEventArgs e)
+    internal void BrowseNewVideoButton_Click(object sender, RoutedEventArgs e)
     {
         BrowseNewMedia(MediaLibraryKind.Video);
     }
@@ -158,7 +158,7 @@ public partial class MainWindow
         SaveNewMedia(MediaLibraryKind.Image);
     }
 
-    private void SaveNewVideoButton_Click(object sender, RoutedEventArgs e)
+    internal void SaveNewVideoButton_Click(object sender, RoutedEventArgs e)
     {
         SaveNewMedia(MediaLibraryKind.Video);
     }
@@ -220,7 +220,7 @@ public partial class MainWindow
         AddMediaGroup(MediaLibraryKind.Image);
     }
 
-    private void AddVideoGroupButton_Click(object sender, RoutedEventArgs e)
+    internal void AddVideoGroupButton_Click(object sender, RoutedEventArgs e)
     {
         AddMediaGroup(MediaLibraryKind.Video);
     }
@@ -275,7 +275,7 @@ public partial class MainWindow
         ViewMediaGroup(MediaLibraryKind.Image, sender);
     }
 
-    private void ViewVideoGroupButton_Click(object sender, RoutedEventArgs e)
+    internal void ViewVideoGroupButton_Click(object sender, RoutedEventArgs e)
     {
         ViewMediaGroup(MediaLibraryKind.Video, sender);
     }
@@ -317,7 +317,7 @@ public partial class MainWindow
         DeleteMediaGroup(MediaLibraryKind.Image, sender);
     }
 
-    private void DeleteVideoGroupButton_Click(object sender, RoutedEventArgs e)
+    internal void DeleteVideoGroupButton_Click(object sender, RoutedEventArgs e)
     {
         DeleteMediaGroup(MediaLibraryKind.Video, sender);
     }
@@ -373,7 +373,7 @@ public partial class MainWindow
         DeleteMediaAsset(MediaLibraryKind.Image, sender);
     }
 
-    private void DeleteVideoButton_Click(object sender, RoutedEventArgs e)
+    internal void DeleteVideoButton_Click(object sender, RoutedEventArgs e)
     {
         DeleteMediaAsset(MediaLibraryKind.Video, sender);
     }

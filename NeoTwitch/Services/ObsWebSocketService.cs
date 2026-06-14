@@ -151,6 +151,116 @@ public sealed class ObsWebSocketService : IAsyncDisposable
         }
     }
 
+    public async Task<ObsConnectionResult> ShowMediaSourceAsync(
+        string sceneName,
+        string sourceName,
+        string filePath,
+        ObsMediaKind kind,
+        CancellationToken cancellationToken)
+    {
+        if (string.IsNullOrWhiteSpace(sceneName))
+        {
+            throw new InvalidOperationException("Selecciona una escena OBS para mostrar el medio.");
+        }
+
+        if (string.IsNullOrWhiteSpace(sourceName))
+        {
+            throw new InvalidOperationException("El source OBS de Neo Twitch no tiene nombre.");
+        }
+
+        if (string.IsNullOrWhiteSpace(filePath) || !File.Exists(filePath))
+        {
+            throw new InvalidOperationException("El archivo que se enviara a OBS no existe.");
+        }
+
+        using var timeout = CreateTimeoutToken(cancellationToken, RequestTimeout);
+        var token = timeout.Token;
+
+        await _gate.WaitAsync(token);
+        try
+        {
+            EnsureConnected();
+            var inputKind = kind == ObsMediaKind.Image ? "image_source" : "ffmpeg_source";
+            var settings = BuildMediaInputSettings(kind, filePath);
+            try
+            {
+                await SendRequestAsync(
+                    "CreateInput",
+                    new Dictionary<string, object?>
+                    {
+                        ["sceneName"] = sceneName.Trim(),
+                        ["inputName"] = sourceName.Trim(),
+                        ["inputKind"] = inputKind,
+                        ["inputSettings"] = settings,
+                        ["sceneItemEnabled"] = true
+                    },
+                    token);
+            }
+            catch (InvalidOperationException)
+            {
+                await SendRequestAsync(
+                    "SetInputSettings",
+                    new Dictionary<string, object?>
+                    {
+                        ["inputName"] = sourceName.Trim(),
+                        ["inputSettings"] = settings,
+                        ["overlay"] = true
+                    },
+                    token);
+                await EnsureSceneItemAsync(sceneName, sourceName, token);
+            }
+
+            await SetSceneItemEnabledAsync(sceneName, sourceName, enabled: true, token);
+            await RefreshScenesCoreAsync(token);
+            return Snapshot();
+        }
+        catch (OperationCanceledException) when (!cancellationToken.IsCancellationRequested)
+        {
+            await DisposeSocketAsync();
+            throw new TimeoutException("OBS no respondio al mostrar el medio. Intenta reconectar OBS.");
+        }
+        finally
+        {
+            _gate.Release();
+        }
+    }
+
+    public async Task<ObsConnectionResult> HideSceneSourceAsync(
+        string sceneName,
+        string sourceName,
+        CancellationToken cancellationToken)
+    {
+        if (string.IsNullOrWhiteSpace(sceneName) || string.IsNullOrWhiteSpace(sourceName))
+        {
+            return Snapshot();
+        }
+
+        using var timeout = CreateTimeoutToken(cancellationToken, RequestTimeout);
+        var token = timeout.Token;
+
+        await _gate.WaitAsync(token);
+        try
+        {
+            EnsureConnected();
+            await SetSceneItemEnabledAsync(sceneName, sourceName, enabled: false, token);
+            await RefreshScenesCoreAsync(token);
+            return Snapshot();
+        }
+        catch (InvalidOperationException)
+        {
+            return Snapshot();
+        }
+        catch (OperationCanceledException) when (!cancellationToken.IsCancellationRequested)
+        {
+            await DisposeSocketAsync();
+            throw new TimeoutException("OBS no respondio al ocultar el medio. Intenta reconectar OBS.");
+        }
+        finally
+        {
+            _gate.Release();
+        }
+    }
+
     public async Task DisconnectAsync()
     {
         await _gate.WaitAsync();
@@ -196,6 +306,64 @@ public sealed class ObsWebSocketService : IAsyncDisposable
         var studioData = studioResponse.RootElement.GetProperty("d").GetProperty("responseData");
         StudioMode = studioData.TryGetProperty("studioModeEnabled", out var enabled)
             && enabled.ValueKind == JsonValueKind.True;
+    }
+
+    private async Task EnsureSceneItemAsync(string sceneName, string sourceName, CancellationToken cancellationToken)
+    {
+        try
+        {
+            _ = await GetSceneItemIdAsync(sceneName, sourceName, cancellationToken);
+            return;
+        }
+        catch (InvalidOperationException)
+        {
+            // If the input already exists globally but is not in this scene, add it to the scene.
+        }
+
+        await SendRequestAsync(
+            "CreateSceneItem",
+            new Dictionary<string, object?>
+            {
+                ["sceneName"] = sceneName.Trim(),
+                ["sourceName"] = sourceName.Trim(),
+                ["sceneItemEnabled"] = true
+            },
+            cancellationToken);
+    }
+
+    private async Task SetSceneItemEnabledAsync(
+        string sceneName,
+        string sourceName,
+        bool enabled,
+        CancellationToken cancellationToken)
+    {
+        var sceneItemId = await GetSceneItemIdAsync(sceneName, sourceName, cancellationToken);
+        await SendRequestAsync(
+            "SetSceneItemEnabled",
+            new Dictionary<string, object?>
+            {
+                ["sceneName"] = sceneName.Trim(),
+                ["sceneItemId"] = sceneItemId,
+                ["sceneItemEnabled"] = enabled
+            },
+            cancellationToken);
+    }
+
+    private async Task<int> GetSceneItemIdAsync(
+        string sceneName,
+        string sourceName,
+        CancellationToken cancellationToken)
+    {
+        using var response = await SendRequestAsync(
+            "GetSceneItemId",
+            new Dictionary<string, object?>
+            {
+                ["sceneName"] = sceneName.Trim(),
+                ["sourceName"] = sourceName.Trim()
+            },
+            cancellationToken);
+        var data = response.RootElement.GetProperty("d").GetProperty("responseData");
+        return ReadInt(data, "sceneItemId");
     }
 
     private async Task<JsonDocument> SendRequestAsync(
@@ -332,6 +500,20 @@ public sealed class ObsWebSocketService : IAsyncDisposable
     private ObsConnectionResult Snapshot()
     {
         return new ObsConnectionResult(IsConnected, Version, CurrentScene, StudioMode, Scenes);
+    }
+
+    private static Dictionary<string, object?> BuildMediaInputSettings(ObsMediaKind kind, string filePath)
+    {
+        return kind == ObsMediaKind.Image
+            ? new Dictionary<string, object?> { ["file"] = filePath }
+            : new Dictionary<string, object?>
+            {
+                ["is_local_file"] = true,
+                ["local_file"] = filePath,
+                ["looping"] = false,
+                ["restart_on_activate"] = true,
+                ["close_when_inactive"] = true
+            };
     }
 
     private static Uri BuildUri(ObsIntegrationConfig config)

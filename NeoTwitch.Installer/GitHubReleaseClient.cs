@@ -17,7 +17,7 @@ internal sealed class GitHubReleaseClient
 
     public GitHubReleaseClient()
     {
-        _http.DefaultRequestHeaders.UserAgent.Add(new ProductInfoHeaderValue("NeoTwitchInstaller", "2.1.1"));
+        _http.DefaultRequestHeaders.UserAgent.Add(new ProductInfoHeaderValue("NeoTwitchInstaller", "2.2.0"));
     }
 
     public async Task<ReleaseAsset> GetLatestInstallAssetAsync(CancellationToken cancellationToken)

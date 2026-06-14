@@ -30,7 +30,7 @@ Despues de descargar el `.zip`:
 - Puede enviar mensajes personalizados al chat por regla.
 - Puede enviar eventos opcionales a una Skill/relay de Alexa para activar rutinas.
 - Puede mantener un fondo opcional con Alexa, por ejemplo enviando eventos de luz encendida o luz apagada.
-- Puede conectarse a OBS Studio por WebSocket para leer escenas y cambiar de escena desde Neo Twitch.
+- Puede conectarse a OBS Studio por WebSocket para leer escenas, cambiar de escena y mostrar imagenes o videos desde las alertas.
 - Las reglas nuevas vienen activas, pero con luces, audio y chat desactivados para configurar solo lo necesario.
 - La interfaz oculta opciones que no aplican al evento, patron o fondo seleccionado.
 - Guarda la configuracion en `%AppData%\NeoTwitch\settings.json`.
@@ -63,7 +63,7 @@ Y asi se ve el efecto cuando se activa en stream:
 - Windows con .NET Desktop Runtime compatible con el proyecto.
 - Una app creada en Twitch Developer Console para obtener el Client ID. El Client Secret es opcional, pero ayuda a refrescar la sesion sin autorizar de nuevo.
 - Opcional: una Skill/relay de Alexa con endpoint HTTPS para recibir eventos de Neo Twitch.
-- Opcional: OBS Studio con el servidor WebSocket activado para cambiar escenas desde alertas.
+- Opcional: OBS Studio con el servidor WebSocket activado para cambiar escenas o mostrar medios desde alertas.
 - Arduino IDE con la libreria `Adafruit NeoPixel`.
 - Arduino conectado por USB y una tira NeoPixel en el pin configurado en el sketch.
 
@@ -83,7 +83,7 @@ Y asi se ve el efecto cuando se activa en stream:
 12. Para bits, crea varias reglas `Bits` con distintos `Bits minimos`; si llega una cantidad alta, se usa el umbral mas alto que aplique.
 13. Si quieres chat automatico, activa `Enviar mensaje al chat` y usa variables como `{user}`, `{bits}`, `{reward}`, `{viewers}`, `{message}` o `{event}`.
 14. Si tienes Alexa configurada, activa `Enviar evento a Alexa`. Neo Twitch enviara el nombre de la regla como evento.
-15. Si tienes OBS configurado, activa `OBS` en la alerta, elige la escena y decide si debe volver a la escena anterior.
+15. Si tienes OBS configurado, activa `OBS` en la alerta. Puedes cambiar de escena, elegir si debe volver a la escena anterior, o mostrar una imagen/video individual o aleatorio desde un grupo.
 16. Usa `Probar regla` antes de salir en vivo. La prueba ejecuta luces, audio, chat, Alexa y OBS si estan activados en esa regla.
 17. En `Configuracion`, ajusta volumen, modo oscuro, comportamiento de cierre y cola de alertas.
 
@@ -262,7 +262,7 @@ Neo Twitch puede conectarse a OBS Studio usando `obs-websocket`, que es el siste
 Flujo esperado:
 
 ```text
-Evento Twitch -> Regla Neo Twitch -> Accion OBS -> Cambio de escena en OBS
+Evento Twitch -> Regla Neo Twitch -> Accion OBS -> Escena o medio en OBS
 ```
 
 Pasos recomendados:
@@ -280,7 +280,16 @@ Pasos recomendados:
    - `Contraseña`: la contraseña WebSocket de OBS, si la tienes activada.
 9. Presiona `Conectar OBS` o `Actualizar escenas`.
 10. En la pestaña `OBS`, revisa que aparezca la escena actual y la lista de escenas disponibles.
-11. En una alerta, activa la accion `OBS`, elige la escena y marca si quieres volver a la escena anterior despues de unos milisegundos.
+11. En una alerta, activa la accion `OBS`.
+12. Si quieres cambiar escena, marca `Cambiar escena`, elige la escena y configura si debe volver a la escena anterior despues de unos milisegundos.
+13. Si quieres mostrar un medio, marca `Mostrar imagen o video`, elige `Imagen` o `Video`, selecciona un archivo o grupo de la biblioteca y define cuantos milisegundos debe permanecer visible.
+
+Para usar imagenes o videos en alertas:
+
+1. Agrega tus archivos en las pestañas `Imagenes` o `Videos`.
+2. Opcionalmente crea grupos, por ejemplo `Reacciones`, `Memes`, `Raid` o `Especiales`.
+3. En la alerta, elige un archivo individual o un grupo. Si eliges un grupo, Neo Twitch selecciona un archivo aleatorio cada vez que se active la alerta.
+4. Neo Twitch crea o actualiza una fuente en OBS llamada `Neo Twitch - Imagen de alerta` o `Neo Twitch - Video de alerta` y la oculta al terminar la duracion configurada.
 
 Si no conecta, revisa esto:
 

@@ -295,6 +295,8 @@ public partial class MainWindow
         ObsVersionText.Text = FirstNonEmpty(_obsService.Version, "Sin version");
         ObsSceneCountText.Text = _obsService.Scenes.Count.ToString();
         ObsStudioModeText.Text = _obsService.StudioMode ? "Activado" : "Desactivado";
+        ObsScenesList.IsEnabled = _config.Obs.Enabled && _obsService.IsConnected && !_isObsConnecting;
+        ObsScenesList.Opacity = ObsScenesList.IsEnabled ? 1d : 0.58d;
 
         UpdateConnectionButtons();
         RefreshDashboardConnectionStates();

@@ -20,14 +20,25 @@ public partial class MainWindow
         AddLog("OBS: abriendo guia de obs-websocket.", ActivityLogKind.Obs);
     }
 
-    internal void ObsSettingsChanged(object sender, RoutedEventArgs e)
+    internal async void ObsSettingsChanged(object sender, RoutedEventArgs e)
     {
         if (_initializingComponent || _loadingUi)
         {
             return;
         }
 
+        var previousConnectionSignature = ObsConnectionSignature();
+        var wasConnected = _obsService.IsConnected;
         SaveGlobalSettingsFromFields();
+
+        if (wasConnected
+            && !string.Equals(previousConnectionSignature, ObsConnectionSignature(), StringComparison.Ordinal))
+        {
+            await _obsService.DisconnectAsync();
+            _obsSceneRows.Clear();
+            AddLog("OBS desconectado porque cambio la configuracion de conexion.", ActivityLogKind.Obs);
+        }
+
         _obsConnectionError = "";
         SaveConfig();
         UpdateObsStatusText();
@@ -390,5 +401,10 @@ public partial class MainWindow
         RefreshRulesView();
         UpdateRuleOptionVisibility();
         UpdateObsStatusText();
+    }
+
+    private string ObsConnectionSignature()
+    {
+        return $"{_config.Obs.Enabled}|{_config.Obs.Host.Trim()}|{_config.Obs.Port}|{_config.Obs.Password}";
     }
 }

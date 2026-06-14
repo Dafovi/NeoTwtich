@@ -3,14 +3,12 @@ using System.Windows.Controls;
 
 namespace NeoTwitch.Views;
 
-public partial class ActivityView : System.Windows.Controls.UserControl
+public partial class ActivityView : NeoTwitchView
 {
     public ActivityView()
     {
         InitializeComponent();
     }
-
-    private MainWindow? Host => Window.GetWindow(this) as MainWindow;
 
     private void ActivityFilterButton_CheckedChanged(object sender, RoutedEventArgs e)
     {

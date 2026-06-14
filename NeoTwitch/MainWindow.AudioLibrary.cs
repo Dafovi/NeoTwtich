@@ -14,7 +14,7 @@ namespace NeoTwitch;
 
 public partial class MainWindow
 {
-    private void AudioSearchBox_TextChanged(object sender, TextChangedEventArgs e)
+    internal void AudioSearchBox_TextChanged(object sender, TextChangedEventArgs e)
     {
         if (_loadingUi || sender is not System.Windows.Controls.TextBox textBox)
         {
@@ -25,7 +25,7 @@ public partial class MainWindow
         RefreshAudioLibraryView();
     }
 
-    private void AudioFilterButton_Click(object sender, RoutedEventArgs e)
+    internal void AudioFilterButton_Click(object sender, RoutedEventArgs e)
     {
         if (sender is not System.Windows.Controls.Button button)
         {
@@ -38,7 +38,7 @@ public partial class MainWindow
         RefreshAudioLibraryView();
     }
 
-    private void AudioLibraryGroupBox_DropDownClosed(object sender, EventArgs e)
+    internal void AudioLibraryGroupBox_DropDownClosed(object sender, EventArgs e)
     {
         if (_refreshingAudioLibrary
             || _loadingUi
@@ -69,7 +69,7 @@ public partial class MainWindow
         }, DispatcherPriority.Background);
     }
 
-    private void BrowseNewAudioButton_Click(object sender, RoutedEventArgs e)
+    internal void BrowseNewAudioButton_Click(object sender, RoutedEventArgs e)
     {
         var dialog = new WpfOpenFileDialog
         {
@@ -90,7 +90,7 @@ public partial class MainWindow
         }
     }
 
-    private async void SaveNewAudioButton_Click(object sender, RoutedEventArgs e)
+    internal async void SaveNewAudioButton_Click(object sender, RoutedEventArgs e)
     {
         if (string.IsNullOrWhiteSpace(_newAudioPath) || !File.Exists(_newAudioPath))
         {
@@ -144,7 +144,7 @@ public partial class MainWindow
         AddLog(_text.Format(UiTextKeys.LibrarySavedLog, _text.Get(UiTextKeys.AudioTitle), audio.DisplayName), ActivityLogKind.Audio);
     }
 
-    private void AddAudioGroupButton_Click(object sender, RoutedEventArgs e)
+    internal void AddAudioGroupButton_Click(object sender, RoutedEventArgs e)
     {
         var name = NewAudioGroupNameBox.Text.Trim();
         if (string.IsNullOrWhiteSpace(name))
@@ -173,7 +173,7 @@ public partial class MainWindow
         AddLog(_text.Format(UiTextKeys.LibraryGroupCreatedLog, _text.Get(UiTextKeys.AudioTitle), group.Name), ActivityLogKind.Audio);
     }
 
-    private void ViewAudioGroupButton_Click(object sender, RoutedEventArgs e)
+    internal void ViewAudioGroupButton_Click(object sender, RoutedEventArgs e)
     {
         if (sender is not FrameworkElement element || element.Tag is not string groupId)
         {
@@ -195,7 +195,7 @@ public partial class MainWindow
         AddLog(_text.Format(UiTextKeys.LibraryShowingGroupLog, _text.Get(UiTextKeys.AudioTitle), group.Name), ActivityLogKind.Audio);
     }
 
-    private void DeleteAudioGroupButton_Click(object sender, RoutedEventArgs e)
+    internal void DeleteAudioGroupButton_Click(object sender, RoutedEventArgs e)
     {
         if (sender is not FrameworkElement element || element.Tag is not string groupId)
         {
@@ -244,7 +244,7 @@ public partial class MainWindow
         AddLog(_text.Format(UiTextKeys.LibraryGroupDeletedLog, _text.Get(UiTextKeys.AudioTitle), group.Name), ActivityLogKind.Audio);
     }
 
-    private async void PreviewAudioButton_Click(object sender, RoutedEventArgs e)
+    internal async void PreviewAudioButton_Click(object sender, RoutedEventArgs e)
     {
         if (sender is not FrameworkElement element || element.Tag is not string audioId)
         {
@@ -279,7 +279,7 @@ public partial class MainWindow
         _ = WatchAudioPreviewCompletionAsync(playback, audio.Id);
     }
 
-    private void DeleteAudioButton_Click(object sender, RoutedEventArgs e)
+    internal void DeleteAudioButton_Click(object sender, RoutedEventArgs e)
     {
         if (sender is not FrameworkElement element || element.Tag is not string audioId)
         {

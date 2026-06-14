@@ -2420,70 +2420,7 @@
             </TabItem>
 
             <TabItem Header="Alexa">
-                <ScrollViewer VerticalScrollBarVisibility="Auto"
-                              HorizontalScrollBarVisibility="Auto">
-                    <Grid Margin="24" MinWidth="780">
-                        <Border Style="{StaticResource Card}">
-                            <StackPanel x:Name="AlexaBackgroundPanel">
-                                    <TextBlock Text="Fondo Alexa"
-                                               FontSize="18"
-                                               Style="{StaticResource TitleText}"
-                                               FontWeight="SemiBold"
-                                               Margin="0,0,0,12" />
-                                    <TextBlock Text="Esta salida envia eventos al relay de Alexa para controlar rutinas o dispositivos configurados en tu skill."
-                                               Style="{StaticResource MutedText}"
-                                               TextWrapping="Wrap"
-                                               Margin="0,0,0,12" />
-                                    <TextBlock x:Name="AlexaBackgroundUnavailableText"
-                                               Text="Primero activa y configura Alexa en Conexiones para usar este fondo."
-                                               Style="{StaticResource MutedText}"
-                                               TextWrapping="Wrap"
-                                               Margin="0,0,0,12" />
-                                    <CheckBox x:Name="BackgroundAlexaEnabledCheck"
-                                              Content="Mantener fondo Alexa encendido"
-                                              Checked="BackgroundFieldChanged"
-                                              Unchecked="BackgroundFieldChanged" />
-                                    <CheckBox x:Name="BackgroundAlexaTurnOffAfterEventCheck"
-                                              Content="Apagar fondo Alexa al finalizar evento"
-                                              Checked="BackgroundFieldChanged"
-                                              Unchecked="BackgroundFieldChanged" />
-
-                                    <Grid x:Name="BackgroundAlexaEventsGrid">
-                                        <Grid.ColumnDefinitions>
-                                            <ColumnDefinition Width="*" />
-                                            <ColumnDefinition Width="16" />
-                                            <ColumnDefinition Width="*" />
-                                        </Grid.ColumnDefinitions>
-                                        <StackPanel>
-                                            <TextBlock Text="Evento Alexa encendido"
-                                                       Style="{StaticResource MutedText}" />
-                                            <TextBox x:Name="BackgroundAlexaOnEventBox"
-                                                     TextChanged="BackgroundFieldChanged"
-                                                     ToolTip="Evento que recibira el relay cuando el fondo Alexa debe quedar encendido." />
-                                        </StackPanel>
-                                        <StackPanel Grid.Column="2">
-                                            <TextBlock Text="Evento Alexa apagado"
-                                                       Style="{StaticResource MutedText}" />
-                                            <TextBox x:Name="BackgroundAlexaOffEventBox"
-                                                     TextChanged="BackgroundFieldChanged"
-                                                     ToolTip="Evento que recibira el relay cuando el fondo Alexa debe quedar apagado." />
-                                        </StackPanel>
-                                    </Grid>
-
-                                    <WrapPanel Margin="0,8,0,0">
-                                        <Button x:Name="ApplyAlexaBackgroundButton"
-                                                Content="Aplicar fondo Alexa"
-                                                Style="{StaticResource PrimaryButton}"
-                                                Click="ApplyAlexaBackgroundButton_Click" />
-                                        <Button Content="Apagar fondo Alexa"
-                                                x:Name="StopAlexaBackgroundButton"
-                                                Style="{StaticResource DangerButton}"
-                                                Click="StopAlexaBackgroundButton_Click" />
-                                    </WrapPanel>
-                                </StackPanel>
-                        </Border>
-                    </Grid>
-                </ScrollViewer>
+                <views:AlexaView x:Name="AlexaView" />
             </TabItem>
 
             <TabItem Header="Audio">

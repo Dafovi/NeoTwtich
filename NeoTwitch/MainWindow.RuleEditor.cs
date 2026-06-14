@@ -516,7 +516,7 @@ public partial class MainWindow
         ScheduleBackgroundApply();
     }
 
-    private void BackgroundFieldChanged(object sender, RoutedEventArgs e)
+    internal void BackgroundFieldChanged(object sender, RoutedEventArgs e)
     {
         if (_initializingComponent || _loadingUi)
         {
@@ -673,7 +673,7 @@ public partial class MainWindow
         await ApplyArduinoBackgroundAsync();
     }
 
-    private async void ApplyAlexaBackgroundButton_Click(object sender, RoutedEventArgs e)
+    internal async void ApplyAlexaBackgroundButton_Click(object sender, RoutedEventArgs e)
     {
         SaveGlobalSettingsFromFields();
         SaveBackgroundFromFields();
@@ -693,7 +693,7 @@ public partial class MainWindow
         await StopLightsAsync(LightCommand.ResolveTargets(_config, ""));
     }
 
-    private async void StopAlexaBackgroundButton_Click(object sender, RoutedEventArgs e)
+    internal async void StopAlexaBackgroundButton_Click(object sender, RoutedEventArgs e)
     {
         SaveGlobalSettingsFromFields();
         SaveBackgroundFromFields();

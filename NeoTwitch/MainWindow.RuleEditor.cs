@@ -386,6 +386,7 @@ public partial class MainWindow
         RefreshRulesView();
         UpdateRuleOptionVisibility();
         ApplyBackgroundOutputMode();
+        UpdateNavigationButtons();
         UpdateCloseBehaviorCards();
     }
 
@@ -414,6 +415,7 @@ public partial class MainWindow
         UpdateSensitiveFieldVisibility();
         RefreshRulesView();
         UpdateRuleOptionVisibility();
+        UpdateNavigationButtons();
     }
 
     internal async void TestAlexaButton_Click(object sender, RoutedEventArgs e)

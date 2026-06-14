@@ -71,7 +71,7 @@
                             </Grid>
                         </Border>
 
-                        <Border Grid.Column="2"
+                        <Border Grid.Column="4"
                                 Style="{StaticResource Card}"
                                 Padding="20"
                                 MinHeight="96">
@@ -109,7 +109,7 @@
                             </Grid>
                         </Border>
 
-                        <Border Grid.Column="4"
+                        <Border Grid.Column="6"
                                 Style="{StaticResource Card}"
                                 Padding="20"
                                 MinHeight="96">
@@ -147,7 +147,7 @@
                             </Grid>
                         </Border>
 
-                        <Border Grid.Column="6"
+                        <Border Grid.Column="8"
                                 Style="{StaticResource Card}"
                                 Padding="20"
                                 MinHeight="96">
@@ -185,7 +185,7 @@
                             </Grid>
                         </Border>
 
-                        <Border Grid.Column="8"
+                        <Border Grid.Column="2"
                                 Style="{StaticResource Card}"
                                 Padding="20"
                                 MinHeight="96">

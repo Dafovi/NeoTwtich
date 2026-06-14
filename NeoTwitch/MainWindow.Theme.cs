@@ -541,6 +541,8 @@ public partial class MainWindow
             return;
         }
 
+        UpdateServiceNavigationVisibility();
+
         var palette = _config.DarkMode
             ? ThemePalette.Dark
             : ThemePalette.Light;
@@ -549,6 +551,35 @@ public partial class MainWindow
         {
             ApplyNavigationButtonTheme(button, palette);
         }
+    }
+
+    private void UpdateServiceNavigationVisibility()
+    {
+        if (_initializingComponent)
+        {
+            return;
+        }
+
+        SetNavigationTargetVisible(NavStripsButton, LightsTab, _config.ArduinoEnabled);
+        SetNavigationTargetVisible(NavAlexaButton, AlexaTab, _config.Alexa.Enabled);
+        SetNavigationTargetVisible(NavObsButton, ObsTab, _config.Obs.Enabled);
+        SetNavigationTargetVisible(NavImagesButton, ImagesTab, _config.Obs.Enabled);
+        SetNavigationTargetVisible(NavVideosButton, VideosTab, _config.Obs.Enabled);
+
+        if (MainTabs.SelectedItem is TabItem { Visibility: not Visibility.Visible })
+        {
+            MainTabs.SelectedItem = ConnectionsTab;
+        }
+    }
+
+    private static void SetNavigationTargetVisible(
+        System.Windows.Controls.Button button,
+        TabItem tab,
+        bool isVisible)
+    {
+        var visibility = isVisible ? Visibility.Visible : Visibility.Collapsed;
+        button.Visibility = visibility;
+        tab.Visibility = visibility;
     }
 
     private void ApplyNavigationButtonTheme(System.Windows.Controls.Button button, ThemePalette palette)

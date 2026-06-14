@@ -89,6 +89,7 @@ public partial class MainWindow
             UpdateObsStatusText();
             UpdateSensitiveFieldVisibility();
             ApplyTheme();
+            UpdateNavigationButtons();
             UpdateStatusText();
             RefreshMediaLibraryView(MediaLibraryKind.Image);
             RefreshMediaLibraryView(MediaLibraryKind.Video);

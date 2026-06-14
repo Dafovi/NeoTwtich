@@ -271,47 +271,47 @@
                     BorderThickness="0"
                     Padding="0"
                     SelectionChanged="MainTabs_SelectionChanged">
-            <TabItem Header="Panel">
+            <TabItem x:Name="DashboardTab" Header="Panel">
                 <views:DashboardView x:Name="DashboardView" />
             </TabItem>
 
-            <TabItem Header="Conexiones">
+            <TabItem x:Name="ConnectionsTab" Header="Conexiones">
                 <views:ConnectionsView x:Name="ConnectionsView" />
             </TabItem>
 
-            <TabItem Header="Alertas">
+            <TabItem x:Name="AlertsTab" Header="Alertas">
                 <views:AlertsView x:Name="AlertsView" />
             </TabItem>
 
-            <TabItem Header="Luces de fondo">
+            <TabItem x:Name="LightsTab" Header="Luces de fondo">
                 <views:LightsView x:Name="LightsView" />
             </TabItem>
 
-            <TabItem Header="Alexa">
+            <TabItem x:Name="AlexaTab" Header="Alexa">
                 <views:AlexaView x:Name="AlexaView" />
             </TabItem>
 
-            <TabItem Header="Audio">
+            <TabItem x:Name="AudioTab" Header="Audio">
                 <views:AudioView x:Name="AudioView" />
             </TabItem>
 
-            <TabItem Header="Imagenes">
+            <TabItem x:Name="ImagesTab" Header="Imagenes">
                 <views:ImagesView x:Name="ImagesView" />
             </TabItem>
 
-            <TabItem Header="Videos">
+            <TabItem x:Name="VideosTab" Header="Videos">
                 <views:VideosView x:Name="VideosView" />
             </TabItem>
 
-            <TabItem Header="OBS">
+            <TabItem x:Name="ObsTab" Header="OBS">
                 <views:ObsView x:Name="ObsView" />
             </TabItem>
 
-            <TabItem Header="Configuracion">
+            <TabItem x:Name="SettingsTab" Header="Configuracion">
                 <views:SettingsView x:Name="SettingsView" />
             </TabItem>
 
-            <TabItem Header="Actividad">
+            <TabItem x:Name="ActivityTab" Header="Actividad">
                 <views:ActivityView x:Name="ActivityView" />
             </TabItem>
         </TabControl>

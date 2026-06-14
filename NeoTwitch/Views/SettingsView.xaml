@@ -436,6 +436,10 @@
                                               Content="Conectar Arduino al abrir"
                                               Checked="GlobalSettingsChanged"
                                               Unchecked="GlobalSettingsChanged" />
+                                    <CheckBox x:Name="ObsAutoReconnectCheck"
+                                              Content="Conectar OBS al abrir"
+                                              Checked="GlobalSettingsChanged"
+                                              Unchecked="GlobalSettingsChanged" />
                                     <TextBlock Text="Estas opciones intentan conectar los servicios apenas abre Neo Twitch."
                                                Style="{StaticResource MutedText}"
                                                FontSize="12"

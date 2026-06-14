@@ -174,7 +174,7 @@
                             </Grid>
                     </Border>
 
-                    <Border Grid.Row="2"
+                    <Border Grid.Row="4"
                             Style="{StaticResource Card}"
                             Padding="18">
                             <Grid>
@@ -269,7 +269,7 @@
                             </Grid>
                     </Border>
 
-                    <Border Grid.Row="4"
+                    <Border Grid.Row="6"
                             Style="{StaticResource Card}"
                             Padding="18">
                             <Grid>
@@ -413,7 +413,7 @@
                             </Grid>
                     </Border>
 
-                    <Border Grid.Row="6"
+                    <Border Grid.Row="2"
                             Style="{StaticResource Card}"
                             Padding="18">
                             <Grid>
@@ -528,16 +528,10 @@
                                         <ColumnDefinition Width="*" />
                                         <ColumnDefinition Width="360" />
                                     </Grid.ColumnDefinitions>
-                                    <StackPanel>
-                                        <CheckBox x:Name="ObsAutoReconnectCheck"
-                                                  Content="Reconectar automaticamente al iniciar"
-                                                  Checked="ObsSettingsChanged"
-                                                  Unchecked="ObsSettingsChanged" />
-                                        <TextBlock x:Name="ObsConnectionHelpText"
-                                                   Style="{StaticResource MutedText}"
-                                                   TextWrapping="Wrap"
-                                                   Margin="0,4,0,0" />
-                                    </StackPanel>
+                                    <TextBlock x:Name="ObsConnectionHelpText"
+                                               Style="{StaticResource MutedText}"
+                                               TextWrapping="Wrap"
+                                               VerticalAlignment="Center" />
                                     <WrapPanel Grid.Column="1"
                                                HorizontalAlignment="Right">
                                         <Button Content="Ver guia OBS"

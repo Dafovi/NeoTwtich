@@ -44,6 +44,7 @@ public partial class MainWindow
         _obsConnectionError = "";
         SaveConfig();
         UpdateObsStatusText();
+        UpdateNavigationButtons();
         UpdateSensitiveFieldVisibility();
     }
 

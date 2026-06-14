@@ -46,7 +46,6 @@ public partial class MainWindow
     private WpfTextBox ObsPasswordBox => ConnectionsView.ObsPasswordBox;
     private WpfTextBlock ObsPasswordMaskText => ConnectionsView.ObsPasswordMaskText;
     private WpfButton ObsPasswordRevealButton => ConnectionsView.ObsPasswordRevealButton;
-    private WpfCheckBox ObsAutoReconnectCheck => ConnectionsView.ObsAutoReconnectCheck;
     private WpfTextBlock ObsConnectionHelpText => ConnectionsView.ObsConnectionHelpText;
     private WpfButton TestObsButton => ConnectionsView.TestObsButton;
     private WpfButton ConnectObsButton => ConnectionsView.ConnectObsButton;

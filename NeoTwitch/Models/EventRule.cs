@@ -395,13 +395,13 @@ public sealed class EventRule : INotifyPropertyChanged
 
     public string EventIconPath => EventKind switch
     {
-        TwitchEventKind.Follow => "Assets/Icons/action_follower_teal.png",
-        TwitchEventKind.Subscription => "Assets/Icons/action_subscription_purple.png",
-        TwitchEventKind.Cheer => "Assets/Icons/action_bits_blue.png",
-        TwitchEventKind.ChatCommand => "Assets/Icons/action_message_green.png",
-        TwitchEventKind.ChannelPointRedemption => "Assets/Icons/activity_notification_lime.png",
-        TwitchEventKind.Raid => "Assets/Icons/activity_notification.png",
-        _ => "Assets/Icons/nav_rules.png"
+        TwitchEventKind.Follow => "/Assets/Icons/action_follower_teal.png",
+        TwitchEventKind.Subscription => "/Assets/Icons/action_subscription_purple.png",
+        TwitchEventKind.Cheer => "/Assets/Icons/action_bits_blue.png",
+        TwitchEventKind.ChatCommand => "/Assets/Icons/action_message_green.png",
+        TwitchEventKind.ChannelPointRedemption => "/Assets/Icons/activity_notification_lime.png",
+        TwitchEventKind.Raid => "/Assets/Icons/activity_notification.png",
+        _ => "/Assets/Icons/nav_rules.png"
     };
 
     public string EventAccentColor => EventKind switch

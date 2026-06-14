@@ -27,6 +27,7 @@ public partial class MainWindow
     private WpfTextBox DifferentRuleQueueCooldownBox => SettingsView.DifferentRuleQueueCooldownBox;
     private WpfCheckBox AutoTwitchCheck => SettingsView.AutoTwitchCheck;
     private WpfCheckBox AutoArduinoCheck => SettingsView.AutoArduinoCheck;
+    private WpfCheckBox ObsAutoReconnectCheck => SettingsView.ObsAutoReconnectCheck;
     private WpfTextBlock SettingsPathText => SettingsView.SettingsPathText;
     private WpfTextBlock BackupPathText => SettingsView.BackupPathText;
 }

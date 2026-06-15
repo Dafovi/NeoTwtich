@@ -38,6 +38,18 @@ public partial class MainWindow
         RefreshMediaLibraryView(MediaLibraryKind.Video);
     }
 
+    internal void VideoVolumeSlider_ValueChanged(object sender, RoutedPropertyChangedEventArgs<double> e)
+    {
+        if (_loadingUi)
+        {
+            return;
+        }
+
+        _config.VideoVolumePercent = (int)Math.Round(VideoVolumeSlider.Value);
+        UpdateVideoVolumeText();
+        SaveConfig();
+    }
+
     internal void ImageFilterButton_Click(object sender, RoutedEventArgs e)
     {
         SetMediaFilter(MediaLibraryKind.Image, sender);
@@ -431,6 +443,7 @@ public partial class MainWindow
                 asset.FilePath,
                 obsKind,
                 _config.Obs,
+                obsKind == ObsMediaKind.Video ? _config.VideoVolumePercent : null,
                 CancellationToken.None);
             ApplyObsResult(result);
             WriteObsOverlayState(asset, obsKind, TimeSpan.FromSeconds(5));
@@ -731,5 +744,10 @@ public partial class MainWindow
         return kind == MediaLibraryKind.Image
             ? _text.Get(UiTextKeys.ImagesTitle)
             : _text.Get(UiTextKeys.VideosTitle);
+    }
+
+    private void UpdateVideoVolumeText()
+    {
+        VideoVolumeValueText.Text = $"{_config.VideoVolumePercent}%";
     }
 }

@@ -194,6 +194,7 @@ public sealed class SettingsStore
         config.ThemeMode = NormalizeThemeMode(config.ThemeMode);
         config.BaudRate = Math.Clamp(config.BaudRate, 300, 921600);
         config.AlertVolumePercent = Math.Clamp(config.AlertVolumePercent, 0, 100);
+        config.VideoVolumePercent = Math.Clamp(config.VideoVolumePercent, 0, 100);
         config.AudioGroups = LibraryConfigNormalizer.NormalizeGroups(config.AudioGroups, "Grupo de audio");
         config.AudioLibrary = LibraryConfigNormalizer.NormalizeAssets(config.AudioLibrary, audio => audio.DurationMs = audio.DurationMs);
         config.ImageGroups = LibraryConfigNormalizer.NormalizeGroups(config.ImageGroups, "Grupo de imagenes");

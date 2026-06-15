@@ -1,6 +1,7 @@
 using WpfButton = System.Windows.Controls.Button;
 using WpfComboBox = System.Windows.Controls.ComboBox;
 using WpfItemsControl = System.Windows.Controls.ItemsControl;
+using WpfSlider = System.Windows.Controls.Slider;
 using WpfTextBlock = System.Windows.Controls.TextBlock;
 using WpfTextBox = System.Windows.Controls.TextBox;
 
@@ -9,6 +10,8 @@ namespace NeoTwitch;
 public partial class MainWindow
 {
     private WpfTextBlock VideoSavedCountText => VideosView.VideoSavedCountText;
+    private WpfSlider VideoVolumeSlider => VideosView.VideoVolumeSlider;
+    private WpfTextBlock VideoVolumeValueText => VideosView.VideoVolumeValueText;
     private WpfTextBlock VideoGroupCountText => VideosView.VideoGroupCountText;
     private WpfTextBlock LastVideoText => VideosView.LastVideoText;
     private WpfTextBox VideoSearchBox => VideosView.VideoSearchBox;

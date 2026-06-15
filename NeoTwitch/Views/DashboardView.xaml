@@ -29,8 +29,6 @@
                             <ColumnDefinition Width="*" />
                             <ColumnDefinition Width="12" />
                             <ColumnDefinition Width="*" />
-                            <ColumnDefinition Width="12" />
-                            <ColumnDefinition Width="*" />
                         </Grid.ColumnDefinitions>
 
                         <Border Grid.Column="0"
@@ -139,44 +137,6 @@
                                                Margin="0,5,0,0" />
                                 </StackPanel>
                                 <Border x:Name="DashboardAlexaStatusIcon"
-                                        Grid.Column="2"
-                                        Width="24"
-                                        Height="24"
-                                        Background="#F43F5E"
-                                        VerticalAlignment="Top" />
-                            </Grid>
-                        </Border>
-
-                        <Border Grid.Column="8"
-                                Style="{StaticResource Card}"
-                                Padding="20"
-                                MinHeight="96">
-                            <Grid>
-                                <Grid.ColumnDefinitions>
-                                    <ColumnDefinition Width="58" />
-                                    <ColumnDefinition Width="*" />
-                                    <ColumnDefinition Width="30" />
-                                </Grid.ColumnDefinitions>
-                                <Border Width="48"
-                                        Height="48"
-                                        CornerRadius="14"
-                                        Background="#1AB56CFF"
-                                        HorizontalAlignment="Left">
-                                    <Image Source="/Assets/Icons/service_audio.png"
-                                           Stretch="Uniform"
-                                           Margin="7" />
-                                </Border>
-                                <StackPanel Grid.Column="1" VerticalAlignment="Center">
-                                    <TextBlock Text="Audio"
-                                               FontSize="17"
-                                               Style="{StaticResource TitleText}"
-                                               FontWeight="SemiBold" />
-                                    <TextBlock x:Name="DashboardAudioStateText"
-                                               Text="Desconectado"
-                                               FontWeight="SemiBold"
-                                               Margin="0,5,0,0" />
-                                </StackPanel>
-                                <Border x:Name="DashboardAudioStatusIcon"
                                         Grid.Column="2"
                                         Width="24"
                                         Height="24"

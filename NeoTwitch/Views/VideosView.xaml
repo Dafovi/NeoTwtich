@@ -25,6 +25,8 @@
                     <Grid Grid.Row="1"
                           Margin="0,0,0,18">
                         <Grid.ColumnDefinitions>
+                            <ColumnDefinition Width="1.35*" />
+                            <ColumnDefinition Width="12" />
                             <ColumnDefinition Width="*" />
                             <ColumnDefinition Width="12" />
                             <ColumnDefinition Width="*" />
@@ -33,6 +35,53 @@
                         </Grid.ColumnDefinitions>
 
                         <Border Style="{StaticResource Card}">
+                            <Grid>
+                                <Grid.ColumnDefinitions>
+                                    <ColumnDefinition Width="54" />
+                                    <ColumnDefinition Width="*" />
+                                    <ColumnDefinition Width="64" />
+                                </Grid.ColumnDefinitions>
+                                <Border Width="44"
+                                        Height="44"
+                                        CornerRadius="12"
+                                        Background="#1814B8A6"
+                                        Tag="StaticBrush">
+                                    <Border Width="26"
+                                            Height="26"
+                                            Background="#14B8A6"
+                                            HorizontalAlignment="Center"
+                                            VerticalAlignment="Center"
+                                            Tag="StaticBrush">
+                                        <Border.OpacityMask>
+                                            <ImageBrush ImageSource="/Assets/Icons/service_audio.png"
+                                                        Stretch="Uniform" />
+                                        </Border.OpacityMask>
+                                    </Border>
+                                </Border>
+                                <StackPanel Grid.Column="1"
+                                            VerticalAlignment="Center">
+                                    <TextBlock Text="Volumen de videos"
+                                               Style="{StaticResource MutedText}" />
+                                    <Slider x:Name="VideoVolumeSlider"
+                                            Minimum="0"
+                                            Maximum="100"
+                                            Value="100"
+                                            Margin="0,8,12,0"
+                                            ValueChanged="VideoVolumeSlider_ValueChanged" />
+                                </StackPanel>
+                                <TextBlock x:Name="VideoVolumeValueText"
+                                           Grid.Column="2"
+                                           Text="100%"
+                                           Foreground="#14B8A6"
+                                           FontSize="18"
+                                           FontWeight="SemiBold"
+                                           VerticalAlignment="Center"
+                                           HorizontalAlignment="Right" />
+                            </Grid>
+                        </Border>
+
+                        <Border Grid.Column="2"
+                                Style="{StaticResource Card}">
                             <Grid>
                                 <Grid.ColumnDefinitions>
                                     <ColumnDefinition Width="54" />
@@ -68,7 +117,7 @@
                             </Grid>
                         </Border>
 
-                        <Border Grid.Column="2"
+                        <Border Grid.Column="4"
                                 Style="{StaticResource Card}">
                             <Grid>
                                 <Grid.ColumnDefinitions>
@@ -105,7 +154,7 @@
                             </Grid>
                         </Border>
 
-                        <Border Grid.Column="4"
+                        <Border Grid.Column="6"
                                 Style="{StaticResource Card}">
                             <Grid>
                                 <Grid.ColumnDefinitions>

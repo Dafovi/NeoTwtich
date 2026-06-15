@@ -157,6 +157,7 @@ public sealed class ObsWebSocketService : IAsyncDisposable
         string filePath,
         ObsMediaKind kind,
         ObsIntegrationConfig? overlayConfig,
+        int? videoVolumePercent,
         CancellationToken cancellationToken)
     {
         if (string.IsNullOrWhiteSpace(sceneName))
@@ -212,6 +213,11 @@ public sealed class ObsWebSocketService : IAsyncDisposable
             }
 
             await SetSceneItemEnabledAsync(sceneName, sourceName, enabled: true, token);
+            if (kind == ObsMediaKind.Video && videoVolumePercent is int volumePercent)
+            {
+                await SetInputVolumeAsync(sourceName, volumePercent, token);
+            }
+
             if (overlayConfig is not null)
             {
                 await ApplySceneItemTransformAsync(sceneName, sourceName, overlayConfig, token);
@@ -380,6 +386,22 @@ public sealed class ObsWebSocketService : IAsyncDisposable
                     ["boundsWidth"] = mediaWidth,
                     ["boundsHeight"] = mediaHeight
                 }
+            },
+            cancellationToken);
+    }
+
+    private async Task SetInputVolumeAsync(
+        string sourceName,
+        int volumePercent,
+        CancellationToken cancellationToken)
+    {
+        var inputVolumeMul = Math.Clamp(volumePercent, 0, 100) / 100d;
+        await SendRequestAsync(
+            "SetInputVolume",
+            new Dictionary<string, object?>
+            {
+                ["inputName"] = sourceName.Trim(),
+                ["inputVolumeMul"] = inputVolumeMul
             },
             cancellationToken);
     }

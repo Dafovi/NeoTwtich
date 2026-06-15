@@ -23,6 +23,7 @@ public sealed class AppConfig
     public bool DarkMode { get; set; }
     public bool CloseToTray { get; set; } = true;
     public int AlertVolumePercent { get; set; } = 100;
+    public int VideoVolumePercent { get; set; } = 100;
     public ObservableCollection<AudioAssetConfig> AudioLibrary { get; set; } = [];
     public ObservableCollection<AudioGroupConfig> AudioGroups { get; set; } = [];
     public ObservableCollection<MediaAssetConfig> ImageLibrary { get; set; } = [];

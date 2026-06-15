@@ -377,6 +377,7 @@ public partial class MainWindow
                 asset.FilePath,
                 rule.ObsMediaKind,
                 _config.Obs,
+                rule.ObsMediaKind == ObsMediaKind.Video ? _config.VideoVolumePercent : null,
                 cancellationToken);
 
             ApplyObsResult(result);

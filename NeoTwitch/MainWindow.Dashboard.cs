@@ -225,9 +225,6 @@ public partial class MainWindow
                     : _alexaRelayConnected
                         ? ConnectionVisualState.Connected
                         : ConnectionVisualState.Warning;
-        var audioState = _config.AlertVolumePercent > 0
-            ? ConnectionVisualState.Connected
-            : ConnectionVisualState.Disabled;
         var obsState = !_config.Obs.Enabled
             ? ConnectionVisualState.Disabled
             : _isObsConnecting
@@ -253,11 +250,6 @@ public partial class MainWindow
             DashboardAlexaStatusIcon,
             alexaState,
             warningText: _config.Alexa.IsConfigured ? "Configurado" : "Incompleta");
-        SetDashboardConnectionState(
-            DashboardAudioStateText,
-            DashboardAudioStatusIcon,
-            audioState,
-            connectedText: $"{_config.AlertVolumePercent}%");
         SetDashboardConnectionState(
             DashboardObsStateText,
             DashboardObsStatusIcon,

@@ -13,6 +13,8 @@ public partial class VideosView : NeoTwitchView
 
     private void VideoSearchBox_TextChanged(object sender, TextChangedEventArgs e) => Host?.VideoSearchBox_TextChanged(sender, e);
 
+    private void VideoVolumeSlider_ValueChanged(object sender, RoutedPropertyChangedEventArgs<double> e) => Host?.VideoVolumeSlider_ValueChanged(sender, e);
+
     private void VideoFilterButton_Click(object sender, RoutedEventArgs e) => Host?.VideoFilterButton_Click(sender, e);
 
     private void VideoLibraryGroupBox_DropDownClosed(object sender, EventArgs e) => Host?.VideoLibraryGroupBox_DropDownClosed(sender, e);

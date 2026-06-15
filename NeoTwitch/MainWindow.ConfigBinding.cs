@@ -28,6 +28,7 @@ public partial class MainWindow
             ThemeModeBox.SelectedValue = _config.ThemeMode;
             CloseToTrayCheck.IsChecked = _config.CloseToTray;
             AlertVolumeSlider.Value = _config.AlertVolumePercent;
+            VideoVolumeSlider.Value = _config.VideoVolumePercent;
             MaxQueuedSameRuleAlertsBox.Text = _config.MaxQueuedSameRuleAlerts.ToString();
             SameRuleQueueCooldownBox.Text = _config.SameRuleQueueCooldownMs.ToString();
             MaxQueuedDifferentRuleAlertsBox.Text = _config.MaxQueuedDifferentRuleAlerts.ToString();
@@ -101,6 +102,7 @@ public partial class MainWindow
             UpdateStatusText();
             RefreshMediaLibraryView(MediaLibraryKind.Image);
             RefreshMediaLibraryView(MediaLibraryKind.Video);
+            UpdateVideoVolumeText();
         }
         finally
         {
@@ -222,6 +224,7 @@ public partial class MainWindow
         _config.DarkMode = ResolveDarkMode(_config.ThemeMode);
         _config.CloseToTray = CloseToTrayCheck.IsChecked == true;
         _config.AlertVolumePercent = (int)Math.Round(AlertVolumeSlider.Value);
+        _config.VideoVolumePercent = (int)Math.Round(VideoVolumeSlider.Value);
         _config.MaxQueuedSameRuleAlerts = ParseInt(MaxQueuedSameRuleAlertsBox.Text, 1, 0, 100);
         _config.SameRuleQueueCooldownMs = ParseInt(SameRuleQueueCooldownBox.Text, 0, 0, 600000);
         _config.MaxQueuedDifferentRuleAlerts = ParseInt(MaxQueuedDifferentRuleAlertsBox.Text, 3, 0, 100);

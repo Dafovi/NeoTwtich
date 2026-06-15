@@ -289,7 +289,16 @@ Para usar imagenes o videos en alertas:
 1. Agrega tus archivos en las pestañas `Imagenes` o `Videos`.
 2. Opcionalmente crea grupos, por ejemplo `Reacciones`, `Memes`, `Raid` o `Especiales`.
 3. En la alerta, elige un archivo individual o un grupo. Si eliges un grupo, Neo Twitch selecciona un archivo aleatorio cada vez que se active la alerta.
-4. Neo Twitch crea o actualiza una fuente en OBS llamada `Neo Twitch - Imagen de alerta` o `Neo Twitch - Video de alerta` y la oculta al terminar la duracion configurada.
+4. No tienes que crear una fuente manualmente en OBS para que esto funcione. Por defecto Neo Twitch usa WebSocket para crear o actualizar una fuente normal dentro de OBS llamada `Neo Twitch - Imagen de alerta` o `Neo Twitch - Video de alerta`. Esa fuente se muestra cuando llega la alerta y se oculta al terminar la duracion configurada.
+
+Tambien existe una opcion de fuente de navegador:
+
+1. En la pestaña `OBS`, copia la URL que aparece en `Fuente de navegador`.
+2. En OBS, agrega una `Fuente de navegador`.
+3. Pega esa URL local en el campo de URL.
+4. Ajusta el ancho y alto segun la resolucion que uses, por ejemplo `1920 x 1080`.
+
+Esta fuente de navegador es opcional. Sirve si prefieres tener una fuente fija en tu escena y que Neo Twitch solo actualice lo que se muestra dentro de ella. Si no la usas, las alertas de imagen y video siguen funcionando con las fuentes normales que Neo Twitch crea por WebSocket.
 
 Si no conecta, revisa esto:
 

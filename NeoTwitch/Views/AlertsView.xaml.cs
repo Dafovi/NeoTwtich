@@ -34,6 +34,10 @@ public partial class AlertsView : NeoTwitchView
 
     private void RuleFieldChanged(object sender, RoutedPropertyChangedEventArgs<double> e) => Host?.RuleFieldChanged(sender, e);
 
+    private void TargetPinsChoiceBox_SelectionChanged(object sender, SelectionChangedEventArgs e) => Host?.TargetPinsChoiceBox_SelectionChanged(sender, e);
+
+    private void LightPresetButton_Click(object sender, RoutedEventArgs e) => Host?.LightPresetButton_Click(sender, e);
+
     private void EventKindTile_Click(object sender, RoutedEventArgs e) => Host?.EventKindTile_Click(sender, e);
 
     private void PatternTile_Click(object sender, RoutedEventArgs e) => Host?.PatternTile_Click(sender, e);

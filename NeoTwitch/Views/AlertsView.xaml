@@ -480,7 +480,13 @@
                                                             <TextBlock x:Name="TargetPinsLabel"
                                                                        Text="Pines de salida"
                                                                        Style="{StaticResource MutedText}" />
+                                                            <ComboBox x:Name="TargetPinsChoiceBox"
+                                                                      DisplayMemberPath="Label"
+                                                                      SelectedValuePath="Value"
+                                                                      SelectionChanged="TargetPinsChoiceBox_SelectionChanged"
+                                                                      Margin="0,4,0,8" />
                                                             <TextBox x:Name="TargetPinsBox"
+                                                                     Visibility="Collapsed"
                                                                      TextChanged="RuleFieldChanged"
                                                                      ToolTip="Dejalo vacio para usar todas las tiras. Ejemplo: 6, 7" />
 
@@ -731,6 +737,22 @@
                                                                     Maximum="5000"
                                                                     TickFrequency="10"
                                                                     ValueChanged="RuleFieldChanged" />
+
+                                                            <TextBlock Text="Presets rapidos"
+                                                                       Style="{StaticResource MutedText}"
+                                                                       Margin="0,8,0,6" />
+                                                            <UniformGrid Columns="3"
+                                                                         Margin="0,0,0,12">
+                                                                <Button Content="Suave"
+                                                                        Tag="Soft"
+                                                                        Click="LightPresetButton_Click" />
+                                                                <Button Content="Medio"
+                                                                        Tag="Medium"
+                                                                        Click="LightPresetButton_Click" />
+                                                                <Button Content="Rapido"
+                                                                        Tag="Fast"
+                                                                        Click="LightPresetButton_Click" />
+                                                            </UniformGrid>
 
                                                             <TextBlock Text="Vista previa"
                                                                        FontWeight="SemiBold"

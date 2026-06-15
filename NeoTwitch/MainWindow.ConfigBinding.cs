@@ -154,6 +154,7 @@ public partial class MainWindow
             RuleAudioGroupBox.SelectedValue = rule.AudioGroupId;
             PatternBox.SelectedValue = rule.Pattern;
             TargetPinsBox.Text = rule.TargetPins;
+            RefreshRulePinChoices();
             PrimaryColorBox.Text = LightCommand.NormalizeColor(rule.PrimaryColor);
             SecondaryColorBox.Text = LightCommand.NormalizeColor(rule.SecondaryColor);
             TertiaryColorBox.Text = LightCommand.NormalizeColor(rule.TertiaryColor);
@@ -382,6 +383,7 @@ public partial class MainWindow
         StripsList.Items.Refresh();
         RefreshRulesView();
         UpdateLightsArduinoStatus();
+        RefreshRulePinChoices();
     }
 
     private void UpdateRuleOptionVisibility()

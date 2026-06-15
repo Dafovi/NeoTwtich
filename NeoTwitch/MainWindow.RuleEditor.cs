@@ -660,6 +660,96 @@ public partial class MainWindow
         UpdateRuleLedPreviewTimerState();
     }
 
+    internal void TargetPinsChoiceBox_SelectionChanged(object sender, SelectionChangedEventArgs e)
+    {
+        if (_initializingComponent || _loadingRule)
+        {
+            return;
+        }
+
+        TargetPinsBox.Text = TargetPinsChoiceBox.SelectedValue?.ToString() ?? "";
+        SaveCurrentRuleFromFields();
+        SetRuleDirtyState(true);
+    }
+
+    internal void LightPresetButton_Click(object sender, RoutedEventArgs e)
+    {
+        if (sender is not System.Windows.Controls.Button button || button.Tag is not string preset)
+        {
+            return;
+        }
+
+        switch (preset)
+        {
+            case "Soft":
+                BrightnessSlider.Value = 120;
+                DurationSlider.Value = 4500;
+                CycleSlider.Value = 160;
+                StepSlider.Value = 220;
+                break;
+            case "Fast":
+                BrightnessSlider.Value = 230;
+                DurationSlider.Value = 2200;
+                CycleSlider.Value = 35;
+                StepSlider.Value = 60;
+                break;
+            default:
+                BrightnessSlider.Value = 180;
+                DurationSlider.Value = 3500;
+                CycleSlider.Value = 80;
+                StepSlider.Value = 120;
+                break;
+        }
+
+        SaveCurrentRuleFromFields();
+        SetRuleDirtyState(true);
+    }
+
+    private void RefreshRulePinChoices()
+    {
+        if (TargetPinsChoiceBox is null)
+        {
+            return;
+        }
+
+        var currentPins = string.Join(", ", LightCommand.ParsePins(TargetPinsBox.Text));
+        var options = new List<UiOption<string>>
+        {
+            new("Todas las salidas", "")
+        };
+
+        foreach (var strip in _config.LedStrips.OrderBy(strip => strip.Pin))
+        {
+            var label = string.IsNullOrWhiteSpace(strip.Name)
+                ? $"Pin {strip.Pin}"
+                : $"{strip.Name} - Pin {strip.Pin}";
+            options.Add(new(label, strip.Pin.ToString()));
+        }
+
+        if (!string.IsNullOrWhiteSpace(currentPins)
+            && options.All(option => !string.Equals(option.Value, currentPins, StringComparison.OrdinalIgnoreCase)))
+        {
+            options.Add(new($"Personalizado ({currentPins})", currentPins));
+        }
+
+        var wasLoading = _loadingRule;
+        _loadingRule = true;
+        try
+        {
+            TargetPinsChoiceBox.ItemsSource = options;
+            TargetPinsChoiceBox.SelectedValue = currentPins;
+
+            if (TargetPinsChoiceBox.SelectedIndex < 0)
+            {
+                TargetPinsChoiceBox.SelectedIndex = 0;
+            }
+        }
+        finally
+        {
+            _loadingRule = wasLoading;
+        }
+    }
+
     internal void EventKindTile_Click(object sender, RoutedEventArgs e)
     {
         if (sender is not System.Windows.Controls.Button button

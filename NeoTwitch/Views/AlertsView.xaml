@@ -670,89 +670,204 @@
                                                                          TextChanged="RuleFieldChanged" />
                                                             </DockPanel>
 
-                                                            <Grid x:Name="BrightnessGrid">
+                                                            <Grid x:Name="BrightnessGrid"
+                                                                  Margin="0,10,0,14">
                                                                 <Grid.ColumnDefinitions>
                                                                     <ColumnDefinition Width="*" />
-                                                                    <ColumnDefinition Width="60" />
+                                                                    <ColumnDefinition Width="14" />
+                                                                    <ColumnDefinition Width="210" />
                                                                 </Grid.ColumnDefinitions>
-                                                                <TextBlock Text="Brillo" Style="{StaticResource MutedText}" />
-                                                                <TextBlock x:Name="BrightnessValueText"
-                                                                           Grid.Column="1"
-                                                                           HorizontalAlignment="Right"
-                                                                           Style="{StaticResource MutedText}" />
+                                                                <StackPanel VerticalAlignment="Center">
+                                                                    <TextBlock Text="Brillo"
+                                                                               Style="{StaticResource MutedText}" />
+                                                                    <Slider x:Name="BrightnessSlider"
+                                                                            Minimum="0"
+                                                                            Maximum="255"
+                                                                            TickFrequency="1"
+                                                                            Margin="0,12,0,0"
+                                                                            ValueChanged="RuleFieldChanged" />
+                                                                </StackPanel>
+                                                                <Border Grid.Column="2"
+                                                                        BorderBrush="{DynamicResource ThemeBorderBrush}"
+                                                                        BorderThickness="1"
+                                                                        CornerRadius="14"
+                                                                        Padding="12"
+                                                                        Background="{DynamicResource ThemeSurfaceBrush}">
+                                                                    <Grid>
+                                                                        <Ellipse Width="88"
+                                                                                 Height="88"
+                                                                                 Stroke="#3014B8A6"
+                                                                                 StrokeThickness="12"
+                                                                                 HorizontalAlignment="Center"
+                                                                                 VerticalAlignment="Center" />
+                                                                        <Ellipse Width="88"
+                                                                                 Height="88"
+                                                                                 Stroke="#14B8A6"
+                                                                                 StrokeThickness="7"
+                                                                                 HorizontalAlignment="Center"
+                                                                                 VerticalAlignment="Center" />
+                                                                        <TextBlock x:Name="BrightnessValueText"
+                                                                                   FontSize="24"
+                                                                                   FontWeight="SemiBold"
+                                                                                   HorizontalAlignment="Center"
+                                                                                   VerticalAlignment="Center" />
+                                                                        <StackPanel Orientation="Horizontal"
+                                                                                    HorizontalAlignment="Right"
+                                                                                    VerticalAlignment="Bottom">
+                                                                            <Button Content="-"
+                                                                                    Width="34"
+                                                                                    Height="30"
+                                                                                    Margin="0,0,6,0"
+                                                                                    Tag="Brightness:-15"
+                                                                                    Click="LightValueButton_Click" />
+                                                                            <Button Content="+"
+                                                                                    Width="34"
+                                                                                    Height="30"
+                                                                                    Tag="Brightness:15"
+                                                                                    Click="LightValueButton_Click" />
+                                                                        </StackPanel>
+                                                                    </Grid>
+                                                                </Border>
                                                             </Grid>
-                                                            <Slider x:Name="BrightnessSlider"
-                                                                    Minimum="0"
-                                                                    Maximum="255"
-                                                                    TickFrequency="1"
-                                                                    ValueChanged="RuleFieldChanged" />
 
-                                                            <Grid x:Name="DurationGrid">
+                                                            <TextBlock Text="Tiempos"
+                                                                       FontWeight="SemiBold"
+                                                                       Margin="0,0,0,8" />
+                                                            <Grid Margin="0,0,0,12">
                                                                 <Grid.ColumnDefinitions>
                                                                     <ColumnDefinition Width="*" />
-                                                                    <ColumnDefinition Width="90" />
-                                                                </Grid.ColumnDefinitions>
-                                                                <TextBlock Text="Duracion sin audio" Style="{StaticResource MutedText}" />
-                                                                <TextBlock x:Name="DurationValueText"
-                                                                           Grid.Column="1"
-                                                                           HorizontalAlignment="Right"
-                                                                           Style="{StaticResource MutedText}" />
-                                                            </Grid>
-                                                            <Slider x:Name="DurationSlider"
-                                                                    Minimum="250"
-                                                                    Maximum="60000"
-                                                                    TickFrequency="250"
-                                                                    ValueChanged="RuleFieldChanged" />
-
-                                                            <Grid x:Name="CycleGrid">
-                                                                <Grid.ColumnDefinitions>
+                                                                    <ColumnDefinition Width="10" />
                                                                     <ColumnDefinition Width="*" />
-                                                                    <ColumnDefinition Width="90" />
-                                                                </Grid.ColumnDefinitions>
-                                                                <TextBlock Text="Delay entre pasos" Style="{StaticResource MutedText}" />
-                                                                <TextBlock x:Name="CycleValueText"
-                                                                           Grid.Column="1"
-                                                                           HorizontalAlignment="Right"
-                                                                           Style="{StaticResource MutedText}" />
-                                                            </Grid>
-                                                            <Slider x:Name="CycleSlider"
-                                                                    Minimum="10"
-                                                                    Maximum="2000"
-                                                                    TickFrequency="10"
-                                                                    ValueChanged="RuleFieldChanged" />
-
-                                                            <Grid x:Name="StepGrid">
-                                                                <Grid.ColumnDefinitions>
+                                                                    <ColumnDefinition Width="10" />
                                                                     <ColumnDefinition Width="*" />
-                                                                    <ColumnDefinition Width="90" />
+                                                                    <ColumnDefinition Width="10" />
+                                                                    <ColumnDefinition Width="1.05*" />
                                                                 </Grid.ColumnDefinitions>
-                                                                <TextBlock Text="Duracion del paso" Style="{StaticResource MutedText}" />
-                                                                <TextBlock x:Name="StepValueText"
-                                                                           Grid.Column="1"
-                                                                           HorizontalAlignment="Right"
-                                                                           Style="{StaticResource MutedText}" />
+                                                                <Grid x:Name="DurationGrid">
+                                                                    <Border BorderBrush="{DynamicResource ThemeBorderBrush}"
+                                                                            BorderThickness="1"
+                                                                            CornerRadius="12"
+                                                                            Padding="10"
+                                                                            Background="{DynamicResource ThemeSurfaceBrush}">
+                                                                        <StackPanel>
+                                                                            <TextBlock Text="Duracion sin audio"
+                                                                                       Style="{StaticResource MutedText}" />
+                                                                            <DockPanel Margin="0,8,0,8">
+                                                                                <Button Content="-"
+                                                                                        DockPanel.Dock="Left"
+                                                                                        Width="32"
+                                                                                        Tag="Duration:-250"
+                                                                                        Click="LightValueButton_Click" />
+                                                                                <Button Content="+"
+                                                                                        DockPanel.Dock="Right"
+                                                                                        Width="32"
+                                                                                        Tag="Duration:250"
+                                                                                        Click="LightValueButton_Click" />
+                                                                                <TextBlock x:Name="DurationValueText"
+                                                                                           TextAlignment="Center"
+                                                                                           FontWeight="SemiBold"
+                                                                                           VerticalAlignment="Center" />
+                                                                            </DockPanel>
+                                                                            <Slider x:Name="DurationSlider"
+                                                                                    Minimum="250"
+                                                                                    Maximum="60000"
+                                                                                    TickFrequency="250"
+                                                                                    ValueChanged="RuleFieldChanged" />
+                                                                        </StackPanel>
+                                                                    </Border>
+                                                                </Grid>
+                                                                <Grid x:Name="CycleGrid"
+                                                                      Grid.Column="2">
+                                                                    <Border BorderBrush="{DynamicResource ThemeBorderBrush}"
+                                                                            BorderThickness="1"
+                                                                            CornerRadius="12"
+                                                                            Padding="10"
+                                                                            Background="{DynamicResource ThemeSurfaceBrush}">
+                                                                        <StackPanel>
+                                                                            <TextBlock Text="Delay entre pasos"
+                                                                                       Style="{StaticResource MutedText}" />
+                                                                            <DockPanel Margin="0,8,0,8">
+                                                                                <Button Content="-"
+                                                                                        DockPanel.Dock="Left"
+                                                                                        Width="32"
+                                                                                        Tag="Cycle:-10"
+                                                                                        Click="LightValueButton_Click" />
+                                                                                <Button Content="+"
+                                                                                        DockPanel.Dock="Right"
+                                                                                        Width="32"
+                                                                                        Tag="Cycle:10"
+                                                                                        Click="LightValueButton_Click" />
+                                                                                <TextBlock x:Name="CycleValueText"
+                                                                                           TextAlignment="Center"
+                                                                                           FontWeight="SemiBold"
+                                                                                           VerticalAlignment="Center" />
+                                                                            </DockPanel>
+                                                                            <Slider x:Name="CycleSlider"
+                                                                                    Minimum="10"
+                                                                                    Maximum="2000"
+                                                                                    TickFrequency="10"
+                                                                                    ValueChanged="RuleFieldChanged" />
+                                                                        </StackPanel>
+                                                                    </Border>
+                                                                </Grid>
+                                                                <Grid x:Name="StepGrid"
+                                                                      Grid.Column="4">
+                                                                    <Border BorderBrush="{DynamicResource ThemeBorderBrush}"
+                                                                            BorderThickness="1"
+                                                                            CornerRadius="12"
+                                                                            Padding="10"
+                                                                            Background="{DynamicResource ThemeSurfaceBrush}">
+                                                                        <StackPanel>
+                                                                            <TextBlock Text="Duracion del paso"
+                                                                                       Style="{StaticResource MutedText}" />
+                                                                            <DockPanel Margin="0,8,0,8">
+                                                                                <Button Content="-"
+                                                                                        DockPanel.Dock="Left"
+                                                                                        Width="32"
+                                                                                        Tag="Step:-10"
+                                                                                        Click="LightValueButton_Click" />
+                                                                                <Button Content="+"
+                                                                                        DockPanel.Dock="Right"
+                                                                                        Width="32"
+                                                                                        Tag="Step:10"
+                                                                                        Click="LightValueButton_Click" />
+                                                                                <TextBlock x:Name="StepValueText"
+                                                                                           TextAlignment="Center"
+                                                                                           FontWeight="SemiBold"
+                                                                                           VerticalAlignment="Center" />
+                                                                            </DockPanel>
+                                                                            <Slider x:Name="StepSlider"
+                                                                                    Minimum="10"
+                                                                                    Maximum="5000"
+                                                                                    TickFrequency="10"
+                                                                                    ValueChanged="RuleFieldChanged" />
+                                                                        </StackPanel>
+                                                                    </Border>
+                                                                </Grid>
+                                                                <Border Grid.Column="6"
+                                                                        BorderBrush="{DynamicResource ThemeBorderBrush}"
+                                                                        BorderThickness="1"
+                                                                        CornerRadius="12"
+                                                                        Padding="10"
+                                                                        Background="{DynamicResource ThemeSurfaceBrush}">
+                                                                    <StackPanel>
+                                                                        <TextBlock Text="Presets rapidos"
+                                                                                   Style="{StaticResource MutedText}"
+                                                                                   Margin="0,0,0,8" />
+                                                                        <UniformGrid Columns="3">
+                                                                            <Button Content="Suave"
+                                                                                    Tag="Soft"
+                                                                                    Click="LightPresetButton_Click" />
+                                                                            <Button Content="Medio"
+                                                                                    Tag="Medium"
+                                                                                    Click="LightPresetButton_Click" />
+                                                                            <Button Content="Rapido"
+                                                                                    Tag="Fast"
+                                                                                    Click="LightPresetButton_Click" />
+                                                                        </UniformGrid>
+                                                                    </StackPanel>
+                                                                </Border>
                                                             </Grid>
-                                                            <Slider x:Name="StepSlider"
-                                                                    Minimum="10"
-                                                                    Maximum="5000"
-                                                                    TickFrequency="10"
-                                                                    ValueChanged="RuleFieldChanged" />
-
-                                                            <TextBlock Text="Presets rapidos"
-                                                                       Style="{StaticResource MutedText}"
-                                                                       Margin="0,8,0,6" />
-                                                            <UniformGrid Columns="3"
-                                                                         Margin="0,0,0,12">
-                                                                <Button Content="Suave"
-                                                                        Tag="Soft"
-                                                                        Click="LightPresetButton_Click" />
-                                                                <Button Content="Medio"
-                                                                        Tag="Medium"
-                                                                        Click="LightPresetButton_Click" />
-                                                                <Button Content="Rapido"
-                                                                        Tag="Fast"
-                                                                        Click="LightPresetButton_Click" />
-                                                            </UniformGrid>
 
                                                             <TextBlock Text="Vista previa"
                                                                        FontWeight="SemiBold"

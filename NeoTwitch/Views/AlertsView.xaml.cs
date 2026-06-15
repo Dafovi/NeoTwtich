@@ -38,6 +38,8 @@ public partial class AlertsView : NeoTwitchView
 
     private void LightPresetButton_Click(object sender, RoutedEventArgs e) => Host?.LightPresetButton_Click(sender, e);
 
+    private void LightValueButton_Click(object sender, RoutedEventArgs e) => Host?.LightValueButton_Click(sender, e);
+
     private void EventKindTile_Click(object sender, RoutedEventArgs e) => Host?.EventKindTile_Click(sender, e);
 
     private void PatternTile_Click(object sender, RoutedEventArgs e) => Host?.PatternTile_Click(sender, e);

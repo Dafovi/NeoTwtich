@@ -278,14 +278,60 @@
                                     <StackPanel x:Name="BackgroundBrightnessPanel"
                                                 Margin="0,2,0,0">
                                         <TextBlock Text="Brillo de fondo" Style="{StaticResource MutedText}" />
-                                        <TextBlock x:Name="BackgroundBrightnessValueText"
-                                                   HorizontalAlignment="Right"
-                                                   Style="{StaticResource MutedText}" />
-                                        <Slider x:Name="BackgroundBrightnessSlider"
-                                                Minimum="0"
-                                                Maximum="255"
-                                                TickFrequency="1"
-                                                ValueChanged="BackgroundFieldChanged" />
+                                        <Border BorderBrush="{DynamicResource ThemeBorderBrush}"
+                                                BorderThickness="1"
+                                                CornerRadius="14"
+                                                Padding="14"
+                                                Margin="0,8,0,0"
+                                                Background="{DynamicResource ThemeSurfaceBrush}">
+                                            <Grid>
+                                                <Grid.ColumnDefinitions>
+                                                    <ColumnDefinition Width="*" />
+                                                    <ColumnDefinition Width="130" />
+                                                </Grid.ColumnDefinitions>
+                                                <Slider x:Name="BackgroundBrightnessSlider"
+                                                        Minimum="0"
+                                                        Maximum="255"
+                                                        TickFrequency="1"
+                                                        VerticalAlignment="Center"
+                                                        ValueChanged="BackgroundFieldChanged" />
+                                                <Grid Grid.Column="1"
+                                                      Height="96">
+                                                    <Ellipse Width="78"
+                                                             Height="78"
+                                                             Stroke="#3014B8A6"
+                                                             StrokeThickness="11"
+                                                             HorizontalAlignment="Center"
+                                                             VerticalAlignment="Center" />
+                                                    <Ellipse Width="78"
+                                                             Height="78"
+                                                             Stroke="#14B8A6"
+                                                             StrokeThickness="7"
+                                                             HorizontalAlignment="Center"
+                                                             VerticalAlignment="Center" />
+                                                    <TextBlock x:Name="BackgroundBrightnessValueText"
+                                                               FontSize="21"
+                                                               FontWeight="SemiBold"
+                                                               HorizontalAlignment="Center"
+                                                               VerticalAlignment="Center" />
+                                                    <StackPanel Orientation="Horizontal"
+                                                                HorizontalAlignment="Right"
+                                                                VerticalAlignment="Bottom">
+                                                        <Button Content="-"
+                                                                Width="30"
+                                                                Height="28"
+                                                                Margin="0,0,6,0"
+                                                                Tag="Brightness:-15"
+                                                                Click="BackgroundLightValueButton_Click" />
+                                                        <Button Content="+"
+                                                                Width="30"
+                                                                Height="28"
+                                                                Tag="Brightness:15"
+                                                                Click="BackgroundLightValueButton_Click" />
+                                                    </StackPanel>
+                                                </Grid>
+                                            </Grid>
+                                        </Border>
                                     </StackPanel>
                                 </StackPanel>
 
@@ -340,39 +386,83 @@
                                              TextChanged="BackgroundFieldChanged" />
                                 </DockPanel>
 
-                                <Grid x:Name="BackgroundCycleGrid">
+                                <TextBlock Text="Tiempos de fondo"
+                                           FontWeight="SemiBold"
+                                           Margin="0,4,0,8" />
+                                <Grid Margin="0,0,0,12">
                                     <Grid.ColumnDefinitions>
                                         <ColumnDefinition Width="*" />
-                                        <ColumnDefinition Width="90" />
-                                    </Grid.ColumnDefinitions>
-                                    <TextBlock Text="Delay de fondo" Style="{StaticResource MutedText}" />
-                                    <TextBlock x:Name="BackgroundCycleValueText"
-                                               Grid.Column="1"
-                                               HorizontalAlignment="Right"
-                                               Style="{StaticResource MutedText}" />
-                                </Grid>
-                                <Slider x:Name="BackgroundCycleSlider"
-                                        Minimum="10"
-                                        Maximum="2000"
-                                        TickFrequency="10"
-                                        ValueChanged="BackgroundFieldChanged" />
-
-                                <Grid x:Name="BackgroundStepGrid">
-                                    <Grid.ColumnDefinitions>
+                                        <ColumnDefinition Width="12" />
                                         <ColumnDefinition Width="*" />
-                                        <ColumnDefinition Width="90" />
                                     </Grid.ColumnDefinitions>
-                                    <TextBlock Text="Duracion del paso de fondo" Style="{StaticResource MutedText}" />
-                                    <TextBlock x:Name="BackgroundStepValueText"
-                                               Grid.Column="1"
-                                               HorizontalAlignment="Right"
-                                               Style="{StaticResource MutedText}" />
+                                    <Grid x:Name="BackgroundCycleGrid">
+                                        <Border BorderBrush="{DynamicResource ThemeBorderBrush}"
+                                                BorderThickness="1"
+                                                CornerRadius="12"
+                                                Padding="10"
+                                                Background="{DynamicResource ThemeSurfaceBrush}">
+                                            <StackPanel>
+                                                <TextBlock Text="Delay de fondo"
+                                                           Style="{StaticResource MutedText}" />
+                                                <DockPanel Margin="0,8,0,8">
+                                                    <Button Content="-"
+                                                            DockPanel.Dock="Left"
+                                                            Width="32"
+                                                            Tag="Cycle:-10"
+                                                            Click="BackgroundLightValueButton_Click" />
+                                                    <Button Content="+"
+                                                            DockPanel.Dock="Right"
+                                                            Width="32"
+                                                            Tag="Cycle:10"
+                                                            Click="BackgroundLightValueButton_Click" />
+                                                    <TextBlock x:Name="BackgroundCycleValueText"
+                                                               TextAlignment="Center"
+                                                               FontWeight="SemiBold"
+                                                               VerticalAlignment="Center" />
+                                                </DockPanel>
+                                                <Slider x:Name="BackgroundCycleSlider"
+                                                        Minimum="10"
+                                                        Maximum="2000"
+                                                        TickFrequency="10"
+                                                        ValueChanged="BackgroundFieldChanged" />
+                                            </StackPanel>
+                                        </Border>
+                                    </Grid>
+                                    <Grid x:Name="BackgroundStepGrid"
+                                          Grid.Column="2">
+                                        <Border BorderBrush="{DynamicResource ThemeBorderBrush}"
+                                                BorderThickness="1"
+                                                CornerRadius="12"
+                                                Padding="10"
+                                                Background="{DynamicResource ThemeSurfaceBrush}">
+                                            <StackPanel>
+                                                <TextBlock Text="Duracion del paso de fondo"
+                                                           Style="{StaticResource MutedText}" />
+                                                <DockPanel Margin="0,8,0,8">
+                                                    <Button Content="-"
+                                                            DockPanel.Dock="Left"
+                                                            Width="32"
+                                                            Tag="Step:-10"
+                                                            Click="BackgroundLightValueButton_Click" />
+                                                    <Button Content="+"
+                                                            DockPanel.Dock="Right"
+                                                            Width="32"
+                                                            Tag="Step:10"
+                                                            Click="BackgroundLightValueButton_Click" />
+                                                    <TextBlock x:Name="BackgroundStepValueText"
+                                                               TextAlignment="Center"
+                                                               FontWeight="SemiBold"
+                                                               VerticalAlignment="Center" />
+                                                </DockPanel>
+                                                <Slider x:Name="BackgroundStepSlider"
+                                                        Minimum="10"
+                                                        Maximum="5000"
+                                                        TickFrequency="10"
+                                                        ValueChanged="BackgroundFieldChanged" />
+                                            </StackPanel>
+                                        </Border>
+                                    </Grid>
                                 </Grid>
-                                <Slider x:Name="BackgroundStepSlider"
-                                        Minimum="10"
-                                        Maximum="5000"
-                                        TickFrequency="10"
-                                        ValueChanged="BackgroundFieldChanged" />
 
                                 <TextBlock Text="Simulacion"
                                            FontWeight="SemiBold"

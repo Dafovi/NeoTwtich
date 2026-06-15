@@ -712,6 +712,39 @@ public partial class MainWindow
         SetRuleDirtyState(true);
     }
 
+    internal void LightValueButton_Click(object sender, RoutedEventArgs e)
+    {
+        if (_initializingComponent || _loadingRule || sender is not System.Windows.Controls.Button button)
+        {
+            return;
+        }
+
+        if (!TryParseSliderDelta(button.Tag?.ToString(), out var target, out var delta))
+        {
+            return;
+        }
+
+        var slider = target switch
+        {
+            "Brightness" => BrightnessSlider,
+            "Duration" => DurationSlider,
+            "Cycle" => CycleSlider,
+            "Step" => StepSlider,
+            _ => null
+        };
+
+        if (slider is null)
+        {
+            return;
+        }
+
+        AdjustSliderValue(slider, delta);
+        SaveCurrentRuleFromFields();
+        SetRuleDirtyState(true);
+        UpdateSliderLabels();
+        UpdateRuleLedPreviewFrame();
+    }
+
     private void RefreshRulePinChoices()
     {
         if (TargetPinsChoiceBox is null)
@@ -755,6 +788,25 @@ public partial class MainWindow
         {
             _loadingRule = wasLoading;
         }
+    }
+
+    private static bool TryParseSliderDelta(string? tag, out string target, out double delta)
+    {
+        target = "";
+        delta = 0;
+        var parts = (tag ?? "").Split(':', 2, StringSplitOptions.TrimEntries);
+        if (parts.Length != 2 || !double.TryParse(parts[1], out delta))
+        {
+            return false;
+        }
+
+        target = parts[0];
+        return !string.IsNullOrWhiteSpace(target);
+    }
+
+    private static void AdjustSliderValue(Slider slider, double delta)
+    {
+        slider.Value = Math.Clamp(slider.Value + delta, slider.Minimum, slider.Maximum);
     }
 
     internal void EventKindTile_Click(object sender, RoutedEventArgs e)
@@ -820,6 +872,39 @@ public partial class MainWindow
         SaveConfig();
         UpdateBackgroundOptionVisibility();
         UpdateBackgroundPatternTileSelection();
+        UpdateBackgroundLedPreviewFrame();
+        UpdateBackgroundLedPreviewTimerState();
+    }
+
+    internal void BackgroundLightValueButton_Click(object sender, RoutedEventArgs e)
+    {
+        if (_initializingComponent || _loadingUi || sender is not System.Windows.Controls.Button button)
+        {
+            return;
+        }
+
+        if (!TryParseSliderDelta(button.Tag?.ToString(), out var target, out var delta))
+        {
+            return;
+        }
+
+        var slider = target switch
+        {
+            "Brightness" => BackgroundBrightnessSlider,
+            "Cycle" => BackgroundCycleSlider,
+            "Step" => BackgroundStepSlider,
+            _ => null
+        };
+
+        if (slider is null)
+        {
+            return;
+        }
+
+        AdjustSliderValue(slider, delta);
+        SaveBackgroundFromFields();
+        SaveConfig();
+        UpdateSliderLabels();
         UpdateBackgroundLedPreviewFrame();
         UpdateBackgroundLedPreviewTimerState();
     }

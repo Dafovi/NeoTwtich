@@ -193,14 +193,21 @@ public partial class MainWindow
 
     private void UpdateSliderLabels()
     {
-        BrightnessValueText.Text = ((int)Math.Round(BrightnessSlider.Value)).ToString();
+        BrightnessValueText.Text = $"{ToPercent(BrightnessSlider.Value, BrightnessSlider.Maximum)}%";
         DurationValueText.Text = $"{(int)Math.Round(DurationSlider.Value)} ms";
         CycleValueText.Text = $"{(int)Math.Round(CycleSlider.Value)} ms";
         StepValueText.Text = $"{(int)Math.Round(StepSlider.Value)} ms";
-        BackgroundBrightnessValueText.Text = ((int)Math.Round(BackgroundBrightnessSlider.Value)).ToString();
+        BackgroundBrightnessValueText.Text = $"{ToPercent(BackgroundBrightnessSlider.Value, BackgroundBrightnessSlider.Maximum)}%";
         BackgroundCycleValueText.Text = $"{(int)Math.Round(BackgroundCycleSlider.Value)} ms";
         BackgroundStepValueText.Text = $"{(int)Math.Round(BackgroundStepSlider.Value)} ms";
         AlertVolumeValueText.Text = $"{(int)Math.Round(AlertVolumeSlider.Value)}%";
+    }
+
+    private static int ToPercent(double value, double maximum)
+    {
+        return maximum <= 0
+            ? 0
+            : (int)Math.Round(Math.Clamp(value / maximum, 0d, 1d) * 100d);
     }
 
     private void UpdateColorButtons()

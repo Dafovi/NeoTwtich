@@ -66,6 +66,18 @@ public partial class ColorPickerDialog : Window
         {
             block.Foreground = block.FontSize <= 15 ? new SolidColorBrush(muted) : new SolidColorBrush(text);
         }
+
+        CloseButton.Background = System.Windows.Media.Brushes.Transparent;
+        CloseButton.BorderBrush = System.Windows.Media.Brushes.Transparent;
+        CloseButton.Foreground = new SolidColorBrush(muted);
+
+        CancelDialogButton.Background = new SolidColorBrush(_darkMode ? WpfColor.FromRgb(10, 24, 38) : WpfColor.FromRgb(248, 250, 252));
+        CancelDialogButton.BorderBrush = new SolidColorBrush(border);
+        CancelDialogButton.Foreground = new SolidColorBrush(text);
+
+        ApplyColorButton.Background = new SolidColorBrush(WpfColor.FromRgb(20, 184, 166));
+        ApplyColorButton.BorderBrush = new SolidColorBrush(WpfColor.FromRgb(45, 212, 191));
+        ApplyColorButton.Foreground = System.Windows.Media.Brushes.White;
     }
 
     private void BuildRecentColors(IEnumerable<string> recentColors)

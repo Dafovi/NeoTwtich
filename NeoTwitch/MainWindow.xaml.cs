@@ -154,6 +154,7 @@ public partial class MainWindow : Window
     private bool _isObsSceneActionRunning;
     private bool _hasUnsavedRuleChanges;
     private bool _suppressRuleSelectionChange;
+    private bool _updatingLightValueFields;
     private bool _arduinoMonitorBusy;
     private bool _lastArduinoPortPresent = true;
     private bool? _lastAppliedStartWithWindows;

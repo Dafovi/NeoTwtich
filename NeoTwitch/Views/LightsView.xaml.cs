@@ -32,6 +32,8 @@ public partial class LightsView : NeoTwitchView
 
     private void BackgroundLightValueButton_Click(object sender, RoutedEventArgs e) => Host?.BackgroundLightValueButton_Click(sender, e);
 
+    private void BackgroundLightNumberBox_TextChanged(object sender, TextChangedEventArgs e) => Host?.BackgroundLightNumberBox_TextChanged(sender, e);
+
     private void BackgroundPrimaryColorButton_Click(object sender, RoutedEventArgs e) => Host?.BackgroundPrimaryColorButton_Click(sender, e);
 
     private void BackgroundSecondaryColorButton_Click(object sender, RoutedEventArgs e) => Host?.BackgroundSecondaryColorButton_Click(sender, e);

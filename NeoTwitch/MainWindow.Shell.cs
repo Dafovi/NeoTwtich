@@ -193,14 +193,28 @@ public partial class MainWindow
 
     private void UpdateSliderLabels()
     {
-        BrightnessValueText.Text = $"{ToPercent(BrightnessSlider.Value, BrightnessSlider.Maximum)}%";
-        DurationValueText.Text = $"{(int)Math.Round(DurationSlider.Value)} ms";
-        CycleValueText.Text = $"{(int)Math.Round(CycleSlider.Value)} ms";
-        StepValueText.Text = $"{(int)Math.Round(StepSlider.Value)} ms";
-        BackgroundBrightnessValueText.Text = $"{ToPercent(BackgroundBrightnessSlider.Value, BackgroundBrightnessSlider.Maximum)}%";
-        BackgroundCycleValueText.Text = $"{(int)Math.Round(BackgroundCycleSlider.Value)} ms";
-        BackgroundStepValueText.Text = $"{(int)Math.Round(BackgroundStepSlider.Value)} ms";
-        AlertVolumeValueText.Text = $"{(int)Math.Round(AlertVolumeSlider.Value)}%";
+        var brightnessPercent = ToPercent(BrightnessSlider.Value, BrightnessSlider.Maximum);
+        var backgroundBrightnessPercent = ToPercent(BackgroundBrightnessSlider.Value, BackgroundBrightnessSlider.Maximum);
+
+        _updatingLightValueFields = true;
+        try
+        {
+            BrightnessValueText.Text = $"{brightnessPercent}%";
+            DurationValueText.Text = ((int)Math.Round(DurationSlider.Value)).ToString();
+            CycleValueText.Text = ((int)Math.Round(CycleSlider.Value)).ToString();
+            StepValueText.Text = ((int)Math.Round(StepSlider.Value)).ToString();
+            BackgroundBrightnessValueText.Text = $"{backgroundBrightnessPercent}%";
+            BackgroundCycleValueText.Text = ((int)Math.Round(BackgroundCycleSlider.Value)).ToString();
+            BackgroundStepValueText.Text = ((int)Math.Round(BackgroundStepSlider.Value)).ToString();
+            AlertVolumeValueText.Text = $"{(int)Math.Round(AlertVolumeSlider.Value)}%";
+        }
+        finally
+        {
+            _updatingLightValueFields = false;
+        }
+
+        UpdateCircularProgress(BrightnessArc, brightnessPercent / 100d);
+        UpdateCircularProgress(BackgroundBrightnessArc, backgroundBrightnessPercent / 100d);
     }
 
     private static int ToPercent(double value, double maximum)
@@ -208,6 +222,47 @@ public partial class MainWindow
         return maximum <= 0
             ? 0
             : (int)Math.Round(Math.Clamp(value / maximum, 0d, 1d) * 100d);
+    }
+
+    private static void UpdateCircularProgress(System.Windows.Shapes.Path path, double progress)
+    {
+        const double center = 52d;
+        const double radius = 46d;
+
+        progress = Math.Clamp(progress, 0d, 1d);
+        if (progress <= 0d)
+        {
+            path.Data = Geometry.Empty;
+            return;
+        }
+
+        var adjustedProgress = progress >= 1d ? 0.9999d : progress;
+        var start = PointOnCircle(center, center, radius, -90d);
+        var end = PointOnCircle(center, center, radius, -90d + adjustedProgress * 360d);
+        var figure = new PathFigure
+        {
+            StartPoint = start,
+            IsClosed = false,
+            IsFilled = false
+        };
+
+        figure.Segments.Add(new ArcSegment(
+            end,
+            new System.Windows.Size(radius, radius),
+            0,
+            adjustedProgress > 0.5d,
+            SweepDirection.Clockwise,
+            true));
+
+        path.Data = new PathGeometry([figure]);
+    }
+
+    private static System.Windows.Point PointOnCircle(double centerX, double centerY, double radius, double degrees)
+    {
+        var radians = degrees * Math.PI / 180d;
+        return new System.Windows.Point(
+            centerX + radius * Math.Cos(radians),
+            centerY + radius * Math.Sin(radians));
     }
 
     private void UpdateColorButtons()

@@ -442,14 +442,14 @@ public partial class MainWindow
             && ((obsMediaSourceMode == MediaSourceMode.Single && !obsMediaHasAssets)
                 || (obsMediaSourceMode == MediaSourceMode.Group && !obsMediaHasGroups)), RuleObsMediaEmptyHintText);
 
-        SetVisible(useLights, LightConfigurationPanel, LightOptionsSeparator, TargetPinsLabel, TargetPinsBox, PatternGrid, RuleLedPreviewPanel);
+        SetVisible(useLights, LightConfigurationPanel, LightOptionsSeparator, TargetPinsLabel, TargetPinsChoiceBox, PatternGrid, RuleLedPreviewPanel);
         SetVisible(useLights && UsesPrimaryColor(pattern), PrimaryColorPanel);
         SetVisible(useLights && UsesSecondaryColor(pattern), SecondaryColorLabel, SecondaryColorPanel);
         SetVisible(useLights && UsesTertiaryColor(pattern), TertiaryColorLabel, TertiaryColorPanel);
-        SetVisible(useLights && UsesBrightness(pattern), BrightnessGrid, BrightnessSlider);
-        SetVisible(useLights && !playAudio, DurationGrid, DurationSlider);
-        SetVisible(useLights && UsesCycle(pattern), CycleGrid, CycleSlider);
-        SetVisible(useLights && UsesStep(pattern), StepGrid, StepSlider);
+        SetVisible(useLights && UsesBrightness(pattern), BrightnessGrid);
+        SetVisible(useLights && !playAudio, DurationGrid);
+        SetVisible(useLights && UsesCycle(pattern), CycleGrid);
+        SetVisible(useLights && UsesStep(pattern), StepGrid);
         UpdateRuleAudioModeSelection();
         UpdateRuleObsMediaModeSelection();
         RefreshRuleObsMediaChoices();
@@ -505,8 +505,8 @@ public partial class MainWindow
         SetVisible(enabled && UsesPrimaryColor(pattern), BackgroundPrimaryColorLabel, BackgroundPrimaryColorPanel);
         SetVisible(enabled && UsesSecondaryColor(pattern), BackgroundSecondaryColorLabel, BackgroundSecondaryColorPanel);
         SetVisible(enabled && UsesTertiaryColor(pattern), BackgroundTertiaryColorLabel, BackgroundTertiaryColorPanel);
-        SetVisible(enabled && UsesCycle(pattern), BackgroundCycleGrid, BackgroundCycleSlider);
-        SetVisible(enabled && UsesStep(pattern), BackgroundStepGrid, BackgroundStepSlider);
+        SetVisible(enabled && UsesCycle(pattern), BackgroundCycleGrid);
+        SetVisible(enabled && UsesStep(pattern), BackgroundStepGrid);
     }
 
     private void ApplyBackgroundOutputMode()

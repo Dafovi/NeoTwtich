@@ -745,6 +745,32 @@ public partial class MainWindow
         UpdateRuleLedPreviewFrame();
     }
 
+    internal void LightNumberBox_TextChanged(object sender, TextChangedEventArgs e)
+    {
+        if (_initializingComponent || _loadingRule || _updatingLightValueFields || sender is not System.Windows.Controls.TextBox textBox)
+        {
+            return;
+        }
+
+        var slider = ReferenceEquals(textBox, DurationValueText)
+            ? DurationSlider
+            : ReferenceEquals(textBox, CycleValueText)
+                ? CycleSlider
+                : ReferenceEquals(textBox, StepValueText)
+                    ? StepSlider
+                    : null;
+
+        if (slider is null || !TryApplySliderText(textBox, slider))
+        {
+            return;
+        }
+
+        SaveCurrentRuleFromFields();
+        SetRuleDirtyState(true);
+        UpdateSliderLabels();
+        UpdateRuleLedPreviewFrame();
+    }
+
     private void RefreshRulePinChoices()
     {
         if (TargetPinsChoiceBox is null)
@@ -807,6 +833,18 @@ public partial class MainWindow
     private static void AdjustSliderValue(Slider slider, double delta)
     {
         slider.Value = Math.Clamp(slider.Value + delta, slider.Minimum, slider.Maximum);
+    }
+
+    private static bool TryApplySliderText(System.Windows.Controls.TextBox textBox, Slider slider)
+    {
+        var text = textBox.Text.Trim();
+        if (!double.TryParse(text, out var value))
+        {
+            return false;
+        }
+
+        slider.Value = Math.Clamp(value, slider.Minimum, slider.Maximum);
+        return true;
     }
 
     internal void EventKindTile_Click(object sender, RoutedEventArgs e)
@@ -902,6 +940,31 @@ public partial class MainWindow
         }
 
         AdjustSliderValue(slider, delta);
+        SaveBackgroundFromFields();
+        SaveConfig();
+        UpdateSliderLabels();
+        UpdateBackgroundLedPreviewFrame();
+        UpdateBackgroundLedPreviewTimerState();
+    }
+
+    internal void BackgroundLightNumberBox_TextChanged(object sender, TextChangedEventArgs e)
+    {
+        if (_initializingComponent || _loadingUi || _updatingLightValueFields || sender is not System.Windows.Controls.TextBox textBox)
+        {
+            return;
+        }
+
+        var slider = ReferenceEquals(textBox, BackgroundCycleValueText)
+            ? BackgroundCycleSlider
+            : ReferenceEquals(textBox, BackgroundStepValueText)
+                ? BackgroundStepSlider
+                : null;
+
+        if (slider is null || !TryApplySliderText(textBox, slider))
+        {
+            return;
+        }
+
         SaveBackgroundFromFields();
         SaveConfig();
         UpdateSliderLabels();

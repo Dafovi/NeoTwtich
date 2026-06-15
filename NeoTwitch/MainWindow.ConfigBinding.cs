@@ -1,3 +1,4 @@
+using System.Collections.ObjectModel;
 using System.IO;
 using System.Windows;
 using NeoTwitch.Models;
@@ -530,7 +531,7 @@ public partial class MainWindow
 
     private void UpdateRuleLedPreviewFrame()
     {
-        if (_initializingComponent || _ruleLedPreviewDots.Count == 0)
+        if (_initializingComponent)
         {
             return;
         }
@@ -547,6 +548,7 @@ public partial class MainWindow
             return;
         }
 
+        ResizeLedPreviewDots(_ruleLedPreviewDots, RuleLedPreviewPanel.ActualWidth);
         var pattern = PatternBox.SelectedValue is LightPattern selectedPattern
             ? selectedPattern
             : LightPattern.Pulse;
@@ -585,6 +587,7 @@ public partial class MainWindow
 
     private void SetRuleLedPreviewAll(string color)
     {
+        ResizeLedPreviewDots(_ruleLedPreviewDots, RuleLedPreviewPanel.ActualWidth);
         var previewColor = ParsePreviewColor(color, "#334155");
         for (var i = 0; i < _ruleLedPreviewDots.Count; i++)
         {
@@ -632,7 +635,7 @@ public partial class MainWindow
 
     private void UpdateBackgroundLedPreviewFrame()
     {
-        if (_initializingComponent || _backgroundLedPreviewDots.Count == 0)
+        if (_initializingComponent)
         {
             return;
         }
@@ -649,6 +652,7 @@ public partial class MainWindow
             return;
         }
 
+        ResizeLedPreviewDots(_backgroundLedPreviewDots, BackgroundLedPreviewPanel.ActualWidth);
         var pattern = BackgroundPatternBox.SelectedValue is LightPattern selectedPattern
             ? selectedPattern
             : LightPattern.Solid;
@@ -687,6 +691,7 @@ public partial class MainWindow
 
     private void SetBackgroundLedPreviewAll(string color)
     {
+        ResizeLedPreviewDots(_backgroundLedPreviewDots, BackgroundLedPreviewPanel.ActualWidth);
         var previewColor = ParsePreviewColor(color, "#334155");
         for (var i = 0; i < _backgroundLedPreviewDots.Count; i++)
         {
@@ -765,6 +770,30 @@ public partial class MainWindow
             color,
             glowOpacity,
             glowRadius);
+    }
+
+    private static void ResizeLedPreviewDots(ObservableCollection<RuleLedPreviewDot> dots, double availableWidth)
+    {
+        var targetCount = CalculatePreviewDotCount(availableWidth);
+        while (dots.Count < targetCount)
+        {
+            dots.Add(PreviewDot(ParsePreviewColor("#334155", "#334155"), 0.08));
+        }
+
+        while (dots.Count > targetCount)
+        {
+            dots.RemoveAt(dots.Count - 1);
+        }
+    }
+
+    private static int CalculatePreviewDotCount(double availableWidth)
+    {
+        if (double.IsNaN(availableWidth) || availableWidth <= 0)
+        {
+            return 24;
+        }
+
+        return Math.Clamp((int)Math.Floor(availableWidth / 32d), 8, 36);
     }
 
     private static System.Windows.Media.Color ScalePreviewColor(System.Windows.Media.Color color, double factor)

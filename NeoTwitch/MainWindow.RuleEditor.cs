@@ -800,7 +800,6 @@ public partial class MainWindow
 
         SaveCurrentStripFromFields();
         SaveConfig();
-        ScheduleBackgroundApply();
     }
 
     internal void BackgroundFieldChanged(object sender, RoutedEventArgs e)

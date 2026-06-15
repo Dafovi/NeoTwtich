@@ -412,8 +412,9 @@
 
                                 <WrapPanel Margin="0,8,0,0">
                                     <Button x:Name="ApplyArduinoBackgroundButton"
-                                            Content="Aplicar fondo LED"
+                                            Content="Aplicar cambios a Arduino"
                                             Style="{StaticResource PrimaryButton}"
+                                            MinWidth="210"
                                             Click="ApplyArduinoBackgroundButton_Click" />
                                     <Button Content="Apagar tiras"
                                             Style="{StaticResource DangerButton}"
@@ -423,11 +424,33 @@
                                             Click="RemoveStripButton_Click" />
                                 </WrapPanel>
 
-                                <Button Content="Agregar salida de pin digital"
-                                        Style="{StaticResource PrimaryButton}"
-                                        HorizontalContentAlignment="Center"
-                                        Margin="0,12,0,0"
-                                        Click="AddStripButton_Click" />
+                                <Border BorderBrush="{DynamicResource ThemeBorderBrush}"
+                                        BorderThickness="1"
+                                        CornerRadius="12"
+                                        Padding="14"
+                                        Margin="0,18,0,0"
+                                        Background="{DynamicResource ThemeInputBrush}">
+                                    <Grid>
+                                        <Grid.ColumnDefinitions>
+                                            <ColumnDefinition Width="*" />
+                                            <ColumnDefinition Width="Auto" />
+                                        </Grid.ColumnDefinitions>
+                                        <StackPanel>
+                                            <TextBlock Text="Nueva salida de pin"
+                                                       FontWeight="SemiBold" />
+                                            <TextBlock Text="Agrega otro pin digital para controlar otra tira desde el mismo Arduino."
+                                                       Style="{StaticResource MutedText}"
+                                                       FontSize="12"
+                                                       TextWrapping="Wrap"
+                                                       Margin="0,3,16,0" />
+                                        </StackPanel>
+                                        <Button Grid.Column="1"
+                                                Content="Agregar pin"
+                                                Style="{StaticResource PrimaryButton}"
+                                                VerticalAlignment="Center"
+                                                Click="AddStripButton_Click" />
+                                    </Grid>
+                                </Border>
 
                                 <Grid Margin="0,18,0,0">
                                     <Grid.ColumnDefinitions>

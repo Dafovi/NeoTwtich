@@ -367,6 +367,7 @@ public partial class MainWindow
         _backgroundApplyDebounce?.Dispose();
         _twitchSubscriptionRefreshDebounce?.Cancel();
         _twitchSubscriptionRefreshDebounce?.Dispose();
+        _arduinoMonitorTimer.Stop();
         await _eventSubClient.StopAsync();
         _chatService.Dispose();
         _lightController.Dispose();
@@ -403,6 +404,7 @@ public partial class MainWindow
         }
 
         await _eventSubClient.StopAsync();
+        _arduinoMonitorTimer.Stop();
         _chatService.Dispose();
         _lightController.Dispose();
         DisposeTrayIcon();

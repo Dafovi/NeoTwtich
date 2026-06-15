@@ -69,6 +69,7 @@ public partial class MainWindow : Window
     private readonly CollectionViewSource _rulesViewSource = new();
     private readonly DispatcherTimer _ruleLedPreviewTimer = new();
     private readonly DispatcherTimer _backgroundLedPreviewTimer = new();
+    private readonly DispatcherTimer _arduinoMonitorTimer = new();
     private readonly Random _previewRandom = new();
     private readonly Random _audioRandom = new();
     private readonly SemaphoreSlim _effectGate = new(1, 1);
@@ -153,8 +154,11 @@ public partial class MainWindow : Window
     private bool _isObsSceneActionRunning;
     private bool _hasUnsavedRuleChanges;
     private bool _suppressRuleSelectionChange;
+    private bool _arduinoMonitorBusy;
+    private bool _lastArduinoPortPresent = true;
     private bool? _lastAppliedStartWithWindows;
     private Rect _restoreWindowBounds = Rect.Empty;
+    private DateTimeOffset _lastArduinoReconnectAttempt = DateTimeOffset.MinValue;
     private string _twitchConnectionError = "";
     private string _obsConnectionError = "";
     private string _activitySearchText = "";
@@ -255,6 +259,8 @@ public partial class MainWindow : Window
             BackgroundLedPreviewList.ItemsSource = _backgroundLedPreviewDots;
             _backgroundLedPreviewTimer.Interval = TimeSpan.FromMilliseconds(120);
             _backgroundLedPreviewTimer.Tick += (_, _) => UpdateBackgroundLedPreviewFrame();
+            _arduinoMonitorTimer.Interval = TimeSpan.FromSeconds(2.5);
+            _arduinoMonitorTimer.Tick += ArduinoMonitorTimer_Tick;
             _rulesViewSource.Source = _config.Rules;
             _rulesViewSource.Filter += RulesViewSource_Filter;
             RulesList.ItemsSource = _rulesViewSource.View;
@@ -321,6 +327,7 @@ public partial class MainWindow : Window
 
         CreateTrayIcon();
         LoadConfigIntoUi();
+        _arduinoMonitorTimer.Start();
     }
 
     private void ConfigureNavigationIcons()

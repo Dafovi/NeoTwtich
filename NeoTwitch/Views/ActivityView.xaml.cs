@@ -24,4 +24,9 @@ public partial class ActivityView : NeoTwitchView
     {
         Host?.ClearActivityFiltersButton_Click(sender, e);
     }
+
+    private void ClearActivityHistoryButton_Click(object sender, RoutedEventArgs e)
+    {
+        Host?.ClearActivityHistoryButton_Click(sender, e);
+    }
 }

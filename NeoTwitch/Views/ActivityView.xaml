@@ -15,6 +15,8 @@
                             <ColumnDefinition Width="260" />
                             <ColumnDefinition Width="12" />
                             <ColumnDefinition Width="Auto" />
+                            <ColumnDefinition Width="8" />
+                            <ColumnDefinition Width="Auto" />
                         </Grid.ColumnDefinitions>
 
                         <StackPanel>
@@ -39,6 +41,12 @@
                                 VerticalAlignment="Bottom"
                                 Content="Limpiar filtros"
                                 Click="ClearActivityFiltersButton_Click" />
+
+                        <Button Grid.Column="5"
+                                HorizontalAlignment="Right"
+                                VerticalAlignment="Bottom"
+                                Content="Borrar historial"
+                                Click="ClearActivityHistoryButton_Click" />
                     </Grid>
 
                     <WrapPanel Grid.Row="1"

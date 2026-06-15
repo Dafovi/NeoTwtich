@@ -257,8 +257,17 @@ public sealed class SettingsStore
 
         foreach (var rule in rules)
         {
+            var defaultRule = defaults.FirstOrDefault(item => item.EventKind == rule.EventKind);
             rule.Id = string.IsNullOrWhiteSpace(rule.Id) ? Guid.NewGuid().ToString("N") : rule.Id;
-            rule.Name ??= "";
+            var hadMissingName = string.IsNullOrWhiteSpace(rule.Name);
+            rule.Name = hadMissingName
+                ? defaultRule?.Name ?? DisplayNames.For(rule.EventKind)
+                : rule.Name.Trim();
+            if (hadMissingName && rule.EventKind == TwitchEventKind.Follow)
+            {
+                rule.IsEnabled = true;
+            }
+
             rule.CustomRewardTitle ??= "";
             rule.ChatCommand ??= "";
             rule.AudioPath ??= "";

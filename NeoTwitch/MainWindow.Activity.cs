@@ -66,6 +66,13 @@ public partial class MainWindow
         _activityViewSource.View?.Refresh();
     }
 
+    internal void ClearActivityHistoryButton_Click(object sender, RoutedEventArgs e)
+    {
+        _activity.Clear();
+        _dashboardActivity.Clear();
+        AddLog("Actividad: historial borrado.", ActivityLogKind.Info);
+    }
+
     private void ActivityViewSource_Filter(object sender, FilterEventArgs e)
     {
         if (e.Item is not ActivityLogEntry entry)

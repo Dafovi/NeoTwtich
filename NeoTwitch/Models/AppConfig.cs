@@ -66,6 +66,7 @@ public sealed class AppConfig
                 new EventRule
                 {
                     Name = "Seguidor",
+                    IsEnabled = true,
                     EventKind = TwitchEventKind.Follow,
                     UseLights = false,
                     PlayAudio = false,
@@ -84,6 +85,7 @@ public sealed class AppConfig
                 new EventRule
                 {
                     Name = "Suscripcion",
+                    IsEnabled = true,
                     EventKind = TwitchEventKind.Subscription,
                     UseLights = false,
                     PlayAudio = false,
@@ -102,6 +104,7 @@ public sealed class AppConfig
                 new EventRule
                 {
                     Name = "Raid",
+                    IsEnabled = true,
                     EventKind = TwitchEventKind.Raid,
                     UseLights = false,
                     PlayAudio = false,
@@ -120,6 +123,7 @@ public sealed class AppConfig
                 new EventRule
                 {
                     Name = "Bits",
+                    IsEnabled = true,
                     EventKind = TwitchEventKind.Cheer,
                     MinimumBits = 1,
                     UseLights = false,
@@ -139,6 +143,7 @@ public sealed class AppConfig
                 new EventRule
                 {
                     Name = "Comando chat",
+                    IsEnabled = true,
                     EventKind = TwitchEventKind.ChatCommand,
                     ChatCommand = "!baile",
                     UseLights = false,
@@ -158,6 +163,7 @@ public sealed class AppConfig
                 new EventRule
                 {
                     Name = "Canje personalizado",
+                    IsEnabled = true,
                     EventKind = TwitchEventKind.ChannelPointRedemption,
                     CustomRewardTitle = "",
                     UseLights = false,

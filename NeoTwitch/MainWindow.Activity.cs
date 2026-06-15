@@ -70,7 +70,6 @@ public partial class MainWindow
     {
         _activity.Clear();
         _dashboardActivity.Clear();
-        AddLog("Actividad: historial borrado.", ActivityLogKind.Info);
     }
 
     private void ActivityViewSource_Filter(object sender, FilterEventArgs e)

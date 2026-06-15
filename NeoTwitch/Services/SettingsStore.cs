@@ -251,9 +251,14 @@ public sealed class SettingsStore
         ObservableCollection<EventRule>? rules,
         ObservableCollection<EventRule> defaults)
     {
-        if (rules is null || rules.Count == 0)
+        if (rules is null)
         {
             return defaults;
+        }
+
+        if (rules.Count == 0)
+        {
+            return [];
         }
 
         foreach (var rule in rules)

@@ -6,6 +6,7 @@
         Height="560"
         ResizeMode="NoResize"
         WindowStartupLocation="CenterOwner"
+        WindowStyle="None"
         Background="Transparent"
         AllowsTransparency="True">
     <Border x:Name="RootCard"

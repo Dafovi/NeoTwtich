@@ -197,10 +197,17 @@ public partial class MainWindow
 
     private void DiscardPendingRuleChanges()
     {
-        if (_editingRule is not null && _loadedRuleSnapshot is not null)
+        var revertedRule = _editingRule;
+        if (revertedRule is not null && _loadedRuleSnapshot is not null)
         {
-            CopyRuleValues(_loadedRuleSnapshot, _editingRule);
+            CopyRuleValues(_loadedRuleSnapshot, revertedRule);
             RefreshRulesView();
+            SaveConfig();
+            if (ReferenceEquals(RulesList.SelectedItem, revertedRule))
+            {
+                LoadSelectedRuleIntoUi();
+                return;
+            }
         }
 
         SetRuleDirtyState(false);

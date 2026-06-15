@@ -1,0 +1,322 @@
+using System.Globalization;
+using System.Windows;
+using System.Windows.Controls;
+using System.Windows.Input;
+using System.Windows.Media;
+using WpfButton = System.Windows.Controls.Button;
+using WpfColor = System.Windows.Media.Color;
+using WpfColorConverter = System.Windows.Media.ColorConverter;
+using WpfMouseEventArgs = System.Windows.Input.MouseEventArgs;
+using WpfPoint = System.Windows.Point;
+using WpfTextBox = System.Windows.Controls.TextBox;
+
+namespace NeoTwitch.Views;
+
+public partial class ColorPickerDialog : Window
+{
+    private readonly WpfColor _currentColor;
+    private readonly bool _darkMode;
+    private bool _updatingFields;
+    private double _hue;
+    private double _saturation;
+    private double _value;
+
+    public ColorPickerDialog(string initialHex, bool darkMode, IEnumerable<string> recentColors)
+    {
+        InitializeComponent();
+        _darkMode = darkMode;
+        _currentColor = ParseColor(initialHex, WpfColor.FromRgb(152, 92, 246));
+        SelectedColorHex = ToHex(_currentColor);
+        ApplyDialogTheme();
+        BuildRecentColors(recentColors);
+        SetFromColor(_currentColor);
+        CurrentColorPreview.Background = new SolidColorBrush(_currentColor);
+    }
+
+    public string SelectedColorHex { get; private set; }
+
+    private void ApplyDialogTheme()
+    {
+        var background = _darkMode ? WpfColor.FromRgb(8, 17, 27) : WpfColor.FromRgb(248, 250, 252);
+        var panel = _darkMode ? WpfColor.FromRgb(15, 30, 45) : WpfColor.FromRgb(255, 255, 255);
+        var text = _darkMode ? WpfColor.FromRgb(240, 249, 255) : WpfColor.FromRgb(15, 23, 42);
+        var muted = _darkMode ? WpfColor.FromRgb(148, 163, 184) : WpfColor.FromRgb(71, 85, 105);
+        var border = _darkMode ? WpfColor.FromRgb(51, 65, 85) : WpfColor.FromRgb(203, 213, 225);
+
+        RootCard.Background = new SolidColorBrush(background);
+        RootCard.BorderBrush = new SolidColorBrush(border);
+        Foreground = new SolidColorBrush(text);
+
+        foreach (var textBox in FindVisualChildren<WpfTextBox>(this))
+        {
+            textBox.Background = new SolidColorBrush(panel);
+            textBox.BorderBrush = new SolidColorBrush(border);
+            textBox.Foreground = new SolidColorBrush(text);
+            textBox.CaretBrush = new SolidColorBrush(text);
+        }
+
+        foreach (var button in FindVisualChildren<WpfButton>(this))
+        {
+            button.Background = new SolidColorBrush(_darkMode ? WpfColor.FromRgb(16, 32, 48) : WpfColor.FromRgb(241, 245, 249));
+            button.BorderBrush = new SolidColorBrush(border);
+            button.Foreground = new SolidColorBrush(text);
+        }
+
+        foreach (var block in FindVisualChildren<TextBlock>(this))
+        {
+            block.Foreground = block.FontSize <= 15 ? new SolidColorBrush(muted) : new SolidColorBrush(text);
+        }
+    }
+
+    private void BuildRecentColors(IEnumerable<string> recentColors)
+    {
+        var colors = recentColors
+            .Append("#985CF6")
+            .Append("#6D00F5")
+            .Append("#22D3EE")
+            .Append("#22C55E")
+            .Append("#FACC15")
+            .Append("#FF7A18")
+            .Append("#F43F5E")
+            .Select(color => ToHex(ParseColor(color, Colors.Transparent)))
+            .Where(color => color != "#000000")
+            .Distinct(StringComparer.OrdinalIgnoreCase)
+            .Take(9);
+
+        foreach (var colorHex in colors)
+        {
+            var button = new WpfButton
+            {
+                Width = 42,
+                Height = 42,
+                Margin = new Thickness(0, 0, 14, 0),
+                BorderThickness = new Thickness(1),
+                Background = new SolidColorBrush(ParseColor(colorHex, Colors.White)),
+                BorderBrush = new SolidColorBrush(WpfColor.FromRgb(51, 65, 85)),
+                ToolTip = colorHex,
+                Tag = colorHex
+            };
+
+            button.Click += (_, _) =>
+            {
+                if (button.Tag is string hex)
+                {
+                    SetFromColor(ParseColor(hex, _currentColor));
+                }
+            };
+
+            RecentColorsPanel.Children.Add(button);
+        }
+    }
+
+    private void SetFromColor(WpfColor color)
+    {
+        RgbToHsv(color, out _hue, out _saturation, out _value);
+        HueSlider.Value = _hue;
+        UpdateHueSurface();
+        UpdateThumb();
+        UpdateFields(color);
+    }
+
+    private void UpdateFromHsv()
+    {
+        var color = HsvToRgb(_hue, _saturation, _value);
+        UpdateFields(color);
+    }
+
+    private void UpdateFields(WpfColor color)
+    {
+        _updatingFields = true;
+        try
+        {
+            SelectedColorHex = ToHex(color);
+            HexBox.Text = SelectedColorHex;
+            RedBox.Text = color.R.ToString(CultureInfo.InvariantCulture);
+            GreenBox.Text = color.G.ToString(CultureInfo.InvariantCulture);
+            BlueBox.Text = color.B.ToString(CultureInfo.InvariantCulture);
+            NewColorPreview.Background = new SolidColorBrush(color);
+        }
+        finally
+        {
+            _updatingFields = false;
+        }
+    }
+
+    private void UpdateHueSurface()
+    {
+        HueSurface.Fill = new SolidColorBrush(HsvToRgb(_hue, 1, 1));
+    }
+
+    private void UpdateThumb()
+    {
+        Canvas.SetLeft(ColorThumb, _saturation * ColorCanvas.Width - ColorThumb.Width / 2);
+        Canvas.SetTop(ColorThumb, (1 - _value) * ColorCanvas.Height - ColorThumb.Height / 2);
+    }
+
+    private void ColorCanvas_MouseDown(object sender, MouseButtonEventArgs e)
+    {
+        ColorCanvas.CaptureMouse();
+        UpdateColorFromPointer(e.GetPosition(ColorCanvas));
+    }
+
+    private void ColorCanvas_MouseMove(object sender, WpfMouseEventArgs e)
+    {
+        if (e.LeftButton != MouseButtonState.Pressed)
+        {
+            ColorCanvas.ReleaseMouseCapture();
+            return;
+        }
+
+        UpdateColorFromPointer(e.GetPosition(ColorCanvas));
+    }
+
+    private void UpdateColorFromPointer(WpfPoint point)
+    {
+        _saturation = Math.Clamp(point.X / ColorCanvas.Width, 0, 1);
+        _value = Math.Clamp(1 - point.Y / ColorCanvas.Height, 0, 1);
+        UpdateThumb();
+        UpdateFromHsv();
+    }
+
+    private void HueSlider_ValueChanged(object sender, RoutedPropertyChangedEventArgs<double> e)
+    {
+        if (_updatingFields)
+        {
+            return;
+        }
+
+        _hue = HueSlider.Value;
+        UpdateHueSurface();
+        UpdateFromHsv();
+    }
+
+    private void HexBox_TextChanged(object sender, TextChangedEventArgs e)
+    {
+        if (_updatingFields)
+        {
+            return;
+        }
+
+        var text = HexBox.Text.Trim();
+        if (!text.StartsWith('#'))
+        {
+            text = $"#{text}";
+        }
+
+        if (text.Length == 7)
+        {
+            SetFromColor(ParseColor(text, HsvToRgb(_hue, _saturation, _value)));
+        }
+    }
+
+    private void RgbBox_TextChanged(object sender, TextChangedEventArgs e)
+    {
+        if (_updatingFields)
+        {
+            return;
+        }
+
+        if (byte.TryParse(RedBox.Text, out var red)
+            && byte.TryParse(GreenBox.Text, out var green)
+            && byte.TryParse(BlueBox.Text, out var blue))
+        {
+            SetFromColor(WpfColor.FromRgb(red, green, blue));
+        }
+    }
+
+    private void ApplyButton_Click(object sender, RoutedEventArgs e)
+    {
+        DialogResult = true;
+    }
+
+    private void CancelButton_Click(object sender, RoutedEventArgs e)
+    {
+        DialogResult = false;
+    }
+
+    private static WpfColor ParseColor(string? value, WpfColor fallback)
+    {
+        try
+        {
+            var text = string.IsNullOrWhiteSpace(value) ? "" : value.Trim();
+            if (!text.StartsWith('#'))
+            {
+                text = $"#{text}";
+            }
+
+            return (WpfColor)WpfColorConverter.ConvertFromString(text)!;
+        }
+        catch
+        {
+            return fallback;
+        }
+    }
+
+    private static string ToHex(WpfColor color) => $"#{color.R:X2}{color.G:X2}{color.B:X2}";
+
+    private static WpfColor HsvToRgb(double hue, double saturation, double value)
+    {
+        var chroma = value * saturation;
+        var huePrime = (hue % 360) / 60.0;
+        var x = chroma * (1 - Math.Abs(huePrime % 2 - 1));
+
+        var (r1, g1, b1) = huePrime switch
+        {
+            < 1 => (chroma, x, 0d),
+            < 2 => (x, chroma, 0d),
+            < 3 => (0d, chroma, x),
+            < 4 => (0d, x, chroma),
+            < 5 => (x, 0d, chroma),
+            _ => (chroma, 0d, x)
+        };
+
+        var match = value - chroma;
+        return WpfColor.FromRgb(
+            (byte)Math.Round((r1 + match) * 255),
+            (byte)Math.Round((g1 + match) * 255),
+            (byte)Math.Round((b1 + match) * 255));
+    }
+
+    private static void RgbToHsv(WpfColor color, out double hue, out double saturation, out double value)
+    {
+        var red = color.R / 255d;
+        var green = color.G / 255d;
+        var blue = color.B / 255d;
+        var max = Math.Max(red, Math.Max(green, blue));
+        var min = Math.Min(red, Math.Min(green, blue));
+        var delta = max - min;
+
+        hue = delta switch
+        {
+            0 => 0,
+            _ when max == red => 60 * (((green - blue) / delta) % 6),
+            _ when max == green => 60 * (((blue - red) / delta) + 2),
+            _ => 60 * (((red - green) / delta) + 4)
+        };
+
+        if (hue < 0)
+        {
+            hue += 360;
+        }
+
+        saturation = max == 0 ? 0 : delta / max;
+        value = max;
+    }
+
+    private static IEnumerable<T> FindVisualChildren<T>(DependencyObject root) where T : DependencyObject
+    {
+        for (var i = 0; i < VisualTreeHelper.GetChildrenCount(root); i++)
+        {
+            var child = VisualTreeHelper.GetChild(root, i);
+            if (child is T typed)
+            {
+                yield return typed;
+            }
+
+            foreach (var descendant in FindVisualChildren<T>(child))
+            {
+                yield return descendant;
+            }
+        }
+    }
+}

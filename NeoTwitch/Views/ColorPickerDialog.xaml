@@ -1,0 +1,217 @@
+<Window x:Class="NeoTwitch.Views.ColorPickerDialog"
+        xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+        xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+        Title="Selector de color"
+        Width="760"
+        Height="560"
+        ResizeMode="NoResize"
+        WindowStartupLocation="CenterOwner"
+        Background="Transparent"
+        AllowsTransparency="True">
+    <Border x:Name="RootCard"
+            CornerRadius="18"
+            Padding="26"
+            BorderThickness="1">
+        <Grid>
+            <Grid.RowDefinitions>
+                <RowDefinition Height="Auto" />
+                <RowDefinition Height="*" />
+                <RowDefinition Height="Auto" />
+            </Grid.RowDefinitions>
+
+            <DockPanel>
+                <TextBlock Text="Selector de color"
+                           FontSize="24"
+                           FontWeight="SemiBold"
+                           VerticalAlignment="Center" />
+                <Button Content="X"
+                        DockPanel.Dock="Right"
+                        Width="42"
+                        Height="42"
+                        FontSize="18"
+                        Click="CancelButton_Click" />
+            </DockPanel>
+
+            <Grid Grid.Row="1"
+                  Margin="0,24,0,0">
+                <Grid.ColumnDefinitions>
+                    <ColumnDefinition Width="430" />
+                    <ColumnDefinition Width="22" />
+                    <ColumnDefinition Width="*" />
+                </Grid.ColumnDefinitions>
+
+                <Grid>
+                    <Grid.ColumnDefinitions>
+                        <ColumnDefinition Width="360" />
+                        <ColumnDefinition Width="18" />
+                        <ColumnDefinition Width="54" />
+                    </Grid.ColumnDefinitions>
+
+                    <Canvas x:Name="ColorCanvas"
+                            Width="360"
+                            Height="280"
+                            ClipToBounds="True"
+                            MouseDown="ColorCanvas_MouseDown"
+                            MouseMove="ColorCanvas_MouseMove">
+                        <Rectangle x:Name="HueSurface"
+                                   Width="360"
+                                   Height="280"
+                                   RadiusX="8"
+                                   RadiusY="8" />
+                        <Rectangle Width="360"
+                                   Height="280"
+                                   RadiusX="8"
+                                   RadiusY="8">
+                            <Rectangle.Fill>
+                                <LinearGradientBrush StartPoint="0,0"
+                                                     EndPoint="1,0">
+                                    <GradientStop Color="#FFFFFFFF"
+                                                  Offset="0" />
+                                    <GradientStop Color="#00FFFFFF"
+                                                  Offset="1" />
+                                </LinearGradientBrush>
+                            </Rectangle.Fill>
+                        </Rectangle>
+                        <Rectangle Width="360"
+                                   Height="280"
+                                   RadiusX="8"
+                                   RadiusY="8">
+                            <Rectangle.Fill>
+                                <LinearGradientBrush StartPoint="0,0"
+                                                     EndPoint="0,1">
+                                    <GradientStop Color="#00000000"
+                                                  Offset="0" />
+                                    <GradientStop Color="#FF000000"
+                                                  Offset="1" />
+                                </LinearGradientBrush>
+                            </Rectangle.Fill>
+                        </Rectangle>
+                        <Ellipse x:Name="ColorThumb"
+                                 Width="24"
+                                 Height="24"
+                                 Stroke="White"
+                                 StrokeThickness="3"
+                                 Fill="Transparent" />
+                    </Canvas>
+
+                    <Slider x:Name="HueSlider"
+                            Grid.Column="2"
+                            Width="280"
+                            Height="46"
+                            Minimum="0"
+                            Maximum="360"
+                            ValueChanged="HueSlider_ValueChanged">
+                        <Slider.LayoutTransform>
+                            <RotateTransform Angle="90" />
+                        </Slider.LayoutTransform>
+                    </Slider>
+                </Grid>
+
+                <StackPanel Grid.Column="2">
+                    <TextBlock Text="Vista previa"
+                               FontSize="18"
+                               Margin="0,0,0,16" />
+
+                    <Grid Margin="0,0,0,18">
+                        <Grid.ColumnDefinitions>
+                            <ColumnDefinition Width="*" />
+                            <ColumnDefinition Width="90" />
+                        </Grid.ColumnDefinitions>
+                        <TextBlock Text="Nuevo"
+                                   FontSize="16"
+                                   VerticalAlignment="Center" />
+                        <Border x:Name="NewColorPreview"
+                                Grid.Column="1"
+                                Height="54"
+                                CornerRadius="8" />
+                    </Grid>
+
+                    <Grid Margin="0,0,0,24">
+                        <Grid.ColumnDefinitions>
+                            <ColumnDefinition Width="*" />
+                            <ColumnDefinition Width="90" />
+                        </Grid.ColumnDefinitions>
+                        <TextBlock Text="Actual"
+                                   FontSize="16"
+                                   VerticalAlignment="Center" />
+                        <Border x:Name="CurrentColorPreview"
+                                Grid.Column="1"
+                                Height="54"
+                                CornerRadius="8" />
+                    </Grid>
+
+                    <TextBlock Text="HEX"
+                               FontSize="15"
+                               Margin="0,0,0,6" />
+                    <TextBox x:Name="HexBox"
+                             Height="44"
+                             FontSize="17"
+                             TextChanged="HexBox_TextChanged" />
+
+                    <TextBlock Text="RGB"
+                               FontSize="15"
+                               Margin="0,18,0,6" />
+                    <Grid>
+                        <Grid.ColumnDefinitions>
+                            <ColumnDefinition Width="*" />
+                            <ColumnDefinition Width="8" />
+                            <ColumnDefinition Width="*" />
+                            <ColumnDefinition Width="8" />
+                            <ColumnDefinition Width="*" />
+                        </Grid.ColumnDefinitions>
+                        <TextBox x:Name="RedBox"
+                                 Height="44"
+                                 FontSize="16"
+                                 TextChanged="RgbBox_TextChanged" />
+                        <TextBox x:Name="GreenBox"
+                                 Grid.Column="2"
+                                 Height="44"
+                                 FontSize="16"
+                                 TextChanged="RgbBox_TextChanged" />
+                        <TextBox x:Name="BlueBox"
+                                 Grid.Column="4"
+                                 Height="44"
+                                 FontSize="16"
+                                 TextChanged="RgbBox_TextChanged" />
+                    </Grid>
+                </StackPanel>
+            </Grid>
+
+            <Grid Grid.Row="2"
+                  Margin="0,24,0,0">
+                <Grid.RowDefinitions>
+                    <RowDefinition Height="Auto" />
+                    <RowDefinition Height="Auto" />
+                    <RowDefinition Height="Auto" />
+                </Grid.RowDefinitions>
+
+                <Border Height="1"
+                        Opacity="0.35"
+                        Margin="0,0,0,18" />
+                <TextBlock Grid.Row="1"
+                           Text="Colores recientes"
+                           FontSize="17"
+                           Margin="0,0,0,12" />
+                <Grid Grid.Row="2">
+                    <Grid.ColumnDefinitions>
+                        <ColumnDefinition Width="*" />
+                        <ColumnDefinition Width="150" />
+                        <ColumnDefinition Width="14" />
+                        <ColumnDefinition Width="220" />
+                    </Grid.ColumnDefinitions>
+                    <WrapPanel x:Name="RecentColorsPanel"
+                               VerticalAlignment="Center" />
+                    <Button Grid.Column="1"
+                            Content="Cancelar"
+                            Height="48"
+                            Click="CancelButton_Click" />
+                    <Button Grid.Column="3"
+                            Content="Aplicar color"
+                            Height="48"
+                            FontWeight="SemiBold"
+                            Click="ApplyButton_Click" />
+                </Grid>
+            </Grid>
+        </Grid>
+    </Border>
+</Window>

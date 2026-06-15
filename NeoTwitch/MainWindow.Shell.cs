@@ -260,17 +260,34 @@ public partial class MainWindow
 
     private void PickColor(System.Windows.Controls.TextBox target)
     {
-        using var dialog = new Forms.ColorDialog
+        var dialog = new Views.ColorPickerDialog(target.Text, _config.DarkMode, BuildRecentColorPalette())
         {
-            FullOpen = true
+            Owner = this
         };
 
-        if (dialog.ShowDialog() != Forms.DialogResult.OK)
+        if (dialog.ShowDialog() != true)
         {
             return;
         }
 
-        target.Text = $"#{dialog.Color.R:X2}{dialog.Color.G:X2}{dialog.Color.B:X2}";
+        target.Text = dialog.SelectedColorHex;
+    }
+
+    private IEnumerable<string> BuildRecentColorPalette()
+    {
+        yield return PrimaryColorBox.Text;
+        yield return SecondaryColorBox.Text;
+        yield return TertiaryColorBox.Text;
+        yield return BackgroundPrimaryColorBox.Text;
+        yield return BackgroundSecondaryColorBox.Text;
+        yield return BackgroundTertiaryColorBox.Text;
+
+        foreach (var rule in _config.Rules.Take(12))
+        {
+            yield return rule.PrimaryColor;
+            yield return rule.SecondaryColor;
+            yield return rule.TertiaryColor;
+        }
     }
 
     private void CreateTrayIcon()

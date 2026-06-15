@@ -26,6 +26,7 @@ public partial class MainWindow
     private WpfTextBlock RulesCountText => AlertsView.RulesCountText;
     private WpfListBox RulesList => AlertsView.RulesList;
     private WpfButton RuleTestButton => AlertsView.RuleTestButton;
+    private WpfButton SaveRuleButton => AlertsView.SaveRuleButton;
     private WpfStackPanel RuleEditorPanel => AlertsView.RuleEditorPanel;
     private WpfTextBox RuleNameBox => AlertsView.RuleNameBox;
     private WpfCheckBox RuleEnabledCheck => AlertsView.RuleEnabledCheck;

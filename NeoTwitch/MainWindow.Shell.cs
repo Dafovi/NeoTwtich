@@ -336,9 +336,13 @@ public partial class MainWindow
 
     private async Task ExitApplicationAsync()
     {
+        if (!ResolvePendingRuleChanges())
+        {
+            return;
+        }
+
         _isExiting = true;
         SaveGlobalSettingsFromFields();
-        SaveCurrentRuleFromFields();
         SaveCurrentStripFromFields();
         SaveBackgroundFromFields();
         SaveConfig();
@@ -357,8 +361,13 @@ public partial class MainWindow
     {
         if (!_isExiting)
         {
+            if (!ResolvePendingRuleChanges())
+            {
+                e.Cancel = true;
+                return;
+            }
+
             SaveGlobalSettingsFromFields();
-            SaveCurrentRuleFromFields();
             SaveCurrentStripFromFields();
             SaveBackgroundFromFields();
             SaveConfig();

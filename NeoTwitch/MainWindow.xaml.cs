@@ -151,6 +151,8 @@ public partial class MainWindow : Window
     private bool _isAlexaConnecting;
     private bool _isCustomMaximized;
     private bool _isObsSceneActionRunning;
+    private bool _hasUnsavedRuleChanges;
+    private bool _suppressRuleSelectionChange;
     private bool? _lastAppliedStartWithWindows;
     private Rect _restoreWindowBounds = Rect.Empty;
     private string _twitchConnectionError = "";
@@ -194,6 +196,8 @@ public partial class MainWindow : Window
     private AudioPlayback? _currentPlayback;
     private AudioPlayback? _audioPreviewPlayback;
     private string _previewingAudioId = "";
+    private EventRule? _editingRule;
+    private EventRule? _loadedRuleSnapshot;
     private TwitchStreamStatus? _streamStatus;
     private DrawingIcon? _trayIcon;
     private Forms.NotifyIcon? _notifyIcon;

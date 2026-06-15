@@ -118,9 +118,13 @@ public partial class MainWindow
 
             if (RulesList.SelectedItem is not EventRule rule)
             {
+                _editingRule = null;
+                _loadedRuleSnapshot = null;
+                SetRuleDirtyState(false);
                 return;
             }
 
+            _editingRule = rule;
             RuleEnabledCheck.IsChecked = rule.IsEnabled;
             RuleNameBox.Text = rule.Name;
             EventKindBox.SelectedValue = rule.EventKind;
@@ -162,6 +166,8 @@ public partial class MainWindow
             UpdatePatternTileSelection();
             UpdateRuleObsMediaModeSelection();
             UpdateRuleLedPreviewFrame();
+            CaptureCurrentRuleSnapshot();
+            SetRuleDirtyState(false);
         }
         finally
         {
@@ -276,7 +282,7 @@ public partial class MainWindow
 
     private void SaveCurrentRuleFromFields()
     {
-        if (_loadingRule || RulesList.SelectedItem is not EventRule rule)
+        if (_loadingRule || (_editingRule ?? RulesList.SelectedItem as EventRule) is not EventRule rule)
         {
             return;
         }

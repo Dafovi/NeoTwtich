@@ -248,9 +248,10 @@
                                                 Content="Probar alerta"
                                                 Style="{StaticResource PrimaryButton}"
                                                 Click="RuleTestButton_Click" />
-                                        <Button Content="Guardar cambios"
+                                        <Button x:Name="SaveRuleButton"
+                                                Content="Guardar cambios"
                                                 Style="{StaticResource PrimaryButton}"
-                                                Click="SaveButton_Click" />
+                                                Click="SaveRuleButton_Click" />
                                     </WrapPanel>
                                 </Grid>
 

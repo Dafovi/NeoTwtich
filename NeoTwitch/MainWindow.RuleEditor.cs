@@ -14,6 +14,11 @@ public partial class MainWindow
 {
     internal void AddRuleButton_Click(object sender, RoutedEventArgs e)
     {
+        if (!ResolvePendingRuleChanges())
+        {
+            return;
+        }
+
         var rule = new EventRule
         {
             Name = "Nueva regla",
@@ -84,6 +89,11 @@ public partial class MainWindow
 
     internal void DuplicateRuleButton_Click(object sender, RoutedEventArgs e)
     {
+        if (!ResolvePendingRuleChanges())
+        {
+            return;
+        }
+
         if (RulesList.SelectedItem is not EventRule rule)
         {
             return;
@@ -100,6 +110,11 @@ public partial class MainWindow
 
     internal void RemoveRuleButton_Click(object sender, RoutedEventArgs e)
     {
+        if (!ResolvePendingRuleChanges())
+        {
+            return;
+        }
+
         if (RulesList.SelectedItem is not EventRule rule)
         {
             return;
@@ -133,6 +148,133 @@ public partial class MainWindow
 
         SaveConfig();
         ScheduleTwitchSubscriptionRefreshIfNeeded();
+    }
+
+    internal void SaveRuleButton_Click(object sender, RoutedEventArgs e)
+    {
+        SavePendingRuleChanges();
+    }
+
+    private void SavePendingRuleChanges()
+    {
+        SaveCurrentRuleFromFields();
+        SaveConfig();
+        CaptureCurrentRuleSnapshot();
+        SetRuleDirtyState(false);
+        ScheduleTwitchSubscriptionRefreshIfNeeded();
+        AddLog("Alerta guardada.");
+    }
+
+    private bool ResolvePendingRuleChanges()
+    {
+        if (!_hasUnsavedRuleChanges)
+        {
+            return true;
+        }
+
+        var ruleName = FirstNonEmpty(_editingRule?.Name ?? "", "esta alerta");
+        var result = WpfMessageBox.Show(
+            this,
+            $"Hay cambios sin guardar en '{ruleName}'.\n\nQuieres guardarlos antes de continuar?",
+            "Cambios sin guardar",
+            MessageBoxButton.YesNoCancel,
+            MessageBoxImage.Warning);
+
+        if (result == MessageBoxResult.Cancel)
+        {
+            return false;
+        }
+
+        if (result == MessageBoxResult.Yes)
+        {
+            SavePendingRuleChanges();
+            return true;
+        }
+
+        DiscardPendingRuleChanges();
+        return true;
+    }
+
+    private void DiscardPendingRuleChanges()
+    {
+        if (_editingRule is not null && _loadedRuleSnapshot is not null)
+        {
+            CopyRuleValues(_loadedRuleSnapshot, _editingRule);
+            RefreshRulesView();
+        }
+
+        SetRuleDirtyState(false);
+    }
+
+    private void CaptureCurrentRuleSnapshot()
+    {
+        _loadedRuleSnapshot = _editingRule is null
+            ? null
+            : CloneRuleForSnapshot(_editingRule);
+    }
+
+    private void SetRuleDirtyState(bool isDirty)
+    {
+        _hasUnsavedRuleChanges = isDirty;
+
+        if (SaveRuleButton is not null)
+        {
+            SaveRuleButton.Opacity = isDirty ? 1d : 0.68d;
+            SaveRuleButton.ToolTip = isDirty
+                ? "Hay cambios pendientes por guardar"
+                : "No hay cambios pendientes";
+        }
+    }
+
+    private static EventRule CloneRuleForSnapshot(EventRule rule)
+    {
+        var clone = new EventRule();
+        CopyRuleValues(rule, clone);
+        return clone;
+    }
+
+    private static void CopyRuleValues(EventRule source, EventRule target)
+    {
+        target.Id = source.Id;
+        target.Name = source.Name;
+        target.IsEnabled = source.IsEnabled;
+        target.EventKind = source.EventKind;
+        target.CustomRewardTitle = source.CustomRewardTitle;
+        target.ChatCommand = source.ChatCommand;
+        target.MinimumBits = source.MinimumBits;
+        target.UseLights = source.UseLights;
+        target.PlayAudio = source.PlayAudio;
+        target.AudioPath = source.AudioPath;
+        target.AudioSourceMode = source.AudioSourceMode;
+        target.AudioAssetId = source.AudioAssetId;
+        target.AudioGroupId = source.AudioGroupId;
+        target.SendChatMessage = source.SendChatMessage;
+        target.ChatMessageTemplate = source.ChatMessageTemplate;
+        target.SendAlexaEvent = source.SendAlexaEvent;
+        target.AlexaEventName = source.AlexaEventName;
+        target.SendObsScene = source.SendObsScene;
+        target.ObsSceneName = source.ObsSceneName;
+        target.ObsSceneDelayMs = source.ObsSceneDelayMs;
+        target.ObsReturnToPreviousScene = source.ObsReturnToPreviousScene;
+        target.ObsReturnDelayMs = source.ObsReturnDelayMs;
+        target.SendObsMedia = source.SendObsMedia;
+        target.ObsMediaKind = source.ObsMediaKind;
+        target.ObsMediaSourceMode = source.ObsMediaSourceMode;
+        target.ObsMediaAssetId = source.ObsMediaAssetId;
+        target.ObsMediaGroupId = source.ObsMediaGroupId;
+        target.ObsMediaDurationMs = source.ObsMediaDurationMs;
+        target.Pattern = source.Pattern;
+        target.TargetPins = source.TargetPins;
+        target.PrimaryColor = source.PrimaryColor;
+        target.SecondaryColor = source.SecondaryColor;
+        target.TertiaryColor = source.TertiaryColor;
+        target.Brightness = source.Brightness;
+        target.DurationMs = source.DurationMs;
+        target.CycleMs = source.CycleMs;
+        target.StepMs = source.StepMs;
+        target.LightsActionAvailable = source.LightsActionAvailable;
+        target.AlexaActionAvailable = source.AlexaActionAvailable;
+        target.ObsActionAvailable = source.ObsActionAvailable;
     }
 
     internal async void RuleTestButton_Click(object sender, RoutedEventArgs e)
@@ -347,7 +489,7 @@ public partial class MainWindow
         UpdateRuleAudioModeSelection();
         UpdateRuleOptionVisibility();
         SaveCurrentRuleFromFields();
-        SaveConfig();
+        SetRuleDirtyState(true);
     }
 
     internal void RuleObsMediaKindButton_Click(object sender, RoutedEventArgs e)
@@ -364,7 +506,7 @@ public partial class MainWindow
         UpdateRuleObsMediaModeSelection();
         UpdateRuleOptionVisibility();
         SaveCurrentRuleFromFields();
-        SaveConfig();
+        SetRuleDirtyState(true);
     }
 
     internal void RuleObsMediaSourceModeButton_Click(object sender, RoutedEventArgs e)
@@ -380,14 +522,35 @@ public partial class MainWindow
         UpdateRuleObsMediaModeSelection();
         UpdateRuleOptionVisibility();
         SaveCurrentRuleFromFields();
-        SaveConfig();
+        SetRuleDirtyState(true);
     }
 
     internal void RulesList_SelectionChanged(object sender, SelectionChangedEventArgs e)
     {
-        if (_initializingComponent || _loadingUi)
+        if (_initializingComponent || _loadingUi || _suppressRuleSelectionChange)
         {
             return;
+        }
+
+        if (_hasUnsavedRuleChanges
+            && _editingRule is not null
+            && RulesList.SelectedItem is EventRule selected
+            && !ReferenceEquals(selected, _editingRule))
+        {
+            if (!ResolvePendingRuleChanges())
+            {
+                try
+                {
+                    _suppressRuleSelectionChange = true;
+                    RulesList.SelectedItem = _editingRule;
+                }
+                finally
+                {
+                    _suppressRuleSelectionChange = false;
+                }
+
+                return;
+            }
         }
 
         LoadSelectedRuleIntoUi();
@@ -490,12 +653,11 @@ public partial class MainWindow
         }
 
         SaveCurrentRuleFromFields();
-        SaveConfig();
+        SetRuleDirtyState(true);
         UpdateEventKindTileSelection();
         UpdatePatternTileSelection();
         UpdateRuleOptionVisibility();
         UpdateRuleLedPreviewTimerState();
-        ScheduleTwitchSubscriptionRefreshIfNeeded();
     }
 
     internal void EventKindTile_Click(object sender, RoutedEventArgs e)
@@ -650,6 +812,11 @@ public partial class MainWindow
             return;
         }
 
+        if (selectedIndex != MainTabs.SelectedIndex && !ResolvePendingRuleChanges())
+        {
+            return;
+        }
+
         MainTabs.SelectedIndex = selectedIndex;
         UpdateNavigationButtons();
     }
@@ -658,6 +825,11 @@ public partial class MainWindow
     {
         if (int.TryParse(NavActivityButton.Tag?.ToString(), out var activityTabIndex))
         {
+            if (activityTabIndex != MainTabs.SelectedIndex && !ResolvePendingRuleChanges())
+            {
+                return;
+            }
+
             MainTabs.SelectedIndex = activityTabIndex;
         }
 

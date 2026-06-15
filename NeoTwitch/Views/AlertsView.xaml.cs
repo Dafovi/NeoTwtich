@@ -24,7 +24,7 @@ public partial class AlertsView : NeoTwitchView
 
     private void RuleTestButton_Click(object sender, RoutedEventArgs e) => Host?.RuleTestButton_Click(sender, e);
 
-    private void SaveButton_Click(object sender, RoutedEventArgs e) => Host?.SaveButton_Click(sender, e);
+    private void SaveRuleButton_Click(object sender, RoutedEventArgs e) => Host?.SaveRuleButton_Click(sender, e);
 
     private void RuleFieldChanged(object sender, RoutedEventArgs e) => Host?.RuleFieldChanged(sender, e);
 

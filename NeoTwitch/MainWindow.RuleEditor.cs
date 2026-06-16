@@ -157,7 +157,11 @@ public partial class MainWindow
 
     private void SavePendingRuleChanges()
     {
-        SaveCurrentRuleFromFields();
+        if (!SaveCurrentRuleFromFields())
+        {
+            return;
+        }
+
         SaveConfig();
         CaptureCurrentRuleSnapshot();
         SetRuleDirtyState(false);
@@ -314,7 +318,11 @@ public partial class MainWindow
         }
 
         SaveGlobalSettingsFromFields();
-        SaveCurrentRuleFromFields();
+        if (!SaveCurrentRuleFromFields())
+        {
+            return;
+        }
+
         var simulatedEvent = BuildSimulatedEvent(rule);
 
         if (!rule.Matches(simulatedEvent))
@@ -495,8 +503,10 @@ public partial class MainWindow
         _ruleAudioMode = mode;
         UpdateRuleAudioModeSelection();
         UpdateRuleOptionVisibility();
-        SaveCurrentRuleFromFields();
-        SetRuleDirtyState(true);
+        if (SaveCurrentRuleFromFields())
+        {
+            SetRuleDirtyState(true);
+        }
     }
 
     internal void RuleObsMediaKindButton_Click(object sender, RoutedEventArgs e)
@@ -512,8 +522,10 @@ public partial class MainWindow
         RefreshRuleObsMediaChoices();
         UpdateRuleObsMediaModeSelection();
         UpdateRuleOptionVisibility();
-        SaveCurrentRuleFromFields();
-        SetRuleDirtyState(true);
+        if (SaveCurrentRuleFromFields())
+        {
+            SetRuleDirtyState(true);
+        }
     }
 
     internal void RuleObsMediaSourceModeButton_Click(object sender, RoutedEventArgs e)
@@ -528,8 +540,10 @@ public partial class MainWindow
         RuleObsMediaSourceModeBox.SelectedValue = mode;
         UpdateRuleObsMediaModeSelection();
         UpdateRuleOptionVisibility();
-        SaveCurrentRuleFromFields();
-        SetRuleDirtyState(true);
+        if (SaveCurrentRuleFromFields())
+        {
+            SetRuleDirtyState(true);
+        }
     }
 
     internal void RulesList_SelectionChanged(object sender, SelectionChangedEventArgs e)
@@ -659,8 +673,11 @@ public partial class MainWindow
             return;
         }
 
-        SaveCurrentRuleFromFields();
-        SetRuleDirtyState(true);
+        if (SaveCurrentRuleFromFields())
+        {
+            SetRuleDirtyState(true);
+        }
+
         UpdateEventKindTileSelection();
         UpdatePatternTileSelection();
         UpdateRuleOptionVisibility();
@@ -675,8 +692,10 @@ public partial class MainWindow
         }
 
         TargetPinsBox.Text = TargetPinsChoiceBox.SelectedValue?.ToString() ?? "";
-        SaveCurrentRuleFromFields();
-        SetRuleDirtyState(true);
+        if (SaveCurrentRuleFromFields())
+        {
+            SetRuleDirtyState(true);
+        }
     }
 
     internal void LightPresetButton_Click(object sender, RoutedEventArgs e)
@@ -708,8 +727,10 @@ public partial class MainWindow
                 break;
         }
 
-        SaveCurrentRuleFromFields();
-        SetRuleDirtyState(true);
+        if (SaveCurrentRuleFromFields())
+        {
+            SetRuleDirtyState(true);
+        }
     }
 
     internal void LightValueButton_Click(object sender, RoutedEventArgs e)
@@ -739,8 +760,11 @@ public partial class MainWindow
         }
 
         AdjustSliderValue(slider, delta);
-        SaveCurrentRuleFromFields();
-        SetRuleDirtyState(true);
+        if (SaveCurrentRuleFromFields())
+        {
+            SetRuleDirtyState(true);
+        }
+
         UpdateSliderLabels();
         UpdateRuleLedPreviewFrame();
     }
@@ -765,8 +789,11 @@ public partial class MainWindow
             return;
         }
 
-        SaveCurrentRuleFromFields();
-        SetRuleDirtyState(true);
+        if (SaveCurrentRuleFromFields())
+        {
+            SetRuleDirtyState(true);
+        }
+
         UpdateSliderLabels();
         UpdateRuleLedPreviewFrame();
     }

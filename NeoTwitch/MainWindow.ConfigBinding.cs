@@ -285,16 +285,30 @@ public partial class MainWindow
         }
     }
 
-    private void SaveCurrentRuleFromFields()
+    private bool SaveCurrentRuleFromFields()
     {
-        if (_loadingRule || (_editingRule ?? RulesList.SelectedItem as EventRule) is not EventRule rule)
+        if (_loadingRule
+            || _editingRule is not EventRule rule
+            || RulesList.SelectedItem is not EventRule selectedRule
+            || !ReferenceEquals(selectedRule, rule)
+            || !_config.Rules.Contains(rule)
+            || EventKindBox.SelectedValue is not TwitchEventKind kind
+            || !Enum.IsDefined(kind))
         {
-            return;
+            return false;
+        }
+
+        var ruleName = RuleNameBox.Text.Trim();
+        if (string.IsNullOrWhiteSpace(ruleName))
+        {
+            ruleName = string.IsNullOrWhiteSpace(rule.Name)
+                ? DisplayNames.For(kind)
+                : rule.Name;
         }
 
         rule.IsEnabled = RuleEnabledCheck.IsChecked == true;
-        rule.Name = RuleNameBox.Text.Trim();
-        rule.EventKind = EventKindBox.SelectedValue is TwitchEventKind kind ? kind : TwitchEventKind.Follow;
+        rule.Name = ruleName;
+        rule.EventKind = kind;
         rule.CustomRewardTitle = RewardTitleBox.Text.Trim();
         rule.ChatCommand = ChatCommandBox.Text.Trim();
         rule.MinimumBits = ParseInt(MinimumBitsBox.Text, 1, 1, 1_000_000);
@@ -345,6 +359,8 @@ public partial class MainWindow
         UpdateRuleLedPreviewTimerState();
         RefreshRulesView();
         RefreshAudioLibraryView();
+
+        return true;
     }
 
     private void SaveBackgroundFromFields()

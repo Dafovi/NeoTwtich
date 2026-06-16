@@ -277,89 +277,97 @@
                                     </StackPanel>
                                 </StackPanel>
 
-                                <Grid Margin="0,10,0,16">
-                                    <Grid.ColumnDefinitions>
-                                        <ColumnDefinition Width="1.15*" />
-                                        <ColumnDefinition Width="18" />
-                                        <ColumnDefinition Width="1*" />
-                                    </Grid.ColumnDefinitions>
+                                <WrapPanel Margin="0,10,0,6">
+                                    <Grid x:Name="BackgroundColorOptionsGrid"
+                                          MinWidth="360"
+                                          Width="430"
+                                          Margin="0,0,12,12">
+                                        <Border BorderBrush="{DynamicResource ThemeBorderBrush}"
+                                                BorderThickness="1"
+                                                CornerRadius="14"
+                                                Padding="12"
+                                                Background="{DynamicResource ThemeSurfaceBrush}">
+                                            <StackPanel>
+                                                <TextBlock Text="Colores de fondo"
+                                                           FontWeight="SemiBold"
+                                                           Margin="0,0,0,10" />
+                                                <TextBlock x:Name="BackgroundPrimaryColorLabel"
+                                                           Text="Color principal"
+                                                           Style="{StaticResource MutedText}" />
+                                                <DockPanel x:Name="BackgroundPrimaryColorPanel"
+                                                           LastChildFill="True"
+                                                           Margin="0,4,0,10">
+                                                    <Button x:Name="BackgroundPrimaryColorButton"
+                                                            DockPanel.Dock="Left"
+                                                            Width="38"
+                                                            Margin="0,0,10,0"
+                                                            ToolTip="Escoger color"
+                                                            Click="BackgroundPrimaryColorButton_Click" />
+                                                    <Button Content="Editar color"
+                                                            DockPanel.Dock="Right"
+                                                            MinWidth="104"
+                                                            Margin="10,0,0,0"
+                                                            Click="BackgroundPrimaryColorButton_Click" />
+                                                    <TextBox x:Name="BackgroundPrimaryColorBox"
+                                                             Margin="0"
+                                                             TextChanged="BackgroundFieldChanged" />
+                                                </DockPanel>
 
-                                    <StackPanel Grid.Column="0">
-                                        <TextBlock x:Name="BackgroundPrimaryColorLabel"
-                                                   Text="Color principal de fondo"
-                                                   Style="{StaticResource MutedText}" />
-                                        <DockPanel x:Name="BackgroundPrimaryColorPanel"
-                                                   LastChildFill="True"
-                                                   Margin="0,4,0,10">
-                                            <Button x:Name="BackgroundPrimaryColorButton"
-                                                    DockPanel.Dock="Left"
-                                                    Width="38"
-                                                    Margin="0,0,10,0"
-                                                    ToolTip="Escoger color"
-                                                    Click="BackgroundPrimaryColorButton_Click" />
-                                            <Button Content="Editar color"
-                                                    DockPanel.Dock="Right"
-                                                    MinWidth="104"
-                                                    Margin="10,0,0,0"
-                                                    Click="BackgroundPrimaryColorButton_Click" />
-                                            <TextBox x:Name="BackgroundPrimaryColorBox"
-                                                     Margin="0"
-                                                     TextChanged="BackgroundFieldChanged" />
-                                        </DockPanel>
+                                                <TextBlock x:Name="BackgroundSecondaryColorLabel"
+                                                           Text="Color secundario"
+                                                           Style="{StaticResource MutedText}" />
+                                                <DockPanel x:Name="BackgroundSecondaryColorPanel"
+                                                           LastChildFill="True"
+                                                           Margin="0,4,0,10">
+                                                    <Button x:Name="BackgroundSecondaryColorButton"
+                                                            DockPanel.Dock="Left"
+                                                            Width="38"
+                                                            Margin="0,0,10,0"
+                                                            ToolTip="Escoger color"
+                                                            Click="BackgroundSecondaryColorButton_Click" />
+                                                    <Button Content="Editar color"
+                                                            DockPanel.Dock="Right"
+                                                            MinWidth="104"
+                                                            Margin="10,0,0,0"
+                                                            Click="BackgroundSecondaryColorButton_Click" />
+                                                    <TextBox x:Name="BackgroundSecondaryColorBox"
+                                                             Margin="0"
+                                                             TextChanged="BackgroundFieldChanged" />
+                                                </DockPanel>
 
-                                        <TextBlock x:Name="BackgroundSecondaryColorLabel"
-                                                   Text="Color secundario de fondo"
-                                                   Style="{StaticResource MutedText}" />
-                                        <DockPanel x:Name="BackgroundSecondaryColorPanel"
-                                                   LastChildFill="True"
-                                                   Margin="0,4,0,10">
-                                            <Button x:Name="BackgroundSecondaryColorButton"
-                                                    DockPanel.Dock="Left"
-                                                    Width="38"
-                                                    Margin="0,0,10,0"
-                                                    ToolTip="Escoger color"
-                                                    Click="BackgroundSecondaryColorButton_Click" />
-                                            <Button Content="Editar color"
-                                                    DockPanel.Dock="Right"
-                                                    MinWidth="104"
-                                                    Margin="10,0,0,0"
-                                                    Click="BackgroundSecondaryColorButton_Click" />
-                                            <TextBox x:Name="BackgroundSecondaryColorBox"
-                                                     Margin="0"
-                                                     TextChanged="BackgroundFieldChanged" />
-                                        </DockPanel>
+                                                <TextBlock x:Name="BackgroundTertiaryColorLabel"
+                                                           Text="Tercer color"
+                                                           Style="{StaticResource MutedText}" />
+                                                <DockPanel x:Name="BackgroundTertiaryColorPanel"
+                                                           LastChildFill="True"
+                                                           Margin="0,4,0,0">
+                                                    <Button x:Name="BackgroundTertiaryColorButton"
+                                                            DockPanel.Dock="Left"
+                                                            Width="38"
+                                                            Margin="0,0,10,0"
+                                                            ToolTip="Escoger color"
+                                                            Click="BackgroundTertiaryColorButton_Click" />
+                                                    <Button Content="Editar color"
+                                                            DockPanel.Dock="Right"
+                                                            MinWidth="104"
+                                                            Margin="10,0,0,0"
+                                                            Click="BackgroundTertiaryColorButton_Click" />
+                                                    <TextBox x:Name="BackgroundTertiaryColorBox"
+                                                             Margin="0"
+                                                             TextChanged="BackgroundFieldChanged" />
+                                                </DockPanel>
+                                            </StackPanel>
+                                        </Border>
+                                    </Grid>
 
-                                        <TextBlock x:Name="BackgroundTertiaryColorLabel"
-                                                   Text="Tercer color de fondo"
-                                                   Style="{StaticResource MutedText}" />
-                                        <DockPanel x:Name="BackgroundTertiaryColorPanel"
-                                                   LastChildFill="True"
-                                                   Margin="0,4,0,0">
-                                            <Button x:Name="BackgroundTertiaryColorButton"
-                                                    DockPanel.Dock="Left"
-                                                    Width="38"
-                                                    Margin="0,0,10,0"
-                                                    ToolTip="Escoger color"
-                                                    Click="BackgroundTertiaryColorButton_Click" />
-                                            <Button Content="Editar color"
-                                                    DockPanel.Dock="Right"
-                                                    MinWidth="104"
-                                                    Margin="10,0,0,0"
-                                                    Click="BackgroundTertiaryColorButton_Click" />
-                                            <TextBox x:Name="BackgroundTertiaryColorBox"
-                                                     Margin="0"
-                                                     TextChanged="BackgroundFieldChanged" />
-                                        </DockPanel>
-                                    </StackPanel>
-
-                                    <StackPanel x:Name="BackgroundBrightnessPanel"
-                                                Grid.Column="2">
-                                        <TextBlock Text="Brillo de fondo" Style="{StaticResource MutedText}" />
+                                    <Grid x:Name="BackgroundBrightnessPanel"
+                                          MinWidth="280"
+                                          Width="340"
+                                          Margin="0,0,12,12">
                                         <Border BorderBrush="{DynamicResource ThemeBorderBrush}"
                                                 BorderThickness="1"
                                                 CornerRadius="14"
                                                 Padding="14"
-                                                Margin="0,8,0,0"
                                                 Background="{DynamicResource ThemeSurfaceBrush}">
                                             <Grid MinHeight="132">
                                                 <Slider x:Name="BackgroundBrightnessSlider"
@@ -407,19 +415,17 @@
                                                 </StackPanel>
                                             </Grid>
                                         </Border>
-                                    </StackPanel>
-                                </Grid>
+                                    </Grid>
+                                </WrapPanel>
 
                                 <TextBlock Text="Tiempos de fondo"
                                            FontWeight="SemiBold"
                                            Margin="0,4,0,8" />
-                                <Grid Margin="0,0,0,12">
-                                    <Grid.ColumnDefinitions>
-                                        <ColumnDefinition Width="*" />
-                                        <ColumnDefinition Width="12" />
-                                        <ColumnDefinition Width="*" />
-                                    </Grid.ColumnDefinitions>
-                                    <Grid x:Name="BackgroundCycleGrid">
+                                <WrapPanel Margin="0,0,0,12">
+                                    <Grid x:Name="BackgroundCycleGrid"
+                                          MinWidth="220"
+                                          Width="250"
+                                          Margin="0,0,10,10">
                                         <Border BorderBrush="{DynamicResource ThemeBorderBrush}"
                                                 BorderThickness="1"
                                                 CornerRadius="12"
@@ -440,9 +446,10 @@
                                                             Tag="Cycle:10"
                                                             Click="BackgroundLightValueButton_Click" />
                                                     <StackPanel Orientation="Horizontal"
-                                                                HorizontalAlignment="Center">
+                                                                HorizontalAlignment="Center"
+                                                                MinWidth="106">
                                                         <TextBox x:Name="BackgroundCycleValueText"
-                                                                 Width="58"
+                                                                 Width="70"
                                                                  TextAlignment="Center"
                                                                  FontWeight="SemiBold"
                                                                  TextChanged="BackgroundLightNumberBox_TextChanged" />
@@ -467,7 +474,9 @@
                                         </Border>
                                     </Grid>
                                     <Grid x:Name="BackgroundStepGrid"
-                                          Grid.Column="2">
+                                          MinWidth="220"
+                                          Width="250"
+                                          Margin="0,0,10,10">
                                         <Border BorderBrush="{DynamicResource ThemeBorderBrush}"
                                                 BorderThickness="1"
                                                 CornerRadius="12"
@@ -488,9 +497,10 @@
                                                             Tag="Step:10"
                                                             Click="BackgroundLightValueButton_Click" />
                                                     <StackPanel Orientation="Horizontal"
-                                                                HorizontalAlignment="Center">
+                                                                HorizontalAlignment="Center"
+                                                                MinWidth="106">
                                                         <TextBox x:Name="BackgroundStepValueText"
-                                                                 Width="58"
+                                                                 Width="70"
                                                                  TextAlignment="Center"
                                                                  FontWeight="SemiBold"
                                                                  TextChanged="BackgroundLightNumberBox_TextChanged" />
@@ -514,7 +524,31 @@
                                             </StackPanel>
                                         </Border>
                                     </Grid>
-                                </Grid>
+                                    <Border BorderBrush="{DynamicResource ThemeBorderBrush}"
+                                            BorderThickness="1"
+                                            CornerRadius="12"
+                                            Padding="10"
+                                            MinWidth="260"
+                                            Margin="0,0,10,10"
+                                            Background="{DynamicResource ThemeSurfaceBrush}">
+                                        <StackPanel>
+                                            <TextBlock Text="Presets rapidos"
+                                                       Style="{StaticResource MutedText}"
+                                                       Margin="0,0,0,8" />
+                                            <UniformGrid Columns="3">
+                                                <Button Content="Suave"
+                                                        Tag="Soft"
+                                                        Click="BackgroundLightPresetButton_Click" />
+                                                <Button Content="Medio"
+                                                        Tag="Medium"
+                                                        Click="BackgroundLightPresetButton_Click" />
+                                                <Button Content="Rapido"
+                                                        Tag="Fast"
+                                                        Click="BackgroundLightPresetButton_Click" />
+                                            </UniformGrid>
+                                        </StackPanel>
+                                    </Border>
+                                </WrapPanel>
 
                                 <TextBlock Text="Simulacion"
                                            FontWeight="SemiBold"

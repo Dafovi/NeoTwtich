@@ -60,6 +60,7 @@ public partial class MainWindow
     private WpfButton PatternTheaterTileButton => AlertsView.PatternTheaterTileButton;
     private WpfButton PatternSparkleTileButton => AlertsView.PatternSparkleTileButton;
     private WpfButton PatternRaveTileButton => AlertsView.PatternRaveTileButton;
+    private WpfGrid ColorOptionsGrid => AlertsView.ColorOptionsGrid;
     private WpfStackPanel PrimaryColorPanel => AlertsView.PrimaryColorPanel;
     private WpfButton PrimaryColorButton => AlertsView.PrimaryColorButton;
     private WpfTextBox PrimaryColorBox => AlertsView.PrimaryColorBox;

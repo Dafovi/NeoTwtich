@@ -30,6 +30,7 @@ public sealed class AppConfig
     public ObservableCollection<MediaGroupConfig> ImageGroups { get; set; } = [];
     public ObservableCollection<MediaAssetConfig> VideoLibrary { get; set; } = [];
     public ObservableCollection<MediaGroupConfig> VideoGroups { get; set; } = [];
+    public ObservableCollection<string> RecentColors { get; set; } = [];
     public int MaxQueuedSameRuleAlerts { get; set; } = 1;
     public int SameRuleQueueCooldownMs { get; set; }
     public int MaxQueuedDifferentRuleAlerts { get; set; } = 3;

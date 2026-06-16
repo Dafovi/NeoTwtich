@@ -168,8 +168,6 @@ public sealed class SettingsStore
 
     private static AppConfig NormalizeConfig(AppConfig config)
     {
-        var defaults = AppConfig.CreateDefault();
-
         config.TwitchClientId ??= "";
         config.TwitchClientSecret ??= "";
         config.Token ??= new TwitchTokenInfo();
@@ -211,12 +209,14 @@ public sealed class SettingsStore
             asset.Width = asset.Width;
             asset.Height = asset.Height;
         });
+        config.RecentColors = NormalizeRecentColors(config.RecentColors);
         config.MaxQueuedSameRuleAlerts = Math.Clamp(config.MaxQueuedSameRuleAlerts, 0, 100);
         config.SameRuleQueueCooldownMs = Math.Clamp(config.SameRuleQueueCooldownMs, 0, 600000);
         config.MaxQueuedDifferentRuleAlerts = Math.Clamp(config.MaxQueuedDifferentRuleAlerts, 0, 100);
         config.DifferentRuleQueueCooldownMs = Math.Clamp(config.DifferentRuleQueueCooldownMs, 0, 600000);
-        config.Rules = NormalizeRules(config.Rules, defaults.Rules);
+        config.Rules = NormalizeRules(config.Rules);
         MigrateRuleAudioLibrary(config);
+        var defaults = AppConfig.CreateDefault();
         config.LedStrips = NormalizeStrips(config.LedStrips, defaults.LedStrips);
         config.BackgroundTargetPins ??= "";
         config.BackgroundPattern = Enum.IsDefined(config.BackgroundPattern)
@@ -247,32 +247,29 @@ public sealed class SettingsStore
         };
     }
 
-    private static ObservableCollection<EventRule> NormalizeRules(
-        ObservableCollection<EventRule>? rules,
-        ObservableCollection<EventRule> defaults)
+    private static ObservableCollection<string> NormalizeRecentColors(ObservableCollection<string>? colors)
     {
-        if (rules is null)
-        {
-            return defaults;
-        }
+        return new ObservableCollection<string>(
+            (colors ?? [])
+            .Select(LightCommand.NormalizeColor)
+            .Where(color => !string.Equals(color, "#000000", StringComparison.OrdinalIgnoreCase))
+            .Distinct(StringComparer.OrdinalIgnoreCase)
+            .Take(8));
+    }
 
-        if (rules.Count == 0)
+    private static ObservableCollection<EventRule> NormalizeRules(ObservableCollection<EventRule>? rules)
+    {
+        if (rules is null || rules.Count == 0)
         {
             return [];
         }
 
         foreach (var rule in rules)
         {
-            var defaultRule = defaults.FirstOrDefault(item => item.EventKind == rule.EventKind);
             rule.Id = string.IsNullOrWhiteSpace(rule.Id) ? Guid.NewGuid().ToString("N") : rule.Id;
-            var hadMissingName = string.IsNullOrWhiteSpace(rule.Name);
-            rule.Name = hadMissingName
-                ? defaultRule?.Name ?? DisplayNames.For(rule.EventKind)
+            rule.Name = string.IsNullOrWhiteSpace(rule.Name)
+                ? "Alerta sin nombre"
                 : rule.Name.Trim();
-            if (hadMissingName && rule.EventKind == TwitchEventKind.Follow)
-            {
-                rule.IsEnabled = true;
-            }
 
             rule.CustomRewardTitle ??= "";
             rule.ChatCommand ??= "";

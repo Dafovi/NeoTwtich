@@ -40,7 +40,7 @@ public partial class ColorPickerDialog : Window
         var background = _darkMode ? WpfColor.FromRgb(8, 17, 27) : WpfColor.FromRgb(248, 250, 252);
         var panel = _darkMode ? WpfColor.FromRgb(15, 30, 45) : WpfColor.FromRgb(255, 255, 255);
         var text = _darkMode ? WpfColor.FromRgb(240, 249, 255) : WpfColor.FromRgb(15, 23, 42);
-        var muted = _darkMode ? WpfColor.FromRgb(148, 163, 184) : WpfColor.FromRgb(71, 85, 105);
+        var muted = _darkMode ? WpfColor.FromRgb(177, 194, 214) : WpfColor.FromRgb(71, 85, 105);
         var border = _darkMode ? WpfColor.FromRgb(51, 65, 85) : WpfColor.FromRgb(203, 213, 225);
 
         RootCard.Background = new SolidColorBrush(background);
@@ -64,7 +64,7 @@ public partial class ColorPickerDialog : Window
 
         foreach (var block in FindVisualChildren<TextBlock>(this))
         {
-            block.Foreground = block.FontSize <= 15 ? new SolidColorBrush(muted) : new SolidColorBrush(text);
+            block.Foreground = new SolidColorBrush(text);
         }
 
         CloseButton.Background = System.Windows.Media.Brushes.Transparent;
@@ -93,7 +93,7 @@ public partial class ColorPickerDialog : Window
             .Select(color => ToHex(ParseColor(color, Colors.Transparent)))
             .Where(color => color != "#000000")
             .Distinct(StringComparer.OrdinalIgnoreCase)
-            .Take(9);
+            .Take(8);
 
         foreach (var colorHex in colors)
         {

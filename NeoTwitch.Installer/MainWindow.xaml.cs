@@ -157,6 +157,7 @@ public partial class MainWindow : Window
             _step = 3;
             _isInstalling = false;
             OpenAfterCompleteCheck.IsChecked = _options.LaunchAfterInstall;
+            UpdateReleaseNotes(_installResult.ReleaseNotes);
             ShowStep();
         }
         catch (OperationCanceledException)
@@ -198,6 +199,36 @@ public partial class MainWindow : Window
             FileName = LatestReleaseUrl,
             UseShellExecute = true
         });
+    }
+
+    private void UpdateReleaseNotes(string? releaseNotes)
+    {
+        if (!_options.IsUpdate || string.IsNullOrWhiteSpace(releaseNotes))
+        {
+            ReleaseNotesPanel.Visibility = Visibility.Collapsed;
+            ReleaseNotesText.Text = "";
+            return;
+        }
+
+        var notes = SimplifyReleaseNotes(releaseNotes);
+        ReleaseNotesText.Text = notes.Length > 900 ? $"{notes[..900]}..." : notes;
+        ReleaseNotesPanel.Visibility = Visibility.Visible;
+    }
+
+    private static string SimplifyReleaseNotes(string releaseNotes)
+    {
+        var lines = releaseNotes
+            .Replace("\r\n", "\n", StringComparison.Ordinal)
+            .Split('\n')
+            .Select(line => line.Trim())
+            .Where(line => !string.IsNullOrWhiteSpace(line))
+            .Select(line => line
+                .TrimStart('#')
+                .Trim()
+                .Replace("`", "", StringComparison.Ordinal)
+                .Replace("**", "", StringComparison.Ordinal));
+
+        return string.Join(Environment.NewLine, lines);
     }
 
     private void ReadOptionsFromUi()

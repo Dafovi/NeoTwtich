@@ -443,6 +443,9 @@ public partial class MainWindow
                 || (obsMediaSourceMode == MediaSourceMode.Group && !obsMediaHasGroups)), RuleObsMediaEmptyHintText);
 
         SetVisible(useLights, LightConfigurationPanel, LightOptionsSeparator, TargetPinsLabel, TargetPinsChoiceBox, PatternGrid, RuleLedPreviewPanel);
+        var usesAnyLightColor = useLights
+            && (UsesPrimaryColor(pattern) || UsesSecondaryColor(pattern) || UsesTertiaryColor(pattern));
+        SetVisible(usesAnyLightColor, ColorOptionsGrid);
         SetVisible(useLights && UsesPrimaryColor(pattern), PrimaryColorPanel);
         SetVisible(useLights && UsesSecondaryColor(pattern), SecondaryColorLabel, SecondaryColorPanel);
         SetVisible(useLights && UsesTertiaryColor(pattern), TertiaryColorLabel, TertiaryColorPanel);
@@ -501,6 +504,9 @@ public partial class MainWindow
         SetVisible(alexaAvailable && (alexaEnabled || alexaTurnOffAfterEvent), BackgroundAlexaEventsGrid, ApplyAlexaBackgroundButton);
         SetVisible(arduinoAvailable, BackgroundEnabledCheck);
         SetVisible(enabled, BackgroundPatternGrid, BackgroundLedPreviewPanel, ApplyArduinoBackgroundButton);
+        var usesAnyBackgroundColor = enabled
+            && (UsesPrimaryColor(pattern) || UsesSecondaryColor(pattern) || UsesTertiaryColor(pattern));
+        SetVisible(usesAnyBackgroundColor, BackgroundColorOptionsGrid);
         SetVisible(enabled && UsesBrightness(pattern), BackgroundBrightnessPanel);
         SetVisible(enabled && UsesPrimaryColor(pattern), BackgroundPrimaryColorLabel, BackgroundPrimaryColorPanel);
         SetVisible(enabled && UsesSecondaryColor(pattern), BackgroundSecondaryColorLabel, BackgroundSecondaryColorPanel);

@@ -32,7 +32,8 @@ public partial class MainWindow
     private WpfButton BackgroundPatternTheaterTileButton => LightsView.BackgroundPatternTheaterTileButton;
     private WpfButton BackgroundPatternSparkleTileButton => LightsView.BackgroundPatternSparkleTileButton;
     private WpfButton BackgroundPatternRaveTileButton => LightsView.BackgroundPatternRaveTileButton;
-    private WpfStackPanel BackgroundBrightnessPanel => LightsView.BackgroundBrightnessPanel;
+    private WpfGrid BackgroundColorOptionsGrid => LightsView.BackgroundColorOptionsGrid;
+    private WpfGrid BackgroundBrightnessPanel => LightsView.BackgroundBrightnessPanel;
     private WpfTextBlock BackgroundBrightnessValueText => LightsView.BackgroundBrightnessValueText;
     private WpfPath BackgroundBrightnessArc => LightsView.BackgroundBrightnessArc;
     private WpfSlider BackgroundBrightnessSlider => LightsView.BackgroundBrightnessSlider;

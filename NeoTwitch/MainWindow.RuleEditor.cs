@@ -947,6 +947,39 @@ public partial class MainWindow
         UpdateBackgroundLedPreviewTimerState();
     }
 
+    internal void BackgroundLightPresetButton_Click(object sender, RoutedEventArgs e)
+    {
+        if (_initializingComponent || _loadingUi || sender is not System.Windows.Controls.Button button || button.Tag is not string preset)
+        {
+            return;
+        }
+
+        switch (preset)
+        {
+            case "Soft":
+                BackgroundBrightnessSlider.Value = 110;
+                BackgroundCycleSlider.Value = 180;
+                BackgroundStepSlider.Value = 260;
+                break;
+            case "Fast":
+                BackgroundBrightnessSlider.Value = 220;
+                BackgroundCycleSlider.Value = 35;
+                BackgroundStepSlider.Value = 70;
+                break;
+            default:
+                BackgroundBrightnessSlider.Value = 160;
+                BackgroundCycleSlider.Value = 90;
+                BackgroundStepSlider.Value = 140;
+                break;
+        }
+
+        SaveBackgroundFromFields();
+        SaveConfig();
+        UpdateSliderLabels();
+        UpdateBackgroundLedPreviewFrame();
+        UpdateBackgroundLedPreviewTimerState();
+    }
+
     internal void BackgroundLightNumberBox_TextChanged(object sender, TextChangedEventArgs e)
     {
         if (_initializingComponent || _loadingUi || _updatingLightValueFields || sender is not System.Windows.Controls.TextBox textBox)

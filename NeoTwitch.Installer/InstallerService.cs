@@ -28,10 +28,12 @@ internal sealed class InstallerService
 
             var packagePath = options.PackagePath;
             string version;
+            var releaseNotes = "";
             if (string.IsNullOrWhiteSpace(packagePath) || !File.Exists(packagePath))
             {
                 var asset = await _releaseClient.GetLatestInstallAssetAsync(cancellationToken);
                 version = NormalizeVersion(asset.Version);
+                releaseNotes = asset.ReleaseNotes;
                 packagePath = await _releaseClient.DownloadAsync(asset, tempRoot, progress, cancellationToken);
             }
             else
@@ -76,7 +78,7 @@ internal sealed class InstallerService
             WriteInstallManifest(options.InstallPath, version);
 
             progress.Report(new InstallProgress(100, options.IsUpdate ? "Actualización completada" : "Instalación completada"));
-            return new InstallResult(appExePath, version);
+            return new InstallResult(appExePath, version, releaseNotes);
         }
         finally
         {
@@ -311,4 +313,4 @@ internal sealed class InstallerService
 
 internal sealed record InstallProgress(int Percent, string Message);
 
-internal sealed record InstallResult(string AppExePath, string Version);
+internal sealed record InstallResult(string AppExePath, string Version, string ReleaseNotes);

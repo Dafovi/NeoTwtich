@@ -261,54 +261,91 @@ public sealed class TwitchEventSubClient : IDisposable
 
         foreach (var kind in activeKinds)
         {
-            yield return kind switch
+            foreach (var definition in BuildSubscriptionDefinitionsForKind(kind, broadcasterId))
             {
-                TwitchEventKind.Follow => new EventSubDefinition(
+                yield return definition;
+            }
+        }
+    }
+
+    private static IEnumerable<EventSubDefinition> BuildSubscriptionDefinitionsForKind(
+        TwitchEventKind kind,
+        string broadcasterId)
+    {
+        switch (kind)
+        {
+            case TwitchEventKind.Follow:
+                yield return new EventSubDefinition(
                     "channel.follow",
                     "2",
                     new Dictionary<string, string>
                     {
                         ["broadcaster_user_id"] = broadcasterId,
                         ["moderator_user_id"] = broadcasterId
-                    }),
-                TwitchEventKind.Subscription => new EventSubDefinition(
+                    });
+                yield break;
+            case TwitchEventKind.Subscription:
+                yield return new EventSubDefinition(
                     "channel.subscribe",
                     "1",
                     new Dictionary<string, string>
                     {
                         ["broadcaster_user_id"] = broadcasterId
-                    }),
-                TwitchEventKind.Raid => new EventSubDefinition(
+                    });
+                yield return new EventSubDefinition(
+                    "channel.subscription.message",
+                    "1",
+                    new Dictionary<string, string>
+                    {
+                        ["broadcaster_user_id"] = broadcasterId
+                    });
+                yield return new EventSubDefinition(
+                    "channel.subscription.gift",
+                    "1",
+                    new Dictionary<string, string>
+                    {
+                        ["broadcaster_user_id"] = broadcasterId
+                    });
+                yield break;
+            case TwitchEventKind.Raid:
+                yield return new EventSubDefinition(
                     "channel.raid",
                     "1",
                     new Dictionary<string, string>
                     {
                         ["to_broadcaster_user_id"] = broadcasterId
-                    }),
-                TwitchEventKind.Cheer => new EventSubDefinition(
+                    });
+                yield break;
+            case TwitchEventKind.Cheer:
+                yield return new EventSubDefinition(
                     "channel.cheer",
                     "1",
                     new Dictionary<string, string>
                     {
                         ["broadcaster_user_id"] = broadcasterId
-                    }),
-                TwitchEventKind.ChatCommand => new EventSubDefinition(
+                    });
+                yield break;
+            case TwitchEventKind.ChatCommand:
+                yield return new EventSubDefinition(
                     "channel.chat.message",
                     "1",
                     new Dictionary<string, string>
                     {
                         ["broadcaster_user_id"] = broadcasterId,
                         ["user_id"] = broadcasterId
-                    }),
-                TwitchEventKind.ChannelPointRedemption => new EventSubDefinition(
+                    });
+                yield break;
+            case TwitchEventKind.ChannelPointRedemption:
+                yield return new EventSubDefinition(
                     "channel.channel_points_custom_reward_redemption.add",
                     "1",
                     new Dictionary<string, string>
                     {
                         ["broadcaster_user_id"] = broadcasterId
-                    }),
-                _ => throw new InvalidOperationException($"Evento no soportado: {kind}")
-            };
+                    });
+                yield break;
+            default:
+                throw new InvalidOperationException($"Evento no soportado: {kind}");
         }
     }
 
@@ -350,6 +387,22 @@ public sealed class TwitchEventSubClient : IDisposable
                 RawType = type,
                 UserName = ReadString(eventPayload, "user_name"),
                 Title = $"{ReadString(eventPayload, "user_name")} se suscribio"
+            },
+            "channel.subscription.message" => new TwitchEvent
+            {
+                Kind = TwitchEventKind.Subscription,
+                RawType = type,
+                UserName = ReadString(eventPayload, "user_name"),
+                Message = ReadSubscriptionMessage(eventPayload),
+                Title = $"{ReadString(eventPayload, "user_name")} renovo la suscripcion"
+            },
+            "channel.subscription.gift" => new TwitchEvent
+            {
+                Kind = TwitchEventKind.Subscription,
+                RawType = type,
+                UserName = ReadSubscriptionGiftUserName(eventPayload),
+                ViewerCount = ReadInt(eventPayload, "total"),
+                Title = $"{ReadSubscriptionGiftUserName(eventPayload)} regalo {ReadInt(eventPayload, "total") ?? 1} suscripcion(es)"
             },
             "channel.raid" => new TwitchEvent
             {
@@ -396,6 +449,20 @@ public sealed class TwitchEventSubClient : IDisposable
         }
 
         return ReadString(message, "text");
+    }
+
+    private static string? ReadSubscriptionMessage(JsonElement eventPayload)
+    {
+        return eventPayload.TryGetProperty("message", out var message)
+            && message.TryGetProperty("text", out var text)
+            ? text.GetString()
+            : null;
+    }
+
+    private static string ReadSubscriptionGiftUserName(JsonElement eventPayload)
+    {
+        var userName = ReadString(eventPayload, "user_name");
+        return string.IsNullOrWhiteSpace(userName) ? "Alguien" : userName;
     }
 
     private static string? ReadRewardTitle(JsonElement eventPayload)

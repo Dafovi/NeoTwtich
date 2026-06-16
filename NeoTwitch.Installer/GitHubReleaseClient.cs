@@ -32,7 +32,7 @@ internal sealed class GitHubReleaseClient
         var asset = PickBestAsset(release.Assets)
             ?? throw new InvalidOperationException("El ultimo release no tiene un asset instalable de Neo Twitch.");
 
-        return new ReleaseAsset(release.TagName, asset.Name, asset.BrowserDownloadUrl, asset.Size);
+        return new ReleaseAsset(release.TagName, asset.Name, asset.BrowserDownloadUrl, asset.Size, release.Body ?? "");
     }
 
     public async Task<string> DownloadAsync(
@@ -112,6 +112,7 @@ internal sealed class GitHubReleaseClient
 
     private sealed record GitHubRelease(
         [property: JsonPropertyName("tag_name")] string TagName,
+        [property: JsonPropertyName("body")] string? Body,
         [property: JsonPropertyName("assets")] IReadOnlyList<GitHubAsset> Assets);
 
     private sealed record GitHubAsset(
@@ -120,4 +121,4 @@ internal sealed class GitHubReleaseClient
         [property: JsonPropertyName("size")] long Size);
 }
 
-internal sealed record ReleaseAsset(string Version, string Name, string DownloadUrl, long Size);
+internal sealed record ReleaseAsset(string Version, string Name, string DownloadUrl, long Size, string ReleaseNotes);

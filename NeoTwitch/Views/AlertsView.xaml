@@ -623,147 +623,160 @@
                                                                 </Grid>
                                                             </StackPanel>
 
-                                                            <Grid Margin="0,10,0,16">
-                                                                <Grid.ColumnDefinitions>
-                                                                    <ColumnDefinition Width="1.15*" />
-                                                                    <ColumnDefinition Width="18" />
-                                                                    <ColumnDefinition Width="1*" />
-                                                                </Grid.ColumnDefinitions>
-                                                                <StackPanel Grid.Column="0">
-                                                                    <StackPanel x:Name="PrimaryColorPanel">
-                                                                        <TextBlock Text="Color principal" Style="{StaticResource MutedText}" />
-                                                                        <DockPanel LastChildFill="True" Margin="0,4,0,10">
-                                                                            <Button x:Name="PrimaryColorButton"
-                                                                                    DockPanel.Dock="Left"
-                                                                                    Width="38"
-                                                                                    Margin="0,0,10,0"
-                                                                                    ToolTip="Escoger color"
-                                                                                    Click="PrimaryColorButton_Click" />
-                                                                            <Button Content="Editar color"
-                                                                                    DockPanel.Dock="Right"
-                                                                                    MinWidth="104"
-                                                                                    Margin="10,0,0,0"
-                                                                                    Click="PrimaryColorButton_Click" />
-                                                                            <TextBox x:Name="PrimaryColorBox"
-                                                                                     Margin="0"
-                                                                                     TextChanged="RuleFieldChanged" />
-                                                                        </DockPanel>
-                                                                    </StackPanel>
+                                                            <WrapPanel Margin="0,10,0,6">
+                                                                <Grid x:Name="ColorOptionsGrid"
+                                                                      MinWidth="360"
+                                                                      Width="430"
+                                                                      Margin="0,0,12,12">
+                                                                    <Border BorderBrush="{DynamicResource ThemeBorderBrush}"
+                                                                            BorderThickness="1"
+                                                                            CornerRadius="14"
+                                                                            Padding="12"
+                                                                            Background="{DynamicResource ThemeSurfaceBrush}">
+                                                                        <StackPanel>
+                                                                            <TextBlock Text="Colores"
+                                                                                       FontWeight="SemiBold"
+                                                                                       Margin="0,0,0,10" />
+                                                                            <StackPanel x:Name="PrimaryColorPanel">
+                                                                                <TextBlock Text="Color principal" Style="{StaticResource MutedText}" />
+                                                                                <DockPanel LastChildFill="True" Margin="0,4,0,10">
+                                                                                    <Button x:Name="PrimaryColorButton"
+                                                                                            DockPanel.Dock="Left"
+                                                                                            Width="38"
+                                                                                            Margin="0,0,10,0"
+                                                                                            ToolTip="Escoger color"
+                                                                                            Click="PrimaryColorButton_Click" />
+                                                                                    <Button Content="Editar color"
+                                                                                            DockPanel.Dock="Right"
+                                                                                            MinWidth="104"
+                                                                                            Margin="10,0,0,0"
+                                                                                            Click="PrimaryColorButton_Click" />
+                                                                                    <TextBox x:Name="PrimaryColorBox"
+                                                                                             Margin="0"
+                                                                                             TextChanged="RuleFieldChanged" />
+                                                                                </DockPanel>
+                                                                            </StackPanel>
 
-                                                                    <TextBlock x:Name="SecondaryColorLabel"
-                                                                               Text="Color secundario"
-                                                                               Style="{StaticResource MutedText}" />
-                                                                    <DockPanel x:Name="SecondaryColorPanel"
-                                                                               LastChildFill="True"
-                                                                               Margin="0,4,0,10">
-                                                                        <Button x:Name="SecondaryColorButton"
-                                                                                DockPanel.Dock="Left"
-                                                                                Width="38"
-                                                                                Margin="0,0,10,0"
-                                                                                ToolTip="Escoger color"
-                                                                                Click="SecondaryColorButton_Click" />
-                                                                        <Button Content="Editar color"
-                                                                                DockPanel.Dock="Right"
-                                                                                MinWidth="104"
-                                                                                Margin="10,0,0,0"
-                                                                                Click="SecondaryColorButton_Click" />
-                                                                        <TextBox x:Name="SecondaryColorBox"
-                                                                                 Margin="0"
-                                                                                 TextChanged="RuleFieldChanged" />
-                                                                    </DockPanel>
+                                                                            <TextBlock x:Name="SecondaryColorLabel"
+                                                                                       Text="Color secundario"
+                                                                                       Style="{StaticResource MutedText}" />
+                                                                            <DockPanel x:Name="SecondaryColorPanel"
+                                                                                       LastChildFill="True"
+                                                                                       Margin="0,4,0,10">
+                                                                                <Button x:Name="SecondaryColorButton"
+                                                                                        DockPanel.Dock="Left"
+                                                                                        Width="38"
+                                                                                        Margin="0,0,10,0"
+                                                                                        ToolTip="Escoger color"
+                                                                                        Click="SecondaryColorButton_Click" />
+                                                                                <Button Content="Editar color"
+                                                                                        DockPanel.Dock="Right"
+                                                                                        MinWidth="104"
+                                                                                        Margin="10,0,0,0"
+                                                                                        Click="SecondaryColorButton_Click" />
+                                                                                <TextBox x:Name="SecondaryColorBox"
+                                                                                         Margin="0"
+                                                                                         TextChanged="RuleFieldChanged" />
+                                                                            </DockPanel>
 
-                                                                    <TextBlock x:Name="TertiaryColorLabel"
-                                                                               Text="Tercer color"
-                                                                               Style="{StaticResource MutedText}" />
-                                                                    <DockPanel x:Name="TertiaryColorPanel"
-                                                                               LastChildFill="True"
-                                                                               Margin="0,4,0,0">
-                                                                        <Button x:Name="TertiaryColorButton"
-                                                                                DockPanel.Dock="Left"
-                                                                                Width="38"
-                                                                                Margin="0,0,10,0"
-                                                                                ToolTip="Escoger color"
-                                                                                Click="TertiaryColorButton_Click" />
-                                                                        <Button Content="Editar color"
-                                                                                DockPanel.Dock="Right"
-                                                                                MinWidth="104"
-                                                                                Margin="10,0,0,0"
-                                                                                Click="TertiaryColorButton_Click" />
-                                                                        <TextBox x:Name="TertiaryColorBox"
-                                                                                 Margin="0"
-                                                                                 TextChanged="RuleFieldChanged" />
-                                                                    </DockPanel>
-                                                                </StackPanel>
+                                                                            <TextBlock x:Name="TertiaryColorLabel"
+                                                                                       Text="Tercer color"
+                                                                                       Style="{StaticResource MutedText}" />
+                                                                            <DockPanel x:Name="TertiaryColorPanel"
+                                                                                       LastChildFill="True"
+                                                                                       Margin="0,4,0,0">
+                                                                                <Button x:Name="TertiaryColorButton"
+                                                                                        DockPanel.Dock="Left"
+                                                                                        Width="38"
+                                                                                        Margin="0,0,10,0"
+                                                                                        ToolTip="Escoger color"
+                                                                                        Click="TertiaryColorButton_Click" />
+                                                                                <Button Content="Editar color"
+                                                                                        DockPanel.Dock="Right"
+                                                                                        MinWidth="104"
+                                                                                        Margin="10,0,0,0"
+                                                                                        Click="TertiaryColorButton_Click" />
+                                                                                <TextBox x:Name="TertiaryColorBox"
+                                                                                         Margin="0"
+                                                                                         TextChanged="RuleFieldChanged" />
+                                                                            </DockPanel>
+                                                                        </StackPanel>
+                                                                    </Border>
+                                                                </Grid>
 
                                                                 <Grid x:Name="BrightnessGrid"
-                                                                      Grid.Column="2">
-                                                                    <Grid.RowDefinitions>
-                                                                        <RowDefinition Height="Auto" />
-                                                                        <RowDefinition Height="*" />
-                                                                    </Grid.RowDefinitions>
-                                                                    <TextBlock Text="Brillo"
-                                                                               Style="{StaticResource MutedText}" />
-                                                                    <Grid Grid.Row="1"
-                                                                          Margin="0,8,0,0"
-                                                                          MinHeight="138">
-                                                                        <Ellipse Width="104"
-                                                                                 Height="104"
-                                                                                 Stroke="#3014B8A6"
-                                                                                 StrokeThickness="12"
-                                                                                 HorizontalAlignment="Center"
-                                                                                 VerticalAlignment="Center" />
-                                                                        <Path x:Name="BrightnessArc"
-                                                                              Stroke="#14B8A6"
-                                                                              StrokeThickness="12"
-                                                                              StrokeStartLineCap="Round"
-                                                                              StrokeEndLineCap="Round"
-                                                                              Fill="Transparent"
-                                                                              HorizontalAlignment="Center"
-                                                                              VerticalAlignment="Center" />
-                                                                        <TextBlock x:Name="BrightnessValueText"
-                                                                                   FontSize="24"
-                                                                                   FontWeight="SemiBold"
-                                                                                   HorizontalAlignment="Center"
-                                                                                   VerticalAlignment="Center" />
-                                                                        <StackPanel Orientation="Horizontal"
-                                                                                    HorizontalAlignment="Right"
-                                                                                    VerticalAlignment="Center">
-                                                                            <Button Content="-"
-                                                                                    Width="34"
-                                                                                    Height="30"
-                                                                                    Margin="0,0,6,0"
-                                                                                    Tag="Brightness:-15"
-                                                                                    Click="LightValueButton_Click" />
-                                                                            <Button Content="+"
-                                                                                    Width="34"
-                                                                                    Height="30"
-                                                                                    Tag="Brightness:15"
-                                                                                    Click="LightValueButton_Click" />
-                                                                        </StackPanel>
-                                                                        <Slider x:Name="BrightnessSlider"
-                                                                                Minimum="0"
-                                                                                Maximum="255"
-                                                                                TickFrequency="1"
-                                                                                Visibility="Collapsed"
-                                                                                ValueChanged="RuleFieldChanged" />
-                                                                    </Grid>
+                                                                      MinWidth="280"
+                                                                      Width="340"
+                                                                      Margin="0,0,12,12">
+                                                                    <Border BorderBrush="{DynamicResource ThemeBorderBrush}"
+                                                                            BorderThickness="1"
+                                                                            CornerRadius="14"
+                                                                            Padding="12"
+                                                                            Background="{DynamicResource ThemeSurfaceBrush}">
+                                                                        <Grid>
+                                                                            <Grid.RowDefinitions>
+                                                                                <RowDefinition Height="Auto" />
+                                                                                <RowDefinition Height="*" />
+                                                                            </Grid.RowDefinitions>
+                                                                            <TextBlock Text="Brillo"
+                                                                                       FontWeight="SemiBold" />
+                                                                            <Grid Grid.Row="1"
+                                                                                  Margin="0,8,0,0"
+                                                                                  MinHeight="138">
+                                                                                <Ellipse Width="104"
+                                                                                         Height="104"
+                                                                                         Stroke="#3014B8A6"
+                                                                                         StrokeThickness="12"
+                                                                                         HorizontalAlignment="Center"
+                                                                                         VerticalAlignment="Center" />
+                                                                                <Path x:Name="BrightnessArc"
+                                                                                      Stroke="#14B8A6"
+                                                                                      StrokeThickness="12"
+                                                                                      StrokeStartLineCap="Round"
+                                                                                      StrokeEndLineCap="Round"
+                                                                                      Fill="Transparent"
+                                                                                      HorizontalAlignment="Center"
+                                                                                      VerticalAlignment="Center" />
+                                                                                <TextBlock x:Name="BrightnessValueText"
+                                                                                           FontSize="24"
+                                                                                           FontWeight="SemiBold"
+                                                                                           HorizontalAlignment="Center"
+                                                                                           VerticalAlignment="Center" />
+                                                                                <StackPanel Orientation="Horizontal"
+                                                                                            HorizontalAlignment="Right"
+                                                                                            VerticalAlignment="Center">
+                                                                                    <Button Content="-"
+                                                                                            Width="34"
+                                                                                            Height="30"
+                                                                                            Margin="0,0,6,0"
+                                                                                            Tag="Brightness:-15"
+                                                                                            Click="LightValueButton_Click" />
+                                                                                    <Button Content="+"
+                                                                                            Width="34"
+                                                                                            Height="30"
+                                                                                            Tag="Brightness:15"
+                                                                                            Click="LightValueButton_Click" />
+                                                                                </StackPanel>
+                                                                                <Slider x:Name="BrightnessSlider"
+                                                                                        Minimum="0"
+                                                                                        Maximum="255"
+                                                                                        TickFrequency="1"
+                                                                                        Visibility="Collapsed"
+                                                                                        ValueChanged="RuleFieldChanged" />
+                                                                            </Grid>
+                                                                        </Grid>
+                                                                    </Border>
                                                                 </Grid>
-                                                            </Grid>
+                                                            </WrapPanel>
 
                                                             <TextBlock Text="Tiempos"
                                                                        FontWeight="SemiBold"
                                                                        Margin="0,0,0,8" />
-                                                            <Grid Margin="0,0,0,12">
-                                                                <Grid.ColumnDefinitions>
-                                                                    <ColumnDefinition Width="*" />
-                                                                    <ColumnDefinition Width="10" />
-                                                                    <ColumnDefinition Width="*" />
-                                                                    <ColumnDefinition Width="10" />
-                                                                    <ColumnDefinition Width="*" />
-                                                                    <ColumnDefinition Width="10" />
-                                                                    <ColumnDefinition Width="1.05*" />
-                                                                </Grid.ColumnDefinitions>
-                                                                <Grid x:Name="DurationGrid">
+                                                            <WrapPanel Margin="0,0,0,12">
+                                                                <Grid x:Name="DurationGrid"
+                                                                      MinWidth="220"
+                                                                      Width="250"
+                                                                      Margin="0,0,10,10">
                                                                     <Border BorderBrush="{DynamicResource ThemeBorderBrush}"
                                                                             BorderThickness="1"
                                                                             CornerRadius="12"
@@ -784,9 +797,10 @@
                                                                                         Tag="Duration:250"
                                                                                         Click="LightValueButton_Click" />
                                                                                 <StackPanel Orientation="Horizontal"
-                                                                                            HorizontalAlignment="Center">
+                                                                                            HorizontalAlignment="Center"
+                                                                                            MinWidth="102">
                                                                                     <TextBox x:Name="DurationValueText"
-                                                                                             Width="54"
+                                                                                             Width="70"
                                                                                              TextAlignment="Center"
                                                                                              FontWeight="SemiBold"
                                                                                              TextChanged="LightNumberBox_TextChanged" />
@@ -811,7 +825,9 @@
                                                                     </Border>
                                                                 </Grid>
                                                                 <Grid x:Name="CycleGrid"
-                                                                      Grid.Column="2">
+                                                                      MinWidth="220"
+                                                                      Width="250"
+                                                                      Margin="0,0,10,10">
                                                                     <Border BorderBrush="{DynamicResource ThemeBorderBrush}"
                                                                             BorderThickness="1"
                                                                             CornerRadius="12"
@@ -832,9 +848,10 @@
                                                                                         Tag="Cycle:10"
                                                                                         Click="LightValueButton_Click" />
                                                                                 <StackPanel Orientation="Horizontal"
-                                                                                            HorizontalAlignment="Center">
+                                                                                            HorizontalAlignment="Center"
+                                                                                            MinWidth="102">
                                                                                     <TextBox x:Name="CycleValueText"
-                                                                                             Width="54"
+                                                                                             Width="70"
                                                                                              TextAlignment="Center"
                                                                                              FontWeight="SemiBold"
                                                                                              TextChanged="LightNumberBox_TextChanged" />
@@ -859,7 +876,9 @@
                                                                     </Border>
                                                                 </Grid>
                                                                 <Grid x:Name="StepGrid"
-                                                                      Grid.Column="4">
+                                                                      MinWidth="220"
+                                                                      Width="250"
+                                                                      Margin="0,0,10,10">
                                                                     <Border BorderBrush="{DynamicResource ThemeBorderBrush}"
                                                                             BorderThickness="1"
                                                                             CornerRadius="12"
@@ -880,9 +899,10 @@
                                                                                         Tag="Step:10"
                                                                                         Click="LightValueButton_Click" />
                                                                                 <StackPanel Orientation="Horizontal"
-                                                                                            HorizontalAlignment="Center">
+                                                                                            HorizontalAlignment="Center"
+                                                                                            MinWidth="102">
                                                                                     <TextBox x:Name="StepValueText"
-                                                                                             Width="54"
+                                                                                             Width="70"
                                                                                              TextAlignment="Center"
                                                                                              FontWeight="SemiBold"
                                                                                              TextChanged="LightNumberBox_TextChanged" />
@@ -906,11 +926,12 @@
                                                                         </StackPanel>
                                                                     </Border>
                                                                 </Grid>
-                                                                <Border Grid.Column="6"
-                                                                        BorderBrush="{DynamicResource ThemeBorderBrush}"
+                                                                <Border BorderBrush="{DynamicResource ThemeBorderBrush}"
                                                                         BorderThickness="1"
                                                                         CornerRadius="12"
                                                                         Padding="10"
+                                                                        MinWidth="260"
+                                                                        Margin="0,0,10,10"
                                                                         Background="{DynamicResource ThemeSurfaceBrush}">
                                                                     <StackPanel>
                                                                         <TextBlock Text="Presets rapidos"
@@ -929,7 +950,7 @@
                                                                         </UniformGrid>
                                                                     </StackPanel>
                                                                 </Border>
-                                                            </Grid>
+                                                            </WrapPanel>
 
                                                             <TextBlock Text="Vista previa"
                                                                        FontWeight="SemiBold"

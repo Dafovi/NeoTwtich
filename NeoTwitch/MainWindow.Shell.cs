@@ -333,10 +333,17 @@ public partial class MainWindow
         }
 
         target.Text = dialog.SelectedColorHex;
+        RememberRecentColor(dialog.SelectedColorHex);
+        SaveConfig();
     }
 
     private IEnumerable<string> BuildRecentColorPalette()
     {
+        foreach (var color in _config.RecentColors)
+        {
+            yield return color;
+        }
+
         yield return PrimaryColorBox.Text;
         yield return SecondaryColorBox.Text;
         yield return TertiaryColorBox.Text;
@@ -349,6 +356,25 @@ public partial class MainWindow
             yield return rule.PrimaryColor;
             yield return rule.SecondaryColor;
             yield return rule.TertiaryColor;
+        }
+    }
+
+    private void RememberRecentColor(string color)
+    {
+        var normalized = LightCommand.NormalizeColor(color);
+        var existing = _config.RecentColors
+            .FirstOrDefault(item => string.Equals(item, normalized, StringComparison.OrdinalIgnoreCase));
+
+        if (existing is not null)
+        {
+            _config.RecentColors.Remove(existing);
+        }
+
+        _config.RecentColors.Insert(0, normalized);
+
+        while (_config.RecentColors.Count > 8)
+        {
+            _config.RecentColors.RemoveAt(_config.RecentColors.Count - 1);
         }
     }
 

@@ -371,7 +371,28 @@
                                    TextAlignment="Center"
                                    TextWrapping="Wrap"
                                    Width="380"
-                                   Margin="0,8,0,18" />
+                                   Margin="0,8,0,12" />
+                        <Border x:Name="ReleaseNotesPanel"
+                                Visibility="Collapsed"
+                                Width="430"
+                                MaxHeight="105"
+                                BorderBrush="{StaticResource BorderBrush}"
+                                BorderThickness="1"
+                                CornerRadius="10"
+                                Padding="12"
+                                Background="#081722"
+                                Margin="0,0,0,12">
+                            <ScrollViewer VerticalScrollBarVisibility="Auto">
+                                <StackPanel>
+                                    <TextBlock Text="Qué cambió"
+                                               FontWeight="SemiBold"
+                                               Margin="0,0,0,6" />
+                                    <TextBlock x:Name="ReleaseNotesText"
+                                               Style="{StaticResource MutedText}"
+                                               TextWrapping="Wrap" />
+                                </StackPanel>
+                            </ScrollViewer>
+                        </Border>
                         <CheckBox x:Name="OpenAfterCompleteCheck"
                                   Content="Abrir Neo Twitch al finalizar"
                                   IsChecked="True"

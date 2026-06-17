@@ -271,17 +271,30 @@
                                                                     Tag="{Binding Id}"
                                                                     IsEnabled="{Binding CanPreview}"
                                                                     Opacity="{Binding PreviewOpacity}"
-                                                                    ToolTip="Probar imagen en OBS"
+                                                                    ToolTip="{Binding PlayToolTip}"
                                                                     Click="PreviewImageButton_Click">
-                                                                <Border Width="16"
-                                                                        Height="16"
-                                                                        Background="#14B8A6"
-                                                                        Tag="StaticBrush">
-                                                                    <Border.OpacityMask>
-                                                                        <ImageBrush ImageSource="/Assets/Icons/sound_play.png"
-                                                                                    Stretch="Uniform" />
-                                                                    </Border.OpacityMask>
-                                                                </Border>
+                                                                <Grid>
+                                                                    <Border Width="16"
+                                                                            Height="16"
+                                                                            Background="#14B8A6"
+                                                                            Tag="StaticBrush"
+                                                                            Visibility="{Binding PlayIconVisibility}">
+                                                                        <Border.OpacityMask>
+                                                                            <ImageBrush ImageSource="/Assets/Icons/sound_play.png"
+                                                                                        Stretch="Uniform" />
+                                                                        </Border.OpacityMask>
+                                                                    </Border>
+                                                                    <Border Width="16"
+                                                                            Height="16"
+                                                                            Background="#14B8A6"
+                                                                            Tag="StaticBrush"
+                                                                            Visibility="{Binding PauseIconVisibility}">
+                                                                        <Border.OpacityMask>
+                                                                            <ImageBrush ImageSource="/Assets/Icons/sound_pause.png"
+                                                                                        Stretch="Uniform" />
+                                                                        </Border.OpacityMask>
+                                                                    </Border>
+                                                                </Grid>
                                                             </Button>
                                                             <Button Width="38"
                                                                     Height="32"

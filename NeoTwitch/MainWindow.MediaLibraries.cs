@@ -9,6 +9,7 @@ using NeoTwitch.Services.Library;
 using NeoTwitch.Services.Text;
 using NeoTwitch.ViewModels.Activity;
 using NeoTwitch.ViewModels.Library;
+using NeoTwitch.ViewModels.Obs;
 using WpfMessageBox = System.Windows.MessageBox;
 using WpfOpenFileDialog = Microsoft.Win32.OpenFileDialog;
 
@@ -201,6 +202,10 @@ public partial class MainWindow
             var size = MediaMetadataService.ProbeImageSize(path);
             asset.Width = size.Width;
             asset.Height = size.Height;
+        }
+        else
+        {
+            asset.DurationMs = MediaMetadataService.ProbeVideoDurationMs(path);
         }
 
         if (existing is null)
@@ -408,6 +413,13 @@ public partial class MainWindow
             return;
         }
 
+        if (_previewingMediaKind == kind
+            && string.Equals(_previewingMediaId, assetId, StringComparison.OrdinalIgnoreCase))
+        {
+            await StopMediaPreviewAsync();
+            return;
+        }
+
         if (!_config.Obs.IsConfigured || !_obsService.IsConnected)
         {
             AddLog("OBS: conecta OBS antes de probar imagenes o videos.", ActivityLogKind.Important);
@@ -434,6 +446,16 @@ public partial class MainWindow
         var sourceName = kind == MediaLibraryKind.Image
             ? "Neo Twitch - Prueba imagen"
             : "Neo Twitch - Prueba video";
+        var duration = obsKind == ObsMediaKind.Video
+            ? TimeSpan.FromMilliseconds(asset.DurationMs > 0 ? asset.DurationMs : 5000)
+            : TimeSpan.FromSeconds(5);
+
+        await StopMediaPreviewAsync();
+        var previewCts = new CancellationTokenSource();
+        _mediaPreviewCts = previewCts;
+        _previewingMediaKind = kind;
+        _previewingMediaId = asset.Id;
+        RefreshMediaLibraryView(kind);
 
         try
         {
@@ -444,19 +466,19 @@ public partial class MainWindow
                 obsKind,
                 _config.Obs,
                 obsKind == ObsMediaKind.Video ? _config.VideoVolumePercent : null,
-                CancellationToken.None);
+                previewCts.Token);
             ApplyObsResult(result);
-            WriteObsOverlayState(asset, obsKind, TimeSpan.FromSeconds(5));
+            _mediaPreviewHideRequest = new ObsMediaHideRequest(sceneName, sourceName, duration, DateTimeOffset.UtcNow);
+            WriteObsOverlayState(asset, obsKind, duration);
             MarkObsMediaAssetUsed(obsKind, asset);
-            AddLog($"OBS: probando {MediaLibraryTitle(kind).ToLowerInvariant()} '{asset.DisplayName}' por 5 segundos.", ActivityLogKind.Obs);
+            AddLog($"OBS: probando {MediaLibraryTitle(kind).ToLowerInvariant()} '{asset.DisplayName}'.", ActivityLogKind.Obs);
 
-            await Task.Delay(TimeSpan.FromSeconds(5));
-            if (_obsService.IsConnected)
-            {
-                result = await _obsService.HideSceneSourceAsync(sceneName, sourceName, CancellationToken.None);
-                ApplyObsResult(result);
-                ClearObsOverlayState();
-            }
+            await Task.Delay(duration, previewCts.Token);
+            await StopMediaPreviewAsync();
+        }
+        catch (OperationCanceledException)
+        {
+            // The user stopped the preview.
         }
         catch (Exception ex)
         {
@@ -465,6 +487,41 @@ public partial class MainWindow
             AddLog($"OBS: {ex.Message}", ActivityLogKind.Important);
             UpdateObsStatusText();
             WpfMessageBox.Show(this, ex.Message, "OBS", MessageBoxButton.OK, MessageBoxImage.Warning);
+            await StopMediaPreviewAsync();
+        }
+    }
+
+    private async Task StopMediaPreviewAsync()
+    {
+        var cts = _mediaPreviewCts;
+        var request = _mediaPreviewHideRequest;
+        var kind = _previewingMediaKind;
+
+        _mediaPreviewCts = null;
+        _mediaPreviewHideRequest = null;
+        _previewingMediaKind = null;
+        _previewingMediaId = "";
+
+        try
+        {
+            cts?.Cancel();
+            if (request is not null && _obsService.IsConnected)
+            {
+                await HideRuleObsMediaAsync(request, CancellationToken.None);
+            }
+        }
+        catch (Exception ex)
+        {
+            CrashReporter.Log(ex, "No se pudo detener la prueba de medio OBS.");
+            AddLog($"OBS prueba: {ex.Message}", ActivityLogKind.Important);
+        }
+        finally
+        {
+            cts?.Dispose();
+            if (kind is MediaLibraryKind mediaKind)
+            {
+                RefreshMediaLibraryView(mediaKind);
+            }
         }
     }
 
@@ -634,7 +691,8 @@ public partial class MainWindow
             FrozenBrushFrom(accentColor),
             TranslucentBrushFrom(accentColor),
             index,
-            _config.Obs.IsConfigured && _obsService.IsConnected && !_isObsConnecting);
+            _config.Obs.IsConfigured && _obsService.IsConnected && !_isObsConnecting,
+            _previewingMediaKind == kind && string.Equals(_previewingMediaId, asset.Id, StringComparison.OrdinalIgnoreCase));
     }
 
     private bool MediaRowMatchesFilters(MediaLibraryKind kind, MediaLibraryRow row)

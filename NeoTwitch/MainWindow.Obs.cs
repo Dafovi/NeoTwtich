@@ -371,6 +371,7 @@ public partial class MainWindow
             var sourceName = rule.ObsMediaKind == ObsMediaKind.Image
                 ? "Neo Twitch - Imagen de alerta"
                 : "Neo Twitch - Video de alerta";
+            var mediaDuration = ResolveRuleObsMediaDuration(rule, asset);
             var result = await _obsService.ShowMediaSourceAsync(
                 sceneName,
                 sourceName,
@@ -381,14 +382,14 @@ public partial class MainWindow
                 cancellationToken);
 
             ApplyObsResult(result);
-            WriteObsOverlayState(asset, rule.ObsMediaKind, TimeSpan.FromMilliseconds(rule.ObsMediaDurationMs));
+            WriteObsOverlayState(asset, rule.ObsMediaKind, mediaDuration);
             MarkObsMediaAssetUsed(rule.ObsMediaKind, asset);
             AddLog($"OBS: medio '{asset.DisplayName}' mostrado en '{sceneName}'.", ActivityLogKind.Obs);
 
             return new ObsMediaHideRequest(
                 sceneName,
                 sourceName,
-                TimeSpan.FromMilliseconds(rule.ObsMediaDurationMs),
+                mediaDuration,
                 DateTimeOffset.UtcNow);
         }
         catch (OperationCanceledException)
@@ -431,6 +432,16 @@ public partial class MainWindow
         return library
             .Where(asset => string.Equals(asset.Id, rule.ObsMediaAssetId, StringComparison.OrdinalIgnoreCase))
             .FirstOrDefault(asset => File.Exists(asset.FilePath));
+    }
+
+    private static TimeSpan ResolveRuleObsMediaDuration(EventRule rule, MediaAssetConfig asset)
+    {
+        if (rule.ObsMediaKind == ObsMediaKind.Video)
+        {
+            return TimeSpan.FromMilliseconds(asset.DurationMs > 0 ? asset.DurationMs : 5000);
+        }
+
+        return TimeSpan.FromMilliseconds(Math.Clamp(rule.ObsMediaDurationMs, 250, 600000));
     }
 
     private void MarkObsMediaAssetUsed(ObsMediaKind kind, MediaAssetConfig asset)

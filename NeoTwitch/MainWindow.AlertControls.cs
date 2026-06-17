@@ -116,6 +116,7 @@ public partial class MainWindow
     private WpfGrid ObsSceneTimingGrid => AlertsView.ObsSceneTimingGrid;
     private WpfTextBox ObsSceneDelayBox => AlertsView.ObsSceneDelayBox;
     private WpfCheckBox ObsReturnCheck => AlertsView.ObsReturnCheck;
+    private WpfStackPanel ObsReturnDelayPanel => AlertsView.ObsReturnDelayPanel;
     private WpfTextBox ObsReturnDelayBox => AlertsView.ObsReturnDelayBox;
     private WpfTextBlock RuleObsEmptyHintText => AlertsView.RuleObsEmptyHintText;
     private WpfCheckBox ObsMediaCheck => AlertsView.ObsMediaCheck;
@@ -130,6 +131,7 @@ public partial class MainWindow
     private WpfComboBox RuleObsMediaAssetBox => AlertsView.RuleObsMediaAssetBox;
     private WpfStackPanel RuleObsMediaGroupPanel => AlertsView.RuleObsMediaGroupPanel;
     private WpfComboBox RuleObsMediaGroupBox => AlertsView.RuleObsMediaGroupBox;
+    private WpfStackPanel ObsMediaDurationPanel => AlertsView.ObsMediaDurationPanel;
     private WpfTextBox ObsMediaDurationBox => AlertsView.ObsMediaDurationBox;
     private WpfTextBlock RuleObsMediaEmptyHintText => AlertsView.RuleObsMediaEmptyHintText;
 }

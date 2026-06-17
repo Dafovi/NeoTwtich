@@ -237,6 +237,17 @@ public partial class MainWindow
         }
     }
 
+    private void UpdateRuleDirtyStateFromSnapshot()
+    {
+        if (_editingRule is null || _loadedRuleSnapshot is null)
+        {
+            SetRuleDirtyState(false);
+            return;
+        }
+
+        SetRuleDirtyState(!HaveSameEditableRuleValues(_loadedRuleSnapshot, _editingRule));
+    }
+
     private static EventRule CloneRuleForSnapshot(EventRule rule)
     {
         var clone = new EventRule();
@@ -286,6 +297,46 @@ public partial class MainWindow
         target.LightsActionAvailable = source.LightsActionAvailable;
         target.AlexaActionAvailable = source.AlexaActionAvailable;
         target.ObsActionAvailable = source.ObsActionAvailable;
+    }
+
+    private static bool HaveSameEditableRuleValues(EventRule left, EventRule right)
+    {
+        return left.Name == right.Name
+            && left.IsEnabled == right.IsEnabled
+            && left.EventKind == right.EventKind
+            && left.CustomRewardTitle == right.CustomRewardTitle
+            && left.ChatCommand == right.ChatCommand
+            && left.MinimumBits == right.MinimumBits
+            && left.UseLights == right.UseLights
+            && left.PlayAudio == right.PlayAudio
+            && left.AudioPath == right.AudioPath
+            && left.AudioSourceMode == right.AudioSourceMode
+            && left.AudioAssetId == right.AudioAssetId
+            && left.AudioGroupId == right.AudioGroupId
+            && left.SendChatMessage == right.SendChatMessage
+            && left.ChatMessageTemplate == right.ChatMessageTemplate
+            && left.SendAlexaEvent == right.SendAlexaEvent
+            && left.AlexaEventName == right.AlexaEventName
+            && left.SendObsScene == right.SendObsScene
+            && left.ObsSceneName == right.ObsSceneName
+            && left.ObsSceneDelayMs == right.ObsSceneDelayMs
+            && left.ObsReturnToPreviousScene == right.ObsReturnToPreviousScene
+            && left.ObsReturnDelayMs == right.ObsReturnDelayMs
+            && left.SendObsMedia == right.SendObsMedia
+            && left.ObsMediaKind == right.ObsMediaKind
+            && left.ObsMediaSourceMode == right.ObsMediaSourceMode
+            && left.ObsMediaAssetId == right.ObsMediaAssetId
+            && left.ObsMediaGroupId == right.ObsMediaGroupId
+            && left.ObsMediaDurationMs == right.ObsMediaDurationMs
+            && left.Pattern == right.Pattern
+            && left.TargetPins == right.TargetPins
+            && left.PrimaryColor == right.PrimaryColor
+            && left.SecondaryColor == right.SecondaryColor
+            && left.TertiaryColor == right.TertiaryColor
+            && left.Brightness == right.Brightness
+            && left.DurationMs == right.DurationMs
+            && left.CycleMs == right.CycleMs
+            && left.StepMs == right.StepMs;
     }
 
     internal async void RuleTestButton_Click(object sender, RoutedEventArgs e)
@@ -505,7 +556,7 @@ public partial class MainWindow
         UpdateRuleOptionVisibility();
         if (SaveCurrentRuleFromFields())
         {
-            SetRuleDirtyState(true);
+            UpdateRuleDirtyStateFromSnapshot();
         }
     }
 
@@ -524,7 +575,7 @@ public partial class MainWindow
         UpdateRuleOptionVisibility();
         if (SaveCurrentRuleFromFields())
         {
-            SetRuleDirtyState(true);
+            UpdateRuleDirtyStateFromSnapshot();
         }
     }
 
@@ -542,7 +593,7 @@ public partial class MainWindow
         UpdateRuleOptionVisibility();
         if (SaveCurrentRuleFromFields())
         {
-            SetRuleDirtyState(true);
+            UpdateRuleDirtyStateFromSnapshot();
         }
     }
 
@@ -675,7 +726,7 @@ public partial class MainWindow
 
         if (SaveCurrentRuleFromFields())
         {
-            SetRuleDirtyState(true);
+            UpdateRuleDirtyStateFromSnapshot();
         }
 
         UpdateEventKindTileSelection();
@@ -694,7 +745,7 @@ public partial class MainWindow
         TargetPinsBox.Text = TargetPinsChoiceBox.SelectedValue?.ToString() ?? "";
         if (SaveCurrentRuleFromFields())
         {
-            SetRuleDirtyState(true);
+            UpdateRuleDirtyStateFromSnapshot();
         }
     }
 
@@ -729,7 +780,7 @@ public partial class MainWindow
 
         if (SaveCurrentRuleFromFields())
         {
-            SetRuleDirtyState(true);
+            UpdateRuleDirtyStateFromSnapshot();
         }
     }
 
@@ -762,7 +813,7 @@ public partial class MainWindow
         AdjustSliderValue(slider, delta);
         if (SaveCurrentRuleFromFields())
         {
-            SetRuleDirtyState(true);
+            UpdateRuleDirtyStateFromSnapshot();
         }
 
         UpdateSliderLabels();
@@ -791,7 +842,7 @@ public partial class MainWindow
 
         if (SaveCurrentRuleFromFields())
         {
-            SetRuleDirtyState(true);
+            UpdateRuleDirtyStateFromSnapshot();
         }
 
         UpdateSliderLabels();
@@ -1097,6 +1148,14 @@ public partial class MainWindow
             && MainTabs.SelectedIndex != audioTabIndex)
         {
             StopAudioPreview();
+        }
+
+        var isMediaPreviewTab =
+            (int.TryParse(NavImagesButton.Tag?.ToString(), out var imagesTabIndex) && MainTabs.SelectedIndex == imagesTabIndex)
+            || (int.TryParse(NavVideosButton.Tag?.ToString(), out var videosTabIndex) && MainTabs.SelectedIndex == videosTabIndex);
+        if (!isMediaPreviewTab)
+        {
+            _ = StopMediaPreviewAsync();
         }
 
         UpdateRuleLedPreviewTimerState();

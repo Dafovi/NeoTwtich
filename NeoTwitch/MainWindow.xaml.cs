@@ -201,6 +201,13 @@ public partial class MainWindow : Window
     private AudioPlayback? _currentPlayback;
     private AudioPlayback? _audioPreviewPlayback;
     private string _previewingAudioId = "";
+    private CancellationTokenSource? _mediaPreviewCts;
+    private string _previewingMediaId = "";
+    private MediaLibraryKind? _previewingMediaKind;
+    private ObsMediaHideRequest? _mediaPreviewHideRequest;
+    private ObsSceneRestoreRequest? _currentObsRestore;
+    private ObsMediaHideRequest? _currentObsMediaHide;
+    private bool _currentObsCleanedByStop;
     private EventRule? _editingRule;
     private EventRule? _loadedRuleSnapshot;
     private TwitchStreamStatus? _streamStatus;

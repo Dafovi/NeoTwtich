@@ -143,6 +143,9 @@ public partial class MainWindow
         ObsSceneRestoreRequest? obsRestore = null;
         ObsMediaHideRequest? obsMediaHide = null;
         Task? obsMediaHideTask = null;
+        _currentObsRestore = null;
+        _currentObsMediaHide = null;
+        _currentObsCleanedByStop = false;
 
         try
         {
@@ -157,7 +160,19 @@ public partial class MainWindow
             }
 
             obsRestore = await SendRuleObsSceneAsync(rule, effectCts.Token);
+            _currentObsRestore = obsRestore;
             obsMediaHide = await SendRuleObsMediaAsync(rule, effectCts.Token);
+            if (obsRestore is not null && obsMediaHide is not null)
+            {
+                obsRestore = obsRestore with
+                {
+                    Delay = obsMediaHide.Duration,
+                    StartedAt = obsMediaHide.StartedAt
+                };
+                _currentObsRestore = obsRestore;
+            }
+
+            _currentObsMediaHide = obsMediaHide;
             if (obsMediaHide is not null)
             {
                 obsMediaHideTask = HideRuleObsMediaAfterDelayAsync(obsMediaHide, effectCts.Token);
@@ -269,7 +284,7 @@ public partial class MainWindow
                 }
             }
 
-            if (obsMediaHide is not null)
+            if (!_currentObsCleanedByStop && obsMediaHide is not null)
             {
                 try
                 {
@@ -289,7 +304,20 @@ public partial class MainWindow
                 }
             }
 
-            await RestoreRuleObsSceneAsync(obsRestore, wasCancelled);
+            if (!_currentObsCleanedByStop)
+            {
+                await RestoreRuleObsSceneAsync(obsRestore, wasCancelled);
+            }
+
+            if (ReferenceEquals(_currentObsRestore, obsRestore))
+            {
+                _currentObsRestore = null;
+            }
+
+            if (ReferenceEquals(_currentObsMediaHide, obsMediaHide))
+            {
+                _currentObsMediaHide = null;
+            }
 
             effectCts.Dispose();
             _alertQueue.MarkFinished(queueSlot);
@@ -302,11 +330,40 @@ public partial class MainWindow
         _currentEffectCts?.Cancel();
         _currentPlayback?.Stop();
         await StopLightsAsync(LightCommand.ResolveTargets(_config, ""));
+        await CleanupCurrentObsEffectAsync();
         await SendBackgroundAlexaEventAsync(_config.BackgroundAlexaOffEventName, "Fondo Alexa apagado");
 
         if (_effectGate.CurrentCount > 0)
         {
             await ApplyBackgroundStateAsync();
+        }
+    }
+
+    private async Task CleanupCurrentObsEffectAsync()
+    {
+        var mediaHide = _currentObsMediaHide;
+        var restore = _currentObsRestore;
+        if (mediaHide is null && restore is null)
+        {
+            return;
+        }
+
+        try
+        {
+            if (mediaHide is not null)
+            {
+                await HideRuleObsMediaAsync(mediaHide, CancellationToken.None);
+            }
+
+            await RestoreRuleObsSceneAsync(restore, restoreImmediately: true);
+            _currentObsCleanedByStop = true;
+            _currentObsMediaHide = null;
+            _currentObsRestore = null;
+        }
+        catch (Exception ex)
+        {
+            CrashReporter.Log(ex, "No se pudo detener OBS durante la alerta.");
+            AddLog($"OBS detener: {ex.Message}", ActivityLogKind.Important);
         }
     }
 }

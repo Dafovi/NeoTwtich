@@ -420,6 +420,7 @@ public partial class MainWindow
         var obsAvailable = _config.Obs.IsConfigured;
         var sendObsScene = ObsSceneCheck.IsChecked == true;
         var selectedObsSceneName = RuleObsSceneBox.SelectedValue as string ?? "";
+        var returnObsScene = ObsReturnCheck.IsChecked == true;
         var sendObsMedia = ObsMediaCheck.IsChecked == true;
         var obsMediaKind = RuleObsMediaKindBox.SelectedValue is ObsMediaKind selectedObsMediaKind
             ? selectedObsMediaKind
@@ -450,8 +451,10 @@ public partial class MainWindow
         SetVisible(obsAvailable, ObsDetailsPanel);
         SetVisible(obsAvailable && sendObsScene, ObsSceneDetailsPanel);
         SetVisible(obsAvailable && sendObsScene && !string.IsNullOrWhiteSpace(selectedObsSceneName), ObsSceneTimingGrid);
+        SetVisible(obsAvailable && sendObsScene && !sendObsMedia && returnObsScene, ObsReturnDelayPanel);
         SetVisible(obsAvailable && sendObsScene && _obsSceneRows.Count == 0, RuleObsEmptyHintText);
         SetVisible(obsAvailable && sendObsMedia, ObsMediaDetailsPanel);
+        SetVisible(obsAvailable && sendObsMedia && obsMediaKind == ObsMediaKind.Image, ObsMediaDurationPanel);
         SetVisible(obsAvailable && sendObsMedia && obsMediaSourceMode == MediaSourceMode.Single && obsMediaHasAssets, RuleObsMediaAssetPanel);
         SetVisible(obsAvailable && sendObsMedia && obsMediaSourceMode == MediaSourceMode.Group && obsMediaHasGroups, RuleObsMediaGroupPanel);
         SetVisible(obsAvailable && sendObsMedia

@@ -212,7 +212,15 @@
                                                     Tag="Solid"
                                                     Click="BackgroundPatternTile_Click">
                                                 <StackPanel HorizontalAlignment="Center">
-                                                    <Image Source="/Assets/Icons/lights_fx_static.png" Width="22" Height="22" Margin="0,0,0,6" />
+                                                    <Rectangle Width="22"
+                                                               Height="22"
+                                                               Margin="0,0,0,6"
+                                                               Fill="{Binding Foreground, RelativeSource={RelativeSource AncestorType=Button}}">
+                                                        <Rectangle.OpacityMask>
+                                                            <ImageBrush ImageSource="/Assets/Icons/lights_fx_static.png"
+                                                                        Stretch="Uniform" />
+                                                        </Rectangle.OpacityMask>
+                                                    </Rectangle>
                                                     <TextBlock Text="Fijo" FontSize="12" FontWeight="SemiBold" TextAlignment="Center" />
                                                 </StackPanel>
                                             </Button>
@@ -221,7 +229,15 @@
                                                     Tag="Pulse"
                                                     Click="BackgroundPatternTile_Click">
                                                 <StackPanel HorizontalAlignment="Center">
-                                                    <Image Source="/Assets/Icons/lights_fx_pulse.png" Width="22" Height="22" Margin="0,0,0,6" />
+                                                    <Rectangle Width="22"
+                                                               Height="22"
+                                                               Margin="0,0,0,6"
+                                                               Fill="{Binding Foreground, RelativeSource={RelativeSource AncestorType=Button}}">
+                                                        <Rectangle.OpacityMask>
+                                                            <ImageBrush ImageSource="/Assets/Icons/lights_fx_pulse.png"
+                                                                        Stretch="Uniform" />
+                                                        </Rectangle.OpacityMask>
+                                                    </Rectangle>
                                                     <TextBlock Text="Pulso" FontSize="12" FontWeight="SemiBold" TextAlignment="Center" />
                                                 </StackPanel>
                                             </Button>
@@ -230,7 +246,15 @@
                                                     Tag="Rainbow"
                                                     Click="BackgroundPatternTile_Click">
                                                 <StackPanel HorizontalAlignment="Center">
-                                                    <Image Source="/Assets/Icons/lights_fx_rainbow.png" Width="22" Height="22" Margin="0,0,0,6" />
+                                                    <Rectangle Width="22"
+                                                               Height="22"
+                                                               Margin="0,0,0,6"
+                                                               Fill="{Binding Foreground, RelativeSource={RelativeSource AncestorType=Button}}">
+                                                        <Rectangle.OpacityMask>
+                                                            <ImageBrush ImageSource="/Assets/Icons/lights_fx_rainbow.png"
+                                                                        Stretch="Uniform" />
+                                                        </Rectangle.OpacityMask>
+                                                    </Rectangle>
                                                     <TextBlock Text="Arcoiris" FontSize="12" FontWeight="SemiBold" TextAlignment="Center" />
                                                 </StackPanel>
                                             </Button>
@@ -239,7 +263,15 @@
                                                     Tag="Chase"
                                                     Click="BackgroundPatternTile_Click">
                                                 <StackPanel HorizontalAlignment="Center">
-                                                    <Image Source="/Assets/Icons/lights_fx_wave.png" Width="22" Height="22" Margin="0,0,0,6" />
+                                                    <Rectangle Width="22"
+                                                               Height="22"
+                                                               Margin="0,0,0,6"
+                                                               Fill="{Binding Foreground, RelativeSource={RelativeSource AncestorType=Button}}">
+                                                        <Rectangle.OpacityMask>
+                                                            <ImageBrush ImageSource="/Assets/Icons/lights_fx_wave.png"
+                                                                        Stretch="Uniform" />
+                                                        </Rectangle.OpacityMask>
+                                                    </Rectangle>
                                                     <TextBlock Text="Carrera" FontSize="12" FontWeight="SemiBold" TextAlignment="Center" />
                                                 </StackPanel>
                                             </Button>
@@ -249,7 +281,15 @@
                                                     Tag="Theater"
                                                     Click="BackgroundPatternTile_Click">
                                                 <StackPanel HorizontalAlignment="Center">
-                                                    <Image Source="/Assets/Icons/lights_fx_breathe.png" Width="22" Height="22" Margin="0,0,0,6" />
+                                                    <Rectangle Width="22"
+                                                               Height="22"
+                                                               Margin="0,0,0,6"
+                                                               Fill="{Binding Foreground, RelativeSource={RelativeSource AncestorType=Button}}">
+                                                        <Rectangle.OpacityMask>
+                                                            <ImageBrush ImageSource="/Assets/Icons/lights_fx_breathe.png"
+                                                                        Stretch="Uniform" />
+                                                        </Rectangle.OpacityMask>
+                                                    </Rectangle>
                                                     <TextBlock Text="Teatro" FontSize="12" FontWeight="SemiBold" TextAlignment="Center" />
                                                 </StackPanel>
                                             </Button>
@@ -259,7 +299,15 @@
                                                     Tag="Sparkle"
                                                     Click="BackgroundPatternTile_Click">
                                                 <StackPanel HorizontalAlignment="Center">
-                                                    <Image Source="/Assets/Icons/activity_notification_lime.png" Width="22" Height="22" Margin="0,0,0,6" />
+                                                    <Rectangle Width="22"
+                                                               Height="22"
+                                                               Margin="0,0,0,6"
+                                                               Fill="{Binding Foreground, RelativeSource={RelativeSource AncestorType=Button}}">
+                                                        <Rectangle.OpacityMask>
+                                                            <ImageBrush ImageSource="/Assets/Icons/activity_notification_lime.png"
+                                                                        Stretch="Uniform" />
+                                                        </Rectangle.OpacityMask>
+                                                    </Rectangle>
                                                     <TextBlock Text="Destellos" FontSize="12" FontWeight="SemiBold" TextAlignment="Center" />
                                                 </StackPanel>
                                             </Button>
@@ -269,7 +317,15 @@
                                                     Tag="Rave"
                                                     Click="BackgroundPatternTile_Click">
                                                 <StackPanel HorizontalAlignment="Center">
-                                                    <Image Source="/Assets/Icons/lights_fx_rave.png" Width="22" Height="22" Margin="0,0,0,6" />
+                                                    <Rectangle Width="22"
+                                                               Height="22"
+                                                               Margin="0,0,0,6"
+                                                               Fill="{Binding Foreground, RelativeSource={RelativeSource AncestorType=Button}}">
+                                                        <Rectangle.OpacityMask>
+                                                            <ImageBrush ImageSource="/Assets/Icons/lights_fx_rave.png"
+                                                                        Stretch="Uniform" />
+                                                        </Rectangle.OpacityMask>
+                                                    </Rectangle>
                                                     <TextBlock Text="Rave" FontSize="12" FontWeight="SemiBold" TextAlignment="Center" />
                                                 </StackPanel>
                                             </Button>
@@ -369,21 +425,21 @@
                                                 CornerRadius="14"
                                                 Padding="14"
                                                 Background="{DynamicResource ThemeSurfaceBrush}">
-                                            <Grid MinHeight="132">
+                                            <Grid MinHeight="154">
                                                 <Slider x:Name="BackgroundBrightnessSlider"
                                                         Minimum="0"
                                                         Maximum="255"
                                                         TickFrequency="1"
                                                         Visibility="Collapsed"
                                                         ValueChanged="BackgroundFieldChanged" />
-                                                <Grid Height="118"
+                                                <Grid Height="104"
                                                       HorizontalAlignment="Center">
                                                     <Ellipse Width="104"
                                                              Height="104"
                                                              Stroke="#3014B8A6"
                                                              StrokeThickness="12"
                                                              HorizontalAlignment="Center"
-                                                             VerticalAlignment="Center" />
+                                                             VerticalAlignment="Top" />
                                                     <Path x:Name="BackgroundBrightnessArc"
                                                           Stroke="#14B8A6"
                                                           StrokeThickness="12"
@@ -394,16 +450,17 @@
                                                           Stretch="None"
                                                           Fill="Transparent"
                                                           HorizontalAlignment="Center"
-                                                          VerticalAlignment="Center" />
+                                                          VerticalAlignment="Top" />
                                                     <TextBlock x:Name="BackgroundBrightnessValueText"
                                                                FontSize="24"
                                                                FontWeight="SemiBold"
+                                                               Margin="0,36,0,0"
                                                                HorizontalAlignment="Center"
-                                                               VerticalAlignment="Center" />
+                                                               VerticalAlignment="Top" />
                                                 </Grid>
                                                 <StackPanel Orientation="Horizontal"
-                                                            HorizontalAlignment="Right"
-                                                            VerticalAlignment="Center">
+                                                            HorizontalAlignment="Center"
+                                                            VerticalAlignment="Bottom">
                                                     <Button Content="-"
                                                             Width="34"
                                                             Height="30"

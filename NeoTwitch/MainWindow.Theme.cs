@@ -406,12 +406,6 @@ public partial class MainWindow
         var palette = _config.DarkMode
             ? ThemePalette.Dark
             : ThemePalette.Light;
-        var tileBackground = _config.DarkMode
-            ? palette.Input
-            : FrozenBrushFrom("#10202A");
-        var tileForeground = _config.DarkMode
-            ? palette.Text
-            : FrozenBrushFrom("#F8FAFC");
 
         foreach (var button in PatternTileButtons())
         {
@@ -423,13 +417,13 @@ public partial class MainWindow
             var selected = tilePattern == selectedPattern;
             var accentColor = PatternAccent(tilePattern);
             var accent = FrozenBrushFrom(accentColor);
-            button.Background = tileBackground;
+            button.Background = palette.Input;
             button.BorderBrush = selected
                 ? accent
                 : palette.Border;
             button.Foreground = selected
                 ? accent
-                : tileForeground;
+                : palette.Text;
         }
     }
 
@@ -515,12 +509,6 @@ public partial class MainWindow
         var palette = _config.DarkMode
             ? ThemePalette.Dark
             : ThemePalette.Light;
-        var tileBackground = _config.DarkMode
-            ? palette.Input
-            : FrozenBrushFrom("#10202A");
-        var tileForeground = _config.DarkMode
-            ? palette.Text
-            : FrozenBrushFrom("#F8FAFC");
 
         foreach (var button in BackgroundPatternTileButtons())
         {
@@ -532,13 +520,13 @@ public partial class MainWindow
             var selected = tilePattern == selectedPattern;
             var accentColor = PatternAccent(tilePattern);
             var accent = FrozenBrushFrom(accentColor);
-            button.Background = tileBackground;
+            button.Background = palette.Input;
             button.BorderBrush = selected
                 ? accent
                 : palette.Border;
             button.Foreground = selected
                 ? accent
-                : tileForeground;
+                : palette.Text;
         }
     }
 

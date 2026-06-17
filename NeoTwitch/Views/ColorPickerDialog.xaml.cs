@@ -38,46 +38,74 @@ public partial class ColorPickerDialog : Window
     private void ApplyDialogTheme()
     {
         var background = _darkMode ? WpfColor.FromRgb(8, 17, 27) : WpfColor.FromRgb(248, 250, 252);
+        var titleBar = _darkMode ? WpfColor.FromRgb(7, 18, 28) : WpfColor.FromRgb(248, 250, 252);
         var panel = _darkMode ? WpfColor.FromRgb(15, 30, 45) : WpfColor.FromRgb(255, 255, 255);
         var text = _darkMode ? WpfColor.FromRgb(240, 249, 255) : WpfColor.FromRgb(15, 23, 42);
         var muted = _darkMode ? WpfColor.FromRgb(177, 194, 214) : WpfColor.FromRgb(71, 85, 105);
         var border = _darkMode ? WpfColor.FromRgb(51, 65, 85) : WpfColor.FromRgb(203, 213, 225);
 
+        var textBrush = new SolidColorBrush(text);
+        var mutedBrush = new SolidColorBrush(muted);
+        var borderBrush = new SolidColorBrush(border);
+        var panelBrush = new SolidColorBrush(panel);
+        var buttonBrush = new SolidColorBrush(_darkMode ? WpfColor.FromRgb(16, 32, 48) : WpfColor.FromRgb(238, 242, 246));
+        var accentBrush = new SolidColorBrush(WpfColor.FromRgb(20, 184, 166));
+
+        FontFamily = new System.Windows.Media.FontFamily("Segoe UI Variable Text, Segoe UI");
+        Resources["ColorPickerWindowBrush"] = new SolidColorBrush(background);
+        Resources["ColorPickerTitleBarBrush"] = new SolidColorBrush(titleBar);
+        Resources["ColorPickerInputBrush"] = panelBrush;
+        Resources["ColorPickerButtonBrush"] = buttonBrush;
+        Resources["ColorPickerBorderBrush"] = borderBrush;
+        Resources["ColorPickerTextBrush"] = textBrush;
+        Resources["ColorPickerMutedTextBrush"] = mutedBrush;
+        Resources["ColorPickerAccentBrush"] = accentBrush;
+
         RootCard.Background = new SolidColorBrush(background);
-        RootCard.BorderBrush = new SolidColorBrush(border);
-        Foreground = new SolidColorBrush(text);
+        RootCard.BorderBrush = borderBrush;
+        RootCard.SetValue(System.Windows.Documents.TextElement.ForegroundProperty, textBrush);
+        TitleBar.Background = new SolidColorBrush(titleBar);
+        TitleBar.BorderBrush = borderBrush;
+        Foreground = textBrush;
+        Divider.Background = borderBrush;
 
         foreach (var textBox in FindVisualChildren<WpfTextBox>(this))
         {
-            textBox.Background = new SolidColorBrush(panel);
-            textBox.BorderBrush = new SolidColorBrush(border);
-            textBox.Foreground = new SolidColorBrush(text);
-            textBox.CaretBrush = new SolidColorBrush(text);
+            textBox.Background = panelBrush;
+            textBox.BorderBrush = borderBrush;
+            textBox.Foreground = textBrush;
+            textBox.CaretBrush = textBrush;
+            textBox.FontFamily = FontFamily;
         }
 
         foreach (var button in FindVisualChildren<WpfButton>(this))
         {
-            button.Background = new SolidColorBrush(_darkMode ? WpfColor.FromRgb(16, 32, 48) : WpfColor.FromRgb(241, 245, 249));
-            button.BorderBrush = new SolidColorBrush(border);
-            button.Foreground = new SolidColorBrush(text);
+            button.Background = buttonBrush;
+            button.BorderBrush = borderBrush;
+            button.Foreground = textBrush;
+            button.FontFamily = FontFamily;
         }
 
         foreach (var block in FindVisualChildren<TextBlock>(this))
         {
-            block.Foreground = new SolidColorBrush(text);
+            block.Foreground = textBrush;
+            block.FontFamily = FontFamily;
         }
 
         CloseButton.Background = System.Windows.Media.Brushes.Transparent;
         CloseButton.BorderBrush = System.Windows.Media.Brushes.Transparent;
-        CloseButton.Foreground = new SolidColorBrush(muted);
+        CloseButton.Foreground = mutedBrush;
+        CloseButton.Padding = new Thickness(0);
 
         CancelDialogButton.Background = new SolidColorBrush(_darkMode ? WpfColor.FromRgb(10, 24, 38) : WpfColor.FromRgb(248, 250, 252));
-        CancelDialogButton.BorderBrush = new SolidColorBrush(border);
-        CancelDialogButton.Foreground = new SolidColorBrush(text);
+        CancelDialogButton.BorderBrush = borderBrush;
+        CancelDialogButton.Foreground = textBrush;
+        CancelButtonText.Foreground = textBrush;
 
-        ApplyColorButton.Background = new SolidColorBrush(WpfColor.FromRgb(20, 184, 166));
+        ApplyColorButton.Background = accentBrush;
         ApplyColorButton.BorderBrush = new SolidColorBrush(WpfColor.FromRgb(45, 212, 191));
         ApplyColorButton.Foreground = System.Windows.Media.Brushes.White;
+        ApplyButtonText.Foreground = System.Windows.Media.Brushes.White;
     }
 
     private void BuildRecentColors(IEnumerable<string> recentColors)
@@ -93,15 +121,15 @@ public partial class ColorPickerDialog : Window
             .Select(color => ToHex(ParseColor(color, Colors.Transparent)))
             .Where(color => color != "#000000")
             .Distinct(StringComparer.OrdinalIgnoreCase)
-            .Take(8);
+            .Take(7);
 
         foreach (var colorHex in colors)
         {
             var button = new WpfButton
             {
-                Width = 42,
-                Height = 42,
-                Margin = new Thickness(0, 0, 14, 0),
+                Width = 38,
+                Height = 38,
+                Margin = new Thickness(0, 0, 10, 0),
                 BorderThickness = new Thickness(1),
                 Background = new SolidColorBrush(ParseColor(colorHex, Colors.White)),
                 BorderBrush = new SolidColorBrush(WpfColor.FromRgb(51, 65, 85)),
@@ -124,8 +152,8 @@ public partial class ColorPickerDialog : Window
     private void SetFromColor(WpfColor color)
     {
         RgbToHsv(color, out _hue, out _saturation, out _value);
-        HueSlider.Value = _hue;
         UpdateHueSurface();
+        UpdateHueThumb();
         UpdateThumb();
         UpdateFields(color);
     }
@@ -161,8 +189,16 @@ public partial class ColorPickerDialog : Window
 
     private void UpdateThumb()
     {
-        Canvas.SetLeft(ColorThumb, _saturation * ColorCanvas.Width - ColorThumb.Width / 2);
-        Canvas.SetTop(ColorThumb, (1 - _value) * ColorCanvas.Height - ColorThumb.Height / 2);
+        var left = _saturation * ColorCanvas.Width - ColorThumb.Width / 2;
+        var top = (1 - _value) * ColorCanvas.Height - ColorThumb.Height / 2;
+        Canvas.SetLeft(ColorThumb, Math.Clamp(left, 0, ColorCanvas.Width - ColorThumb.Width));
+        Canvas.SetTop(ColorThumb, Math.Clamp(top, 0, ColorCanvas.Height - ColorThumb.Height));
+    }
+
+    private void UpdateHueThumb()
+    {
+        var top = (_hue / 360d) * HueCanvas.Height - HueThumb.Height / 2;
+        Canvas.SetTop(HueThumb, Math.Clamp(top, 0, HueCanvas.Height - HueThumb.Height));
     }
 
     private void ColorCanvas_MouseDown(object sender, MouseButtonEventArgs e)
@@ -190,14 +226,43 @@ public partial class ColorPickerDialog : Window
         UpdateFromHsv();
     }
 
-    private void HueSlider_ValueChanged(object sender, RoutedPropertyChangedEventArgs<double> e)
+    private void HueCanvas_MouseDown(object sender, MouseButtonEventArgs e)
     {
-        if (_updatingFields)
+        HueCanvas.CaptureMouse();
+        UpdateHueFromPointer(e.GetPosition(HueCanvas));
+    }
+
+    private void HueCanvas_MouseMove(object sender, WpfMouseEventArgs e)
+    {
+        if (e.LeftButton != MouseButtonState.Pressed)
+        {
+            HueCanvas.ReleaseMouseCapture();
+            return;
+        }
+
+        UpdateHueFromPointer(e.GetPosition(HueCanvas));
+    }
+
+    private void PickerCanvas_MouseUp(object sender, MouseButtonEventArgs e)
+    {
+        ColorCanvas.ReleaseMouseCapture();
+        HueCanvas.ReleaseMouseCapture();
+    }
+
+    private void TitleBar_MouseLeftButtonDown(object sender, MouseButtonEventArgs e)
+    {
+        if (e.ButtonState != MouseButtonState.Pressed)
         {
             return;
         }
 
-        _hue = HueSlider.Value;
+        DragMove();
+    }
+
+    private void UpdateHueFromPointer(WpfPoint point)
+    {
+        _hue = Math.Clamp(point.Y / HueCanvas.Height, 0, 1) * 360d;
+        UpdateHueThumb();
         UpdateHueSurface();
         UpdateFromHsv();
     }

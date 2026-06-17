@@ -277,11 +277,11 @@
                                     </StackPanel>
                                 </StackPanel>
 
-                                <WrapPanel Margin="0,10,0,6">
+                                <StackPanel Margin="0,10,0,6">
                                     <Grid x:Name="BackgroundColorOptionsGrid"
-                                          MinWidth="360"
-                                          Width="430"
-                                          Margin="0,0,12,12">
+                                          MinWidth="0"
+                                          HorizontalAlignment="Stretch"
+                                          Margin="0,0,0,12">
                                         <Border BorderBrush="{DynamicResource ThemeBorderBrush}"
                                                 BorderThickness="1"
                                                 CornerRadius="14"
@@ -361,9 +361,9 @@
                                     </Grid>
 
                                     <Grid x:Name="BackgroundBrightnessPanel"
-                                          MinWidth="280"
-                                          Width="340"
-                                          Margin="0,0,12,12">
+                                          MinWidth="0"
+                                          HorizontalAlignment="Stretch"
+                                          Margin="0,0,0,12">
                                         <Border BorderBrush="{DynamicResource ThemeBorderBrush}"
                                                 BorderThickness="1"
                                                 CornerRadius="14"
@@ -389,6 +389,9 @@
                                                           StrokeThickness="12"
                                                           StrokeStartLineCap="Round"
                                                           StrokeEndLineCap="Round"
+                                                          Width="104"
+                                                          Height="104"
+                                                          Stretch="None"
                                                           Fill="Transparent"
                                                           HorizontalAlignment="Center"
                                                           VerticalAlignment="Center" />
@@ -416,7 +419,7 @@
                                             </Grid>
                                         </Border>
                                     </Grid>
-                                </WrapPanel>
+                                </StackPanel>
 
                                 <TextBlock Text="Tiempos de fondo"
                                            FontWeight="SemiBold"

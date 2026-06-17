@@ -254,7 +254,7 @@ public sealed class SettingsStore
             .Select(LightCommand.NormalizeColor)
             .Where(color => !string.Equals(color, "#000000", StringComparison.OrdinalIgnoreCase))
             .Distinct(StringComparer.OrdinalIgnoreCase)
-            .Take(8));
+            .Take(7));
     }
 
     private static ObservableCollection<EventRule> NormalizeRules(ObservableCollection<EventRule>? rules)

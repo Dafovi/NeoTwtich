@@ -322,7 +322,7 @@ public partial class MainWindow
 
     private void PickColor(System.Windows.Controls.TextBox target)
     {
-        var dialog = new Views.ColorPickerDialog(target.Text, _config.DarkMode, BuildRecentColorPalette())
+        var dialog = new Views.ColorPickerDialog(target.Text, ResolveDarkMode(_config.ThemeMode), BuildRecentColorPalette())
         {
             Owner = this
         };
@@ -372,7 +372,7 @@ public partial class MainWindow
 
         _config.RecentColors.Insert(0, normalized);
 
-        while (_config.RecentColors.Count > 8)
+        while (_config.RecentColors.Count > 7)
         {
             _config.RecentColors.RemoveAt(_config.RecentColors.Count - 1);
         }

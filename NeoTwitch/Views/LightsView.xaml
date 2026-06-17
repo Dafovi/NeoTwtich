@@ -425,7 +425,12 @@
                                                 CornerRadius="14"
                                                 Padding="14"
                                                 Background="{DynamicResource ThemeSurfaceBrush}">
-                                            <Grid MinHeight="154">
+                                            <Grid MinHeight="174">
+                                                <Grid.RowDefinitions>
+                                                    <RowDefinition Height="104" />
+                                                    <RowDefinition Height="18" />
+                                                    <RowDefinition Height="Auto" />
+                                                </Grid.RowDefinitions>
                                                 <Slider x:Name="BackgroundBrightnessSlider"
                                                         Minimum="0"
                                                         Maximum="255"
@@ -433,6 +438,7 @@
                                                         Visibility="Collapsed"
                                                         ValueChanged="BackgroundFieldChanged" />
                                                 <Grid Height="104"
+                                                      Grid.Row="0"
                                                       HorizontalAlignment="Center">
                                                     <Ellipse Width="104"
                                                              Height="104"
@@ -459,8 +465,9 @@
                                                                VerticalAlignment="Top" />
                                                 </Grid>
                                                 <StackPanel Orientation="Horizontal"
+                                                            Grid.Row="2"
                                                             HorizontalAlignment="Center"
-                                                            VerticalAlignment="Bottom">
+                                                            VerticalAlignment="Top">
                                                     <Button Content="-"
                                                             Width="34"
                                                             Height="30"

@@ -218,10 +218,7 @@ public partial class MainWindow
                 await Task.Delay(LightStopSettleMs);
             }
 
-            var audioDuration = playback?.Duration;
-            var syncedDurationMs = audioDuration is { TotalMilliseconds: > 0 }
-                ? (int)Math.Round(audioDuration.Value.TotalMilliseconds)
-                : (int?)null;
+            var syncedDurationMs = ResolveSynchronizedEffectDurationMs(playback?.Duration, obsMediaHide?.Duration);
 
             LightCommand? command = null;
             if (useLights)
@@ -232,19 +229,7 @@ public partial class MainWindow
             }
 
             playback?.Play();
-
-            if (playback is not null)
-            {
-                await playback.Completion.WaitAsync(effectCts.Token);
-            }
-            else if (command is not null)
-            {
-                await Task.Delay(command.DurationMs, effectCts.Token);
-            }
-            else
-            {
-                await Task.Delay(500, effectCts.Token);
-            }
+            await WaitForRuleEffectAsync(playback, command, obsMediaHide, effectCts.Token);
 
             if (command is not null)
             {
@@ -323,6 +308,59 @@ public partial class MainWindow
             _alertQueue.MarkFinished(queueSlot);
             _effectGate.Release();
         }
+    }
+
+    private static int? ResolveSynchronizedEffectDurationMs(params TimeSpan?[] durations)
+    {
+        var maxDuration = ResolveMaxEffectDuration(durations);
+        return maxDuration is { TotalMilliseconds: > 0 }
+            ? Math.Clamp((int)Math.Round(maxDuration.Value.TotalMilliseconds), 250, 600000)
+            : null;
+    }
+
+    private static async Task WaitForRuleEffectAsync(
+        AudioPlayback? playback,
+        LightCommand? command,
+        ObsMediaHideRequest? obsMediaHide,
+        CancellationToken cancellationToken)
+    {
+        var duration = ResolveMaxEffectDuration(
+            playback?.Duration,
+            command is null ? null : TimeSpan.FromMilliseconds(command.DurationMs),
+            obsMediaHide?.Duration);
+
+        if (duration is { TotalMilliseconds: > 0 })
+        {
+            await Task.Delay(duration.Value, cancellationToken);
+            return;
+        }
+
+        if (playback is not null)
+        {
+            await playback.Completion.WaitAsync(cancellationToken);
+            return;
+        }
+
+        await Task.Delay(500, cancellationToken);
+    }
+
+    private static TimeSpan? ResolveMaxEffectDuration(params TimeSpan?[] durations)
+    {
+        TimeSpan? maxDuration = null;
+        foreach (var duration in durations)
+        {
+            if (duration is not { TotalMilliseconds: > 0 })
+            {
+                continue;
+            }
+
+            if (maxDuration is null || duration.Value > maxDuration.Value)
+            {
+                maxDuration = duration.Value;
+            }
+        }
+
+        return maxDuration;
     }
 
     private async Task StopCurrentEffectAsync()

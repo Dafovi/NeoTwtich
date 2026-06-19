@@ -197,7 +197,7 @@ public partial class ColorPickerDialog : Window
 
     private void UpdateHueThumb()
     {
-        var top = (_hue / 360d) * HueCanvas.Height - HueThumb.Height / 2;
+        var top = (1 - _hue / 360d) * HueCanvas.Height - HueThumb.Height / 2;
         Canvas.SetTop(HueThumb, Math.Clamp(top, 0, HueCanvas.Height - HueThumb.Height));
     }
 
@@ -261,7 +261,7 @@ public partial class ColorPickerDialog : Window
 
     private void UpdateHueFromPointer(WpfPoint point)
     {
-        _hue = Math.Clamp(point.Y / HueCanvas.Height, 0, 1) * 360d;
+        _hue = (1 - Math.Clamp(point.Y / HueCanvas.Height, 0, 1)) * 360d;
         UpdateHueThumb();
         UpdateHueSurface();
         UpdateFromHsv();

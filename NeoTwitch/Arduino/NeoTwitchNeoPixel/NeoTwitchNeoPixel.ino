@@ -3,6 +3,8 @@
 #define MAX_STRIPS 6
 #define MAX_LEDS_PER_STRIP 600
 #define SERIAL_BAUD 115200
+#define BYTES_PER_PIXEL 3
+#define MIN_FREE_MEMORY_AFTER_PIXELS 260
 
 struct LedTarget {
   int pin;
@@ -30,6 +32,7 @@ struct EffectCommand {
 };
 
 RuntimeStrip strips[MAX_STRIPS];
+const char *lastRuntimeError = "TARGET_UNAVAILABLE";
 
 void setup() {
   Serial.begin(SERIAL_BAUD);
@@ -59,7 +62,11 @@ void loop() {
     return;
   }
 
-  prepareTargets(command);
+  if (!prepareTargets(command)) {
+    sendError(lastRuntimeError);
+    return;
+  }
+
   sendAck("FX");
   bool stopped = runEffect(command);
 
@@ -170,23 +177,31 @@ uint32_t packColor(byte red, byte green, byte blue) {
   return ((uint32_t)red << 16) | ((uint32_t)green << 8) | blue;
 }
 
-void prepareTargets(EffectCommand &command) {
+bool prepareTargets(EffectCommand &command) {
   for (int i = 0; i < command.targetCount; i++) {
     RuntimeStrip *runtime = getRuntimeStrip(command.targets[i].pin, command.targets[i].ledCount);
     if (runtime == NULL) {
-      continue;
+      clearTargets(command.targets, i);
+      return false;
     }
 
     runtime->pixels.setBrightness(command.brightness);
     runtime->pixels.clear();
     runtime->pixels.show();
   }
+
+  return true;
 }
 
 RuntimeStrip *getRuntimeStrip(int pin, int ledCount) {
   for (int i = 0; i < MAX_STRIPS; i++) {
     if (strips[i].active && strips[i].pin == pin) {
       if (strips[i].ledCount != ledCount) {
+        if (!canResizeStrip(&strips[i], ledCount)) {
+          lastRuntimeError = "NO_MEMORY";
+          return NULL;
+        }
+
         strips[i].pixels.updateLength(ledCount);
         strips[i].ledCount = ledCount;
         strips[i].pixels.begin();
@@ -198,6 +213,11 @@ RuntimeStrip *getRuntimeStrip(int pin, int ledCount) {
 
   for (int i = 0; i < MAX_STRIPS; i++) {
     if (!strips[i].active) {
+      if (!canResizeStrip(NULL, ledCount)) {
+        lastRuntimeError = "NO_MEMORY";
+        return NULL;
+      }
+
       strips[i].active = true;
       strips[i].pin = pin;
       strips[i].ledCount = ledCount;
@@ -209,7 +229,36 @@ RuntimeStrip *getRuntimeStrip(int pin, int ledCount) {
     }
   }
 
+  lastRuntimeError = "MAX_STRIPS";
   return NULL;
+}
+
+RuntimeStrip *findRuntimeStripByPin(int pin) {
+  for (int i = 0; i < MAX_STRIPS; i++) {
+    if (strips[i].active && strips[i].pin == pin) {
+      return &strips[i];
+    }
+  }
+
+  return NULL;
+}
+
+bool canResizeStrip(RuntimeStrip *runtime, int ledCount) {
+  long currentBytes = runtime == NULL ? 0 : (long)runtime->ledCount * BYTES_PER_PIXEL;
+  long requestedBytes = (long)ledCount * BYTES_PER_PIXEL;
+  long availableAfterRelease = (long)freeMemory() + currentBytes;
+  return availableAfterRelease - requestedBytes >= MIN_FREE_MEMORY_AFTER_PIXELS;
+}
+
+int freeMemory() {
+#if defined(__AVR__)
+  extern char __heap_start;
+  extern char *__brkval;
+  char stackTop;
+  return &stackTop - (__brkval == 0 ? &__heap_start : __brkval);
+#else
+  return 32767;
+#endif
 }
 
 bool runEffect(EffectCommand command) {
@@ -495,7 +544,7 @@ void fillAll(EffectCommand command, uint32_t color) {
 
 void clearTargets(LedTarget targets[], int targetCount) {
   for (int target = 0; target < targetCount; target++) {
-    RuntimeStrip *runtime = getRuntimeStrip(targets[target].pin, targets[target].ledCount);
+    RuntimeStrip *runtime = findRuntimeStripByPin(targets[target].pin);
     if (runtime == NULL) {
       continue;
     }

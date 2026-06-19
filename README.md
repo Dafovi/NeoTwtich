@@ -184,6 +184,7 @@ Recomendaciones importantes:
 - Agrega una resistencia entre el pin de datos del Arduino y `DIN` de la tira.
 - Agrega un capacitor entre positivo y negativo de la fuente cerca del inicio de la tira.
 - Respeta la direccion de la tira LED marcada con flechas.
+- Si usas Arduino Uno/Nano, ten cuidado con tiras muy largas: cada LED NeoPixel usa memoria RAM en el Arduino. Para cientos de LEDs, por ejemplo 500 o mas, usa una placa con mas RAM como Arduino Mega, ESP32 o similar. El sketch actualizado responde `ERR|NO_MEMORY` si no puede reservar memoria sin bloquearse.
 
 El plano y las recomendaciones de cableado salen de la documentacion de What Make Art: [Wiring LED Strip to Arduino](https://whatmakeart.com/arduino/wiring-led-strip-to-arduino/).
 
@@ -227,6 +228,7 @@ Desde la version con ACK, el sketch responde por serial para confirmar comandos 
 ACK|FX
 ACK|STOP
 ERR|BAD_COMMAND
+ERR|NO_MEMORY
 ```
 
 Si la app no recibe `ACK`, sigue funcionando en modo compatible, pero es recomendable cargar el sketch actualizado para que los comandos de luces sean mas confiables.

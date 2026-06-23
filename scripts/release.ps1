@@ -6,14 +6,12 @@ param(
 
 $ErrorActionPreference = "Stop"
 
-$RepoRoot = Resolve-Path (Join-Path $PSScriptRoot "..")
-$VersionProps = Join-Path $RepoRoot "Directory.Build.props"
+. (Join-Path $PSScriptRoot "build.common.ps1")
+
+$BuildConfig = Get-NeoTwitchBuildConfig
 
 if (-not [string]::IsNullOrWhiteSpace($Version)) {
-    $normalizedVersion = $Version.Trim().TrimStart("v", "V")
-    [xml]$props = Get-Content -LiteralPath $VersionProps
-    $props.Project.PropertyGroup.Version = $normalizedVersion
-    $props.Save($VersionProps)
+    $normalizedVersion = Set-NeoTwitchVersion $BuildConfig $Version
     Write-Host "Version actualizada a $normalizedVersion en Directory.Build.props." -ForegroundColor Green
 }
 

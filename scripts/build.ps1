@@ -3,27 +3,21 @@ param(
     [ValidateSet("Debug", "Release", "Portable", "SelfContained", "Installer", "FullRelease")]
     [string]$Mode = "Debug",
 
-    [string]$Runtime = "win-x64",
+    [string]$Runtime = "",
 
     [switch]$Clean
 )
 
 $ErrorActionPreference = "Stop"
 
-$RepoRoot = Resolve-Path (Join-Path $PSScriptRoot "..")
-$AppProject = Join-Path $RepoRoot "NeoTwitch\NeoTwitch.csproj"
-$InstallerProject = Join-Path $RepoRoot "NeoTwitch.Installer\NeoTwitch.Installer.csproj"
-$VersionProps = Join-Path $RepoRoot "Directory.Build.props"
+. (Join-Path $PSScriptRoot "build.common.ps1")
 
-function Get-NeoTwitchVersion {
-    [xml]$props = Get-Content -LiteralPath $VersionProps
-    $version = $props.Project.PropertyGroup.Version
-    if ([string]::IsNullOrWhiteSpace($version)) {
-        throw "No encontre <Version> en Directory.Build.props."
-    }
-
-    return $version.Trim().TrimStart("v", "V")
-}
+$BuildConfig = Get-NeoTwitchBuildConfig
+$Runtime = if ([string]::IsNullOrWhiteSpace($Runtime)) { $BuildConfig.defaultRuntime } else { $Runtime }
+$AppProject = Resolve-NeoTwitchPath $BuildConfig.appProject
+$InstallerProject = Resolve-NeoTwitchPath $BuildConfig.installerProject
+$DebugConfiguration = $BuildConfig.debugConfiguration
+$ReleaseConfiguration = $BuildConfig.releaseConfiguration
 
 function Invoke-DotNet {
     param([string[]]$Arguments)
@@ -38,12 +32,12 @@ function Invoke-DotNet {
 function Publish-Portable {
     param([string]$ArtifactRoot)
 
-    $output = Join-Path $ArtifactRoot "NeoTwitch-V$Version-Windows"
-    $zip = Join-Path $ArtifactRoot "NeoTwitch-V$Version-Windows.zip"
+    $output = Join-Path $ArtifactRoot (Expand-NeoTwitchPattern $BuildConfig.portableDirectoryPattern $Version)
+    $zip = Join-Path $ArtifactRoot (Expand-NeoTwitchPattern $BuildConfig.portableZipPattern $Version)
 
     Invoke-DotNet @(
         "publish", $AppProject,
-        "-c", "Release",
+        "-c", $ReleaseConfiguration,
         "-r", $Runtime,
         "--self-contained", "false",
         "-p:PublishSingleFile=false",
@@ -60,10 +54,10 @@ function Publish-Portable {
 function Publish-SelfContained {
     param([string]$ArtifactRoot)
 
-    $output = Join-Path $ArtifactRoot "self-contained"
+    $output = Join-Path $ArtifactRoot $BuildConfig.selfContainedWorkDirectory
     Invoke-DotNet @(
         "publish", $AppProject,
-        "-c", "Release",
+        "-c", $ReleaseConfiguration,
         "-r", $Runtime,
         "--self-contained", "true",
         "-p:PublishSingleFile=true",
@@ -72,16 +66,16 @@ function Publish-SelfContained {
         "-o", $output
     )
 
-    Copy-Item -LiteralPath (Join-Path $output "NeoTwitch.exe") -Destination (Join-Path $ArtifactRoot "NeoTwitch.exe") -Force
+    Copy-Item -LiteralPath (Join-Path $output $BuildConfig.appExecutable) -Destination (Join-Path $ArtifactRoot $BuildConfig.appExecutable) -Force
 }
 
 function Publish-Installer {
     param([string]$ArtifactRoot)
 
-    $output = Join-Path $ArtifactRoot "installer"
+    $output = Join-Path $ArtifactRoot $BuildConfig.installerWorkDirectory
     Invoke-DotNet @(
         "publish", $InstallerProject,
-        "-c", "Release",
+        "-c", $ReleaseConfiguration,
         "-r", $Runtime,
         "--self-contained", "true",
         "-p:PublishSingleFile=true",
@@ -90,11 +84,11 @@ function Publish-Installer {
         "-o", $output
     )
 
-    Copy-Item -LiteralPath (Join-Path $output "NeoTwitch.Installer.exe") -Destination (Join-Path $ArtifactRoot "NeoTwitch.Installer.exe") -Force
+    Copy-Item -LiteralPath (Join-Path $output $BuildConfig.installerExecutable) -Destination (Join-Path $ArtifactRoot $BuildConfig.installerExecutable) -Force
 }
 
-$Version = Get-NeoTwitchVersion
-$ArtifactRoot = Join-Path $RepoRoot "artifacts\V$Version"
+$Version = Get-NeoTwitchVersion $BuildConfig
+$ArtifactRoot = Get-NeoTwitchArtifactRoot $BuildConfig $Version
 
 if ($Clean -and (Test-Path -LiteralPath $ArtifactRoot)) {
     Remove-Item -LiteralPath $ArtifactRoot -Recurse -Force
@@ -104,11 +98,11 @@ New-Item -ItemType Directory -Path $ArtifactRoot -Force | Out-Null
 
 switch ($Mode) {
     "Debug" {
-        Invoke-DotNet @("build", $AppProject, "-c", "Debug")
+        Invoke-DotNet @("build", $AppProject, "-c", $DebugConfiguration)
     }
     "Release" {
-        Invoke-DotNet @("build", $AppProject, "-c", "Release")
-        Invoke-DotNet @("build", $InstallerProject, "-c", "Release")
+        Invoke-DotNet @("build", $AppProject, "-c", $ReleaseConfiguration)
+        Invoke-DotNet @("build", $InstallerProject, "-c", $ReleaseConfiguration)
     }
     "Portable" {
         Publish-Portable $ArtifactRoot

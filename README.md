@@ -143,6 +143,7 @@ La app no se actualiza sola. Esto evita pedir permisos extra o instalar un launc
 ## Builds locales
 
 La version de la app se define en un solo lugar: `Directory.Build.props`.
+La configuracion de proyectos, runtime, nombres de artifacts y ejecutables se define en `build.config.json`.
 
 Comandos utiles:
 

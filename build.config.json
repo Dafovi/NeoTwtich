@@ -1,0 +1,15 @@
+{
+  "versionProps": "Directory.Build.props",
+  "artifactsDirectory": "artifacts",
+  "appProject": "NeoTwitch/NeoTwitch.csproj",
+  "installerProject": "NeoTwitch.Installer/NeoTwitch.Installer.csproj",
+  "defaultRuntime": "win-x64",
+  "debugConfiguration": "Debug",
+  "releaseConfiguration": "Release",
+  "portableDirectoryPattern": "NeoTwitch-V{version}-Windows",
+  "portableZipPattern": "NeoTwitch-V{version}-Windows.zip",
+  "selfContainedWorkDirectory": "self-contained",
+  "installerWorkDirectory": "installer",
+  "appExecutable": "NeoTwitch.exe",
+  "installerExecutable": "NeoTwitch.Installer.exe"
+}

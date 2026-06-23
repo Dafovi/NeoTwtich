@@ -1,4 +1,5 @@
 using System.IO;
+using NeoTwitch.Shared;
 
 namespace NeoTwitch.Installer;
 
@@ -16,7 +17,7 @@ internal sealed class InstallerOptions
     public static string DefaultInstallPath =>
         Path.Combine(
             Environment.GetFolderPath(Environment.SpecialFolder.ProgramFiles),
-            "Neo Twitch");
+            NeoTwitchProduct.DisplayName);
 
     public static InstallerOptions FromArgs(string[] args)
     {

@@ -16,6 +16,7 @@
   </PropertyGroup>
 
   <ItemGroup>
+    <Compile Include="..\Shared\*.cs" Link="Shared\%(Filename)%(Extension)" />
     <Resource Include="..\NeoTwitch\Assets\AppIcon.ico" Link="Assets\AppIcon.ico" />
     <Resource Include="..\NeoTwitch\Assets\AppIcon.png" Link="Assets\AppIcon.png" />
     <Resource Include="..\NeoTwitch\Assets\Icons\appstate_ok.png" Link="Assets\Icons\appstate_ok.png" />

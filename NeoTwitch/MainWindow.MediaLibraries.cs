@@ -7,6 +7,7 @@ using NeoTwitch.Models;
 using NeoTwitch.Services;
 using NeoTwitch.Services.Library;
 using NeoTwitch.Services.Text;
+using NeoTwitch.Shared;
 using NeoTwitch.ViewModels.Activity;
 using NeoTwitch.ViewModels.Library;
 using NeoTwitch.ViewModels.Obs;
@@ -444,8 +445,8 @@ public partial class MainWindow
 
         var obsKind = kind == MediaLibraryKind.Image ? ObsMediaKind.Image : ObsMediaKind.Video;
         var sourceName = kind == MediaLibraryKind.Image
-            ? "Neo Twitch - Prueba imagen"
-            : "Neo Twitch - Prueba video";
+            ? NeoTwitchProduct.Obs.PreviewImageSourceName
+            : NeoTwitchProduct.Obs.PreviewVideoSourceName;
         var duration = obsKind == ObsMediaKind.Video
             ? TimeSpan.FromMilliseconds(asset.DurationMs > 0 ? asset.DurationMs : 5000)
             : TimeSpan.FromSeconds(5);

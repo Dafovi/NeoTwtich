@@ -28,7 +28,7 @@ public sealed class LedStripConfig : INotifyPropertyChanged
         get => _pin;
         set
         {
-            if (SetField(ref _pin, Math.Clamp(value, 0, 53)))
+            if (SetField(ref _pin, Math.Clamp(value, ApplicationLimits.MinArduinoPin, ApplicationLimits.MaxArduinoPin)))
             {
                 OnPropertyChanged(nameof(DisplayLabel));
             }
@@ -40,7 +40,7 @@ public sealed class LedStripConfig : INotifyPropertyChanged
         get => _ledCount;
         set
         {
-            if (SetField(ref _ledCount, Math.Clamp(value, 1, 600)))
+            if (SetField(ref _ledCount, Math.Clamp(value, ApplicationLimits.MinLedCount, ApplicationLimits.MaxLedCount)))
             {
                 OnPropertyChanged(nameof(DisplayLabel));
             }

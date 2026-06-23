@@ -3,6 +3,7 @@ using System.Windows;
 using System.Windows.Controls;
 using System.Windows.Input;
 using System.Windows.Media;
+using NeoTwitch.Models;
 using WpfButton = System.Windows.Controls.Button;
 using WpfColor = System.Windows.Media.Color;
 using WpfColorConverter = System.Windows.Media.ColorConverter;
@@ -121,7 +122,7 @@ public partial class ColorPickerDialog : Window
             .Select(color => ToHex(ParseColor(color, Colors.Transparent)))
             .Where(color => color != "#000000")
             .Distinct(StringComparer.OrdinalIgnoreCase)
-            .Take(7);
+            .Take(ApplicationLimits.MaxRecentColors);
 
         foreach (var colorHex in colors)
         {

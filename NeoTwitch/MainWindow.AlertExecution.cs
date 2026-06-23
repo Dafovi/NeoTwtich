@@ -314,7 +314,7 @@ public partial class MainWindow
     {
         var maxDuration = ResolveMaxEffectDuration(durations);
         return maxDuration is { TotalMilliseconds: > 0 }
-            ? Math.Clamp((int)Math.Round(maxDuration.Value.TotalMilliseconds), 250, 600000)
+            ? Math.Clamp((int)Math.Round(maxDuration.Value.TotalMilliseconds), ApplicationLimits.MinAlertDurationMs, ApplicationLimits.MaxAlertDurationMs)
             : null;
     }
 

@@ -4,6 +4,7 @@ using System.Windows;
 using System.Windows.Threading;
 using NeoTwitch.Models;
 using NeoTwitch.Services;
+using NeoTwitch.Shared;
 
 namespace NeoTwitch;
 
@@ -22,13 +23,13 @@ public partial class App : System.Windows.Application
 
         try
         {
-            _singleInstanceMutex = new Mutex(true, "NeoTwitch.SingleInstance", out var createdNew);
+            _singleInstanceMutex = new Mutex(true, NeoTwitchProduct.SingleInstanceMutexName, out var createdNew);
             _ownsMutex = createdNew;
             if (!createdNew)
             {
                 System.Windows.MessageBox.Show(
-                    "Neo Twitch ya esta abierta. Revisa el icono en la bandeja del sistema.",
-                    "Neo Twitch",
+                    $"{NeoTwitchProduct.DisplayName} ya esta abierta. Revisa el icono en la bandeja del sistema.",
+                    NeoTwitchProduct.DisplayName,
                     MessageBoxButton.OK,
                     MessageBoxImage.Information);
                 Shutdown();
@@ -102,7 +103,7 @@ public partial class App : System.Windows.Application
     {
         System.Windows.MessageBox.Show(
             $"La app no pudo iniciar correctamente.\n\nDetalle: {detail}\n\nLog: {logPath}",
-            "Neo Twitch",
+            NeoTwitchProduct.DisplayName,
             MessageBoxButton.OK,
             MessageBoxImage.Error);
     }

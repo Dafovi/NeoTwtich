@@ -4,15 +4,12 @@ using System.Text.Json;
 using System.Text.Json.Serialization;
 using NeoTwitch.Models;
 using NeoTwitch.Services.Library;
+using NeoTwitch.Shared;
 
 namespace NeoTwitch.Services;
 
 public sealed class SettingsStore
 {
-    private const string AppFolderName = "NeoTwitch";
-    private const string LegacyAppFolderName = "LucesCanjeTwitch";
-    private const int MaxTimestampedBackups = 20;
-
     private readonly JsonSerializerOptions _jsonOptions = new(JsonSerializerDefaults.Web)
     {
         WriteIndented = true
@@ -24,11 +21,11 @@ public sealed class SettingsStore
         _jsonOptions.Converters.Add(new JsonStringEnumConverter());
     }
 
-    public string SettingsPath { get; } = BuildSettingsPath(AppFolderName);
+    public string SettingsPath { get; } = BuildSettingsPath(NeoTwitchProduct.AppDataFolderName);
 
-    public string BackupDirectory { get; } = BuildBackupDirectory(AppFolderName);
+    public string BackupDirectory { get; } = BuildBackupDirectory(NeoTwitchProduct.AppDataFolderName);
 
-    private string LegacySettingsPath { get; } = BuildSettingsPath(LegacyAppFolderName);
+    private string LegacySettingsPath { get; } = BuildSettingsPath(NeoTwitchProduct.LegacyAppDataFolderName);
 
     public string? LastLoadError { get; private set; }
 
@@ -138,7 +135,7 @@ public sealed class SettingsStore
     {
         var backups = Directory.GetFiles(BackupDirectory, "settings-*.json")
             .OrderByDescending(File.GetCreationTimeUtc)
-            .Skip(MaxTimestampedBackups)
+            .Skip(ApplicationLimits.MaxSettingsBackups)
             .ToArray();
 
         foreach (var backup in backups)
@@ -211,9 +208,9 @@ public sealed class SettingsStore
         });
         config.RecentColors = NormalizeRecentColors(config.RecentColors);
         config.MaxQueuedSameRuleAlerts = Math.Clamp(config.MaxQueuedSameRuleAlerts, 0, 100);
-        config.SameRuleQueueCooldownMs = Math.Clamp(config.SameRuleQueueCooldownMs, 0, 600000);
+        config.SameRuleQueueCooldownMs = Math.Clamp(config.SameRuleQueueCooldownMs, 0, ApplicationLimits.MaxAlertDurationMs);
         config.MaxQueuedDifferentRuleAlerts = Math.Clamp(config.MaxQueuedDifferentRuleAlerts, 0, 100);
-        config.DifferentRuleQueueCooldownMs = Math.Clamp(config.DifferentRuleQueueCooldownMs, 0, 600000);
+        config.DifferentRuleQueueCooldownMs = Math.Clamp(config.DifferentRuleQueueCooldownMs, 0, ApplicationLimits.MaxAlertDurationMs);
         config.Rules = NormalizeRules(config.Rules);
         MigrateRuleAudioLibrary(config);
         var defaults = AppConfig.CreateDefault();
@@ -225,9 +222,9 @@ public sealed class SettingsStore
         config.BackgroundPrimaryColor = LightCommand.NormalizeColor(config.BackgroundPrimaryColor);
         config.BackgroundSecondaryColor = LightCommand.NormalizeColor(config.BackgroundSecondaryColor);
         config.BackgroundTertiaryColor = LightCommand.NormalizeColor(config.BackgroundTertiaryColor);
-        config.BackgroundBrightness = Math.Clamp(config.BackgroundBrightness, 0, 255);
-        config.BackgroundCycleMs = Math.Clamp(config.BackgroundCycleMs, 10, 2000);
-        config.BackgroundStepMs = Math.Clamp(config.BackgroundStepMs, 10, 5000);
+        config.BackgroundBrightness = Math.Clamp(config.BackgroundBrightness, ApplicationLimits.MinBrightness, ApplicationLimits.MaxBrightness);
+        config.BackgroundCycleMs = Math.Clamp(config.BackgroundCycleMs, ApplicationLimits.MinCycleMs, ApplicationLimits.MaxCycleMs);
+        config.BackgroundStepMs = Math.Clamp(config.BackgroundStepMs, ApplicationLimits.MinStepMs, ApplicationLimits.MaxStepMs);
 
         return config;
     }
@@ -254,7 +251,7 @@ public sealed class SettingsStore
             .Select(LightCommand.NormalizeColor)
             .Where(color => !string.Equals(color, "#000000", StringComparison.OrdinalIgnoreCase))
             .Distinct(StringComparer.OrdinalIgnoreCase)
-            .Take(7));
+            .Take(ApplicationLimits.MaxRecentColors));
     }
 
     private static ObservableCollection<EventRule> NormalizeRules(ObservableCollection<EventRule>? rules)

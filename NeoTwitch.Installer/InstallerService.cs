@@ -3,14 +3,13 @@ using System.IO;
 using System.IO.Compression;
 using System.Text.Json.Nodes;
 using Microsoft.Win32;
+using NeoTwitch.Shared;
 
 namespace NeoTwitch.Installer;
 
 internal sealed class InstallerService
 {
     private const string WindowsRunKeyPath = @"Software\Microsoft\Windows\CurrentVersion\Run";
-    private const string WindowsStartupValueName = "Neo Twitch";
-
     private readonly GitHubReleaseClient _releaseClient = new();
 
     public async Task<InstallResult> InstallAsync(
@@ -19,7 +18,7 @@ internal sealed class InstallerService
         CancellationToken cancellationToken)
     {
         progress.Report(new InstallProgress(3, "Preparando instalación"));
-        var tempRoot = Path.Combine(Path.GetTempPath(), $"NeoTwitchInstaller_{Guid.NewGuid():N}");
+        var tempRoot = Path.Combine(Path.GetTempPath(), $"{NeoTwitchProduct.GitHubInstallerUserAgent}_{Guid.NewGuid():N}");
         Directory.CreateDirectory(tempRoot);
 
         try
@@ -49,16 +48,16 @@ internal sealed class InstallerService
             CopyInstallerToTarget(options.InstallPath);
 
             progress.Report(new InstallProgress(74, "Creando accesos directos"));
-            var appExePath = Path.Combine(options.InstallPath, "NeoTwitch.exe");
+            var appExePath = Path.Combine(options.InstallPath, NeoTwitchProduct.AppExecutableName);
             if (!File.Exists(appExePath))
             {
-                throw new FileNotFoundException("La instalación no encontró NeoTwitch.exe.", appExePath);
+                throw new FileNotFoundException($"La instalación no encontró {NeoTwitchProduct.AppExecutableName}.", appExePath);
             }
 
             if (options.CreateDesktopShortcut)
             {
                 CreateShortcut(
-                    Path.Combine(Environment.GetFolderPath(Environment.SpecialFolder.DesktopDirectory), "Neo Twitch.lnk"),
+                    Path.Combine(Environment.GetFolderPath(Environment.SpecialFolder.DesktopDirectory), NeoTwitchProduct.ShortcutFileName),
                     appExePath);
             }
 
@@ -67,9 +66,9 @@ internal sealed class InstallerService
                 var startMenuFolder = Path.Combine(
                     Environment.GetFolderPath(Environment.SpecialFolder.StartMenu),
                     "Programs",
-                    "Neo Twitch");
+                    NeoTwitchProduct.DisplayName);
                 Directory.CreateDirectory(startMenuFolder);
-                CreateShortcut(Path.Combine(startMenuFolder, "Neo Twitch.lnk"), appExePath);
+                CreateShortcut(Path.Combine(startMenuFolder, NeoTwitchProduct.ShortcutFileName), appExePath);
             }
 
             progress.Report(new InstallProgress(86, "Configurando inicio con Windows"));
@@ -93,7 +92,7 @@ internal sealed class InstallerService
         var currentProcessId = Environment.ProcessId;
         for (var attempt = 0; attempt < 40; attempt++)
         {
-            var running = Process.GetProcessesByName("NeoTwitch")
+            var running = Process.GetProcessesByName(Path.GetFileNameWithoutExtension(NeoTwitchProduct.AppExecutableName))
                 .Where(process =>
                 {
                     try
@@ -137,7 +136,7 @@ internal sealed class InstallerService
         if (packagePath.EndsWith(".exe", StringComparison.OrdinalIgnoreCase))
         {
             CleanInstallPath(installPath);
-            File.Copy(packagePath, Path.Combine(installPath, "NeoTwitch.exe"), overwrite: true);
+            File.Copy(packagePath, Path.Combine(installPath, NeoTwitchProduct.AppExecutableName), overwrite: true);
             return;
         }
 
@@ -146,16 +145,16 @@ internal sealed class InstallerService
 
     private static string ResolvePackageRoot(string extractPath)
     {
-        if (File.Exists(Path.Combine(extractPath, "NeoTwitch.exe")))
+        if (File.Exists(Path.Combine(extractPath, NeoTwitchProduct.AppExecutableName)))
         {
             return extractPath;
         }
 
         var nested = Directory
             .EnumerateDirectories(extractPath, "*", SearchOption.AllDirectories)
-            .FirstOrDefault(directory => File.Exists(Path.Combine(directory, "NeoTwitch.exe")));
+            .FirstOrDefault(directory => File.Exists(Path.Combine(directory, NeoTwitchProduct.AppExecutableName)));
 
-        return nested ?? throw new InvalidOperationException("El paquete no contiene NeoTwitch.exe.");
+        return nested ?? throw new InvalidOperationException($"El paquete no contiene {NeoTwitchProduct.AppExecutableName}.");
     }
 
     private static void CleanInstallPath(string installPath)
@@ -164,7 +163,7 @@ internal sealed class InstallerService
 
         foreach (var file in Directory.EnumerateFiles(installPath))
         {
-            if (Path.GetFileName(file).StartsWith("NeoTwitch.Installer", StringComparison.OrdinalIgnoreCase))
+            if (Path.GetFileName(file).StartsWith(Path.GetFileNameWithoutExtension(NeoTwitchProduct.InstallerExecutableName), StringComparison.OrdinalIgnoreCase))
             {
                 continue;
             }
@@ -203,7 +202,7 @@ internal sealed class InstallerService
             return;
         }
 
-        var targetPath = Path.Combine(installPath, "NeoTwitch.Installer.exe");
+        var targetPath = Path.Combine(installPath, NeoTwitchProduct.InstallerExecutableName);
         if (string.Equals(
             Path.GetFullPath(currentExe),
             Path.GetFullPath(targetPath),
@@ -233,11 +232,11 @@ internal sealed class InstallerService
         using var runKey = Registry.CurrentUser.CreateSubKey(WindowsRunKeyPath, writable: true);
         if (enabled)
         {
-            runKey?.SetValue(WindowsStartupValueName, $"\"{appExePath}\"");
+            runKey?.SetValue(NeoTwitchProduct.StartupValueName, $"\"{appExePath}\"");
         }
         else
         {
-            runKey?.DeleteValue(WindowsStartupValueName, throwOnMissingValue: false);
+            runKey?.DeleteValue(NeoTwitchProduct.StartupValueName, throwOnMissingValue: false);
         }
     }
 
@@ -245,7 +244,7 @@ internal sealed class InstallerService
     {
         var settingsDirectory = Path.Combine(
             Environment.GetFolderPath(Environment.SpecialFolder.ApplicationData),
-            "NeoTwitch");
+            NeoTwitchProduct.AppDataFolderName);
         Directory.CreateDirectory(settingsDirectory);
 
         var settingsPath = Path.Combine(settingsDirectory, "settings.json");

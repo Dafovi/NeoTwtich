@@ -5,6 +5,7 @@ using System.Windows;
 using System.Windows.Controls;
 using NeoTwitch.Models;
 using NeoTwitch.Services;
+using NeoTwitch.Shared;
 using NeoTwitch.ViewModels.Activity;
 using NeoTwitch.ViewModels.Library;
 using NeoTwitch.ViewModels.Obs;
@@ -18,7 +19,7 @@ public partial class MainWindow
     {
         Process.Start(new ProcessStartInfo
         {
-            FileName = "https://github.com/obsproject/obs-websocket",
+            FileName = NeoTwitchProduct.Obs.WebSocketGuideUrl,
             UseShellExecute = true
         });
         AddLog("OBS: abriendo guia de obs-websocket.", ActivityLogKind.Obs);
@@ -269,7 +270,7 @@ public partial class MainWindow
             return new ObsSceneRestoreRequest(
                 previousScene,
                 targetScene,
-                TimeSpan.FromMilliseconds(Math.Clamp(rule.ObsReturnDelayMs, 0, 600000)),
+                TimeSpan.FromMilliseconds(Math.Clamp(rule.ObsReturnDelayMs, 0, ApplicationLimits.MaxAlertDurationMs)),
                 DateTimeOffset.UtcNow);
         }
         catch (OperationCanceledException)
@@ -369,8 +370,8 @@ public partial class MainWindow
             }
 
             var sourceName = rule.ObsMediaKind == ObsMediaKind.Image
-                ? "Neo Twitch - Imagen de alerta"
-                : "Neo Twitch - Video de alerta";
+                ? NeoTwitchProduct.Obs.AlertImageSourceName
+                : NeoTwitchProduct.Obs.AlertVideoSourceName;
             var mediaDuration = ResolveRuleObsMediaDuration(rule, asset);
             var result = await _obsService.ShowMediaSourceAsync(
                 sceneName,
@@ -441,7 +442,7 @@ public partial class MainWindow
             return TimeSpan.FromMilliseconds(asset.DurationMs > 0 ? asset.DurationMs : 5000);
         }
 
-        return TimeSpan.FromMilliseconds(Math.Clamp(rule.ObsMediaDurationMs, 250, 600000));
+        return TimeSpan.FromMilliseconds(Math.Clamp(rule.ObsMediaDurationMs, ApplicationLimits.MinAlertDurationMs, ApplicationLimits.MaxAlertDurationMs));
     }
 
     private void MarkObsMediaAssetUsed(ObsMediaKind kind, MediaAssetConfig asset)
@@ -665,7 +666,7 @@ public partial class MainWindow
     {
         return Path.Combine(
             Environment.GetFolderPath(Environment.SpecialFolder.ApplicationData),
-            "NeoTwitch",
+            NeoTwitchProduct.Obs.OverlayStateAppName,
             "obs");
     }
 
@@ -750,13 +751,13 @@ public partial class MainWindow
         };
     }
 
-    private const string ObsOverlayHtml = """
+    private static string ObsOverlayHtml => $$"""
 <!doctype html>
 <html lang="es">
 <head>
   <meta charset="utf-8">
   <meta name="viewport" content="width=device-width,initial-scale=1">
-  <title>Neo Twitch OBS Overlay</title>
+  <title>{{NeoTwitchProduct.Obs.OverlayWindowTitle}}</title>
   <style>
     html, body { width: 100%; height: 100%; margin: 0; overflow: hidden; background: transparent; }
     #media { position: absolute; object-fit: contain; opacity: 0; transition: opacity 180ms ease; }

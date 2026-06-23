@@ -4,6 +4,7 @@ using System.Windows;
 using System.Windows.Threading;
 using NeoTwitch.Models;
 using NeoTwitch.Services;
+using NeoTwitch.Shared;
 using NeoTwitch.ViewModels.Activity;
 using WpfClipboard = System.Windows.Clipboard;
 using WpfMessageBox = System.Windows.MessageBox;
@@ -54,7 +55,7 @@ public partial class MainWindow
     {
         Process.Start(new ProcessStartInfo
         {
-            FileName = "https://dev.twitch.tv/console/apps",
+            FileName = NeoTwitchProduct.Links.TwitchDeveloperApps,
             UseShellExecute = true
         });
         AddLog("Twitch Console abierta para revisar el Client ID.", ActivityLogKind.Twitch);
@@ -79,7 +80,7 @@ public partial class MainWindow
 
         Process.Start(new ProcessStartInfo
         {
-            FileName = $"https://www.twitch.tv/{Uri.EscapeDataString(channel)}",
+            FileName = NeoTwitchProduct.Links.TwitchChannel(channel),
             UseShellExecute = true
         });
         AddLog($"Twitch: abriendo perfil de {channel}.", ActivityLogKind.Twitch);
@@ -89,7 +90,7 @@ public partial class MainWindow
     {
         Process.Start(new ProcessStartInfo
         {
-            FileName = "https://developer.amazon.com/alexa/console/ask",
+            FileName = NeoTwitchProduct.Links.AlexaDeveloperConsole,
             UseShellExecute = true
         });
         AddLog("Alexa Developer Console abierta.", ActivityLogKind.Alexa);
@@ -99,7 +100,7 @@ public partial class MainWindow
     {
         Process.Start(new ProcessStartInfo
         {
-            FileName = "https://github.com/Dafovi/NeoTwtich/blob/main/NeoTwitch/Arduino/NeoTwitchNeoPixel/NeoTwitchNeoPixel.ino",
+            FileName = NeoTwitchProduct.Links.ArduinoSketch,
             UseShellExecute = true
         });
         AddLog("Arduino: abriendo sketch NeoPixel.", ActivityLogKind.Arduino);
@@ -109,7 +110,7 @@ public partial class MainWindow
     {
         Process.Start(new ProcessStartInfo
         {
-            FileName = "https://github.com/Dafovi/NeoTwtich#conexion-arduino-y-neopixel",
+            FileName = NeoTwitchProduct.Links.ArduinoGuide,
             UseShellExecute = true
         });
         AddLog("Arduino: abriendo guia de conexion.", ActivityLogKind.Arduino);
@@ -186,13 +187,13 @@ public partial class MainWindow
     {
         var updaterDirectory = System.IO.Path.Combine(
             System.IO.Path.GetTempPath(),
-            "NeoTwitch",
+            NeoTwitchProduct.AppDataFolderName,
             "Updater");
         Directory.CreateDirectory(updaterDirectory);
 
         var launcherPath = System.IO.Path.Combine(
             updaterDirectory,
-            $"NeoTwitch.Installer.{Guid.NewGuid():N}.exe");
+            $"{Path.GetFileNameWithoutExtension(NeoTwitchProduct.InstallerExecutableName)}.{Guid.NewGuid():N}.exe");
         File.Copy(installerPath, launcherPath, overwrite: true);
         return launcherPath;
     }
@@ -202,13 +203,13 @@ public partial class MainWindow
         var baseDirectory = AppContext.BaseDirectory;
         var candidates = new[]
         {
-            System.IO.Path.Combine(baseDirectory, "NeoTwitch.Installer.exe"),
-            System.IO.Path.Combine(baseDirectory, "Installer", "NeoTwitch.Installer.exe"),
+            System.IO.Path.Combine(baseDirectory, NeoTwitchProduct.InstallerExecutableName),
+            System.IO.Path.Combine(baseDirectory, "Installer", NeoTwitchProduct.InstallerExecutableName),
             System.IO.Path.Combine(
                 Environment.GetFolderPath(Environment.SpecialFolder.LocalApplicationData),
-                "NeoTwitch",
+                NeoTwitchProduct.AppDataFolderName,
                 "Updater",
-                "NeoTwitch.Installer.exe"),
+                NeoTwitchProduct.InstallerExecutableName),
         };
 
         return candidates.FirstOrDefault(File.Exists) ?? string.Empty;

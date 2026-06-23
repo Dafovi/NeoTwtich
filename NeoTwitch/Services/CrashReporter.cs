@@ -1,15 +1,14 @@
 using System.IO;
 using System.Text;
+using NeoTwitch.Shared;
 
 namespace NeoTwitch.Services;
 
 public static class CrashReporter
 {
-    private const string AppFolderName = "NeoTwitch";
-
     public static string PreferredLogPath => Path.Combine(
         Environment.GetFolderPath(Environment.SpecialFolder.ApplicationData),
-        AppFolderName,
+        NeoTwitchProduct.AppDataFolderName,
         "crash.log");
 
     public static string Log(Exception exception, string context)
@@ -59,7 +58,7 @@ public static class CrashReporter
     private static IEnumerable<string> GetCandidatePaths()
     {
         yield return PreferredLogPath;
-        yield return Path.Combine(Path.GetTempPath(), AppFolderName, "crash.log");
+        yield return Path.Combine(Path.GetTempPath(), NeoTwitchProduct.AppDataFolderName, "crash.log");
         yield return Path.Combine(AppContext.BaseDirectory, "crash.log");
     }
 }

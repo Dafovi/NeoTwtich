@@ -3,14 +3,13 @@ using System.IO;
 using System.Windows;
 using System.Windows.Controls;
 using System.Windows.Input;
+using NeoTwitch.Shared;
 using Forms = System.Windows.Forms;
 
 namespace NeoTwitch.Installer;
 
 public partial class MainWindow : Window
 {
-    private const string LatestReleaseUrl = "https://github.com/Dafovi/NeoTwtich/releases/latest";
-
     private readonly InstallerOptions _options;
     private readonly InstallerService _installerService = new();
     private CancellationTokenSource _installCts = new();
@@ -196,7 +195,7 @@ public partial class MainWindow : Window
     {
         Process.Start(new ProcessStartInfo
         {
-            FileName = LatestReleaseUrl,
+            FileName = NeoTwitchProduct.LatestReleaseUrl,
             UseShellExecute = true
         });
     }

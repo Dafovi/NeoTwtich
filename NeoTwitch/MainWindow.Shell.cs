@@ -9,6 +9,7 @@ using System.Windows.Interop;
 using System.Windows.Media;
 using System.Windows.Media.Imaging;
 using NeoTwitch.Models;
+using NeoTwitch.Shared;
 using NeoTwitch.ViewModels.Activity;
 using Forms = System.Windows.Forms;
 using DrawingIcon = System.Drawing.Icon;
@@ -106,7 +107,7 @@ public partial class MainWindow
             // Use the bundled app icon when Twitch has no image available.
         }
 
-        ChannelAvatarImage.Source = new BitmapImage(new Uri("pack://application:,,,/Assets/AppIcon.png", UriKind.Absolute));
+        ChannelAvatarImage.Source = new BitmapImage(new Uri(NeoTwitchProduct.AppIconPackUri, UriKind.Absolute));
     }
 
     private void ApplyWindowChromeColor()
@@ -372,7 +373,7 @@ public partial class MainWindow
 
         _config.RecentColors.Insert(0, normalized);
 
-        while (_config.RecentColors.Count > 7)
+        while (_config.RecentColors.Count > ApplicationLimits.MaxRecentColors)
         {
             _config.RecentColors.RemoveAt(_config.RecentColors.Count - 1);
         }
@@ -388,7 +389,7 @@ public partial class MainWindow
         _notifyIcon = new Forms.NotifyIcon
         {
             Icon = _trayIcon,
-            Text = "Neo Twitch",
+            Text = NeoTwitchProduct.DisplayName,
             Visible = true,
             ContextMenuStrip = menu
         };
@@ -416,7 +417,7 @@ public partial class MainWindow
 
         try
         {
-            var resource = System.Windows.Application.GetResourceStream(new Uri("Assets/AppIcon.ico", UriKind.Relative));
+            var resource = System.Windows.Application.GetResourceStream(new Uri(NeoTwitchProduct.AppIconIcoResource, UriKind.Relative));
             if (resource?.Stream is not null)
             {
                 using var stream = resource.Stream;
@@ -507,7 +508,7 @@ public partial class MainWindow
 
         try
         {
-            _notifyIcon.BalloonTipTitle = "Neo Twitch sigue activo";
+            _notifyIcon.BalloonTipTitle = $"{NeoTwitchProduct.DisplayName} sigue activo";
             _notifyIcon.BalloonTipText = "La app quedo en segundo plano. Abrela desde el icono de la bandeja cuando la necesites.";
             _notifyIcon.BalloonTipIcon = Forms.ToolTipIcon.Info;
             _notifyIcon.ShowBalloonTip(_hasShownTrayNotice ? 2500 : 4000);

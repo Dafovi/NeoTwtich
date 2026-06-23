@@ -3,15 +3,14 @@ using System.Net.Http.Headers;
 using System.Reflection;
 using System.Text.Json;
 using System.Text.Json.Serialization;
+using NeoTwitch.Shared;
 
 namespace NeoTwitch.Services;
 
 public sealed class VersionCheckService
 {
-    public const string ReleasesUrl = "https://github.com/Dafovi/NeoTwtich/releases";
-    public const string LatestReleaseUrl = "https://github.com/Dafovi/NeoTwtich/releases/latest";
-
-    private const string LatestReleaseApiUrl = "https://api.github.com/repos/Dafovi/NeoTwtich/releases/latest";
+    public static string ReleasesUrl => NeoTwitchProduct.ReleasesUrl;
+    public static string LatestReleaseUrl => NeoTwitchProduct.LatestReleaseUrl;
 
     private readonly HttpClient _http = new()
     {
@@ -20,7 +19,7 @@ public sealed class VersionCheckService
 
     public VersionCheckService()
     {
-        _http.DefaultRequestHeaders.UserAgent.Add(new ProductInfoHeaderValue("NeoTwitch", CurrentVersionText));
+        _http.DefaultRequestHeaders.UserAgent.Add(new ProductInfoHeaderValue(NeoTwitchProduct.GitHubAppUserAgent, CurrentVersionText));
     }
 
     public static string CurrentVersionText => NormalizeVersionText(
@@ -32,7 +31,7 @@ public sealed class VersionCheckService
 
     public async Task<VersionCheckResult> CheckLatestAsync(CancellationToken cancellationToken)
     {
-        using var response = await _http.GetAsync(LatestReleaseApiUrl, cancellationToken);
+        using var response = await _http.GetAsync(NeoTwitchProduct.LatestReleaseApiUrl, cancellationToken);
         response.EnsureSuccessStatusCode();
 
         await using var stream = await response.Content.ReadAsStreamAsync(cancellationToken);

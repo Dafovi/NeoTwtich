@@ -12,8 +12,8 @@ public sealed record AlertQueueOptions(
     {
         return new AlertQueueOptions(
             Math.Clamp(config.MaxQueuedSameRuleAlerts, 0, 100),
-            Math.Clamp(config.SameRuleQueueCooldownMs, 0, 600000),
+            Math.Clamp(config.SameRuleQueueCooldownMs, 0, ApplicationLimits.MaxAlertDurationMs),
             Math.Clamp(config.MaxQueuedDifferentRuleAlerts, 0, 100),
-            Math.Clamp(config.DifferentRuleQueueCooldownMs, 0, 600000));
+            Math.Clamp(config.DifferentRuleQueueCooldownMs, 0, ApplicationLimits.MaxAlertDurationMs));
     }
 }

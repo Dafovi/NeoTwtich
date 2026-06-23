@@ -262,7 +262,7 @@ public partial class MainWindow : Window
             VideoLibraryList.ItemsSource = _videoLibraryRows;
             VideoGroupsList.ItemsSource = _videoGroupRows;
             ObsScenesList.ItemsSource = _obsSceneRows;
-            for (var i = 0; i < 24; i++)
+            for (var i = 0; i < ApplicationLimits.RulePreviewLedDots; i++)
             {
                 _ruleLedPreviewDots.Add(PreviewDot(ParsePreviewColor("#334155", "#334155"), 0.08));
                 _backgroundLedPreviewDots.Add(PreviewDot(ParsePreviewColor("#334155", "#334155"), 0.08));

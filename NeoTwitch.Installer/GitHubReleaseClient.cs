@@ -3,13 +3,12 @@ using System.Net.Http;
 using System.Net.Http.Headers;
 using System.Text.Json;
 using System.Text.Json.Serialization;
+using NeoTwitch.Shared;
 
 namespace NeoTwitch.Installer;
 
 internal sealed class GitHubReleaseClient
 {
-    private const string LatestReleaseApiUrl = "https://api.github.com/repos/Dafovi/NeoTwtich/releases/latest";
-
     private readonly HttpClient _http = new()
     {
         Timeout = TimeSpan.FromSeconds(30)
@@ -17,12 +16,12 @@ internal sealed class GitHubReleaseClient
 
     public GitHubReleaseClient()
     {
-        _http.DefaultRequestHeaders.UserAgent.Add(new ProductInfoHeaderValue("NeoTwitchInstaller", InstallerVersion.CurrentVersionText));
+        _http.DefaultRequestHeaders.UserAgent.Add(new ProductInfoHeaderValue(NeoTwitchProduct.GitHubInstallerUserAgent, InstallerVersion.CurrentVersionText));
     }
 
     public async Task<ReleaseAsset> GetLatestInstallAssetAsync(CancellationToken cancellationToken)
     {
-        using var response = await _http.GetAsync(LatestReleaseApiUrl, cancellationToken);
+        using var response = await _http.GetAsync(NeoTwitchProduct.LatestReleaseApiUrl, cancellationToken);
         response.EnsureSuccessStatusCode();
 
         await using var stream = await response.Content.ReadAsStreamAsync(cancellationToken);
@@ -72,7 +71,7 @@ internal sealed class GitHubReleaseClient
     private static GitHubAsset? PickBestAsset(IReadOnlyList<GitHubAsset> assets)
     {
         return assets
-            .Where(asset => asset.Name.Contains("NeoTwitch", StringComparison.OrdinalIgnoreCase))
+            .Where(asset => asset.Name.Contains(Path.GetFileNameWithoutExtension(NeoTwitchProduct.AppExecutableName), StringComparison.OrdinalIgnoreCase))
             .Where(asset => !asset.Name.Contains("Installer", StringComparison.OrdinalIgnoreCase))
             .OrderBy(asset => AssetRank(asset.Name))
             .FirstOrDefault();
@@ -97,7 +96,7 @@ internal sealed class GitHubReleaseClient
             return 2;
         }
 
-        if (name.Equals("NeoTwitch.exe", StringComparison.OrdinalIgnoreCase))
+        if (name.Equals(NeoTwitchProduct.AppExecutableName, StringComparison.OrdinalIgnoreCase))
         {
             return 3;
         }

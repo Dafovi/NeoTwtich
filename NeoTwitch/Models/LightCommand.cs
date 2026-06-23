@@ -24,10 +24,10 @@ public sealed record LightCommand(
             NormalizeColor(rule.PrimaryColor),
             NormalizeColor(rule.SecondaryColor),
             NormalizeColor(rule.TertiaryColor),
-            Math.Clamp(rule.Brightness, 0, 255),
-            Math.Clamp(durationOverrideMs ?? rule.DurationMs, 250, 600000),
-            Math.Clamp(rule.CycleMs, 10, 2000),
-            Math.Clamp(rule.StepMs, 10, 5000));
+            Math.Clamp(rule.Brightness, ApplicationLimits.MinBrightness, ApplicationLimits.MaxBrightness),
+            Math.Clamp(durationOverrideMs ?? rule.DurationMs, ApplicationLimits.MinAlertDurationMs, ApplicationLimits.MaxAlertDurationMs),
+            Math.Clamp(rule.CycleMs, ApplicationLimits.MinCycleMs, ApplicationLimits.MaxCycleMs),
+            Math.Clamp(rule.StepMs, ApplicationLimits.MinStepMs, ApplicationLimits.MaxStepMs));
     }
 
     public static LightCommand FromBackground(AppConfig config)
@@ -38,10 +38,10 @@ public sealed record LightCommand(
             NormalizeColor(config.BackgroundPrimaryColor),
             NormalizeColor(config.BackgroundSecondaryColor),
             NormalizeColor(config.BackgroundTertiaryColor),
-            Math.Clamp(config.BackgroundBrightness, 0, 255),
+            Math.Clamp(config.BackgroundBrightness, ApplicationLimits.MinBrightness, ApplicationLimits.MaxBrightness),
             0,
-            Math.Clamp(config.BackgroundCycleMs, 10, 2000),
-            Math.Clamp(config.BackgroundStepMs, 10, 5000));
+            Math.Clamp(config.BackgroundCycleMs, ApplicationLimits.MinCycleMs, ApplicationLimits.MaxCycleMs),
+            Math.Clamp(config.BackgroundStepMs, ApplicationLimits.MinStepMs, ApplicationLimits.MaxStepMs));
     }
 
     public string ToProtocolLine()
@@ -97,7 +97,7 @@ public sealed record LightCommand(
     {
         return text.Split([',', ';', ' ', '\r', '\n', '\t'], StringSplitOptions.RemoveEmptyEntries | StringSplitOptions.TrimEntries)
             .Select(value => int.TryParse(value, out var pin) ? pin : (int?)null)
-            .Where(pin => pin is >= 0 and <= 53)
+            .Where(pin => pin is >= ApplicationLimits.MinArduinoPin and <= ApplicationLimits.MaxArduinoPin)
             .Select(pin => pin!.Value)
             .Distinct()
             .ToArray();

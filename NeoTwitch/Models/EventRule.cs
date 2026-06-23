@@ -221,7 +221,7 @@ public sealed class EventRule : INotifyPropertyChanged
     public int ObsSceneDelayMs
     {
         get => _obsSceneDelayMs;
-        set => SetField(ref _obsSceneDelayMs, Math.Clamp(value, 0, 600000));
+        set => SetField(ref _obsSceneDelayMs, Math.Clamp(value, 0, ApplicationLimits.MaxAlertDurationMs));
     }
 
     public bool ObsReturnToPreviousScene
@@ -233,7 +233,7 @@ public sealed class EventRule : INotifyPropertyChanged
     public int ObsReturnDelayMs
     {
         get => _obsReturnDelayMs;
-        set => SetField(ref _obsReturnDelayMs, Math.Clamp(value, 0, 600000));
+        set => SetField(ref _obsReturnDelayMs, Math.Clamp(value, 0, ApplicationLimits.MaxAlertDurationMs));
     }
 
     public bool SendObsMedia
@@ -276,7 +276,7 @@ public sealed class EventRule : INotifyPropertyChanged
     public int ObsMediaDurationMs
     {
         get => _obsMediaDurationMs;
-        set => SetField(ref _obsMediaDurationMs, Math.Clamp(value, 250, 600000));
+        set => SetField(ref _obsMediaDurationMs, Math.Clamp(value, ApplicationLimits.MinAlertDurationMs, ApplicationLimits.MaxAlertDurationMs));
     }
 
     public LightPattern Pattern
@@ -312,25 +312,25 @@ public sealed class EventRule : INotifyPropertyChanged
     public int Brightness
     {
         get => _brightness;
-        set => SetField(ref _brightness, Math.Clamp(value, 0, 255));
+        set => SetField(ref _brightness, Math.Clamp(value, ApplicationLimits.MinBrightness, ApplicationLimits.MaxBrightness));
     }
 
     public int DurationMs
     {
         get => _durationMs;
-        set => SetField(ref _durationMs, Math.Clamp(value, 250, 60000));
+        set => SetField(ref _durationMs, Math.Clamp(value, ApplicationLimits.MinAlertDurationMs, ApplicationLimits.MaxLegacyAlertDurationMs));
     }
 
     public int CycleMs
     {
         get => _cycleMs;
-        set => SetField(ref _cycleMs, Math.Clamp(value, 10, 2000));
+        set => SetField(ref _cycleMs, Math.Clamp(value, ApplicationLimits.MinCycleMs, ApplicationLimits.MaxCycleMs));
     }
 
     public int StepMs
     {
         get => _stepMs;
-        set => SetField(ref _stepMs, Math.Clamp(value, 10, 5000));
+        set => SetField(ref _stepMs, Math.Clamp(value, ApplicationLimits.MinStepMs, ApplicationLimits.MaxStepMs));
     }
 
     public bool LightsActionAvailable

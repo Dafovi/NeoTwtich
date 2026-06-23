@@ -201,7 +201,7 @@
                                    FontWeight="SemiBold"
                                    HorizontalAlignment="Center" />
                         <TextBlock x:Name="VersionText"
-                                   Text="Versión 2.2.3"
+                                   Text="Versión actual"
                                    Style="{StaticResource MutedText}"
                                    HorizontalAlignment="Center"
                                    Margin="0,4,0,0" />

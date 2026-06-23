@@ -6,7 +6,6 @@
     <AssemblyName>NeoTwitch</AssemblyName>
     <Product>Neo Twitch</Product>
     <FileDescription>Neo Twitch</FileDescription>
-    <Version>2.2.3</Version>
     <Nullable>enable</Nullable>
     <ImplicitUsings>enable</ImplicitUsings>
     <UseWPF>true</UseWPF>

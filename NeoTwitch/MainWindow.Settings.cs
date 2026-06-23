@@ -367,7 +367,7 @@ public partial class MainWindow
         try
         {
             using var versionCts = new CancellationTokenSource(TimeSpan.FromSeconds(6));
-            var version = await _versionCheckService.CheckLatestAsync(versionCts.Token);
+            var version = await _updateService.CheckLatestAsync(versionCts.Token);
             if (version.IsUpdateAvailable)
             {
                 Warn($"Hay una version nueva: V{version.LatestVersion}. Releases: {version.ReleaseUrl}");

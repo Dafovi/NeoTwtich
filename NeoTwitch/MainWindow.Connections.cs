@@ -120,7 +120,7 @@ public partial class MainWindow
     {
         try
         {
-            var result = await _versionCheckService.CheckLatestAsync(CancellationToken.None);
+            var result = await _updateService.CheckLatestAsync(CancellationToken.None);
             VersionText.Text = $"V{result.CurrentVersion}";
 
             if (!result.IsUpdateAvailable)
@@ -130,7 +130,7 @@ public partial class MainWindow
             }
 
             AddLog($"Version: hay una nueva version V{result.LatestVersion}.", ActivityLogKind.Important);
-            var installerPath = FindLocalInstallerPath();
+            var installerPath = _updateService.FindLocalInstallerPath();
             var canUpdateInPlace = !string.IsNullOrWhiteSpace(installerPath);
             var prompt = canUpdateInPlace
                 ? $"Hay una nueva version de Neo Twitch.\n\nTu version: V{result.CurrentVersion}\nUltima version: V{result.LatestVersion}\n\nQuieres actualizar ahora? La app se cerrara un momento y el instalador hara el reemplazo."
@@ -150,7 +150,7 @@ public partial class MainWindow
                 }
                 else
                 {
-                    OpenReleasePage(result.ReleaseUrl);
+                    _updateService.OpenReleasePage(result.ReleaseUrl);
                 }
             }
         }
@@ -164,57 +164,15 @@ public partial class MainWindow
     {
         try
         {
-            var installPath = AppContext.BaseDirectory.TrimEnd(System.IO.Path.DirectorySeparatorChar, System.IO.Path.AltDirectorySeparatorChar);
-            var launcherPath = PrepareInstallerLauncher(installerPath);
-            Process.Start(new ProcessStartInfo
-            {
-                FileName = launcherPath,
-                Arguments = $"--update --target \"{installPath}\" --version \"V{result.LatestVersion}\"",
-                WorkingDirectory = System.IO.Path.GetDirectoryName(launcherPath),
-                UseShellExecute = true
-            });
+            _updateService.LaunchInstallerUpdate(installerPath, result);
             AddLog($"Version: iniciando actualizador a V{result.LatestVersion}.", ActivityLogKind.Important);
             await ExitApplicationAsync();
         }
         catch (Exception ex)
         {
             AddLog($"Version: no pude abrir el actualizador ({ex.Message}).", ActivityLogKind.Important);
-            OpenReleasePage(result.ReleaseUrl);
+            _updateService.OpenReleasePage(result.ReleaseUrl);
         }
-    }
-
-    private static string PrepareInstallerLauncher(string installerPath)
-    {
-        var updaterDirectory = ApplicationPaths.UpdaterDirectory;
-        Directory.CreateDirectory(updaterDirectory);
-
-        var launcherPath = System.IO.Path.Combine(
-            updaterDirectory,
-            $"{Path.GetFileNameWithoutExtension(NeoTwitchProduct.InstallerExecutableName)}.{Guid.NewGuid():N}.exe");
-        File.Copy(installerPath, launcherPath, overwrite: true);
-        return launcherPath;
-    }
-
-    private static string FindLocalInstallerPath()
-    {
-        var baseDirectory = AppContext.BaseDirectory;
-        var candidates = new[]
-        {
-            System.IO.Path.Combine(baseDirectory, NeoTwitchProduct.InstallerExecutableName),
-            System.IO.Path.Combine(baseDirectory, "Installer", NeoTwitchProduct.InstallerExecutableName),
-            System.IO.Path.Combine(ApplicationPaths.LocalUpdaterDirectory, NeoTwitchProduct.InstallerExecutableName),
-        };
-
-        return candidates.FirstOrDefault(File.Exists) ?? string.Empty;
-    }
-
-    private static void OpenReleasePage(string releaseUrl)
-    {
-        Process.Start(new ProcessStartInfo
-        {
-            FileName = releaseUrl,
-            UseShellExecute = true
-        });
     }
 
     private async Task SignInToTwitchAsync()

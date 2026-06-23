@@ -664,10 +664,7 @@ public partial class MainWindow
 
     private string GetObsOverlayDirectory()
     {
-        return Path.Combine(
-            Environment.GetFolderPath(Environment.SpecialFolder.ApplicationData),
-            NeoTwitchProduct.Obs.OverlayStateAppName,
-            "obs");
+        return ApplicationPaths.ObsOverlayDirectory;
     }
 
     private string GetObsOverlayHtmlPath()

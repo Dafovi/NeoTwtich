@@ -185,10 +185,7 @@ public partial class MainWindow
 
     private static string PrepareInstallerLauncher(string installerPath)
     {
-        var updaterDirectory = System.IO.Path.Combine(
-            System.IO.Path.GetTempPath(),
-            NeoTwitchProduct.AppDataFolderName,
-            "Updater");
+        var updaterDirectory = ApplicationPaths.UpdaterDirectory;
         Directory.CreateDirectory(updaterDirectory);
 
         var launcherPath = System.IO.Path.Combine(
@@ -205,11 +202,7 @@ public partial class MainWindow
         {
             System.IO.Path.Combine(baseDirectory, NeoTwitchProduct.InstallerExecutableName),
             System.IO.Path.Combine(baseDirectory, "Installer", NeoTwitchProduct.InstallerExecutableName),
-            System.IO.Path.Combine(
-                Environment.GetFolderPath(Environment.SpecialFolder.LocalApplicationData),
-                NeoTwitchProduct.AppDataFolderName,
-                "Updater",
-                NeoTwitchProduct.InstallerExecutableName),
+            System.IO.Path.Combine(ApplicationPaths.LocalUpdaterDirectory, NeoTwitchProduct.InstallerExecutableName),
         };
 
         return candidates.FirstOrDefault(File.Exists) ?? string.Empty;

@@ -4,7 +4,6 @@ using System.Text.Json;
 using System.Text.Json.Serialization;
 using NeoTwitch.Models;
 using NeoTwitch.Services.Library;
-using NeoTwitch.Shared;
 
 namespace NeoTwitch.Services;
 
@@ -21,11 +20,11 @@ public sealed class SettingsStore
         _jsonOptions.Converters.Add(new JsonStringEnumConverter());
     }
 
-    public string SettingsPath { get; } = BuildSettingsPath(NeoTwitchProduct.AppDataFolderName);
+    public string SettingsPath { get; } = ApplicationPaths.SettingsPath;
 
-    public string BackupDirectory { get; } = BuildBackupDirectory(NeoTwitchProduct.AppDataFolderName);
+    public string BackupDirectory { get; } = ApplicationPaths.BackupDirectory;
 
-    private string LegacySettingsPath { get; } = BuildSettingsPath(NeoTwitchProduct.LegacyAppDataFolderName);
+    private string LegacySettingsPath { get; } = ApplicationPaths.LegacySettingsPath;
 
     public string? LastLoadError { get; private set; }
 
@@ -89,22 +88,6 @@ public sealed class SettingsStore
         var normalized = NormalizeConfig(config);
         Save(normalized);
         return normalized;
-    }
-
-    private static string BuildSettingsPath(string appFolderName)
-    {
-        return Path.Combine(
-            Environment.GetFolderPath(Environment.SpecialFolder.ApplicationData),
-            appFolderName,
-            "settings.json");
-    }
-
-    private static string BuildBackupDirectory(string appFolderName)
-    {
-        return Path.Combine(
-            Environment.GetFolderPath(Environment.SpecialFolder.ApplicationData),
-            appFolderName,
-            "backups");
     }
 
     private void BackupCurrentSettings(string directory)

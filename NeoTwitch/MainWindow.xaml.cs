@@ -50,6 +50,7 @@ public partial class MainWindow : Window
     private readonly TwitchChatService _chatService = new();
     private readonly AlexaRelayService _alexaRelayService = new();
     private readonly ObsWebSocketService _obsService = new();
+    private readonly ObsOverlayService _obsOverlayService = new();
     private readonly AppUpdateService _updateService = new();
     private readonly IUiTextService _text = UiTextService.CreateDefault();
     private readonly AppStartupOptions _startupOptions;

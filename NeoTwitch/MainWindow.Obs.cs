@@ -1,6 +1,5 @@
 using System.Diagnostics;
 using System.IO;
-using System.Text.Json;
 using System.Windows;
 using System.Windows.Controls;
 using NeoTwitch.Models;
@@ -658,64 +657,14 @@ public partial class MainWindow
 
     private string BuildObsOverlayUrl()
     {
-        EnsureObsOverlayFiles();
-        return new Uri(GetObsOverlayHtmlPath()).AbsoluteUri;
-    }
-
-    private string GetObsOverlayDirectory()
-    {
-        return ApplicationPaths.ObsOverlayDirectory;
-    }
-
-    private string GetObsOverlayHtmlPath()
-    {
-        return Path.Combine(GetObsOverlayDirectory(), "obs-overlay.html");
-    }
-
-    private string GetObsOverlayStatePath()
-    {
-        return Path.Combine(GetObsOverlayDirectory(), "obs-overlay-state.json");
-    }
-
-    private void EnsureObsOverlayFiles()
-    {
-        var directory = GetObsOverlayDirectory();
-        Directory.CreateDirectory(directory);
-        var htmlPath = GetObsOverlayHtmlPath();
-        if (!File.Exists(htmlPath))
-        {
-            File.WriteAllText(htmlPath, ObsOverlayHtml);
-        }
-
-        var statePath = GetObsOverlayStatePath();
-        if (!File.Exists(statePath))
-        {
-            File.WriteAllText(statePath, "{}");
-        }
+        return _obsOverlayService.BuildOverlayUrl();
     }
 
     private void WriteObsOverlayState(MediaAssetConfig asset, ObsMediaKind kind, TimeSpan duration)
     {
         try
         {
-            EnsureObsOverlayFiles();
-            var mediaWidth = Math.Clamp(_config.Obs.OverlayMediaWidth, 32, Math.Max(32, _config.Obs.OverlayWidth));
-            var mediaHeight = Math.Clamp(_config.Obs.OverlayMediaHeight, 32, Math.Max(32, _config.Obs.OverlayHeight));
-            var (x, y) = ResolveOverlayPosition(mediaWidth, mediaHeight);
-            var state = new
-            {
-                visible = true,
-                kind = kind == ObsMediaKind.Image ? "image" : "video",
-                fileUri = new Uri(asset.FilePath).AbsoluteUri,
-                displayName = asset.DisplayName,
-                width = mediaWidth,
-                height = mediaHeight,
-                x,
-                y,
-                hideAt = DateTimeOffset.UtcNow.Add(duration).ToUnixTimeMilliseconds()
-            };
-
-            File.WriteAllText(GetObsOverlayStatePath(), JsonSerializer.Serialize(state));
+            _obsOverlayService.WriteState(asset, kind, _config.Obs, duration);
         }
         catch (Exception ex)
         {
@@ -727,92 +676,13 @@ public partial class MainWindow
     {
         try
         {
-            EnsureObsOverlayFiles();
-            File.WriteAllText(GetObsOverlayStatePath(), "{\"visible\":false}");
+            _obsOverlayService.ClearState();
         }
         catch (Exception ex)
         {
             AddLog($"OBS overlay: {ex.Message}", ActivityLogKind.Important);
         }
     }
-
-    private (int X, int Y) ResolveOverlayPosition(int mediaWidth, int mediaHeight)
-    {
-        var maxX = Math.Max(0, _config.Obs.OverlayWidth - mediaWidth);
-        var maxY = Math.Max(0, _config.Obs.OverlayHeight - mediaHeight);
-        return _config.Obs.OverlayPositionMode switch
-        {
-            "Custom" => (Math.Clamp(_config.Obs.OverlayX, 0, maxX), Math.Clamp(_config.Obs.OverlayY, 0, maxY)),
-            "Random" => (Random.Shared.Next(0, maxX + 1), Random.Shared.Next(0, maxY + 1)),
-            _ => (maxX / 2, maxY / 2)
-        };
-    }
-
-    private static string ObsOverlayHtml => $$"""
-<!doctype html>
-<html lang="es">
-<head>
-  <meta charset="utf-8">
-  <meta name="viewport" content="width=device-width,initial-scale=1">
-  <title>{{NeoTwitchProduct.Obs.OverlayWindowTitle}}</title>
-  <style>
-    html, body { width: 100%; height: 100%; margin: 0; overflow: hidden; background: transparent; }
-    #media { position: absolute; object-fit: contain; opacity: 0; transition: opacity 180ms ease; }
-    #media.visible { opacity: 1; }
-  </style>
-</head>
-<body>
-  <img id="image" alt="">
-  <video id="video" playsinline></video>
-  <script>
-    const image = document.getElementById('image');
-    const video = document.getElementById('video');
-    let lastKey = '';
-    function applyLayout(element, state) {
-      element.id = 'media';
-      element.style.left = `${state.x || 0}px`;
-      element.style.top = `${state.y || 0}px`;
-      element.style.width = `${state.width || 720}px`;
-      element.style.height = `${state.height || 420}px`;
-    }
-    function hideAll() {
-      image.className = '';
-      video.className = '';
-      video.pause();
-    }
-    async function tick() {
-      try {
-        const res = await fetch(`obs-overlay-state.json?t=${Date.now()}`);
-        const state = await res.json();
-        if (!state.visible || Date.now() > Number(state.hideAt || 0)) {
-          hideAll();
-          return;
-        }
-        const key = `${state.kind}|${state.fileUri}|${state.hideAt}`;
-        if (key === lastKey) return;
-        lastKey = key;
-        hideAll();
-        if (state.kind === 'video') {
-          applyLayout(video, state);
-          video.src = state.fileUri;
-          video.currentTime = 0;
-          video.className = 'visible';
-          await video.play().catch(() => {});
-        } else {
-          applyLayout(image, state);
-          image.src = state.fileUri;
-          image.className = 'visible';
-        }
-      } catch {
-        hideAll();
-      }
-    }
-    setInterval(tick, 250);
-    tick();
-  </script>
-</body>
-</html>
-""";
 
     private void RefreshObsSceneChoices()
     {

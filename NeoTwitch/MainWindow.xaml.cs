@@ -52,6 +52,7 @@ public partial class MainWindow : Window
     private readonly ObsWebSocketService _obsService = new();
     private readonly VersionCheckService _versionCheckService = new();
     private readonly IUiTextService _text = UiTextService.CreateDefault();
+    private readonly AppStartupOptions _startupOptions;
     private readonly TwitchEventSubClient _eventSubClient;
     private readonly ObservableCollection<ActivityLogEntry> _activity = [];
     private readonly ObservableCollection<ActivityLogEntry> _dashboardActivity = [];
@@ -223,7 +224,13 @@ public partial class MainWindow : Window
     public ObservableCollection<MediaGroupChoice> VideoGroupChoices { get; } = [];
 
     public MainWindow()
+        : this(AppStartupOptions.Default)
     {
+    }
+
+    public MainWindow(AppStartupOptions startupOptions)
+    {
+        _startupOptions = startupOptions;
         _config = _settingsStore.Load();
         _config.ThemeMode = NormalizeThemeMode(_config.ThemeMode);
         _config.DarkMode = ResolveDarkMode(_config.ThemeMode);
@@ -626,12 +633,22 @@ public partial class MainWindow : Window
         _ = CheckForUpdatesAsync();
 
 
-        if (_config.StartHidden)
+        if (_startupOptions.DebugMode)
+        {
+            AddLog("Modo debug activo.");
+        }
+
+        if (_startupOptions.SuppressAutoConnect)
+        {
+            AddLog("Conexiones automaticas omitidas por opciones de depuracion.", ActivityLogKind.Important);
+        }
+
+        if (_config.StartHidden && !_startupOptions.SuppressStartHidden)
         {
             Hide();
         }
 
-        if (_config.ArduinoEnabled && _config.AutoConnectArduino && !string.IsNullOrWhiteSpace(_config.SerialPort))
+        if (!_startupOptions.SuppressAutoConnect && _config.ArduinoEnabled && _config.AutoConnectArduino && !string.IsNullOrWhiteSpace(_config.SerialPort))
         {
             try
             {
@@ -646,7 +663,7 @@ public partial class MainWindow : Window
             }
         }
 
-        if (_config.AutoConnectTwitch && _config.Token.HasToken)
+        if (!_startupOptions.SuppressAutoConnect && _config.AutoConnectTwitch && _config.Token.HasToken)
         {
             try
             {
@@ -658,7 +675,7 @@ public partial class MainWindow : Window
             }
         }
 
-        if (_config.Obs.Enabled && _config.Obs.AutoReconnect)
+        if (!_startupOptions.SuppressAutoConnect && _config.Obs.Enabled && _config.Obs.AutoReconnect)
         {
             try
             {

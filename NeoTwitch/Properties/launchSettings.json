@@ -1,0 +1,15 @@
+{
+  "profiles": {
+    "Neo Twitch": {
+      "commandName": "Project"
+    },
+    "Neo Twitch - Debug sin conexiones": {
+      "commandName": "Project",
+      "commandLineArgs": "--debug --no-autoconnect --no-start-hidden"
+    },
+    "Neo Twitch - Safe mode": {
+      "commandName": "Project",
+      "commandLineArgs": "--safe-mode"
+    }
+  }
+}

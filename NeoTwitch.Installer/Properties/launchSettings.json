@@ -1,0 +1,11 @@
+{
+  "profiles": {
+    "Neo Twitch Installer": {
+      "commandName": "Project"
+    },
+    "Neo Twitch Installer - Update debug": {
+      "commandName": "Project",
+      "commandLineArgs": "--update --target \"C:\\Program Files\\Neo Twitch\" --version \"V2.2.3\" --no-launch"
+    }
+  }
+}

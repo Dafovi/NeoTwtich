@@ -2,6 +2,7 @@ using System.Threading;
 using System.Threading.Tasks;
 using System.Windows;
 using System.Windows.Threading;
+using NeoTwitch.Models;
 using NeoTwitch.Services;
 
 namespace NeoTwitch;
@@ -35,7 +36,8 @@ public partial class App : System.Windows.Application
             }
 
             base.OnStartup(e);
-            var window = new MainWindow();
+            var startupOptions = AppStartupOptions.Parse(e.Args);
+            var window = new MainWindow(startupOptions);
             window.Show();
         }
         catch (Exception ex)

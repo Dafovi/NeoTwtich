@@ -140,6 +140,33 @@ Cada vez que se abre, Neo Twitch consulta la ultima release publicada en GitHub.
 
 La app no se actualiza sola. Esto evita pedir permisos extra o instalar un launcher; el usuario decide si descarga el nuevo `.zip` desde GitHub.
 
+## Builds locales
+
+La version de la app se define en un solo lugar: `Directory.Build.props`.
+
+Comandos utiles:
+
+```powershell
+.\scripts\build.ps1 -Mode Debug
+.\scripts\build.ps1 -Mode Release
+.\scripts\build.ps1 -Mode Portable
+.\scripts\build.ps1 -Mode SelfContained
+.\scripts\build.ps1 -Mode Installer
+.\scripts\build.ps1 -Mode FullRelease -Clean
+```
+
+Para preparar una release completa y actualizar la version central:
+
+```powershell
+.\scripts\release.ps1 -Version 2.2.4 -Clean
+```
+
+Los archivos quedan en `artifacts\V{version}`:
+
+- `NeoTwitch-V{version}-Windows.zip`
+- `NeoTwitch.exe`
+- `NeoTwitch.Installer.exe`
+
 ## Conseguir el Client ID de Twitch
 
 1. Entra a https://dev.twitch.tv/console con la cuenta de Twitch que va a crear la app.

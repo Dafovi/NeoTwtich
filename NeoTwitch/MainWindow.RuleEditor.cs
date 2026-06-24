@@ -5,6 +5,7 @@ using System.Windows.Data;
 using System.Windows.Threading;
 using NeoTwitch.Models;
 using NeoTwitch.Services;
+using NeoTwitch.Services.Alerts;
 using NeoTwitch.ViewModels.Activity;
 using WpfMessageBox = System.Windows.MessageBox;
 
@@ -204,7 +205,7 @@ public partial class MainWindow
         var revertedRule = _editingRule;
         if (revertedRule is not null && _loadedRuleSnapshot is not null)
         {
-            CopyRuleValues(_loadedRuleSnapshot, revertedRule);
+            EventRuleSnapshotService.CopyValues(_loadedRuleSnapshot, revertedRule);
             RefreshRulesView();
             SaveConfig();
             if (ReferenceEquals(RulesList.SelectedItem, revertedRule))
@@ -221,7 +222,7 @@ public partial class MainWindow
     {
         _loadedRuleSnapshot = _editingRule is null
             ? null
-            : CloneRuleForSnapshot(_editingRule);
+            : EventRuleSnapshotService.Clone(_editingRule);
     }
 
     private void SetRuleDirtyState(bool isDirty)
@@ -245,98 +246,7 @@ public partial class MainWindow
             return;
         }
 
-        SetRuleDirtyState(!HaveSameEditableRuleValues(_loadedRuleSnapshot, _editingRule));
-    }
-
-    private static EventRule CloneRuleForSnapshot(EventRule rule)
-    {
-        var clone = new EventRule();
-        CopyRuleValues(rule, clone);
-        return clone;
-    }
-
-    private static void CopyRuleValues(EventRule source, EventRule target)
-    {
-        target.Id = source.Id;
-        target.Name = source.Name;
-        target.IsEnabled = source.IsEnabled;
-        target.EventKind = source.EventKind;
-        target.CustomRewardTitle = source.CustomRewardTitle;
-        target.ChatCommand = source.ChatCommand;
-        target.MinimumBits = source.MinimumBits;
-        target.UseLights = source.UseLights;
-        target.PlayAudio = source.PlayAudio;
-        target.AudioPath = source.AudioPath;
-        target.AudioSourceMode = source.AudioSourceMode;
-        target.AudioAssetId = source.AudioAssetId;
-        target.AudioGroupId = source.AudioGroupId;
-        target.SendChatMessage = source.SendChatMessage;
-        target.ChatMessageTemplate = source.ChatMessageTemplate;
-        target.SendAlexaEvent = source.SendAlexaEvent;
-        target.AlexaEventName = source.AlexaEventName;
-        target.SendObsScene = source.SendObsScene;
-        target.ObsSceneName = source.ObsSceneName;
-        target.ObsSceneDelayMs = source.ObsSceneDelayMs;
-        target.ObsReturnToPreviousScene = source.ObsReturnToPreviousScene;
-        target.ObsReturnDelayMs = source.ObsReturnDelayMs;
-        target.SendObsMedia = source.SendObsMedia;
-        target.ObsMediaKind = source.ObsMediaKind;
-        target.ObsMediaSourceMode = source.ObsMediaSourceMode;
-        target.ObsMediaAssetId = source.ObsMediaAssetId;
-        target.ObsMediaGroupId = source.ObsMediaGroupId;
-        target.ObsMediaDurationMs = source.ObsMediaDurationMs;
-        target.Pattern = source.Pattern;
-        target.TargetPins = source.TargetPins;
-        target.PrimaryColor = source.PrimaryColor;
-        target.SecondaryColor = source.SecondaryColor;
-        target.TertiaryColor = source.TertiaryColor;
-        target.Brightness = source.Brightness;
-        target.DurationMs = source.DurationMs;
-        target.CycleMs = source.CycleMs;
-        target.StepMs = source.StepMs;
-        target.LightsActionAvailable = source.LightsActionAvailable;
-        target.AlexaActionAvailable = source.AlexaActionAvailable;
-        target.ObsActionAvailable = source.ObsActionAvailable;
-    }
-
-    private static bool HaveSameEditableRuleValues(EventRule left, EventRule right)
-    {
-        return left.Name == right.Name
-            && left.IsEnabled == right.IsEnabled
-            && left.EventKind == right.EventKind
-            && left.CustomRewardTitle == right.CustomRewardTitle
-            && left.ChatCommand == right.ChatCommand
-            && left.MinimumBits == right.MinimumBits
-            && left.UseLights == right.UseLights
-            && left.PlayAudio == right.PlayAudio
-            && left.AudioPath == right.AudioPath
-            && left.AudioSourceMode == right.AudioSourceMode
-            && left.AudioAssetId == right.AudioAssetId
-            && left.AudioGroupId == right.AudioGroupId
-            && left.SendChatMessage == right.SendChatMessage
-            && left.ChatMessageTemplate == right.ChatMessageTemplate
-            && left.SendAlexaEvent == right.SendAlexaEvent
-            && left.AlexaEventName == right.AlexaEventName
-            && left.SendObsScene == right.SendObsScene
-            && left.ObsSceneName == right.ObsSceneName
-            && left.ObsSceneDelayMs == right.ObsSceneDelayMs
-            && left.ObsReturnToPreviousScene == right.ObsReturnToPreviousScene
-            && left.ObsReturnDelayMs == right.ObsReturnDelayMs
-            && left.SendObsMedia == right.SendObsMedia
-            && left.ObsMediaKind == right.ObsMediaKind
-            && left.ObsMediaSourceMode == right.ObsMediaSourceMode
-            && left.ObsMediaAssetId == right.ObsMediaAssetId
-            && left.ObsMediaGroupId == right.ObsMediaGroupId
-            && left.ObsMediaDurationMs == right.ObsMediaDurationMs
-            && left.Pattern == right.Pattern
-            && left.TargetPins == right.TargetPins
-            && left.PrimaryColor == right.PrimaryColor
-            && left.SecondaryColor == right.SecondaryColor
-            && left.TertiaryColor == right.TertiaryColor
-            && left.Brightness == right.Brightness
-            && left.DurationMs == right.DurationMs
-            && left.CycleMs == right.CycleMs
-            && left.StepMs == right.StepMs;
+        SetRuleDirtyState(!EventRuleSnapshotService.HaveSameEditableValues(_loadedRuleSnapshot, _editingRule));
     }
 
     internal async void RuleTestButton_Click(object sender, RoutedEventArgs e)

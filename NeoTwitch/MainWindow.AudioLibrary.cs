@@ -4,6 +4,7 @@ using System.Windows.Controls;
 using System.Windows.Threading;
 using NeoTwitch.Models;
 using NeoTwitch.Services;
+using NeoTwitch.Services.Library;
 using NeoTwitch.Services.Text;
 using NeoTwitch.ViewModels.Activity;
 using NeoTwitch.ViewModels.Library;
@@ -360,15 +361,7 @@ public partial class MainWindow
             return Dispatcher.Invoke(() => RuleHasValidAudio(rule));
         }
 
-        var asset = ResolveRuleAudioAsset(rule);
-        if (asset is not null)
-        {
-            return File.Exists(asset.FilePath);
-        }
-
-        return rule.AudioSourceMode == AudioSourceMode.Single
-            && !string.IsNullOrWhiteSpace(rule.AudioPath)
-            && File.Exists(rule.AudioPath);
+        return AudioRuleAssetService.HasValidAudio(rule, _config.AudioLibrary, _audioRandom);
     }
 
     private AudioAssetConfig? ResolveRuleAudioAsset(EventRule rule)
@@ -378,25 +371,7 @@ public partial class MainWindow
             return Dispatcher.Invoke(() => ResolveRuleAudioAsset(rule));
         }
 
-        if (!rule.PlayAudio)
-        {
-            return null;
-        }
-
-        if (rule.AudioSourceMode == AudioSourceMode.Group)
-        {
-            var candidates = _config.AudioLibrary
-                .Where(audio => string.Equals(audio.GroupId, rule.AudioGroupId, StringComparison.OrdinalIgnoreCase))
-                .Where(audio => File.Exists(audio.FilePath))
-                .ToArray();
-            return candidates.Length == 0
-                ? null
-                : candidates[_audioRandom.Next(candidates.Length)];
-        }
-
-        return _config.AudioLibrary.FirstOrDefault(audio => string.Equals(audio.Id, rule.AudioAssetId, StringComparison.OrdinalIgnoreCase))
-            ?? _config.AudioLibrary.FirstOrDefault(audio => !string.IsNullOrWhiteSpace(rule.AudioPath)
-                && string.Equals(audio.FilePath, rule.AudioPath, StringComparison.OrdinalIgnoreCase));
+        return AudioRuleAssetService.ResolveRuleAudioAsset(rule, _config.AudioLibrary, _audioRandom);
     }
 
     private void MarkAudioAssetUsed(AudioAssetConfig audio, TimeSpan? duration)
@@ -530,7 +505,7 @@ public partial class MainWindow
     private AudioLibraryRow CreateAudioLibraryRow(AudioAssetConfig audio, IReadOnlyDictionary<string, string> groupsById, int index)
     {
         var assignedRules = _config.Rules
-            .Where(rule => RuleUsesAudioAsset(rule, audio))
+            .Where(rule => AudioRuleAssetService.RuleUsesAudioAsset(rule, audio))
             .ToArray();
         var assignedText = assignedRules.Length switch
         {
@@ -584,24 +559,6 @@ public partial class MainWindow
             || TextSearchHelper.ContainsIgnoreCase(row.FilePath, _audioSearchText)
             || TextSearchHelper.ContainsIgnoreCase(row.AssignedAlertText, _audioSearchText)
             || TextSearchHelper.ContainsIgnoreCase(row.GroupName, _audioSearchText);
-    }
-
-    private static bool RuleUsesAudioAsset(EventRule rule, AudioAssetConfig audio)
-    {
-        if (!rule.PlayAudio)
-        {
-            return false;
-        }
-
-        if (rule.AudioSourceMode == AudioSourceMode.Group)
-        {
-            return !string.IsNullOrWhiteSpace(rule.AudioGroupId)
-                && string.Equals(rule.AudioGroupId, audio.GroupId, StringComparison.OrdinalIgnoreCase);
-        }
-
-        return string.Equals(rule.AudioAssetId, audio.Id, StringComparison.OrdinalIgnoreCase)
-            || (!string.IsNullOrWhiteSpace(rule.AudioPath)
-                && string.Equals(rule.AudioPath, audio.FilePath, StringComparison.OrdinalIgnoreCase));
     }
 
     private void UpdateAudioFilterButtons()

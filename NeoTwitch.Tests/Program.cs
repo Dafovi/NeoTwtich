@@ -2,6 +2,7 @@ using NeoTwitch.Models;
 using NeoTwitch.Services;
 using NeoTwitch.Services.Alerts;
 using NeoTwitch.Services.Configuration;
+using NeoTwitch.Services.Library;
 using NeoTwitch.Services.Lights;
 
 var tests = new (string Name, Action Body)[]
@@ -23,6 +24,9 @@ var tests = new (string Name, Action Body)[]
     ("LedPreviewService calculates responsive dot counts", LedPreviewTests.CalculatesResponsiveDotCounts),
     ("LedPreviewService builds solid frames with brightness floor", LedPreviewTests.BuildsSolidFramesWithBrightnessFloor),
     ("LedPreviewService builds rainbow frames", LedPreviewTests.BuildsRainbowFrames),
+    ("AudioRuleAssetService resolves single assets", AudioRuleAssetTests.ResolvesSingleAssets),
+    ("AudioRuleAssetService resolves group assets with existing files", AudioRuleAssetTests.ResolvesGroupAssetsWithExistingFiles),
+    ("AudioRuleAssetService detects rule asset usage", AudioRuleAssetTests.DetectsRuleAssetUsage),
     ("RuleSimulationService normalizes chat command matching", RuleSimulationTests.MatchesChatCommandWithNormalization),
     ("RuleSimulationService builds representative test events", RuleSimulationTests.BuildsRepresentativeEvents)
 };
@@ -439,6 +443,95 @@ static class LedPreviewTests
     }
 }
 
+static class AudioRuleAssetTests
+{
+    public static void ResolvesSingleAssets()
+    {
+        var audio = new AudioAssetConfig
+        {
+            Id = "a1",
+            FilePath = @"C:\stream\follow.mp3"
+        };
+        var rule = new EventRule
+        {
+            PlayAudio = true,
+            AudioSourceMode = AudioSourceMode.Single,
+            AudioAssetId = "a1"
+        };
+
+        var resolved = AudioRuleAssetService.ResolveRuleAudioAsset(rule, [audio], new Random(1), _ => true);
+
+        TestAssert.Same(audio, resolved);
+        TestAssert.True(AudioRuleAssetService.HasValidAudio(rule, [audio], new Random(1), _ => true));
+    }
+
+    public static void ResolvesGroupAssetsWithExistingFiles()
+    {
+        var missing = new AudioAssetConfig
+        {
+            Id = "missing",
+            GroupId = "g1",
+            FilePath = @"C:\stream\missing.mp3"
+        };
+        var existing = new AudioAssetConfig
+        {
+            Id = "existing",
+            GroupId = "g1",
+            FilePath = @"C:\stream\ok.mp3"
+        };
+        var rule = new EventRule
+        {
+            PlayAudio = true,
+            AudioSourceMode = AudioSourceMode.Group,
+            AudioGroupId = "g1"
+        };
+
+        var resolved = AudioRuleAssetService.ResolveRuleAudioAsset(
+            rule,
+            [missing, existing],
+            new Random(1),
+            path => path.EndsWith("ok.mp3", StringComparison.OrdinalIgnoreCase));
+
+        TestAssert.Same(existing, resolved);
+    }
+
+    public static void DetectsRuleAssetUsage()
+    {
+        var audio = new AudioAssetConfig
+        {
+            Id = "a1",
+            GroupId = "g1",
+            FilePath = @"C:\stream\follow.mp3"
+        };
+
+        TestAssert.True(AudioRuleAssetService.RuleUsesAudioAsset(
+            new EventRule
+            {
+                PlayAudio = true,
+                AudioSourceMode = AudioSourceMode.Single,
+                AudioAssetId = "a1"
+            },
+            audio));
+
+        TestAssert.True(AudioRuleAssetService.RuleUsesAudioAsset(
+            new EventRule
+            {
+                PlayAudio = true,
+                AudioSourceMode = AudioSourceMode.Group,
+                AudioGroupId = "g1"
+            },
+            audio));
+
+        TestAssert.False(AudioRuleAssetService.RuleUsesAudioAsset(
+            new EventRule
+            {
+                PlayAudio = false,
+                AudioAssetId = "a1"
+            },
+            audio));
+    }
+}
+
 static class TestAssert
 {
     public static void True(bool condition, string? message = null)
@@ -478,6 +571,14 @@ static class TestAssert
         if (ReferenceEquals(expectedDifferent, actual))
         {
             throw new InvalidOperationException("Se esperaba una instancia diferente.");
+        }
+    }
+
+    public static void Same(object? expected, object? actual)
+    {
+        if (!ReferenceEquals(expected, actual))
+        {
+            throw new InvalidOperationException("Se esperaba la misma instancia.");
         }
     }
 }

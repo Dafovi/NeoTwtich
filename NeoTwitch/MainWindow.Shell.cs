@@ -9,6 +9,7 @@ using System.Windows.Interop;
 using System.Windows.Media;
 using System.Windows.Media.Imaging;
 using NeoTwitch.Models;
+using NeoTwitch.Services;
 using NeoTwitch.Shared;
 using NeoTwitch.ViewModels.Activity;
 using Forms = System.Windows.Forms;
@@ -153,40 +154,6 @@ public partial class MainWindow
         return remaining > 0 ? $"{text} y {remaining} mas" : text;
     }
 
-    private static string NormalizeThemeMode(string? value)
-    {
-        return value?.Trim().ToLowerInvariant() switch
-        {
-            "light" => "Light",
-            "dark" => "Dark",
-            _ => "System"
-        };
-    }
-
-    private static bool ResolveDarkMode(string? themeMode)
-    {
-        return NormalizeThemeMode(themeMode) switch
-        {
-            "Dark" => true,
-            "Light" => false,
-            _ => IsWindowsAppsDarkMode()
-        };
-    }
-
-    private static bool IsWindowsAppsDarkMode()
-    {
-        try
-        {
-            using var key = Microsoft.Win32.Registry.CurrentUser.OpenSubKey(
-                @"Software\Microsoft\Windows\CurrentVersion\Themes\Personalize");
-            return key?.GetValue("AppsUseLightTheme") is int value && value == 0;
-        }
-        catch
-        {
-            return false;
-        }
-    }
-
     private static string NormalizeEventName(string text, string fallback)
     {
         return string.IsNullOrWhiteSpace(text) ? fallback : text.Trim();
@@ -323,7 +290,7 @@ public partial class MainWindow
 
     private void PickColor(System.Windows.Controls.TextBox target)
     {
-        var dialog = new Views.ColorPickerDialog(target.Text, ResolveDarkMode(_config.ThemeMode), BuildRecentColorPalette())
+        var dialog = new Views.ColorPickerDialog(target.Text, ThemeModeService.ResolveDarkMode(_config.ThemeMode), BuildRecentColorPalette())
         {
             Owner = this
         };

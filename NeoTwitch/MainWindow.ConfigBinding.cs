@@ -221,8 +221,8 @@ public partial class MainWindow
         _config.AutoConnectArduino = AutoArduinoCheck.IsChecked == true;
         _config.StartHidden = StartHiddenCheck.IsChecked == true;
         _config.StartWithWindows = StartWithWindowsCheck.IsChecked == true;
-        _config.ThemeMode = NormalizeThemeMode(ThemeModeBox.SelectedValue as string ?? _config.ThemeMode);
-        _config.DarkMode = ResolveDarkMode(_config.ThemeMode);
+        _config.ThemeMode = ThemeModeService.Normalize(ThemeModeBox.SelectedValue as string ?? _config.ThemeMode);
+        _config.DarkMode = ThemeModeService.ResolveDarkMode(_config.ThemeMode);
         _config.CloseToTray = CloseToTrayCheck.IsChecked == true;
         _config.AlertVolumePercent = (int)Math.Round(AlertVolumeSlider.Value);
         _config.VideoVolumePercent = (int)Math.Round(VideoVolumeSlider.Value);

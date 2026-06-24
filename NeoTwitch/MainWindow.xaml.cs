@@ -232,8 +232,8 @@ public partial class MainWindow : Window
     {
         _startupOptions = startupOptions;
         _config = _settingsStore.Load();
-        _config.ThemeMode = NormalizeThemeMode(_config.ThemeMode);
-        _config.DarkMode = ResolveDarkMode(_config.ThemeMode);
+        _config.ThemeMode = ThemeModeService.Normalize(_config.ThemeMode);
+        _config.DarkMode = ThemeModeService.ResolveDarkMode(_config.ThemeMode);
 
         try
         {

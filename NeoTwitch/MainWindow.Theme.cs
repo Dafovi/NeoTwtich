@@ -3,6 +3,7 @@ using System.Windows.Controls;
 using System.Windows.Controls.Primitives;
 using System.Windows.Media;
 using NeoTwitch.Models;
+using NeoTwitch.Services;
 using NeoTwitch.ViewModels.Activity;
 using NeoTwitch.ViewModels.Library;
 
@@ -47,7 +48,7 @@ public partial class MainWindow
 
     private void ApplyTheme()
     {
-        _config.DarkMode = ResolveDarkMode(_config.ThemeMode);
+        _config.DarkMode = ThemeModeService.ResolveDarkMode(_config.ThemeMode);
         var palette = _config.DarkMode
             ? ThemePalette.Dark
             : ThemePalette.Light;

@@ -14,6 +14,7 @@ using NeoTwitch.Shared;
 using NeoTwitch.ViewModels.Activity;
 using Forms = System.Windows.Forms;
 using DrawingIcon = System.Drawing.Icon;
+using static NeoTwitch.Services.Text.UiTextFormatter;
 
 namespace NeoTwitch;
 
@@ -135,30 +136,6 @@ public partial class MainWindow
         }
     }
 
-    private static string FirstNonEmpty(params string[] values)
-    {
-        return values.FirstOrDefault(value => !string.IsNullOrWhiteSpace(value)) ?? "";
-    }
-
-    private static string FormatNameList(IReadOnlyList<string> names)
-    {
-        var visibleNames = names
-            .Where(name => !string.IsNullOrWhiteSpace(name))
-            .Take(5)
-            .ToArray();
-
-        var text = visibleNames.Length == 0
-            ? "sin nombre"
-            : string.Join(", ", visibleNames);
-        var remaining = names.Count - visibleNames.Length;
-        return remaining > 0 ? $"{text} y {remaining} mas" : text;
-    }
-
-    private static string NormalizeEventName(string text, string fallback)
-    {
-        return string.IsNullOrWhiteSpace(text) ? fallback : text.Trim();
-    }
-
     private void UpdateSliderLabels()
     {
         var brightnessPercent = ToPercent(BrightnessSlider.Value, BrightnessSlider.Maximum);
@@ -266,14 +243,8 @@ public partial class MainWindow
         var shouldMask = !isVisible && !string.IsNullOrWhiteSpace(textBox.Text);
         textBox.IsHitTestVisible = !shouldMask;
         maskText.Visibility = shouldMask ? Visibility.Visible : Visibility.Collapsed;
-        maskText.Text = shouldMask ? BuildMask(textBox.Text) : "";
+        maskText.Text = shouldMask ? BuildSecretMask(textBox.Text) : "";
         revealButton.Content = isVisible ? "Ocultar" : "Ver";
-    }
-
-    private static string BuildMask(string value)
-    {
-        var length = Math.Clamp(value.Trim().Length, 8, 20);
-        return new string('*', length);
     }
 
     private static SolidColorBrush ToBrush(string color)

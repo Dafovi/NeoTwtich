@@ -5,6 +5,7 @@ using System.Windows.Media.Imaging;
 using NeoTwitch.Models;
 using NeoTwitch.Services.Status;
 using NeoTwitch.ViewModels.Status;
+using static NeoTwitch.Services.Text.UiTextFormatter;
 
 namespace NeoTwitch;
 

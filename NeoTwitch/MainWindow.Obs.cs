@@ -10,6 +10,7 @@ using NeoTwitch.ViewModels.Activity;
 using NeoTwitch.ViewModels.Library;
 using NeoTwitch.ViewModels.Obs;
 using WpfMessageBox = System.Windows.MessageBox;
+using static NeoTwitch.Services.Text.UiTextFormatter;
 
 namespace NeoTwitch;
 

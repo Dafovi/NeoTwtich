@@ -8,6 +8,7 @@ using NeoTwitch.Services;
 using NeoTwitch.Services.Alerts;
 using NeoTwitch.ViewModels.Activity;
 using WpfMessageBox = System.Windows.MessageBox;
+using static NeoTwitch.Services.Text.UiTextFormatter;
 
 namespace NeoTwitch;
 

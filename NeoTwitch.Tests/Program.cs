@@ -7,6 +7,7 @@ using NeoTwitch.Services.Dashboard;
 using NeoTwitch.Services.Library;
 using NeoTwitch.Services.Lights;
 using NeoTwitch.Services.Status;
+using NeoTwitch.Services.Text;
 using NeoTwitch.ViewModels.Activity;
 using NeoTwitch.ViewModels.Library;
 using NeoTwitch.ViewModels.Status;
@@ -44,6 +45,8 @@ var tests = new (string Name, Action Body)[]
     ("ActivityLogService filters entries and search text", ActivityLogServiceTests.FiltersEntriesAndSearchText),
     ("DashboardSummaryService counts Twitch events", DashboardSummaryTests.CountsTwitchEvents),
     ("DashboardSummaryService counts matched rules safely", DashboardSummaryTests.CountsMatchedRulesSafely),
+    ("UiTextFormatter formats fallback text", UiTextFormatterTests.FormatsFallbackText),
+    ("UiTextFormatter builds bounded secret masks", UiTextFormatterTests.BuildsBoundedSecretMasks),
     ("RuleSimulationService normalizes chat command matching", RuleSimulationTests.MatchesChatCommandWithNormalization),
     ("RuleSimulationService builds representative test events", RuleSimulationTests.BuildsRepresentativeEvents)
 };
@@ -768,6 +771,25 @@ static class DashboardSummaryTests
         summary.RegisterMatchedRules(-10);
 
         TestAssert.Equal(3, summary.Snapshot.Events);
+    }
+}
+
+static class UiTextFormatterTests
+{
+    public static void FormatsFallbackText()
+    {
+        TestAssert.Equal("Canal", UiTextFormatter.FirstNonEmpty("", " ", "Canal", "Otro"));
+        TestAssert.Equal("fallback", UiTextFormatter.NormalizeEventName(" ", "fallback"));
+        TestAssert.Equal("evento", UiTextFormatter.NormalizeEventName("  evento  ", "fallback"));
+        TestAssert.Equal("uno, dos y 2 mas", UiTextFormatter.FormatNameList(["uno", "dos", "tres", "cuatro"], maxVisible: 2));
+        TestAssert.Equal("sin nombre", UiTextFormatter.FormatNameList(["", " "]));
+    }
+
+    public static void BuildsBoundedSecretMasks()
+    {
+        TestAssert.Equal(8, UiTextFormatter.BuildSecretMask("abc").Length);
+        TestAssert.Equal(20, UiTextFormatter.BuildSecretMask(new string('x', 80)).Length);
+        TestAssert.Equal("********", UiTextFormatter.BuildSecretMask(""));
     }
 }
 

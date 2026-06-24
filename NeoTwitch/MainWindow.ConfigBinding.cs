@@ -6,6 +6,7 @@ using NeoTwitch.Services.Lights;
 using NeoTwitch.Shared;
 using NeoTwitch.ViewModels.Activity;
 using NeoTwitch.ViewModels.Library;
+using static NeoTwitch.Services.Text.UiTextFormatter;
 
 namespace NeoTwitch;
 

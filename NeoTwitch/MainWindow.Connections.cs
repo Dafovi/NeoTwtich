@@ -8,6 +8,7 @@ using NeoTwitch.Shared;
 using NeoTwitch.ViewModels.Activity;
 using WpfClipboard = System.Windows.Clipboard;
 using WpfMessageBox = System.Windows.MessageBox;
+using static NeoTwitch.Services.Text.UiTextFormatter;
 
 namespace NeoTwitch;
 

@@ -1,6 +1,7 @@
 using NeoTwitch.Models;
 using NeoTwitch.Services;
 using NeoTwitch.Services.Alerts;
+using NeoTwitch.Services.Configuration;
 
 var tests = new (string Name, Action Body)[]
 {
@@ -8,6 +9,8 @@ var tests = new (string Name, Action Body)[]
     ("ConfigurationItemFactory suggests first available pin", ConfigurationFactoryTests.CreateLedStripSuggestsFirstAvailablePin),
     ("AppConfig default rules keep expected starter alerts", AppConfigTests.DefaultRulesKeepStarterAlerts),
     ("AppConfig default services keep optional integrations disabled", AppConfigTests.DefaultServicesKeepOptionalIntegrationsDisabled),
+    ("AppConfigNormalizer trims and clamps loaded settings", AppConfigNormalizerTests.TrimsAndClampsLoadedSettings),
+    ("AppConfigNormalizer migrates legacy rule audio paths", AppConfigNormalizerTests.MigratesLegacyRuleAudioPaths),
     ("EventRuleFilterService filters status and category", EventRuleFilterTests.FiltersStatusAndCategory),
     ("EventRuleFilterService searches editable text", EventRuleFilterTests.SearchesEditableText),
     ("EventRuleSnapshotService clones editable values independently", EventRuleSnapshotTests.CloneCopiesEditableValues),
@@ -116,6 +119,71 @@ static class ConfigurationFactoryTests
         TestAssert.Equal("Nueva tira", strip.Name);
         TestAssert.Equal(4, strip.Pin);
         TestAssert.Equal(30, strip.LedCount);
+    }
+}
+
+static class AppConfigNormalizerTests
+{
+    public static void TrimsAndClampsLoadedSettings()
+    {
+        var config = new AppConfig
+        {
+            ThemeMode = "Oscuro raro",
+            BaudRate = 5,
+            AlertVolumePercent = 300,
+            VideoVolumePercent = -20,
+            RecentColors = ["#ff0000", "#FF0000", "bad", "#00ff00", "#111111", "#222222", "#333333", "#444444", "#555555", "#666666"],
+            LedStrips = [],
+            Rules =
+            [
+                new EventRule
+                {
+                    Id = "",
+                    Name = "  ",
+                    PrimaryColor = "bad",
+                    SecondaryColor = "#00ff00",
+                    TertiaryColor = "#0000ff"
+                }
+            ]
+        };
+
+        var normalized = AppConfigNormalizer.Normalize(config);
+
+        TestAssert.Equal("System", normalized.ThemeMode);
+        TestAssert.Equal(ApplicationLimits.MinBaudRate, normalized.BaudRate);
+        TestAssert.Equal(ApplicationLimits.MaxVolumePercent, normalized.AlertVolumePercent);
+        TestAssert.Equal(ApplicationLimits.MinVolumePercent, normalized.VideoVolumePercent);
+        TestAssert.Equal(ApplicationLimits.MaxRecentColors, normalized.RecentColors.Count);
+        TestAssert.Equal(1, normalized.LedStrips.Count);
+        TestAssert.Equal("Alerta sin nombre", normalized.Rules[0].Name);
+        TestAssert.False(string.IsNullOrWhiteSpace(normalized.Rules[0].Id));
+        TestAssert.Equal("#FFFFFF", normalized.Rules[0].PrimaryColor);
+        TestAssert.Equal("#00FF00", normalized.Rules[0].SecondaryColor);
+    }
+
+    public static void MigratesLegacyRuleAudioPaths()
+    {
+        var config = new AppConfig
+        {
+            Rules =
+            [
+                new EventRule
+                {
+                    Name = "Legacy audio",
+                    EventKind = TwitchEventKind.Follow,
+                    PlayAudio = true,
+                    AudioPath = @"C:\stream\follow.mp3"
+                }
+            ]
+        };
+
+        var normalized = AppConfigNormalizer.Normalize(config);
+
+        TestAssert.Equal(1, normalized.AudioLibrary.Count);
+        TestAssert.Equal("follow", normalized.AudioLibrary[0].Name);
+        TestAssert.Equal(@"C:\stream\follow.mp3", normalized.AudioLibrary[0].FilePath);
+        TestAssert.Equal(AudioSourceMode.Single, normalized.Rules[0].AudioSourceMode);
+        TestAssert.Equal(normalized.AudioLibrary[0].Id, normalized.Rules[0].AudioAssetId);
     }
 }
 

@@ -368,8 +368,14 @@ public sealed class ObsWebSocketService : IAsyncDisposable
         CancellationToken cancellationToken)
     {
         var sceneItemId = await GetSceneItemIdAsync(sceneName, sourceName, cancellationToken);
-        var mediaWidth = Math.Clamp(config.OverlayMediaWidth, 32, Math.Max(32, config.OverlayWidth));
-        var mediaHeight = Math.Clamp(config.OverlayMediaHeight, 32, Math.Max(32, config.OverlayHeight));
+        var mediaWidth = Math.Clamp(
+            config.OverlayMediaWidth,
+            ApplicationLimits.MinObsOverlayMediaSize,
+            Math.Max(ApplicationLimits.MinObsOverlayMediaSize, config.OverlayWidth));
+        var mediaHeight = Math.Clamp(
+            config.OverlayMediaHeight,
+            ApplicationLimits.MinObsOverlayMediaSize,
+            Math.Max(ApplicationLimits.MinObsOverlayMediaSize, config.OverlayHeight));
         var (positionX, positionY) = ResolveOverlayPosition(config, mediaWidth, mediaHeight);
 
         await SendRequestAsync(
@@ -395,7 +401,7 @@ public sealed class ObsWebSocketService : IAsyncDisposable
         int volumePercent,
         CancellationToken cancellationToken)
     {
-        var inputVolumeMul = Math.Clamp(volumePercent, 0, 100) / 100d;
+        var inputVolumeMul = Math.Clamp(volumePercent, ApplicationLimits.MinVolumePercent, ApplicationLimits.MaxVolumePercent) / 100d;
         await SendRequestAsync(
             "SetInputVolume",
             new Dictionary<string, object?>

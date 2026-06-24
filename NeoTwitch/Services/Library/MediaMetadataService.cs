@@ -66,7 +66,7 @@ public static class MediaMetadataService
                     durationMs = (int)Math.Clamp(
                         Math.Round(player.NaturalDuration.TimeSpan.TotalMilliseconds),
                         0,
-                        24 * 60 * 60 * 1000);
+                        ApplicationLimits.MaxMediaDurationMs);
                 }
 
                 Finish();

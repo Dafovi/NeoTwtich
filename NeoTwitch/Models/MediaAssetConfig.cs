@@ -52,7 +52,7 @@ public sealed class MediaAssetConfig : ILibraryAssetConfig, INotifyPropertyChang
         get => _durationMs;
         set
         {
-            if (SetField(ref _durationMs, Math.Clamp(value, 0, 24 * 60 * 60 * 1000)))
+            if (SetField(ref _durationMs, Math.Clamp(value, 0, ApplicationLimits.MaxMediaDurationMs)))
             {
                 OnPropertyChanged(nameof(DurationText));
             }
@@ -64,7 +64,7 @@ public sealed class MediaAssetConfig : ILibraryAssetConfig, INotifyPropertyChang
         get => _width;
         set
         {
-            if (SetField(ref _width, Math.Clamp(value, 0, 100000)))
+            if (SetField(ref _width, Math.Clamp(value, 0, ApplicationLimits.MaxMediaDimensionPx)))
             {
                 OnPropertyChanged(nameof(ResolutionText));
             }
@@ -76,7 +76,7 @@ public sealed class MediaAssetConfig : ILibraryAssetConfig, INotifyPropertyChang
         get => _height;
         set
         {
-            if (SetField(ref _height, Math.Clamp(value, 0, 100000)))
+            if (SetField(ref _height, Math.Clamp(value, 0, ApplicationLimits.MaxMediaDimensionPx)))
             {
                 OnPropertyChanged(nameof(ResolutionText));
             }

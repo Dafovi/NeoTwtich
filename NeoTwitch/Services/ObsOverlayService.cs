@@ -19,8 +19,14 @@ public sealed class ObsOverlayService
     public void WriteState(MediaAssetConfig asset, ObsMediaKind kind, ObsIntegrationConfig config, TimeSpan duration)
     {
         EnsureFiles();
-        var mediaWidth = Math.Clamp(config.OverlayMediaWidth, 32, Math.Max(32, config.OverlayWidth));
-        var mediaHeight = Math.Clamp(config.OverlayMediaHeight, 32, Math.Max(32, config.OverlayHeight));
+        var mediaWidth = Math.Clamp(
+            config.OverlayMediaWidth,
+            ApplicationLimits.MinObsOverlayMediaSize,
+            Math.Max(ApplicationLimits.MinObsOverlayMediaSize, config.OverlayWidth));
+        var mediaHeight = Math.Clamp(
+            config.OverlayMediaHeight,
+            ApplicationLimits.MinObsOverlayMediaSize,
+            Math.Max(ApplicationLimits.MinObsOverlayMediaSize, config.OverlayHeight));
         var (x, y) = ResolvePosition(config, mediaWidth, mediaHeight);
         var state = new
         {
@@ -147,7 +153,7 @@ public sealed class ObsOverlayService
         hideAll();
       }
     }
-    setInterval(tick, 250);
+    setInterval(tick, {{ApplicationLimits.ObsOverlayPollMs}});
     tick();
   </script>
 </body>

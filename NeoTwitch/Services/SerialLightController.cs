@@ -190,7 +190,7 @@ public sealed class SerialLightController : IDisposable
 
         try
         {
-            _baudRate = Math.Clamp(baudRate, 300, 921600);
+            _baudRate = Math.Clamp(baudRate, ApplicationLimits.MinBaudRate, ApplicationLimits.MaxBaudRate);
 
             if (string.IsNullOrWhiteSpace(normalizedPort))
             {

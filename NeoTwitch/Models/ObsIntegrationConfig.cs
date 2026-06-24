@@ -29,5 +29,5 @@ public sealed class ObsIntegrationConfig
     public bool IsConfigured =>
         Enabled
         && !string.IsNullOrWhiteSpace(Host)
-        && Port is > 0 and <= 65535;
+        && Port is >= ApplicationLimits.MinNetworkPort and <= ApplicationLimits.MaxNetworkPort;
 }

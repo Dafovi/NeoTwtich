@@ -50,7 +50,7 @@ public sealed class AudioAssetConfig : ILibraryAssetConfig, INotifyPropertyChang
         get => _durationMs;
         set
         {
-            if (SetField(ref _durationMs, Math.Clamp(value, 0, 3_600_000)))
+            if (SetField(ref _durationMs, Math.Clamp(value, 0, ApplicationLimits.MaxAudioDurationMs)))
             {
                 OnPropertyChanged(nameof(DurationText));
             }

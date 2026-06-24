@@ -1,6 +1,7 @@
 using System.IO;
 using System.Windows;
 using System.Windows.Media;
+using NeoTwitch.Models;
 
 namespace NeoTwitch.Services;
 
@@ -114,7 +115,7 @@ public sealed class AudioPlayerService
             player.MediaEnded += Ended;
             player.MediaFailed += Failed;
             player.Open(new Uri(audioPath, UriKind.Absolute));
-            player.Volume = Math.Clamp(volumePercent, 0, 100) / 100d;
+            player.Volume = Math.Clamp(volumePercent, ApplicationLimits.MinVolumePercent, ApplicationLimits.MaxVolumePercent) / 100d;
         });
 
         try

@@ -5,6 +5,7 @@ using System.Windows.Controls;
 using NeoTwitch.Models;
 using NeoTwitch.Services;
 using NeoTwitch.Services.Status;
+using NeoTwitch.Services.Ui;
 using NeoTwitch.Shared;
 using NeoTwitch.ViewModels.Activity;
 using NeoTwitch.ViewModels.Status;
@@ -241,7 +242,7 @@ public partial class MainWindow
     {
         var (text, color, imagePath) = ConnectionStateService.GetAppStateVisual(state);
 
-        SettingsAppStateIcon.Source = LoadPackImage(imagePath);
+        SettingsAppStateIcon.Source = PackImageLoader.Load(imagePath);
         SettingsDiagnosticStatusText.Text = text;
         SettingsDiagnosticStatusText.Foreground = FrozenBrushFrom(color);
     }

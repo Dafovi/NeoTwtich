@@ -12,7 +12,6 @@ using System.Windows.Data;
 using System.Windows.Interop;
 using System.Windows.Input;
 using System.Windows.Media;
-using System.Windows.Media.Imaging;
 using System.Windows.Shapes;
 using System.Windows.Threading;
 using NeoTwitch.Models;
@@ -418,7 +417,7 @@ public partial class MainWindow : Window
             Background = System.Windows.Media.Brushes.White,
             OpacityMask = new ImageBrush
             {
-                ImageSource = LoadPackImage(iconPath),
+                ImageSource = PackImageLoader.Load(iconPath),
                 Stretch = Stretch.Uniform
             }
         };

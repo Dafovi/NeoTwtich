@@ -1,9 +1,9 @@
 using System.Windows;
 using System.Windows.Controls;
 using System.Windows.Media;
-using System.Windows.Media.Imaging;
 using NeoTwitch.Models;
 using NeoTwitch.Services.Status;
+using NeoTwitch.Services.Ui;
 using NeoTwitch.ViewModels.Status;
 using static NeoTwitch.Services.Text.UiTextFormatter;
 using static NeoTwitch.Services.Ui.UiBrushFactory;
@@ -278,7 +278,7 @@ public partial class MainWindow
         statusIcon.Background = brush;
         statusIcon.OpacityMask = new ImageBrush
         {
-            ImageSource = LoadPackImage(icon),
+            ImageSource = PackImageLoader.Load(icon),
             Stretch = Stretch.Uniform
         };
         statusIcon.ToolTip = text;
@@ -308,29 +308,6 @@ public partial class MainWindow
         badge.Background = TranslucentBrushFrom(color);
         badge.BorderBrush = brush;
         badge.BorderThickness = new Thickness(1);
-    }
-
-    private static ImageSource? LoadPackImage(string path)
-    {
-        foreach (var uri in new[]
-        {
-            $"pack://application:,,,/NeoTwitch;component/{path}",
-            $"pack://application:,,,/{path}"
-        })
-        {
-            try
-            {
-                var image = new BitmapImage(new Uri(uri, UriKind.Absolute));
-                image.Freeze();
-                return image;
-            }
-            catch
-            {
-                // Some WPF resource contexts prefer the assembly-qualified URI, others the app-root URI.
-            }
-        }
-
-        return null;
     }
 
     private string BuildTwitchStatusText()

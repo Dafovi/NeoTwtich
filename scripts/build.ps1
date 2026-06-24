@@ -1,6 +1,6 @@
 [CmdletBinding()]
 param(
-    [ValidateSet("Debug", "Release", "Portable", "SelfContained", "Installer", "FullRelease")]
+    [ValidateSet("Debug", "Release", "Test", "Portable", "SelfContained", "Installer", "FullRelease")]
     [string]$Mode = "Debug",
 
     [string]$Runtime = "",
@@ -16,6 +16,7 @@ $BuildConfig = Get-NeoTwitchBuildConfig
 $Runtime = if ([string]::IsNullOrWhiteSpace($Runtime)) { $BuildConfig.defaultRuntime } else { $Runtime }
 $AppProject = Resolve-NeoTwitchPath $BuildConfig.appProject
 $InstallerProject = Resolve-NeoTwitchPath $BuildConfig.installerProject
+$TestProject = Resolve-NeoTwitchPath $BuildConfig.testProject
 $DebugConfiguration = $BuildConfig.debugConfiguration
 $ReleaseConfiguration = $BuildConfig.releaseConfiguration
 
@@ -104,6 +105,9 @@ switch ($Mode) {
         Invoke-DotNet @("build", $AppProject, "-c", $ReleaseConfiguration)
         Invoke-DotNet @("build", $InstallerProject, "-c", $ReleaseConfiguration)
     }
+    "Test" {
+        Invoke-DotNet @("run", "--project", $TestProject, "-c", $DebugConfiguration)
+    }
     "Portable" {
         Publish-Portable $ArtifactRoot
     }
@@ -114,6 +118,7 @@ switch ($Mode) {
         Publish-Installer $ArtifactRoot
     }
     "FullRelease" {
+        Invoke-DotNet @("run", "--project", $TestProject, "-c", $ReleaseConfiguration)
         Publish-Portable $ArtifactRoot
         Publish-SelfContained $ArtifactRoot
         Publish-Installer $ArtifactRoot

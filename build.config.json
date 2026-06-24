@@ -3,6 +3,7 @@
   "artifactsDirectory": "artifacts",
   "appProject": "NeoTwitch/NeoTwitch.csproj",
   "installerProject": "NeoTwitch.Installer/NeoTwitch.Installer.csproj",
+  "testProject": "NeoTwitch.Tests/NeoTwitch.Tests.csproj",
   "defaultRuntime": "win-x64",
   "debugConfiguration": "Debug",
   "releaseConfiguration": "Release",

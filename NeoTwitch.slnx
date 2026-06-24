@@ -1,4 +1,5 @@
 <Solution>
   <Project Path="NeoTwitch/NeoTwitch.csproj" />
   <Project Path="NeoTwitch.Installer/NeoTwitch.Installer.csproj" />
+  <Project Path="NeoTwitch.Tests/NeoTwitch.Tests.csproj" />
 </Solution>

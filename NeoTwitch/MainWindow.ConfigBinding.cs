@@ -1,5 +1,4 @@
 using System.Collections.ObjectModel;
-using System.IO;
 using System.Windows;
 using NeoTwitch.Models;
 using NeoTwitch.Services;
@@ -257,27 +256,7 @@ public partial class MainWindow
 
         try
         {
-            using var runKey = Microsoft.Win32.Registry.CurrentUser.CreateSubKey(WindowsRunKeyPath, writable: true);
-            if (runKey is null)
-            {
-                throw new InvalidOperationException("No pude abrir la clave de inicio de Windows.");
-            }
-
-            if (_config.StartWithWindows)
-            {
-                var executablePath = Environment.ProcessPath;
-                if (string.IsNullOrWhiteSpace(executablePath) || !File.Exists(executablePath))
-                {
-                    throw new InvalidOperationException("No pude detectar la ruta del ejecutable actual.");
-                }
-
-                runKey.SetValue(WindowsStartupValueName, $"\"{executablePath}\"");
-            }
-            else
-            {
-                runKey.DeleteValue(WindowsStartupValueName, throwOnMissingValue: false);
-            }
-
+            _windowsStartupService.SetEnabled(_config.StartWithWindows);
             _lastAppliedStartWithWindows = _config.StartWithWindows;
         }
         catch (Exception ex)

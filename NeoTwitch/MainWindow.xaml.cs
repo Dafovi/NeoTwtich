@@ -41,9 +41,6 @@ public partial class MainWindow : Window
     private const int AppCaptionColor = 0x0017110B;
     private const int AppCaptionTextColor = 0x00FFFFFF;
     private const int LightStopSettleMs = 120;
-    private const string WindowsRunKeyPath = @"Software\Microsoft\Windows\CurrentVersion\Run";
-    private const string WindowsStartupValueName = "Neo Twitch";
-
     private readonly SettingsStore _settingsStore = new();
     private readonly AudioPlayerService _audioPlayer = new();
     private readonly SerialLightController _lightController = new();
@@ -52,6 +49,7 @@ public partial class MainWindow : Window
     private readonly AlexaRelayService _alexaRelayService = new();
     private readonly ObsWebSocketService _obsService = new();
     private readonly ObsOverlayService _obsOverlayService = new();
+    private readonly WindowsStartupService _windowsStartupService = new();
     private readonly AppUpdateService _updateService = new();
     private readonly IUiTextService _text = UiTextService.CreateDefault();
     private readonly AppStartupOptions _startupOptions;

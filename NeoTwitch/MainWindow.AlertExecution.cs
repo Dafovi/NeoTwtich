@@ -218,7 +218,7 @@ public partial class MainWindow
                 await Task.Delay(LightStopSettleMs);
             }
 
-            var syncedDurationMs = ResolveSynchronizedEffectDurationMs(playback?.Duration, obsMediaHide?.Duration);
+            var syncedDurationMs = AlertDurationService.ResolveSynchronizedEffectDurationMs(playback?.Duration, obsMediaHide?.Duration);
 
             LightCommand? command = null;
             if (useLights)
@@ -310,21 +310,13 @@ public partial class MainWindow
         }
     }
 
-    private static int? ResolveSynchronizedEffectDurationMs(params TimeSpan?[] durations)
-    {
-        var maxDuration = ResolveMaxEffectDuration(durations);
-        return maxDuration is { TotalMilliseconds: > 0 }
-            ? Math.Clamp((int)Math.Round(maxDuration.Value.TotalMilliseconds), ApplicationLimits.MinAlertDurationMs, ApplicationLimits.MaxAlertDurationMs)
-            : null;
-    }
-
     private static async Task WaitForRuleEffectAsync(
         AudioPlayback? playback,
         LightCommand? command,
         ObsMediaHideRequest? obsMediaHide,
         CancellationToken cancellationToken)
     {
-        var duration = ResolveMaxEffectDuration(
+        var duration = AlertDurationService.ResolveMaxEffectDuration(
             playback?.Duration,
             command is null ? null : TimeSpan.FromMilliseconds(command.DurationMs),
             obsMediaHide?.Duration);
@@ -342,25 +334,6 @@ public partial class MainWindow
         }
 
         await Task.Delay(500, cancellationToken);
-    }
-
-    private static TimeSpan? ResolveMaxEffectDuration(params TimeSpan?[] durations)
-    {
-        TimeSpan? maxDuration = null;
-        foreach (var duration in durations)
-        {
-            if (duration is not { TotalMilliseconds: > 0 })
-            {
-                continue;
-            }
-
-            if (maxDuration is null || duration.Value > maxDuration.Value)
-            {
-                maxDuration = duration.Value;
-            }
-        }
-
-        return maxDuration;
     }
 
     private async Task StopCurrentEffectAsync()

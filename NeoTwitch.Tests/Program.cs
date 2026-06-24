@@ -12,6 +12,8 @@ var tests = new (string Name, Action Body)[]
     ("EventRuleFilterService searches editable text", EventRuleFilterTests.SearchesEditableText),
     ("EventRuleSnapshotService clones editable values independently", EventRuleSnapshotTests.CloneCopiesEditableValues),
     ("EventRuleSnapshotService detects editable changes", EventRuleSnapshotTests.DetectsEditableChanges),
+    ("AlertDurationService resolves maximum positive duration", AlertDurationTests.ResolvesMaximumPositiveDuration),
+    ("AlertDurationService clamps synchronized durations", AlertDurationTests.ClampsSynchronizedDurations),
     ("RuleSimulationService normalizes chat command matching", RuleSimulationTests.MatchesChatCommandWithNormalization),
     ("RuleSimulationService builds representative test events", RuleSimulationTests.BuildsRepresentativeEvents)
 };
@@ -247,6 +249,33 @@ static class RuleSimulationTests
 
         TestAssert.Equal(TwitchEventKind.Follow, test.Kind);
         TestAssert.Contains("Simulacion", test.Title);
+    }
+}
+
+static class AlertDurationTests
+{
+    public static void ResolvesMaximumPositiveDuration()
+    {
+        var result = AlertDurationService.ResolveMaxEffectDuration(
+            null,
+            TimeSpan.Zero,
+            TimeSpan.FromSeconds(3),
+            TimeSpan.FromSeconds(7),
+            TimeSpan.FromSeconds(5));
+
+        TestAssert.Equal(TimeSpan.FromSeconds(7), result);
+    }
+
+    public static void ClampsSynchronizedDurations()
+    {
+        var noDuration = AlertDurationService.ResolveSynchronizedEffectDurationMs(null, TimeSpan.Zero);
+        TestAssert.Equal<int?>(null, noDuration);
+
+        var tooShort = AlertDurationService.ResolveSynchronizedEffectDurationMs(TimeSpan.FromMilliseconds(10));
+        TestAssert.Equal(ApplicationLimits.MinAlertDurationMs, tooShort);
+
+        var tooLong = AlertDurationService.ResolveSynchronizedEffectDurationMs(TimeSpan.FromMilliseconds(ApplicationLimits.MaxAlertDurationMs + 10_000));
+        TestAssert.Equal(ApplicationLimits.MaxAlertDurationMs, tooLong);
     }
 }
 

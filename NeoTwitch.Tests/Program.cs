@@ -32,6 +32,8 @@ var tests = new (string Name, Action Body)[]
     ("EventRuleMatcherService keeps highest bits threshold", EventRuleMatcherTests.KeepsHighestBitsThreshold),
     ("AlertDurationService resolves maximum positive duration", AlertDurationTests.ResolvesMaximumPositiveDuration),
     ("AlertDurationService clamps synchronized durations", AlertDurationTests.ClampsSynchronizedDurations),
+    ("LightControlInputService resolves presets", LightControlInputTests.ResolvesPresets),
+    ("LightControlInputService parses and clamps values", LightControlInputTests.ParsesAndClampsValues),
     ("LedPreviewService calculates responsive dot counts", LedPreviewTests.CalculatesResponsiveDotCounts),
     ("LedPreviewService builds solid frames with brightness floor", LedPreviewTests.BuildsSolidFramesWithBrightnessFloor),
     ("LedPreviewService builds rainbow frames", LedPreviewTests.BuildsRainbowFrames),
@@ -453,6 +455,36 @@ static class AlertDurationTests
 
         var tooLong = AlertDurationService.ResolveSynchronizedEffectDurationMs(TimeSpan.FromMilliseconds(ApplicationLimits.MaxAlertDurationMs + 10_000));
         TestAssert.Equal(ApplicationLimits.MaxAlertDurationMs, tooLong);
+    }
+}
+
+static class LightControlInputTests
+{
+    public static void ResolvesPresets()
+    {
+        var normal = LightControlInputService.GetRulePreset("");
+        var fast = LightControlInputService.GetRulePreset("Fast");
+        var backgroundSoft = LightControlInputService.GetBackgroundPreset("Soft");
+
+        TestAssert.Equal(180d, normal.Brightness);
+        TestAssert.Equal(2200d, fast.DurationMs);
+        TestAssert.Equal(110d, backgroundSoft.Brightness);
+        TestAssert.Equal(260d, backgroundSoft.StepMs);
+    }
+
+    public static void ParsesAndClampsValues()
+    {
+        TestAssert.True(LightControlInputService.TryParseDelta("Brightness:-10", out var delta));
+        TestAssert.Equal("Brightness", delta.Target);
+        TestAssert.Equal(-10d, delta.Amount);
+
+        TestAssert.False(LightControlInputService.TryParseDelta("Brightness", out _));
+        TestAssert.Equal(100d, LightControlInputService.AdjustValue(95, 20, 0, 100));
+        TestAssert.Equal(0d, LightControlInputService.AdjustValue(5, -20, 0, 100));
+
+        TestAssert.True(LightControlInputService.TryParseSliderText(" 250 ", 0, 200, out var sliderValue));
+        TestAssert.Equal(200d, sliderValue);
+        TestAssert.False(LightControlInputService.TryParseSliderText("abc", 0, 200, out _));
     }
 }
 

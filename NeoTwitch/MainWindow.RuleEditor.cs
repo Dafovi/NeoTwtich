@@ -6,6 +6,7 @@ using System.Windows.Threading;
 using NeoTwitch.Models;
 using NeoTwitch.Services;
 using NeoTwitch.Services.Alerts;
+using NeoTwitch.Services.Lights;
 using NeoTwitch.ViewModels.Activity;
 using WpfMessageBox = System.Windows.MessageBox;
 using static NeoTwitch.Services.Text.UiTextFormatter;
@@ -560,27 +561,11 @@ public partial class MainWindow
             return;
         }
 
-        switch (preset)
-        {
-            case "Soft":
-                BrightnessSlider.Value = 120;
-                DurationSlider.Value = 4500;
-                CycleSlider.Value = 160;
-                StepSlider.Value = 220;
-                break;
-            case "Fast":
-                BrightnessSlider.Value = 230;
-                DurationSlider.Value = 2200;
-                CycleSlider.Value = 35;
-                StepSlider.Value = 60;
-                break;
-            default:
-                BrightnessSlider.Value = 180;
-                DurationSlider.Value = 3500;
-                CycleSlider.Value = 80;
-                StepSlider.Value = 120;
-                break;
-        }
+        var values = LightControlInputService.GetRulePreset(preset);
+        BrightnessSlider.Value = values.Brightness;
+        DurationSlider.Value = values.DurationMs;
+        CycleSlider.Value = values.CycleMs;
+        StepSlider.Value = values.StepMs;
 
         if (SaveCurrentRuleFromFields())
         {
@@ -595,12 +580,12 @@ public partial class MainWindow
             return;
         }
 
-        if (!TryParseSliderDelta(button.Tag?.ToString(), out var target, out var delta))
+        if (!LightControlInputService.TryParseDelta(button.Tag?.ToString(), out var delta))
         {
             return;
         }
 
-        var slider = target switch
+        var slider = delta.Target switch
         {
             "Brightness" => BrightnessSlider,
             "Duration" => DurationSlider,
@@ -614,7 +599,7 @@ public partial class MainWindow
             return;
         }
 
-        AdjustSliderValue(slider, delta);
+        slider.Value = LightControlInputService.AdjustValue(slider.Value, delta.Amount, slider.Minimum, slider.Maximum);
         if (SaveCurrentRuleFromFields())
         {
             UpdateRuleDirtyStateFromSnapshot();
@@ -639,11 +624,12 @@ public partial class MainWindow
                     ? StepSlider
                     : null;
 
-        if (slider is null || !TryApplySliderText(textBox, slider))
+        if (slider is null || !LightControlInputService.TryParseSliderText(textBox.Text, slider.Minimum, slider.Maximum, out var value))
         {
             return;
         }
 
+        slider.Value = value;
         if (SaveCurrentRuleFromFields())
         {
             UpdateRuleDirtyStateFromSnapshot();
@@ -696,37 +682,6 @@ public partial class MainWindow
         {
             _loadingRule = wasLoading;
         }
-    }
-
-    private static bool TryParseSliderDelta(string? tag, out string target, out double delta)
-    {
-        target = "";
-        delta = 0;
-        var parts = (tag ?? "").Split(':', 2, StringSplitOptions.TrimEntries);
-        if (parts.Length != 2 || !double.TryParse(parts[1], out delta))
-        {
-            return false;
-        }
-
-        target = parts[0];
-        return !string.IsNullOrWhiteSpace(target);
-    }
-
-    private static void AdjustSliderValue(Slider slider, double delta)
-    {
-        slider.Value = Math.Clamp(slider.Value + delta, slider.Minimum, slider.Maximum);
-    }
-
-    private static bool TryApplySliderText(System.Windows.Controls.TextBox textBox, Slider slider)
-    {
-        var text = textBox.Text.Trim();
-        if (!double.TryParse(text, out var value))
-        {
-            return false;
-        }
-
-        slider.Value = Math.Clamp(value, slider.Minimum, slider.Maximum);
-        return true;
     }
 
     internal void EventKindTile_Click(object sender, RoutedEventArgs e)
@@ -803,12 +758,12 @@ public partial class MainWindow
             return;
         }
 
-        if (!TryParseSliderDelta(button.Tag?.ToString(), out var target, out var delta))
+        if (!LightControlInputService.TryParseDelta(button.Tag?.ToString(), out var delta))
         {
             return;
         }
 
-        var slider = target switch
+        var slider = delta.Target switch
         {
             "Brightness" => BackgroundBrightnessSlider,
             "Cycle" => BackgroundCycleSlider,
@@ -821,7 +776,7 @@ public partial class MainWindow
             return;
         }
 
-        AdjustSliderValue(slider, delta);
+        slider.Value = LightControlInputService.AdjustValue(slider.Value, delta.Amount, slider.Minimum, slider.Maximum);
         SaveBackgroundFromFields();
         SaveConfig();
         UpdateSliderLabels();
@@ -836,24 +791,10 @@ public partial class MainWindow
             return;
         }
 
-        switch (preset)
-        {
-            case "Soft":
-                BackgroundBrightnessSlider.Value = 110;
-                BackgroundCycleSlider.Value = 180;
-                BackgroundStepSlider.Value = 260;
-                break;
-            case "Fast":
-                BackgroundBrightnessSlider.Value = 220;
-                BackgroundCycleSlider.Value = 35;
-                BackgroundStepSlider.Value = 70;
-                break;
-            default:
-                BackgroundBrightnessSlider.Value = 160;
-                BackgroundCycleSlider.Value = 90;
-                BackgroundStepSlider.Value = 140;
-                break;
-        }
+        var values = LightControlInputService.GetBackgroundPreset(preset);
+        BackgroundBrightnessSlider.Value = values.Brightness;
+        BackgroundCycleSlider.Value = values.CycleMs;
+        BackgroundStepSlider.Value = values.StepMs;
 
         SaveBackgroundFromFields();
         SaveConfig();
@@ -875,11 +816,12 @@ public partial class MainWindow
                 ? BackgroundStepSlider
                 : null;
 
-        if (slider is null || !TryApplySliderText(textBox, slider))
+        if (slider is null || !LightControlInputService.TryParseSliderText(textBox.Text, slider.Minimum, slider.Maximum, out var value))
         {
             return;
         }
 
+        slider.Value = value;
         SaveBackgroundFromFields();
         SaveConfig();
         UpdateSliderLabels();

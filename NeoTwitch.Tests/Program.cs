@@ -8,6 +8,7 @@ using NeoTwitch.Services.Library;
 using NeoTwitch.Services.Lights;
 using NeoTwitch.Services.Status;
 using NeoTwitch.Services.Text;
+using NeoTwitch.Services.Ui;
 using NeoTwitch.ViewModels.Activity;
 using NeoTwitch.ViewModels.Library;
 using NeoTwitch.ViewModels.Status;
@@ -47,6 +48,8 @@ var tests = new (string Name, Action Body)[]
     ("DashboardSummaryService counts matched rules safely", DashboardSummaryTests.CountsMatchedRulesSafely),
     ("UiTextFormatter formats fallback text", UiTextFormatterTests.FormatsFallbackText),
     ("UiTextFormatter builds bounded secret masks", UiTextFormatterTests.BuildsBoundedSecretMasks),
+    ("CircularProgressGeometryService calculates percentages", CircularProgressGeometryTests.CalculatesPercentages),
+    ("CircularProgressGeometryService builds arc geometry", CircularProgressGeometryTests.BuildsArcGeometry),
     ("RuleSimulationService normalizes chat command matching", RuleSimulationTests.MatchesChatCommandWithNormalization),
     ("RuleSimulationService builds representative test events", RuleSimulationTests.BuildsRepresentativeEvents)
 };
@@ -790,6 +793,29 @@ static class UiTextFormatterTests
         TestAssert.Equal(8, UiTextFormatter.BuildSecretMask("abc").Length);
         TestAssert.Equal(20, UiTextFormatter.BuildSecretMask(new string('x', 80)).Length);
         TestAssert.Equal("********", UiTextFormatter.BuildSecretMask(""));
+    }
+}
+
+static class CircularProgressGeometryTests
+{
+    public static void CalculatesPercentages()
+    {
+        TestAssert.Equal(0, CircularProgressGeometryService.ToPercent(50, 0));
+        TestAssert.Equal(0, CircularProgressGeometryService.ToPercent(-10, 100));
+        TestAssert.Equal(50, CircularProgressGeometryService.ToPercent(50, 100));
+        TestAssert.Equal(100, CircularProgressGeometryService.ToPercent(300, 100));
+    }
+
+    public static void BuildsArcGeometry()
+    {
+        TestAssert.Same(System.Windows.Media.Geometry.Empty, CircularProgressGeometryService.BuildArcGeometry(0));
+
+        var half = CircularProgressGeometryService.BuildArcGeometry(0.5);
+        var large = CircularProgressGeometryService.BuildArcGeometry(0.75);
+
+        TestAssert.True(half is System.Windows.Media.PathGeometry);
+        TestAssert.False(((System.Windows.Media.ArcSegment)((System.Windows.Media.PathGeometry)half).Figures[0].Segments[0]).IsLargeArc);
+        TestAssert.True(((System.Windows.Media.ArcSegment)((System.Windows.Media.PathGeometry)large).Figures[0].Segments[0]).IsLargeArc);
     }
 }
 

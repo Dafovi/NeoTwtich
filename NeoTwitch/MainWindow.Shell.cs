@@ -10,6 +10,7 @@ using System.Windows.Media;
 using System.Windows.Media.Imaging;
 using NeoTwitch.Models;
 using NeoTwitch.Services;
+using NeoTwitch.Services.Ui;
 using NeoTwitch.Shared;
 using NeoTwitch.ViewModels.Activity;
 using Forms = System.Windows.Forms;
@@ -138,8 +139,8 @@ public partial class MainWindow
 
     private void UpdateSliderLabels()
     {
-        var brightnessPercent = ToPercent(BrightnessSlider.Value, BrightnessSlider.Maximum);
-        var backgroundBrightnessPercent = ToPercent(BackgroundBrightnessSlider.Value, BackgroundBrightnessSlider.Maximum);
+        var brightnessPercent = CircularProgressGeometryService.ToPercent(BrightnessSlider.Value, BrightnessSlider.Maximum);
+        var backgroundBrightnessPercent = CircularProgressGeometryService.ToPercent(BackgroundBrightnessSlider.Value, BackgroundBrightnessSlider.Maximum);
 
         _updatingLightValueFields = true;
         try
@@ -162,52 +163,9 @@ public partial class MainWindow
         UpdateCircularProgress(BackgroundBrightnessArc, backgroundBrightnessPercent / 100d);
     }
 
-    private static int ToPercent(double value, double maximum)
-    {
-        return maximum <= 0
-            ? 0
-            : (int)Math.Round(Math.Clamp(value / maximum, 0d, 1d) * 100d);
-    }
-
     private static void UpdateCircularProgress(System.Windows.Shapes.Path path, double progress)
     {
-        const double center = 52d;
-        const double radius = 46d;
-
-        progress = Math.Clamp(progress, 0d, 1d);
-        if (progress <= 0d)
-        {
-            path.Data = Geometry.Empty;
-            return;
-        }
-
-        var adjustedProgress = progress >= 1d ? 0.9999d : progress;
-        var start = PointOnCircle(center, center, radius, -90d);
-        var end = PointOnCircle(center, center, radius, -90d + adjustedProgress * 360d);
-        var figure = new PathFigure
-        {
-            StartPoint = start,
-            IsClosed = false,
-            IsFilled = false
-        };
-
-        figure.Segments.Add(new ArcSegment(
-            end,
-            new System.Windows.Size(radius, radius),
-            0,
-            adjustedProgress > 0.5d,
-            SweepDirection.Clockwise,
-            true));
-
-        path.Data = new PathGeometry([figure]);
-    }
-
-    private static System.Windows.Point PointOnCircle(double centerX, double centerY, double radius, double degrees)
-    {
-        var radians = degrees * Math.PI / 180d;
-        return new System.Windows.Point(
-            centerX + radius * Math.Cos(radians),
-            centerY + radius * Math.Sin(radians));
+        path.Data = CircularProgressGeometryService.BuildArcGeometry(progress);
     }
 
     private void UpdateColorButtons()

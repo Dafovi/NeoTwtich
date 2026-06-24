@@ -9,6 +9,7 @@ using NeoTwitch.Services.Text;
 using NeoTwitch.Services.Ui;
 using NeoTwitch.ViewModels.Activity;
 using NeoTwitch.ViewModels.Library;
+using static NeoTwitch.Services.Ui.UiBrushFactory;
 using WpfMessageBox = System.Windows.MessageBox;
 using WpfOpenFileDialog = Microsoft.Win32.OpenFileDialog;
 

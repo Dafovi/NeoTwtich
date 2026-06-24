@@ -619,13 +619,6 @@ public partial class MainWindow : Window
 
     private sealed record DiagnosticResult(string Report, int WarningCount);
 
-    private static SolidColorBrush FrozenBrushFrom(string hex)
-    {
-        var brush = new SolidColorBrush((System.Windows.Media.Color)System.Windows.Media.ColorConverter.ConvertFromString(hex));
-        brush.Freeze();
-        return brush;
-    }
-
     private sealed record RuleLedPreviewDot(
         SolidColorBrush Fill,
         System.Windows.Media.Color GlowColor,

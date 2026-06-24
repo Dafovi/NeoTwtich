@@ -7,6 +7,7 @@ using NeoTwitch.Services;
 using NeoTwitch.Services.Ui;
 using NeoTwitch.ViewModels.Activity;
 using NeoTwitch.ViewModels.Library;
+using static NeoTwitch.Services.Ui.UiBrushFactory;
 
 namespace NeoTwitch;
 
@@ -583,13 +584,6 @@ public partial class MainWindow
     {
         return !string.IsNullOrWhiteSpace(button.Name)
             && button.Name.EndsWith("ColorButton", StringComparison.OrdinalIgnoreCase);
-    }
-
-    private static SolidColorBrush TranslucentBrushFrom(string accentColor)
-    {
-        return accentColor.StartsWith('#') && accentColor.Length == 7
-            ? FrozenBrushFrom($"#22{accentColor[1..]}")
-            : FrozenBrushFrom("#2200C7B7");
     }
 
     private static bool IsActivityFeedListBox(System.Windows.Controls.ListBox listBox)

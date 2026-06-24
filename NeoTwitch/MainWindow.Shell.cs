@@ -16,6 +16,7 @@ using NeoTwitch.ViewModels.Activity;
 using Forms = System.Windows.Forms;
 using DrawingIcon = System.Drawing.Icon;
 using static NeoTwitch.Services.Text.UiTextFormatter;
+using static NeoTwitch.Services.Ui.UiBrushFactory;
 
 namespace NeoTwitch;
 

@@ -8,6 +8,7 @@ using NeoTwitch.ViewModels.Activity;
 using NeoTwitch.ViewModels.Library;
 using static NeoTwitch.Services.InputValueParser;
 using static NeoTwitch.Services.Text.UiTextFormatter;
+using static NeoTwitch.Services.Ui.UiBrushFactory;
 
 namespace NeoTwitch;
 

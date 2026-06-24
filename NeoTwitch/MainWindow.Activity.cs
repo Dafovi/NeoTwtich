@@ -4,6 +4,7 @@ using System.Windows.Controls.Primitives;
 using System.Windows.Data;
 using NeoTwitch.Services.Activity;
 using NeoTwitch.ViewModels.Activity;
+using static NeoTwitch.Services.Ui.UiBrushFactory;
 
 namespace NeoTwitch;
 

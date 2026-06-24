@@ -6,6 +6,7 @@ using NeoTwitch.Models;
 using NeoTwitch.Services.Status;
 using NeoTwitch.ViewModels.Status;
 using static NeoTwitch.Services.Text.UiTextFormatter;
+using static NeoTwitch.Services.Ui.UiBrushFactory;
 
 namespace NeoTwitch;
 

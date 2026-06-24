@@ -56,6 +56,7 @@ var tests = new (string Name, Action Body)[]
     ("IconPathCatalog returns known icons and fallback", IconPathCatalogTests.ReturnsKnownIconsAndFallback),
     ("ButtonIconCatalog maps button labels", ButtonIconCatalogTests.MapsButtonLabels),
     ("UiAccentCatalog maps event and pattern colors", UiAccentCatalogTests.MapsEventAndPatternColors),
+    ("UiBrushFactory creates frozen brushes", UiBrushFactoryTests.CreatesFrozenBrushes),
     ("RuleSimulationService normalizes chat command matching", RuleSimulationTests.MatchesChatCommandWithNormalization),
     ("RuleSimulationService builds representative test events", RuleSimulationTests.BuildsRepresentativeEvents)
 };
@@ -889,6 +890,21 @@ static class UiAccentCatalogTests
         TestAssert.Equal("#EC4899", UiAccentCatalog.ForLightPattern(LightPattern.Rave));
         TestAssert.Equal("#14B8A6", UiAccentCatalog.AudioSingle);
         TestAssert.Equal("#37C7F3", UiAccentCatalog.ObsImage);
+    }
+}
+
+static class UiBrushFactoryTests
+{
+    public static void CreatesFrozenBrushes()
+    {
+        var brush = UiBrushFactory.FrozenBrushFrom("#14B8A6");
+        var translucent = UiBrushFactory.TranslucentBrushFrom("#14B8A6");
+
+        TestAssert.True(brush.IsFrozen);
+        TestAssert.Equal((byte)0x14, brush.Color.R);
+        TestAssert.True(translucent.IsFrozen);
+        TestAssert.Equal((byte)0x22, translucent.Color.A);
+        TestAssert.Equal((byte)0x14, translucent.Color.R);
     }
 }
 

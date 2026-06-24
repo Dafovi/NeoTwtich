@@ -73,7 +73,7 @@ public partial class MainWindow
     private void ApplyActivityFilterButtonTheme(ToggleButton button, ThemePalette palette)
     {
         var filter = button.Tag?.ToString() ?? "";
-        var accentColor = ActivityFilterAccent(filter);
+        var accentColor = ActivityLogVisuals.FilterAccent(filter);
         var accent = FrozenBrushFrom(accentColor);
         var active = button.IsChecked == true;
 
@@ -101,11 +101,6 @@ public partial class MainWindow
             ActivityFilterSystemButton,
             ActivityFilterImportantButton
         ];
-    }
-
-    private static string ActivityFilterAccent(string filter)
-    {
-        return ActivityLogVisuals.FilterAccent(filter);
     }
 
     private void AddLog(string message)

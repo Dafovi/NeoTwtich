@@ -378,11 +378,6 @@ public partial class MainWindow : Window
         }
     }
 
-    private static System.Windows.Shapes.Path CreateNavigationIcon(string data)
-    {
-        return CreateIconPath(data, 24, 2);
-    }
-
     private static StackPanel CreateNavigationItem(string iconPath, string label)
     {
         var panel = new StackPanel

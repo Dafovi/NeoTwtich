@@ -534,31 +534,12 @@ public partial class MainWindow
 
     private bool AudioRowMatchesFilters(AudioLibraryRow row)
     {
-        if (!string.IsNullOrWhiteSpace(_audioGroupFilterId)
-            && !string.Equals(row.GroupId, _audioGroupFilterId, StringComparison.OrdinalIgnoreCase))
-        {
-            return false;
-        }
-
-        if (_audioFilter == "WITH_ALERT" && !row.HasAssignedAlert)
-        {
-            return false;
-        }
-
-        if (_audioFilter == "NO_GROUP" && !string.Equals(row.GroupName, _text.Get(UiTextKeys.LibraryNoGroup), StringComparison.OrdinalIgnoreCase))
-        {
-            return false;
-        }
-
-        if (string.IsNullOrWhiteSpace(_audioSearchText))
-        {
-            return true;
-        }
-
-        return TextSearchHelper.ContainsIgnoreCase(row.Name, _audioSearchText)
-            || TextSearchHelper.ContainsIgnoreCase(row.FilePath, _audioSearchText)
-            || TextSearchHelper.ContainsIgnoreCase(row.AssignedAlertText, _audioSearchText)
-            || TextSearchHelper.ContainsIgnoreCase(row.GroupName, _audioSearchText);
+        return LibraryRowFilterService.MatchesAudio(
+            row,
+            _audioGroupFilterId,
+            _audioFilter,
+            _audioSearchText,
+            _text.Get(UiTextKeys.LibraryNoGroup));
     }
 
     private void UpdateAudioFilterButtons()

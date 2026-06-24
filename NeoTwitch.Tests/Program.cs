@@ -4,6 +4,7 @@ using NeoTwitch.Services.Alerts;
 using NeoTwitch.Services.Configuration;
 using NeoTwitch.Services.Library;
 using NeoTwitch.Services.Lights;
+using NeoTwitch.ViewModels.Library;
 
 var tests = new (string Name, Action Body)[]
 {
@@ -27,6 +28,8 @@ var tests = new (string Name, Action Body)[]
     ("AudioRuleAssetService resolves single assets", AudioRuleAssetTests.ResolvesSingleAssets),
     ("AudioRuleAssetService resolves group assets with existing files", AudioRuleAssetTests.ResolvesGroupAssetsWithExistingFiles),
     ("AudioRuleAssetService detects rule asset usage", AudioRuleAssetTests.DetectsRuleAssetUsage),
+    ("LibraryRowFilterService filters audio rows", LibraryRowFilterTests.FiltersAudioRows),
+    ("LibraryRowFilterService filters media rows", LibraryRowFilterTests.FiltersMediaRows),
     ("RuleSimulationService normalizes chat command matching", RuleSimulationTests.MatchesChatCommandWithNormalization),
     ("RuleSimulationService builds representative test events", RuleSimulationTests.BuildsRepresentativeEvents)
 };
@@ -529,6 +532,53 @@ static class AudioRuleAssetTests
                 AudioAssetId = "a1"
             },
             audio));
+    }
+}
+
+static class LibraryRowFilterTests
+{
+    public static void FiltersAudioRows()
+    {
+        var row = new AudioLibraryRow(
+            "a1",
+            "Cheer corto",
+            @"C:\audio\cheer.mp3",
+            "g1",
+            "Bits",
+            "Reacciones",
+            "00:03",
+            true,
+            false,
+            System.Windows.Media.Brushes.Cyan,
+            System.Windows.Media.Brushes.Transparent,
+            0);
+
+        TestAssert.True(LibraryRowFilterService.MatchesAudio(row, "", LibraryRowFilterService.AllFilter, "cheer", "Sin grupo"));
+        TestAssert.True(LibraryRowFilterService.MatchesAudio(row, "g1", LibraryRowFilterService.AudioWithAlertFilter, "bits", "Sin grupo"));
+        TestAssert.False(LibraryRowFilterService.MatchesAudio(row, "g2", LibraryRowFilterService.AllFilter, "", "Sin grupo"));
+        TestAssert.False(LibraryRowFilterService.MatchesAudio(row, "", LibraryRowFilterService.AudioNoGroupFilter, "", "Sin grupo"));
+    }
+
+    public static void FiltersMediaRows()
+    {
+        var row = new MediaLibraryRow(
+            "m1",
+            "Raid gif",
+            @"C:\media\raid.gif",
+            "g1",
+            "Especiales",
+            "800 x 600",
+            "Assets/Icons/media_image.png",
+            System.Windows.Media.Brushes.Cyan,
+            System.Windows.Media.Brushes.Transparent,
+            0,
+            true,
+            false);
+
+        TestAssert.True(LibraryRowFilterService.MatchesMedia(row, "", LibraryRowFilterService.AllFilter, "raid"));
+        TestAssert.True(LibraryRowFilterService.MatchesMedia(row, "g1", LibraryRowFilterService.MediaWithGroupFilter, "800"));
+        TestAssert.False(LibraryRowFilterService.MatchesMedia(row, "g2", LibraryRowFilterService.AllFilter, ""));
+        TestAssert.False(LibraryRowFilterService.MatchesMedia(row, "", LibraryRowFilterService.MediaNoGroupFilter, ""));
     }
 }
 

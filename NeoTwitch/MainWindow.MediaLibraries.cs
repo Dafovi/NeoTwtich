@@ -698,34 +698,11 @@ public partial class MainWindow
 
     private bool MediaRowMatchesFilters(MediaLibraryKind kind, MediaLibraryRow row)
     {
-        var groupFilterId = GetMediaGroupFilterId(kind);
-        if (!string.IsNullOrWhiteSpace(groupFilterId)
-            && !string.Equals(row.GroupId, groupFilterId, StringComparison.OrdinalIgnoreCase))
-        {
-            return false;
-        }
-
-        var filter = GetMediaFilter(kind);
-        if (filter == "WITH_GROUP" && string.IsNullOrWhiteSpace(row.GroupId))
-        {
-            return false;
-        }
-
-        if (filter == "NO_GROUP" && !string.IsNullOrWhiteSpace(row.GroupId))
-        {
-            return false;
-        }
-
-        var search = GetMediaSearchText(kind);
-        if (string.IsNullOrWhiteSpace(search))
-        {
-            return true;
-        }
-
-        return TextSearchHelper.ContainsIgnoreCase(row.Name, search)
-            || TextSearchHelper.ContainsIgnoreCase(row.FilePath, search)
-            || TextSearchHelper.ContainsIgnoreCase(row.GroupName, search)
-            || TextSearchHelper.ContainsIgnoreCase(row.MetadataText, search);
+        return LibraryRowFilterService.MatchesMedia(
+            row,
+            GetMediaGroupFilterId(kind),
+            GetMediaFilter(kind),
+            GetMediaSearchText(kind));
     }
 
     private void UpdateMediaFilterButtons(MediaLibraryKind kind)

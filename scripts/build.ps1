@@ -1,6 +1,6 @@
 [CmdletBinding()]
 param(
-    [ValidateSet("Debug", "Release", "Test", "Portable", "SelfContained", "Installer", "FullRelease")]
+    [ValidateSet("Debug", "Release", "Test", "Verify", "Portable", "SelfContained", "Installer", "FullRelease")]
     [string]$Mode = "Debug",
 
     [string]$Runtime = "",
@@ -107,6 +107,10 @@ switch ($Mode) {
     }
     "Test" {
         Invoke-DotNet @("run", "--project", $TestProject, "-c", $DebugConfiguration)
+    }
+    "Verify" {
+        Invoke-DotNet @("run", "--project", $TestProject, "-c", $DebugConfiguration)
+        Invoke-DotNet @("build", $AppProject, "-c", $DebugConfiguration)
     }
     "Portable" {
         Publish-Portable $ArtifactRoot

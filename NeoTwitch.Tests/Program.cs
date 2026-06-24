@@ -30,6 +30,9 @@ var tests = new (string Name, Action Body)[]
     ("AudioRuleAssetService detects rule asset usage", AudioRuleAssetTests.DetectsRuleAssetUsage),
     ("LibraryRowFilterService filters audio rows", LibraryRowFilterTests.FiltersAudioRows),
     ("LibraryRowFilterService filters media rows", LibraryRowFilterTests.FiltersMediaRows),
+    ("MediaRuleAssetService resolves single media assets", MediaRuleAssetTests.ResolvesSingleMediaAssets),
+    ("MediaRuleAssetService resolves group media assets", MediaRuleAssetTests.ResolvesGroupMediaAssets),
+    ("MediaRuleAssetService resolves image and video durations", MediaRuleAssetTests.ResolvesImageAndVideoDurations),
     ("RuleSimulationService normalizes chat command matching", RuleSimulationTests.MatchesChatCommandWithNormalization),
     ("RuleSimulationService builds representative test events", RuleSimulationTests.BuildsRepresentativeEvents)
 };
@@ -579,6 +582,81 @@ static class LibraryRowFilterTests
         TestAssert.True(LibraryRowFilterService.MatchesMedia(row, "g1", LibraryRowFilterService.MediaWithGroupFilter, "800"));
         TestAssert.False(LibraryRowFilterService.MatchesMedia(row, "g2", LibraryRowFilterService.AllFilter, ""));
         TestAssert.False(LibraryRowFilterService.MatchesMedia(row, "", LibraryRowFilterService.MediaNoGroupFilter, ""));
+    }
+}
+
+static class MediaRuleAssetTests
+{
+    public static void ResolvesSingleMediaAssets()
+    {
+        var image = new MediaAssetConfig
+        {
+            Id = "image1",
+            FilePath = @"C:\media\follow.png"
+        };
+        var rule = new EventRule
+        {
+            SendObsMedia = true,
+            ObsMediaKind = ObsMediaKind.Image,
+            ObsMediaSourceMode = MediaSourceMode.Single,
+            ObsMediaAssetId = "image1"
+        };
+
+        var resolved = MediaRuleAssetService.ResolveRuleMediaAsset(rule, [image], [], new Random(1), _ => true);
+
+        TestAssert.Same(image, resolved);
+    }
+
+    public static void ResolvesGroupMediaAssets()
+    {
+        var missing = new MediaAssetConfig
+        {
+            Id = "missing",
+            GroupId = "g1",
+            FilePath = @"C:\media\missing.mp4"
+        };
+        var existing = new MediaAssetConfig
+        {
+            Id = "existing",
+            GroupId = "g1",
+            FilePath = @"C:\media\ok.mp4"
+        };
+        var rule = new EventRule
+        {
+            SendObsMedia = true,
+            ObsMediaKind = ObsMediaKind.Video,
+            ObsMediaSourceMode = MediaSourceMode.Group,
+            ObsMediaGroupId = "g1"
+        };
+
+        var resolved = MediaRuleAssetService.ResolveRuleMediaAsset(
+            rule,
+            [],
+            [missing, existing],
+            new Random(1),
+            path => path.EndsWith("ok.mp4", StringComparison.OrdinalIgnoreCase));
+
+        TestAssert.Same(existing, resolved);
+    }
+
+    public static void ResolvesImageAndVideoDurations()
+    {
+        var imageRule = new EventRule
+        {
+            SendObsMedia = true,
+            ObsMediaKind = ObsMediaKind.Image,
+            ObsMediaDurationMs = 2000
+        };
+        var videoRule = new EventRule
+        {
+            SendObsMedia = true,
+            ObsMediaKind = ObsMediaKind.Video
+        };
+        var video = new MediaAssetConfig { DurationMs = 7000 };
+
+        TestAssert.Equal(TimeSpan.FromSeconds(2), MediaRuleAssetService.ResolveRuleMediaDuration(imageRule, new MediaAssetConfig()));
+        TestAssert.Equal(TimeSpan.FromSeconds(7), MediaRuleAssetService.ResolveRuleMediaDuration(videoRule, video));
+        TestAssert.Equal(TimeSpan.FromSeconds(5), MediaRuleAssetService.ResolveRuleMediaDuration(videoRule, new MediaAssetConfig()));
     }
 }
 

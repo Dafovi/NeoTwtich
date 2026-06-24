@@ -4,6 +4,7 @@ using System.Windows;
 using System.Windows.Controls;
 using NeoTwitch.Models;
 using NeoTwitch.Services;
+using NeoTwitch.Services.Library;
 using NeoTwitch.Shared;
 using NeoTwitch.ViewModels.Activity;
 using NeoTwitch.ViewModels.Library;
@@ -371,7 +372,7 @@ public partial class MainWindow
             var sourceName = rule.ObsMediaKind == ObsMediaKind.Image
                 ? NeoTwitchProduct.Obs.AlertImageSourceName
                 : NeoTwitchProduct.Obs.AlertVideoSourceName;
-            var mediaDuration = ResolveRuleObsMediaDuration(rule, asset);
+            var mediaDuration = MediaRuleAssetService.ResolveRuleMediaDuration(rule, asset);
             var result = await _obsService.ShowMediaSourceAsync(
                 sceneName,
                 sourceName,
@@ -413,35 +414,11 @@ public partial class MainWindow
             return Dispatcher.Invoke(() => ResolveRuleObsMediaAsset(rule));
         }
 
-        var library = rule.ObsMediaKind == ObsMediaKind.Image
-            ? _config.ImageLibrary
-            : _config.VideoLibrary;
-
-        if (rule.ObsMediaSourceMode == MediaSourceMode.Group)
-        {
-            var candidates = library
-                .Where(asset => string.Equals(asset.GroupId, rule.ObsMediaGroupId, StringComparison.OrdinalIgnoreCase))
-                .Where(asset => File.Exists(asset.FilePath))
-                .ToArray();
-
-            return candidates.Length == 0
-                ? null
-                : candidates[_previewRandom.Next(candidates.Length)];
-        }
-
-        return library
-            .Where(asset => string.Equals(asset.Id, rule.ObsMediaAssetId, StringComparison.OrdinalIgnoreCase))
-            .FirstOrDefault(asset => File.Exists(asset.FilePath));
-    }
-
-    private static TimeSpan ResolveRuleObsMediaDuration(EventRule rule, MediaAssetConfig asset)
-    {
-        if (rule.ObsMediaKind == ObsMediaKind.Video)
-        {
-            return TimeSpan.FromMilliseconds(asset.DurationMs > 0 ? asset.DurationMs : 5000);
-        }
-
-        return TimeSpan.FromMilliseconds(Math.Clamp(rule.ObsMediaDurationMs, ApplicationLimits.MinAlertDurationMs, ApplicationLimits.MaxAlertDurationMs));
+        return MediaRuleAssetService.ResolveRuleMediaAsset(
+            rule,
+            _config.ImageLibrary,
+            _config.VideoLibrary,
+            _previewRandom);
     }
 
     private void MarkObsMediaAssetUsed(ObsMediaKind kind, MediaAssetConfig asset)

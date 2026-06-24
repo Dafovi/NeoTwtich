@@ -53,6 +53,7 @@ var tests = new (string Name, Action Body)[]
     ("UiTextFormatter builds bounded secret masks", UiTextFormatterTests.BuildsBoundedSecretMasks),
     ("CircularProgressGeometryService calculates percentages", CircularProgressGeometryTests.CalculatesPercentages),
     ("CircularProgressGeometryService builds arc geometry", CircularProgressGeometryTests.BuildsArcGeometry),
+    ("IconPathCatalog returns known icons and fallback", IconPathCatalogTests.ReturnsKnownIconsAndFallback),
     ("RuleSimulationService normalizes chat command matching", RuleSimulationTests.MatchesChatCommandWithNormalization),
     ("RuleSimulationService builds representative test events", RuleSimulationTests.BuildsRepresentativeEvents)
 };
@@ -851,6 +852,15 @@ static class CircularProgressGeometryTests
         TestAssert.True(half is System.Windows.Media.PathGeometry);
         TestAssert.False(((System.Windows.Media.ArcSegment)((System.Windows.Media.PathGeometry)half).Figures[0].Segments[0]).IsLargeArc);
         TestAssert.True(((System.Windows.Media.ArcSegment)((System.Windows.Media.PathGeometry)large).Figures[0].Segments[0]).IsLargeArc);
+    }
+}
+
+static class IconPathCatalogTests
+{
+    public static void ReturnsKnownIconsAndFallback()
+    {
+        TestAssert.True(IconPathCatalog.Get("Play").Contains("L19,12", StringComparison.Ordinal));
+        TestAssert.Equal("M12,5 L12,19 M5,12 L19,12", IconPathCatalog.Get("Algo que no existe"));
     }
 }
 

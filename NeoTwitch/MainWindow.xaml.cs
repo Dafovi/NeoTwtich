@@ -21,6 +21,7 @@ using NeoTwitch.Services.Activity;
 using NeoTwitch.Services.Alerts;
 using NeoTwitch.Services.Dashboard;
 using NeoTwitch.Services.Text;
+using NeoTwitch.Services.Ui;
 using NeoTwitch.Shared;
 using NeoTwitch.ViewModels.Activity;
 using NeoTwitch.ViewModels.Library;
@@ -505,7 +506,7 @@ public partial class MainWindow : Window
             VerticalAlignment = VerticalAlignment.Center
         };
 
-        panel.Children.Add(CreateIconPath(IconData(iconKey), 15, 1.9));
+        panel.Children.Add(CreateIconPath(IconPathCatalog.Get(iconKey), 15, 1.9));
         var text = new TextBlock
         {
             Text = label,
@@ -563,43 +564,6 @@ public partial class MainWindow : Window
                 yield return descendant;
             }
         }
-    }
-
-    private static string IconData(string key)
-    {
-        return key switch
-        {
-            "Activity" => "M3,12 L7,12 L10,5 L14,19 L17,12 L21,12",
-            "Alexa" => "M12,4 A8,8 0 1 1 12,20 A8,8 0 1 1 12,4 M12,8 A4,4 0 1 1 12,16 A4,4 0 1 1 12,8",
-            "Arduino" => "M7,8 C4,8 2,10 2,12 C2,14 4,16 7,16 C9,16 10,14 12,12 C14,10 15,8 17,8 C20,8 22,10 22,12 C22,14 20,16 17,16 C15,16 14,14 12,12 C10,10 9,8 7,8 M5,12 L9,12 M17,10 L17,14 M15,12 L19,12",
-            "Bits" => "M12,2 L20,9 L12,22 L4,9 Z M12,2 L12,22 M4,9 L20,9",
-            "Book" => "M4,5 C6,4 8,4 10,5 L10,20 C8,19 6,19 4,20 Z M20,5 C18,4 16,4 14,5 L14,20 C16,19 18,19 20,20 Z M10,5 L14,5 M10,20 L14,20",
-            "Chat" => "M4,5 L20,5 L20,16 L9,16 L5,20 L5,16 L4,16 Z M8,10 L16,10 M8,13 L13,13",
-            "Copy" => "M8,8 L19,8 L19,19 L8,19 Z M5,15 L4,15 L4,4 L15,4 L15,5",
-            "Download" => "M12,3 L12,15 M7,10 L12,15 L17,10 M5,20 L19,20",
-            "Event" => "M12,3 L14.5,9 L21,9 L15.5,13 L17.5,21 L12,16.5 L6.5,21 L8.5,13 L3,9 L9.5,9 Z",
-            "ExternalLink" => "M14,4 L20,4 L20,10 M20,4 L11,13 M19,14 L19,20 L5,20 L5,6 L11,6",
-            "Home" => "M3,11 L12,3 L21,11 M5,10 L5,21 L10,21 L10,15 L14,15 L14,21 L19,21 L19,10",
-            "MonitorCheck" => "M4,5 L20,5 L20,16 L4,16 Z M9,21 L15,21 M12,16 L12,21 M8,10 L11,13 L16,8",
-            "Play" => "M8,5 L19,12 L8,19 Z",
-            "Plug" => "M8,3 L8,9 M16,3 L16,9 M6,9 L18,9 L18,13 C18,16 16,18 13,18 L13,22 M10,22 L10,18 C7,18 5,16 5,13 L5,9",
-            "Plus" => "M12,5 L12,19 M5,12 L19,12",
-            "Power" => "M12,3 L12,11 M7,6 C5,8 4,10 4,13 C4,17 8,21 12,21 C16,21 20,17 20,13 C20,10 19,8 17,6",
-            "Refresh" => "M20,7 L20,13 L14,13 M4,17 L4,11 L10,11 M6,9 C7.2,5.5 10.5,3.5 14.2,4.2 C16.5,4.6 18.4,6 19.5,8 M17.8,15 C16.6,18.4 13.2,20.4 9.5,19.7 C7.2,19.3 5.3,18 4.2,16",
-            "Save" => "M5,4 L17,4 L20,7 L20,20 L4,20 L4,4 Z M8,4 L8,10 L16,10 L16,4 M8,20 L8,14 L16,14 L16,20",
-            "Search" => "M10.5,5 A5.5,5.5 0 1 1 10.5,16 A5.5,5.5 0 1 1 10.5,5 M15,15 L21,21",
-            "Settings" => "M12,8 A4,4 0 1 1 12,16 A4,4 0 1 1 12,8 M12,2 L14,2 L15,5 L18,4 L20,6 L19,9 L22,11 L22,13 L19,15 L20,18 L18,20 L15,19 L14,22 L10,22 L9,19 L6,20 L4,18 L5,15 L2,13 L2,11 L5,9 L4,6 L6,4 L9,5 L10,2 Z",
-            "Square" => "M7,7 L17,7 L17,17 L7,17 Z",
-            "Star" => "M12,3 L14.6,8.6 L20.8,9.3 L16.2,13.5 L17.5,19.8 L12,16.6 L6.5,19.8 L7.8,13.5 L3.2,9.3 L9.4,8.6 Z",
-            "Sun" => "M12,7 A5,5 0 1 1 12,17 A5,5 0 1 1 12,7 M12,1 L12,4 M12,20 L12,23 M4.2,4.2 L6.3,6.3 M17.7,17.7 L19.8,19.8 M1,12 L4,12 M20,12 L23,12 M4.2,19.8 L6.3,17.7 M17.7,6.3 L19.8,4.2",
-            "Trash" => "M4,7 L20,7 M9,7 L9,5 L15,5 L15,7 M7,7 L8,21 L16,21 L17,7 M10,11 L10,18 M14,11 L14,18",
-            "Twitch" => "M4,5 L20,5 L20,16 L13,16 L9,20 L9,16 L4,16 Z M8,9 L8,13 M13,9 L13,13",
-            "Upload" => "M12,15 L12,3 M7,8 L12,3 L17,8 M5,20 L19,20",
-            "Users" => "M8,11 A4,4 0 1 1 8,3 A4,4 0 1 1 8,11 M2,21 C2,16 5,14 8,14 C11,14 14,16 14,21 M17,10 A3,3 0 1 1 17,4 A3,3 0 1 1 17,10 M15,14 C18,14 21,16 21,20",
-            "Warning" => "M12,3 L22,20 L2,20 Z M12,8 L12,13 M12,17 L12.1,17",
-            "Zap" => "M13,2 L4,14 L11,14 L9,22 L20,10 L13,10 Z",
-            _ => "M12,5 L12,19 M5,12 L19,12"
-        };
     }
 
     private async void Window_Loaded(object sender, RoutedEventArgs e)

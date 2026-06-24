@@ -2,6 +2,7 @@ using NeoTwitch.Models;
 using NeoTwitch.Services;
 using NeoTwitch.Services.Alerts;
 using NeoTwitch.Services.Configuration;
+using NeoTwitch.Services.Lights;
 
 var tests = new (string Name, Action Body)[]
 {
@@ -19,6 +20,9 @@ var tests = new (string Name, Action Body)[]
     ("EventRuleMatcherService keeps highest bits threshold", EventRuleMatcherTests.KeepsHighestBitsThreshold),
     ("AlertDurationService resolves maximum positive duration", AlertDurationTests.ResolvesMaximumPositiveDuration),
     ("AlertDurationService clamps synchronized durations", AlertDurationTests.ClampsSynchronizedDurations),
+    ("LedPreviewService calculates responsive dot counts", LedPreviewTests.CalculatesResponsiveDotCounts),
+    ("LedPreviewService builds solid frames with brightness floor", LedPreviewTests.BuildsSolidFramesWithBrightnessFloor),
+    ("LedPreviewService builds rainbow frames", LedPreviewTests.BuildsRainbowFrames),
     ("RuleSimulationService normalizes chat command matching", RuleSimulationTests.MatchesChatCommandWithNormalization),
     ("RuleSimulationService builds representative test events", RuleSimulationTests.BuildsRepresentativeEvents)
 };
@@ -383,6 +387,55 @@ static class AlertDurationTests
 
         var tooLong = AlertDurationService.ResolveSynchronizedEffectDurationMs(TimeSpan.FromMilliseconds(ApplicationLimits.MaxAlertDurationMs + 10_000));
         TestAssert.Equal(ApplicationLimits.MaxAlertDurationMs, tooLong);
+    }
+}
+
+static class LedPreviewTests
+{
+    public static void CalculatesResponsiveDotCounts()
+    {
+        TestAssert.Equal(24, LedPreviewService.CalculateDotCount(double.NaN));
+        TestAssert.Equal(8, LedPreviewService.CalculateDotCount(10));
+        TestAssert.Equal(24, LedPreviewService.CalculateDotCount(768));
+        TestAssert.Equal(36, LedPreviewService.CalculateDotCount(5000));
+    }
+
+    public static void BuildsSolidFramesWithBrightnessFloor()
+    {
+        var primary = LedPreviewService.ParseColor("#FF0000", "#000000");
+        var frame = LedPreviewService.BuildFrame(
+            LightPattern.Solid,
+            step: 1,
+            count: 2,
+            brightness: 0,
+            primary,
+            LedPreviewService.ParseColor("#00FF00", "#000000"),
+            LedPreviewService.ParseColor("#0000FF", "#000000"),
+            new Random(1));
+
+        TestAssert.Equal(2, frame.Length);
+        TestAssert.Equal((byte)20, frame[0].R);
+        TestAssert.Equal((byte)0, frame[0].G);
+        TestAssert.Equal((byte)0, frame[0].B);
+    }
+
+    public static void BuildsRainbowFrames()
+    {
+        var frame = LedPreviewService.BuildFrame(
+            LightPattern.Rainbow,
+            step: 0,
+            count: 3,
+            brightness: 1,
+            LedPreviewService.ParseColor("#FF0000", "#000000"),
+            LedPreviewService.ParseColor("#00FF00", "#000000"),
+            LedPreviewService.ParseColor("#0000FF", "#000000"),
+            new Random(1));
+
+        TestAssert.Equal(3, frame.Length);
+        TestAssert.Equal((byte)255, frame[0].R);
+        TestAssert.Equal((byte)0, frame[0].B);
+        TestAssert.True(frame[1].G > 0);
+        TestAssert.True(frame[2].B > 0);
     }
 }
 

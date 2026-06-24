@@ -2,6 +2,7 @@ using System.Collections.ObjectModel;
 using System.Windows;
 using NeoTwitch.Models;
 using NeoTwitch.Services;
+using NeoTwitch.Services.Lights;
 using NeoTwitch.Shared;
 using NeoTwitch.ViewModels.Activity;
 using NeoTwitch.ViewModels.Library;
@@ -562,42 +563,23 @@ public partial class MainWindow
             ? selectedPattern
             : LightPattern.Pulse;
         var brightness = Math.Clamp(BrightnessSlider.Value / 255d, 0d, 1d);
-        var colorScale = Math.Clamp(brightness, 0.08, 1d);
-        var primary = ParsePreviewColor(PrimaryColorBox.Text, "#14B8A6");
-        var secondary = ParsePreviewColor(SecondaryColorBox.Text, "#B56CFF");
-        var tertiary = ParsePreviewColor(TertiaryColorBox.Text, "#FFFFFF");
+        var primary = LedPreviewService.ParseColor(PrimaryColorBox.Text, "#14B8A6");
+        var secondary = LedPreviewService.ParseColor(SecondaryColorBox.Text, "#B56CFF");
+        var tertiary = LedPreviewService.ParseColor(TertiaryColorBox.Text, "#FFFFFF");
         var count = _ruleLedPreviewDots.Count;
         _ruleLedPreviewStep++;
+        var frame = LedPreviewService.BuildFrame(pattern, _ruleLedPreviewStep, count, brightness, primary, secondary, tertiary, _previewRandom);
 
         for (var i = 0; i < count; i++)
         {
-            var phase = (i + _ruleLedPreviewStep) / (double)count;
-            var color = pattern switch
-            {
-                LightPattern.Solid => primary,
-                LightPattern.Rainbow => RainbowPreviewColor(phase),
-                LightPattern.Pulse => BlendPreviewColor(primary, secondary, (Math.Sin((_ruleLedPreviewStep * 0.18) + (i * 0.22)) + 1d) / 2d),
-                LightPattern.Chase => ((i + _ruleLedPreviewStep) % 6) < 2
-                    ? primary
-                    : ScalePreviewColor(secondary, 0.22),
-                LightPattern.Theater => ((i + _ruleLedPreviewStep) % 3) == 0
-                    ? primary
-                    : (((i + _ruleLedPreviewStep) % 3) == 1 ? secondary : ScalePreviewColor(tertiary, 0.18)),
-                LightPattern.Sparkle => _previewRandom.NextDouble() > 0.72
-                    ? RandomPreviewColor(primary, secondary, tertiary)
-                    : ScalePreviewColor(primary, 0.16),
-                LightPattern.Rave => RandomPreviewColor(primary, secondary, tertiary),
-                _ => primary
-            };
-
-            _ruleLedPreviewDots[i] = PreviewDot(ScalePreviewColor(color, colorScale), brightness);
+            _ruleLedPreviewDots[i] = PreviewDot(frame[i], brightness);
         }
     }
 
     private void SetRuleLedPreviewAll(string color)
     {
         ResizeLedPreviewDots(_ruleLedPreviewDots, RuleLedPreviewPanel.ActualWidth);
-        var previewColor = ParsePreviewColor(color, "#334155");
+        var previewColor = LedPreviewService.ParseColor(color, "#334155");
         for (var i = 0; i < _ruleLedPreviewDots.Count; i++)
         {
             _ruleLedPreviewDots[i] = PreviewDot(previewColor, 0.08);
@@ -666,42 +648,23 @@ public partial class MainWindow
             ? selectedPattern
             : LightPattern.Solid;
         var brightness = Math.Clamp(BackgroundBrightnessSlider.Value / 255d, 0d, 1d);
-        var colorScale = Math.Clamp(brightness, 0.08, 1d);
-        var primary = ParsePreviewColor(BackgroundPrimaryColorBox.Text, "#14B8A6");
-        var secondary = ParsePreviewColor(BackgroundSecondaryColorBox.Text, "#B56CFF");
-        var tertiary = ParsePreviewColor(BackgroundTertiaryColorBox.Text, "#FFFFFF");
+        var primary = LedPreviewService.ParseColor(BackgroundPrimaryColorBox.Text, "#14B8A6");
+        var secondary = LedPreviewService.ParseColor(BackgroundSecondaryColorBox.Text, "#B56CFF");
+        var tertiary = LedPreviewService.ParseColor(BackgroundTertiaryColorBox.Text, "#FFFFFF");
         var count = _backgroundLedPreviewDots.Count;
         _backgroundLedPreviewStep++;
+        var frame = LedPreviewService.BuildFrame(pattern, _backgroundLedPreviewStep, count, brightness, primary, secondary, tertiary, _previewRandom);
 
         for (var i = 0; i < count; i++)
         {
-            var phase = (i + _backgroundLedPreviewStep) / (double)count;
-            var color = pattern switch
-            {
-                LightPattern.Solid => primary,
-                LightPattern.Rainbow => RainbowPreviewColor(phase),
-                LightPattern.Pulse => BlendPreviewColor(primary, secondary, (Math.Sin((_backgroundLedPreviewStep * 0.18) + (i * 0.22)) + 1d) / 2d),
-                LightPattern.Chase => ((i + _backgroundLedPreviewStep) % 6) < 2
-                    ? primary
-                    : ScalePreviewColor(secondary, 0.22),
-                LightPattern.Theater => ((i + _backgroundLedPreviewStep) % 3) == 0
-                    ? primary
-                    : (((i + _backgroundLedPreviewStep) % 3) == 1 ? secondary : ScalePreviewColor(tertiary, 0.18)),
-                LightPattern.Sparkle => _previewRandom.NextDouble() > 0.72
-                    ? RandomPreviewColor(primary, secondary, tertiary)
-                    : ScalePreviewColor(primary, 0.16),
-                LightPattern.Rave => RandomPreviewColor(primary, secondary, tertiary),
-                _ => primary
-            };
-
-            _backgroundLedPreviewDots[i] = PreviewDot(ScalePreviewColor(color, colorScale), brightness);
+            _backgroundLedPreviewDots[i] = PreviewDot(frame[i], brightness);
         }
     }
 
     private void SetBackgroundLedPreviewAll(string color)
     {
         ResizeLedPreviewDots(_backgroundLedPreviewDots, BackgroundLedPreviewPanel.ActualWidth);
-        var previewColor = ParsePreviewColor(color, "#334155");
+        var previewColor = LedPreviewService.ParseColor(color, "#334155");
         for (var i = 0; i < _backgroundLedPreviewDots.Count; i++)
         {
             _backgroundLedPreviewDots[i] = PreviewDot(previewColor, 0.08);
@@ -745,31 +708,6 @@ public partial class MainWindow
             && BackgroundLedPreviewPanel.IsVisible;
     }
 
-    private System.Windows.Media.Color RandomPreviewColor(
-        System.Windows.Media.Color primary,
-        System.Windows.Media.Color secondary,
-        System.Windows.Media.Color tertiary)
-    {
-        return _previewRandom.Next(3) switch
-        {
-            0 => primary,
-            1 => secondary,
-            _ => tertiary
-        };
-    }
-
-    private static System.Windows.Media.Color ParsePreviewColor(string color, string fallback)
-    {
-        try
-        {
-            return (System.Windows.Media.Color)System.Windows.Media.ColorConverter.ConvertFromString(LightCommand.NormalizeColor(color));
-        }
-        catch
-        {
-            return (System.Windows.Media.Color)System.Windows.Media.ColorConverter.ConvertFromString(fallback);
-        }
-    }
-
     private static RuleLedPreviewDot PreviewDot(System.Windows.Media.Color color, double brightness)
     {
         var glowOpacity = Math.Clamp(0.12 + (brightness * 0.72), 0.12, 0.9);
@@ -783,68 +721,16 @@ public partial class MainWindow
 
     private static void ResizeLedPreviewDots(ObservableCollection<RuleLedPreviewDot> dots, double availableWidth)
     {
-        var targetCount = CalculatePreviewDotCount(availableWidth);
+        var targetCount = LedPreviewService.CalculateDotCount(availableWidth);
         while (dots.Count < targetCount)
         {
-            dots.Add(PreviewDot(ParsePreviewColor("#334155", "#334155"), 0.08));
+            dots.Add(PreviewDot(LedPreviewService.ParseColor("#334155", "#334155"), 0.08));
         }
 
         while (dots.Count > targetCount)
         {
             dots.RemoveAt(dots.Count - 1);
         }
-    }
-
-    private static int CalculatePreviewDotCount(double availableWidth)
-    {
-        if (double.IsNaN(availableWidth) || availableWidth <= 0)
-        {
-            return 24;
-        }
-
-        return Math.Clamp((int)Math.Floor(availableWidth / 32d), 8, 36);
-    }
-
-    private static System.Windows.Media.Color ScalePreviewColor(System.Windows.Media.Color color, double factor)
-    {
-        factor = Math.Clamp(factor, 0d, 1d);
-        return System.Windows.Media.Color.FromRgb(
-            (byte)Math.Round(color.R * factor),
-            (byte)Math.Round(color.G * factor),
-            (byte)Math.Round(color.B * factor));
-    }
-
-    private static System.Windows.Media.Color BlendPreviewColor(
-        System.Windows.Media.Color start,
-        System.Windows.Media.Color end,
-        double amount)
-    {
-        amount = Math.Clamp(amount, 0d, 1d);
-        return System.Windows.Media.Color.FromRgb(
-            (byte)Math.Round(start.R + ((end.R - start.R) * amount)),
-            (byte)Math.Round(start.G + ((end.G - start.G) * amount)),
-            (byte)Math.Round(start.B + ((end.B - start.B) * amount)));
-    }
-
-    private static System.Windows.Media.Color RainbowPreviewColor(double phase)
-    {
-        phase -= Math.Floor(phase);
-        var h = phase * 6d;
-        var x = 1d - Math.Abs((h % 2d) - 1d);
-        var (r, g, b) = h switch
-        {
-            < 1d => (1d, x, 0d),
-            < 2d => (x, 1d, 0d),
-            < 3d => (0d, 1d, x),
-            < 4d => (0d, x, 1d),
-            < 5d => (x, 0d, 1d),
-            _ => (1d, 0d, x)
-        };
-
-        return System.Windows.Media.Color.FromRgb(
-            (byte)Math.Round(r * 255d),
-            (byte)Math.Round(g * 255d),
-            (byte)Math.Round(b * 255d));
     }
 
 }

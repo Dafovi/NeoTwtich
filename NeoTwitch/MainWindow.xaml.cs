@@ -264,8 +264,8 @@ public partial class MainWindow : Window
             ObsScenesList.ItemsSource = _obsSceneRows;
             for (var i = 0; i < ApplicationLimits.RulePreviewLedDots; i++)
             {
-                _ruleLedPreviewDots.Add(PreviewDot(ParsePreviewColor("#334155", "#334155"), 0.08));
-                _backgroundLedPreviewDots.Add(PreviewDot(ParsePreviewColor("#334155", "#334155"), 0.08));
+                _ruleLedPreviewDots.Add(PreviewDot(Services.Lights.LedPreviewService.ParseColor("#334155", "#334155"), 0.08));
+                _backgroundLedPreviewDots.Add(PreviewDot(Services.Lights.LedPreviewService.ParseColor("#334155", "#334155"), 0.08));
             }
 
             RuleLedPreviewList.ItemsSource = _ruleLedPreviewDots;

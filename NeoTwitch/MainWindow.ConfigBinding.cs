@@ -464,15 +464,17 @@ public partial class MainWindow
 
         SetVisible(useLights, LightConfigurationPanel, LightOptionsSeparator, TargetPinsLabel, TargetPinsChoiceBox, PatternGrid, RuleLedPreviewPanel);
         var usesAnyLightColor = useLights
-            && (UsesPrimaryColor(pattern) || UsesSecondaryColor(pattern) || UsesTertiaryColor(pattern));
+            && (LightPatternCapabilities.UsesPrimaryColor(pattern)
+                || LightPatternCapabilities.UsesSecondaryColor(pattern)
+                || LightPatternCapabilities.UsesTertiaryColor(pattern));
         SetVisible(usesAnyLightColor, ColorOptionsGrid);
-        SetVisible(useLights && UsesPrimaryColor(pattern), PrimaryColorPanel);
-        SetVisible(useLights && UsesSecondaryColor(pattern), SecondaryColorLabel, SecondaryColorPanel);
-        SetVisible(useLights && UsesTertiaryColor(pattern), TertiaryColorLabel, TertiaryColorPanel);
-        SetVisible(useLights && UsesBrightness(pattern), BrightnessGrid);
+        SetVisible(useLights && LightPatternCapabilities.UsesPrimaryColor(pattern), PrimaryColorPanel);
+        SetVisible(useLights && LightPatternCapabilities.UsesSecondaryColor(pattern), SecondaryColorLabel, SecondaryColorPanel);
+        SetVisible(useLights && LightPatternCapabilities.UsesTertiaryColor(pattern), TertiaryColorLabel, TertiaryColorPanel);
+        SetVisible(useLights && LightPatternCapabilities.UsesBrightness(pattern), BrightnessGrid);
         SetVisible(useLights && !playAudio, DurationGrid);
-        SetVisible(useLights && UsesCycle(pattern), CycleGrid);
-        SetVisible(useLights && UsesStep(pattern), StepGrid);
+        SetVisible(useLights && LightPatternCapabilities.UsesCycle(pattern), CycleGrid);
+        SetVisible(useLights && LightPatternCapabilities.UsesStep(pattern), StepGrid);
         UpdateRuleAudioModeSelection();
         UpdateRuleObsMediaModeSelection();
         RefreshRuleObsMediaChoices();
@@ -525,14 +527,16 @@ public partial class MainWindow
         SetVisible(arduinoAvailable, BackgroundEnabledCheck);
         SetVisible(enabled, BackgroundPatternGrid, BackgroundLedPreviewPanel, ApplyArduinoBackgroundButton);
         var usesAnyBackgroundColor = enabled
-            && (UsesPrimaryColor(pattern) || UsesSecondaryColor(pattern) || UsesTertiaryColor(pattern));
+            && (LightPatternCapabilities.UsesPrimaryColor(pattern)
+                || LightPatternCapabilities.UsesSecondaryColor(pattern)
+                || LightPatternCapabilities.UsesTertiaryColor(pattern));
         SetVisible(usesAnyBackgroundColor, BackgroundColorOptionsGrid);
-        SetVisible(enabled && UsesBrightness(pattern), BackgroundBrightnessPanel);
-        SetVisible(enabled && UsesPrimaryColor(pattern), BackgroundPrimaryColorLabel, BackgroundPrimaryColorPanel);
-        SetVisible(enabled && UsesSecondaryColor(pattern), BackgroundSecondaryColorLabel, BackgroundSecondaryColorPanel);
-        SetVisible(enabled && UsesTertiaryColor(pattern), BackgroundTertiaryColorLabel, BackgroundTertiaryColorPanel);
-        SetVisible(enabled && UsesCycle(pattern), BackgroundCycleGrid);
-        SetVisible(enabled && UsesStep(pattern), BackgroundStepGrid);
+        SetVisible(enabled && LightPatternCapabilities.UsesBrightness(pattern), BackgroundBrightnessPanel);
+        SetVisible(enabled && LightPatternCapabilities.UsesPrimaryColor(pattern), BackgroundPrimaryColorLabel, BackgroundPrimaryColorPanel);
+        SetVisible(enabled && LightPatternCapabilities.UsesSecondaryColor(pattern), BackgroundSecondaryColorLabel, BackgroundSecondaryColorPanel);
+        SetVisible(enabled && LightPatternCapabilities.UsesTertiaryColor(pattern), BackgroundTertiaryColorLabel, BackgroundTertiaryColorPanel);
+        SetVisible(enabled && LightPatternCapabilities.UsesCycle(pattern), BackgroundCycleGrid);
+        SetVisible(enabled && LightPatternCapabilities.UsesStep(pattern), BackgroundStepGrid);
     }
 
     private void ApplyBackgroundOutputMode()
@@ -864,40 +868,4 @@ public partial class MainWindow
             (byte)Math.Round(b * 255d));
     }
 
-    private static bool UsesPrimaryColor(LightPattern pattern)
-    {
-        return pattern != LightPattern.Rainbow;
-    }
-
-    private static bool UsesSecondaryColor(LightPattern pattern)
-    {
-        return pattern is LightPattern.Pulse
-            or LightPattern.Chase
-            or LightPattern.Theater
-            or LightPattern.Sparkle
-            or LightPattern.Rave;
-    }
-
-    private static bool UsesTertiaryColor(LightPattern pattern)
-    {
-        return pattern is LightPattern.Chase
-            or LightPattern.Theater
-            or LightPattern.Sparkle
-            or LightPattern.Rave;
-    }
-
-    private static bool UsesBrightness(LightPattern pattern)
-    {
-        return true;
-    }
-
-    private static bool UsesCycle(LightPattern pattern)
-    {
-        return pattern != LightPattern.Solid;
-    }
-
-    private static bool UsesStep(LightPattern pattern)
-    {
-        return pattern is LightPattern.Sparkle or LightPattern.Rave;
-    }
 }

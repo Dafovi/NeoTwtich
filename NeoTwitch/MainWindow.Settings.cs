@@ -4,6 +4,7 @@ using System.Windows;
 using System.Windows.Controls;
 using NeoTwitch.Models;
 using NeoTwitch.Services;
+using NeoTwitch.Services.Status;
 using NeoTwitch.Shared;
 using NeoTwitch.ViewModels.Activity;
 using NeoTwitch.ViewModels.Status;
@@ -236,12 +237,7 @@ public partial class MainWindow
 
     private void UpdateSettingsAppState(ConnectionVisualState state)
     {
-        var (text, color, imagePath) = state switch
-        {
-            ConnectionVisualState.Connected => ("Estado: Todo en orden", "#22C55E", "Assets/Icons/appstate_ok.png"),
-            ConnectionVisualState.Warning => ("Estado: Hay puntos por revisar", "#FFB020", "Assets/Icons/appstate_warning.png"),
-            _ => ("Estado: Revisa el diagnostico", "#F43F5E", "Assets/Icons/appstate_error.png")
-        };
+        var (text, color, imagePath) = ConnectionStateService.GetAppStateVisual(state);
 
         SettingsAppStateIcon.Source = LoadPackImage(imagePath);
         SettingsDiagnosticStatusText.Text = text;

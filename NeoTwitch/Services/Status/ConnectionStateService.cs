@@ -123,4 +123,14 @@ public static class ConnectionStateService
             _ => new ConnectionStateVisual(disconnectedText, "#F43F5E", "Assets/Icons/status_error.png")
         };
     }
+
+    public static ConnectionStateVisual GetAppStateVisual(ConnectionVisualState state)
+    {
+        return state switch
+        {
+            ConnectionVisualState.Connected => new ConnectionStateVisual("Estado: Todo en orden", "#22C55E", "Assets/Icons/appstate_ok.png"),
+            ConnectionVisualState.Warning => new ConnectionStateVisual("Estado: Hay puntos por revisar", "#FFB020", "Assets/Icons/appstate_warning.png"),
+            _ => new ConnectionStateVisual("Estado: Revisa el diagnostico", "#F43F5E", "Assets/Icons/appstate_error.png")
+        };
+    }
 }

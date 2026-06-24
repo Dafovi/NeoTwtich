@@ -688,6 +688,10 @@ static class ConnectionStateTests
         TestAssert.Contains("status_ok.png", connected.IconPath);
         TestAssert.Equal("Desactivado", disabled.Text);
         TestAssert.Contains("status_empty.png", disabled.IconPath);
+
+        var appWarning = ConnectionStateService.GetAppStateVisual(ConnectionVisualState.Warning);
+        TestAssert.Equal("Estado: Hay puntos por revisar", appWarning.Text);
+        TestAssert.Contains("appstate_warning.png", appWarning.IconPath);
     }
 }
 

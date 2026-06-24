@@ -1,3 +1,5 @@
+using System.Windows;
+using System.Windows.Controls;
 using WpfBorder = System.Windows.Controls.Border;
 using WpfCheckBox = System.Windows.Controls.CheckBox;
 using WpfComboBox = System.Windows.Controls.ComboBox;
@@ -30,4 +32,48 @@ public partial class MainWindow
     private WpfCheckBox ObsAutoReconnectCheck => SettingsView.ObsAutoReconnectCheck;
     private WpfTextBlock SettingsPathText => SettingsView.SettingsPathText;
     private WpfTextBlock BackupPathText => SettingsView.BackupPathText;
+
+    internal void GlobalSettingsChanged(object sender, RoutedEventArgs e)
+    {
+        if (_initializingComponent || _loadingUi)
+        {
+            return;
+        }
+
+        SaveGlobalSettingsFromFields();
+        SaveConfig();
+        ApplyStartWithWindowsRegistration();
+        UpdateSensitiveFieldVisibility();
+        UpdateSliderLabels();
+        UpdateStatusText();
+        RefreshRulesView();
+        UpdateRuleOptionVisibility();
+        ApplyBackgroundOutputMode();
+        UpdateNavigationButtons();
+        UpdateCloseBehaviorCards();
+    }
+
+    internal void CloseBehaviorRadio_Checked(object sender, RoutedEventArgs e)
+    {
+        if (_initializingComponent || _loadingUi)
+        {
+            return;
+        }
+
+        CloseToTrayCheck.IsChecked = sender == CloseToTrayRadio;
+        GlobalSettingsChanged(sender, e);
+    }
+
+    internal void ThemeModeChanged(object sender, SelectionChangedEventArgs e)
+    {
+        if (_initializingComponent || _loadingUi)
+        {
+            return;
+        }
+
+        SaveGlobalSettingsFromFields();
+        ApplyTheme();
+        SaveConfig();
+        UpdateCloseBehaviorCards();
+    }
 }

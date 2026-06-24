@@ -1,3 +1,4 @@
+using System.Windows;
 using System.Windows.Controls.Primitives;
 
 namespace NeoTwitch;
@@ -14,4 +15,9 @@ public partial class MainWindow
     private ToggleButton ActivityFilterEventButton => ActivityView.ActivityFilterEventButton;
     private ToggleButton ActivityFilterSystemButton => ActivityView.ActivityFilterSystemButton;
     private ToggleButton ActivityFilterImportantButton => ActivityView.ActivityFilterImportantButton;
+
+    private void ClearLogButton_Click(object sender, RoutedEventArgs e)
+    {
+        _activityLog.Clear();
+    }
 }

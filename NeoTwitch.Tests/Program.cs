@@ -4,7 +4,9 @@ using NeoTwitch.Services.Alerts;
 using NeoTwitch.Services.Configuration;
 using NeoTwitch.Services.Library;
 using NeoTwitch.Services.Lights;
+using NeoTwitch.Services.Status;
 using NeoTwitch.ViewModels.Library;
+using NeoTwitch.ViewModels.Status;
 
 var tests = new (string Name, Action Body)[]
 {
@@ -33,6 +35,8 @@ var tests = new (string Name, Action Body)[]
     ("MediaRuleAssetService resolves single media assets", MediaRuleAssetTests.ResolvesSingleMediaAssets),
     ("MediaRuleAssetService resolves group media assets", MediaRuleAssetTests.ResolvesGroupMediaAssets),
     ("MediaRuleAssetService resolves image and video durations", MediaRuleAssetTests.ResolvesImageAndVideoDurations),
+    ("ConnectionStateService resolves service states", ConnectionStateTests.ResolvesServiceStates),
+    ("ConnectionStateService maps visual metadata", ConnectionStateTests.MapsVisualMetadata),
     ("RuleSimulationService normalizes chat command matching", RuleSimulationTests.MatchesChatCommandWithNormalization),
     ("RuleSimulationService builds representative test events", RuleSimulationTests.BuildsRepresentativeEvents)
 };
@@ -657,6 +661,33 @@ static class MediaRuleAssetTests
         TestAssert.Equal(TimeSpan.FromSeconds(2), MediaRuleAssetService.ResolveRuleMediaDuration(imageRule, new MediaAssetConfig()));
         TestAssert.Equal(TimeSpan.FromSeconds(7), MediaRuleAssetService.ResolveRuleMediaDuration(videoRule, video));
         TestAssert.Equal(TimeSpan.FromSeconds(5), MediaRuleAssetService.ResolveRuleMediaDuration(videoRule, new MediaAssetConfig()));
+    }
+}
+
+static class ConnectionStateTests
+{
+    public static void ResolvesServiceStates()
+    {
+        TestAssert.Equal(ConnectionVisualState.Connecting, ConnectionStateService.ResolveTwitch(false, true, false, false));
+        TestAssert.Equal(ConnectionVisualState.Warning, ConnectionStateService.ResolveTwitch(false, false, true, true));
+        TestAssert.Equal(ConnectionVisualState.Connected, ConnectionStateService.ResolveTwitch(false, false, false, true));
+        TestAssert.Equal(ConnectionVisualState.Disabled, ConnectionStateService.ResolveArduino(false, false, false, false, false));
+        TestAssert.Equal(ConnectionVisualState.Connecting, ConnectionStateService.ResolveArduino(true, false, false, false, true));
+        TestAssert.Equal(ConnectionVisualState.Connected, ConnectionStateService.ResolveArduino(true, false, true, false, false));
+        TestAssert.Equal(ConnectionVisualState.Warning, ConnectionStateService.ResolveAlexa(true, false, true, false));
+        TestAssert.Equal(ConnectionVisualState.Warning, ConnectionStateService.ResolveObs(true, false, false, true));
+    }
+
+    public static void MapsVisualMetadata()
+    {
+        var connected = ConnectionStateService.GetVisual(ConnectionVisualState.Connected, connectedText: "Listo");
+        var disabled = ConnectionStateService.GetVisual(ConnectionVisualState.Disabled);
+
+        TestAssert.Equal("Listo", connected.Text);
+        TestAssert.Equal("#22C55E", connected.Color);
+        TestAssert.Contains("status_ok.png", connected.IconPath);
+        TestAssert.Equal("Desactivado", disabled.Text);
+        TestAssert.Contains("status_empty.png", disabled.IconPath);
     }
 }
 

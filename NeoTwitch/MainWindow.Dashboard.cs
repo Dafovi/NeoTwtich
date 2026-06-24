@@ -3,6 +3,7 @@ using System.Windows.Controls;
 using System.Windows.Media;
 using System.Windows.Media.Imaging;
 using NeoTwitch.Models;
+using NeoTwitch.Services.Status;
 using NeoTwitch.ViewModels.Status;
 
 namespace NeoTwitch;
@@ -200,40 +201,27 @@ public partial class MainWindow
 
     private void RefreshDashboardConnectionStates()
     {
-        var twitchState = _isTwitchAuthorizing || _isTwitchConnecting
-            ? ConnectionVisualState.Connecting
-            : !string.IsNullOrWhiteSpace(_twitchConnectionError)
-                ? ConnectionVisualState.Warning
-                : _config.Token.HasToken
-                    ? ConnectionVisualState.Connected
-                    : ConnectionVisualState.Disconnected;
-        var arduinoState = !_config.ArduinoEnabled
-            ? ConnectionVisualState.Disabled
-            : _isArduinoConnecting
-                ? ConnectionVisualState.Connecting
-                : _lightController.HasConfirmedAck || _lightController.IsCompatibleWithoutAck
-                    ? ConnectionVisualState.Connected
-                : _lightController.HasOpenPort
-                        ? ConnectionVisualState.Connecting
-                        : ConnectionVisualState.Disconnected;
-        var alexaState = !_config.Alexa.Enabled
-            ? ConnectionVisualState.Disabled
-            : _isAlexaConnecting
-                ? ConnectionVisualState.Connecting
-                : !_config.Alexa.IsConfigured
-                    ? ConnectionVisualState.Warning
-                    : _alexaRelayConnected
-                        ? ConnectionVisualState.Connected
-                        : ConnectionVisualState.Warning;
-        var obsState = !_config.Obs.Enabled
-            ? ConnectionVisualState.Disabled
-            : _isObsConnecting
-                ? ConnectionVisualState.Connecting
-                : _obsService.IsConnected
-                    ? ConnectionVisualState.Connected
-                    : !string.IsNullOrWhiteSpace(_obsConnectionError)
-                        ? ConnectionVisualState.Warning
-                        : ConnectionVisualState.Disconnected;
+        var twitchState = ConnectionStateService.ResolveTwitch(
+            _isTwitchAuthorizing,
+            _isTwitchConnecting,
+            !string.IsNullOrWhiteSpace(_twitchConnectionError),
+            _config.Token.HasToken);
+        var arduinoState = ConnectionStateService.ResolveArduino(
+            _config.ArduinoEnabled,
+            _isArduinoConnecting,
+            _lightController.HasConfirmedAck,
+            _lightController.IsCompatibleWithoutAck,
+            _lightController.HasOpenPort);
+        var alexaState = ConnectionStateService.ResolveAlexa(
+            _config.Alexa.Enabled,
+            _isAlexaConnecting,
+            _config.Alexa.IsConfigured,
+            _alexaRelayConnected);
+        var obsState = ConnectionStateService.ResolveObs(
+            _config.Obs.Enabled,
+            _isObsConnecting,
+            _obsService.IsConnected,
+            !string.IsNullOrWhiteSpace(_obsConnectionError));
 
         SetDashboardConnectionState(
             DashboardTwitchStateText,
@@ -288,7 +276,7 @@ public partial class MainWindow
         string connectingText = "Conectando",
         string warningText = "Revisar")
     {
-        var (text, color, icon) = ConnectionStateVisuals(
+        var (text, color, icon) = ConnectionStateService.GetVisual(
             state,
             connectedText,
             disconnectedText,
@@ -318,7 +306,7 @@ public partial class MainWindow
         string connectingText = "Conectando",
         string warningText = "Revisar")
     {
-        var (text, color, _) = ConnectionStateVisuals(
+        var (text, color, _) = ConnectionStateService.GetVisual(
             state,
             connectedText,
             disconnectedText,
@@ -332,24 +320,6 @@ public partial class MainWindow
         badge.Background = TranslucentBrushFrom(color);
         badge.BorderBrush = brush;
         badge.BorderThickness = new Thickness(1);
-    }
-
-    private static (string Text, string Color, string IconPath) ConnectionStateVisuals(
-        ConnectionVisualState state,
-        string connectedText,
-        string disconnectedText,
-        string disabledText,
-        string connectingText,
-        string warningText)
-    {
-        return state switch
-        {
-            ConnectionVisualState.Connected => (connectedText, "#22C55E", "Assets/Icons/status_ok.png"),
-            ConnectionVisualState.Connecting => (connectingText, "#FFB020", "Assets/Icons/status_warning.png"),
-            ConnectionVisualState.Warning => (warningText, "#FFB020", "Assets/Icons/status_warning.png"),
-            ConnectionVisualState.Disabled => (disabledText, "#94A3B8", "Assets/Icons/status_empty.png"),
-            _ => (disconnectedText, "#F43F5E", "Assets/Icons/status_error.png")
-        };
     }
 
     private static ImageSource? LoadPackImage(string path)

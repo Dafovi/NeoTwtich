@@ -54,6 +54,7 @@ var tests = new (string Name, Action Body)[]
     ("CircularProgressGeometryService calculates percentages", CircularProgressGeometryTests.CalculatesPercentages),
     ("CircularProgressGeometryService builds arc geometry", CircularProgressGeometryTests.BuildsArcGeometry),
     ("IconPathCatalog returns known icons and fallback", IconPathCatalogTests.ReturnsKnownIconsAndFallback),
+    ("ButtonIconCatalog maps button labels", ButtonIconCatalogTests.MapsButtonLabels),
     ("RuleSimulationService normalizes chat command matching", RuleSimulationTests.MatchesChatCommandWithNormalization),
     ("RuleSimulationService builds representative test events", RuleSimulationTests.BuildsRepresentativeEvents)
 };
@@ -861,6 +862,20 @@ static class IconPathCatalogTests
     {
         TestAssert.True(IconPathCatalog.Get("Play").Contains("L19,12", StringComparison.Ordinal));
         TestAssert.Equal("M12,5 L12,19 M5,12 L19,12", IconPathCatalog.Get("Algo que no existe"));
+    }
+}
+
+static class ButtonIconCatalogTests
+{
+    public static void MapsButtonLabels()
+    {
+        TestAssert.True(ButtonIconCatalog.TryGetIconKey("Guardar cambios", out var saveIcon));
+        TestAssert.Equal("Save", saveIcon);
+
+        TestAssert.True(ButtonIconCatalog.TryGetIconKey("  Probar alerta  ", out var playIcon));
+        TestAssert.Equal("Play", playIcon);
+
+        TestAssert.False(ButtonIconCatalog.TryGetIconKey("Texto sin icono", out _));
     }
 }
 

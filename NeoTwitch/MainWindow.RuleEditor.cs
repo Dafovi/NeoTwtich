@@ -646,32 +646,14 @@ public partial class MainWindow
             return;
         }
 
-        var currentPins = string.Join(", ", LightCommand.ParsePins(TargetPinsBox.Text));
-        var options = new List<UiOption<string>>
-        {
-            new("Todas las salidas", "")
-        };
-
-        foreach (var strip in _config.LedStrips.OrderBy(strip => strip.Pin))
-        {
-            var label = string.IsNullOrWhiteSpace(strip.Name)
-                ? $"Pin {strip.Pin}"
-                : $"{strip.Name} - Pin {strip.Pin}";
-            options.Add(new(label, strip.Pin.ToString()));
-        }
-
-        if (!string.IsNullOrWhiteSpace(currentPins)
-            && options.All(option => !string.Equals(option.Value, currentPins, StringComparison.OrdinalIgnoreCase)))
-        {
-            options.Add(new($"Personalizado ({currentPins})", currentPins));
-        }
+        var choices = RulePinChoiceService.BuildChoices(_config.LedStrips, TargetPinsBox.Text);
 
         var wasLoading = _loadingRule;
         _loadingRule = true;
         try
         {
-            TargetPinsChoiceBox.ItemsSource = options;
-            TargetPinsChoiceBox.SelectedValue = currentPins;
+            TargetPinsChoiceBox.ItemsSource = choices.Options;
+            TargetPinsChoiceBox.SelectedValue = choices.CurrentPins;
 
             if (TargetPinsChoiceBox.SelectedIndex < 0)
             {

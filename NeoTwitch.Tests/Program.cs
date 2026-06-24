@@ -34,6 +34,7 @@ var tests = new (string Name, Action Body)[]
     ("AlertDurationService clamps synchronized durations", AlertDurationTests.ClampsSynchronizedDurations),
     ("LightControlInputService resolves presets", LightControlInputTests.ResolvesPresets),
     ("LightControlInputService parses and clamps values", LightControlInputTests.ParsesAndClampsValues),
+    ("RulePinChoiceService builds pin choices", RulePinChoiceTests.BuildsPinChoices),
     ("LedPreviewService calculates responsive dot counts", LedPreviewTests.CalculatesResponsiveDotCounts),
     ("LedPreviewService builds solid frames with brightness floor", LedPreviewTests.BuildsSolidFramesWithBrightnessFloor),
     ("LedPreviewService builds rainbow frames", LedPreviewTests.BuildsRainbowFrames),
@@ -485,6 +486,25 @@ static class LightControlInputTests
         TestAssert.True(LightControlInputService.TryParseSliderText(" 250 ", 0, 200, out var sliderValue));
         TestAssert.Equal(200d, sliderValue);
         TestAssert.False(LightControlInputService.TryParseSliderText("abc", 0, 200, out _));
+    }
+}
+
+static class RulePinChoiceTests
+{
+    public static void BuildsPinChoices()
+    {
+        var choices = RulePinChoiceService.BuildChoices(
+        [
+            new LedStripConfig { Name = "Derecha", Pin = 7 },
+            new LedStripConfig { Name = "", Pin = 3 }
+        ], "7, 9");
+
+        TestAssert.Equal("7, 9", choices.CurrentPins);
+        TestAssert.Equal(4, choices.Options.Count);
+        TestAssert.Equal("Todas las salidas", choices.Options[0].Label);
+        TestAssert.Equal("Pin 3", choices.Options[1].Label);
+        TestAssert.Equal("Derecha - Pin 7", choices.Options[2].Label);
+        TestAssert.Equal("Personalizado (7, 9)", choices.Options[3].Label);
     }
 }
 

@@ -41,7 +41,7 @@ public partial class MainWindow : Window
     private async void Window_Loaded(object sender, RoutedEventArgs e)
     {
         VersionText.Text = string.IsNullOrWhiteSpace(_options.RequestedVersion)
-            ? $"Versión {InstallerVersion.CurrentVersionText}"
+            ? $"Versión {NeoTwitchProduct.CurrentVersionText}"
             : $"Versión {_options.RequestedVersion}";
 
         if (_options.IsUpdate)

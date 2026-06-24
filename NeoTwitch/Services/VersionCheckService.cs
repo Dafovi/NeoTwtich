@@ -1,6 +1,5 @@
 using System.Net.Http;
 using System.Net.Http.Headers;
-using System.Reflection;
 using System.Text.Json;
 using System.Text.Json.Serialization;
 using NeoTwitch.Shared;
@@ -19,15 +18,8 @@ public sealed class VersionCheckService
 
     public VersionCheckService()
     {
-        _http.DefaultRequestHeaders.UserAgent.Add(new ProductInfoHeaderValue(NeoTwitchProduct.GitHubAppUserAgent, CurrentVersionText));
+        _http.DefaultRequestHeaders.UserAgent.Add(new ProductInfoHeaderValue(NeoTwitchProduct.GitHubAppUserAgent, NeoTwitchProduct.CurrentVersionText));
     }
-
-    public static string CurrentVersionText => NormalizeVersionText(
-        Assembly.GetExecutingAssembly()
-            .GetCustomAttribute<AssemblyInformationalVersionAttribute>()
-            ?.InformationalVersion
-        ?? Assembly.GetExecutingAssembly().GetName().Version?.ToString()
-        ?? "0.0.0");
 
     public async Task<VersionCheckResult> CheckLatestAsync(CancellationToken cancellationToken)
     {
@@ -38,8 +30,8 @@ public sealed class VersionCheckService
         var release = await JsonSerializer.DeserializeAsync<GitHubRelease>(stream, cancellationToken: cancellationToken)
             ?? throw new InvalidOperationException("GitHub no devolvio informacion de release.");
 
-        var latestVersionText = NormalizeVersionText(release.TagName);
-        var currentVersionText = CurrentVersionText;
+        var latestVersionText = NeoTwitchProduct.NormalizeVersionText(release.TagName);
+        var currentVersionText = NeoTwitchProduct.CurrentVersionText;
         var isNewer = IsNewer(latestVersionText, currentVersionText);
         var releaseUrl = string.IsNullOrWhiteSpace(release.HtmlUrl)
             ? LatestReleaseUrl
@@ -57,25 +49,8 @@ public sealed class VersionCheckService
 
     private static bool TryParseVersion(string value, out Version version)
     {
-        var normalized = NormalizeVersionText(value);
+        var normalized = NeoTwitchProduct.NormalizeVersionText(value);
         return Version.TryParse(normalized, out version!);
-    }
-
-    private static string NormalizeVersionText(string? value)
-    {
-        var text = (value ?? "0.0.0").Trim();
-        if (text.StartsWith('v') || text.StartsWith('V'))
-        {
-            text = text[1..];
-        }
-
-        var metadataIndex = text.IndexOfAny(['-', '+']);
-        if (metadataIndex >= 0)
-        {
-            text = text[..metadataIndex];
-        }
-
-        return string.IsNullOrWhiteSpace(text) ? "0.0.0" : text;
     }
 
     private sealed record GitHubRelease(

@@ -19,6 +19,7 @@ using NeoTwitch.Models;
 using NeoTwitch.Services;
 using NeoTwitch.Services.Alerts;
 using NeoTwitch.Services.Text;
+using NeoTwitch.Shared;
 using NeoTwitch.ViewModels.Activity;
 using NeoTwitch.ViewModels.Library;
 using NeoTwitch.ViewModels.Obs;
@@ -330,7 +331,7 @@ public partial class MainWindow : Window
             StripsList.ItemsSource = _config.LedStrips;
             PortComboBox.DisplayMemberPath = nameof(SerialPortInfo.DisplayName);
             PortComboBox.SelectedValuePath = nameof(SerialPortInfo.PortName);
-            VersionText.Text = $"V{VersionCheckService.CurrentVersionText}";
+            VersionText.Text = $"V{NeoTwitchProduct.CurrentVersionText}";
             ConfigureNavigationIcons();
             ConfigureActionIcons();
             ArrangeAlertActionCards();

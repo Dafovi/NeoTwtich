@@ -3,6 +3,7 @@ using System.IO;
 using System.Windows;
 using NeoTwitch.Models;
 using NeoTwitch.Services;
+using NeoTwitch.Shared;
 using NeoTwitch.ViewModels.Activity;
 using NeoTwitch.ViewModels.Library;
 
@@ -73,7 +74,7 @@ public partial class MainWindow
             StripsList.ItemsSource = _config.LedStrips;
             SettingsPathText.Text = _settingsStore.SettingsPath;
             BackupPathText.Text = $"Backups automaticos: {_settingsStore.BackupDirectory}";
-            SettingsVersionText.Text = $"V{VersionCheckService.CurrentVersionText}";
+            SettingsVersionText.Text = $"V{NeoTwitchProduct.CurrentVersionText}";
             UpdateCloseBehaviorCards();
 
             if (_config.Rules.Count > 0)

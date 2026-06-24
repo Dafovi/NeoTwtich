@@ -4,6 +4,7 @@ using System.Windows;
 using System.Windows.Controls;
 using NeoTwitch.Models;
 using NeoTwitch.Services;
+using NeoTwitch.Shared;
 using NeoTwitch.ViewModels.Activity;
 using NeoTwitch.ViewModels.Status;
 using WpfClipboard = System.Windows.Clipboard;
@@ -363,7 +364,7 @@ public partial class MainWindow
         void Warn(string message) => Line("[REVISAR]", message);
 
         Section("Version");
-        Ok($"Version local: V{VersionCheckService.CurrentVersionText}.");
+        Ok($"Version local: V{NeoTwitchProduct.CurrentVersionText}.");
         try
         {
             using var versionCts = new CancellationTokenSource(TimeSpan.FromSeconds(6));

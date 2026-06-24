@@ -20,17 +20,7 @@ public partial class MainWindow
             return;
         }
 
-        var rule = new EventRule
-        {
-            Name = "Nueva regla",
-            EventKind = TwitchEventKind.Follow,
-            MinimumBits = 1,
-            UseLights = false,
-            PlayAudio = false,
-            SendChatMessage = false,
-            ChatMessageTemplate = "Gracias @{user}!"
-        };
-
+        var rule = ConfigurationItemFactory.CreateRule();
         _config.Rules.Add(rule);
         ShowAllRuleFilters();
         RefreshRulesView();
@@ -41,16 +31,7 @@ public partial class MainWindow
 
     internal void AddStripButton_Click(object sender, RoutedEventArgs e)
     {
-        var nextPin = Enumerable.Range(2, 52)
-            .FirstOrDefault(pin => _config.LedStrips.All(strip => strip.Pin != pin));
-
-        var strip = new LedStripConfig
-        {
-            Name = "Nueva tira",
-            Pin = nextPin == 0 ? 6 : nextPin,
-            LedCount = 30
-        };
-
+        var strip = ConfigurationItemFactory.CreateLedStrip(_config.LedStrips);
         _config.LedStrips.Add(strip);
         StripsList.SelectedItem = strip;
         SaveConfig();

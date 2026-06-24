@@ -17,6 +17,9 @@ var tests = new (string Name, Action Body)[]
 {
     ("ConfigurationItemFactory creates inactive action defaults", ConfigurationFactoryTests.CreateRuleUsesSafeDefaults),
     ("ConfigurationItemFactory suggests first available pin", ConfigurationFactoryTests.CreateLedStripSuggestsFirstAvailablePin),
+    ("InputValueParser parses preferred COM ports", InputValueParserTests.ParsesPreferredComPorts),
+    ("InputValueParser prefers detected Arduino ports", InputValueParserTests.PrefersDetectedArduinoPorts),
+    ("InputValueParser clamps integer values", InputValueParserTests.ClampsIntegerValues),
     ("AppConfig default rules keep expected starter alerts", AppConfigTests.DefaultRulesKeepStarterAlerts),
     ("AppConfig default services keep optional integrations disabled", AppConfigTests.DefaultServicesKeepOptionalIntegrationsDisabled),
     ("AppConfigNormalizer trims and clamps loaded settings", AppConfigNormalizerTests.TrimsAndClampsLoadedSettings),
@@ -150,6 +153,38 @@ static class ConfigurationFactoryTests
         TestAssert.Equal("Nueva tira", strip.Name);
         TestAssert.Equal(4, strip.Pin);
         TestAssert.Equal(30, strip.LedCount);
+    }
+}
+
+static class InputValueParserTests
+{
+    public static void ParsesPreferredComPorts()
+    {
+        TestAssert.Equal("", InputValueParser.ParsePort(""));
+        TestAssert.Equal("COM3", InputValueParser.ParsePort("COM1, COM3"));
+        TestAssert.Equal("COM4", InputValueParser.ParsePort("texto COM4 otro"));
+        TestAssert.Equal("COM1", InputValueParser.ParsePort("COM1"));
+    }
+
+    public static void PrefersDetectedArduinoPorts()
+    {
+        var ports = new[]
+        {
+            new SerialPortInfo("COM1", "Puerto del sistema", false, 1),
+            new SerialPortInfo("COM7", "USB Serial", false, 7),
+            new SerialPortInfo("COM3", "Arduino Uno", true, 3)
+        };
+
+        TestAssert.Equal("COM3", InputValueParser.ChoosePreferredPort(ports));
+        TestAssert.Equal("COM7", InputValueParser.ChoosePreferredPort(ports[..2]));
+    }
+
+    public static void ClampsIntegerValues()
+    {
+        TestAssert.Equal(10, InputValueParser.ParseInt("nope", 10, 1, 20));
+        TestAssert.Equal(1, InputValueParser.ParseInt("-20", 10, 1, 20));
+        TestAssert.Equal(20, InputValueParser.ParseInt("200", 10, 1, 20));
+        TestAssert.Equal(12, InputValueParser.ParseInt("12", 10, 1, 20));
     }
 }
 

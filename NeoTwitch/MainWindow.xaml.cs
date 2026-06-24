@@ -696,46 +696,6 @@ public partial class MainWindow : Window
         }
     }
 
-    private static string ParsePort(string text)
-    {
-        var ports = text.Split([',', ';', ' ', '\r', '\n', '\t'], StringSplitOptions.RemoveEmptyEntries | StringSplitOptions.TrimEntries)
-            .Where(value => value.StartsWith("COM", StringComparison.OrdinalIgnoreCase))
-            .Select(value => value.ToUpperInvariant())
-            .ToArray();
-
-        return ChoosePreferredPort(ports);
-    }
-
-    private static string ChoosePreferredPort(IReadOnlyList<string> ports)
-    {
-        if (ports.Count == 0)
-        {
-            return "";
-        }
-
-        return ports.FirstOrDefault(port => !string.Equals(port, "COM1", StringComparison.OrdinalIgnoreCase))
-            ?? ports[0].ToUpperInvariant();
-    }
-
-    private static string ChoosePreferredPort(IReadOnlyList<SerialPortInfo> ports)
-    {
-        if (ports.Count == 0)
-        {
-            return "";
-        }
-
-        return ports.FirstOrDefault(port => port.IsLikelyArduino)?.PortName
-            ?? ports.FirstOrDefault(port => !string.Equals(port.PortName, "COM1", StringComparison.OrdinalIgnoreCase))?.PortName
-            ?? ports[0].PortName;
-    }
-
-    private static int ParseInt(string text, int fallback, int min, int max)
-    {
-        return int.TryParse(text, out var value)
-            ? Math.Clamp(value, min, max)
-            : fallback;
-    }
-
     private sealed record UiOption<T>(string Label, T Value)
     {
         public override string ToString() => Label;

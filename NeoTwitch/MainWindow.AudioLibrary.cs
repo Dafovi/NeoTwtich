@@ -6,6 +6,7 @@ using NeoTwitch.Models;
 using NeoTwitch.Services;
 using NeoTwitch.Services.Library;
 using NeoTwitch.Services.Text;
+using NeoTwitch.Services.Ui;
 using NeoTwitch.ViewModels.Activity;
 using NeoTwitch.ViewModels.Library;
 using WpfMessageBox = System.Windows.MessageBox;
@@ -514,7 +515,7 @@ public partial class MainWindow
             _ => $"{assignedRules[0].Name} +{assignedRules.Length - 1}"
         };
         var accentColor = assignedRules.Length > 0
-            ? EventKindAccent(assignedRules[0].EventKind)
+            ? UiAccentCatalog.ForEventKind(assignedRules[0].EventKind)
             : "#64748B";
 
         return new AudioLibraryRow(

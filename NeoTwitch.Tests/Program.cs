@@ -55,6 +55,7 @@ var tests = new (string Name, Action Body)[]
     ("CircularProgressGeometryService builds arc geometry", CircularProgressGeometryTests.BuildsArcGeometry),
     ("IconPathCatalog returns known icons and fallback", IconPathCatalogTests.ReturnsKnownIconsAndFallback),
     ("ButtonIconCatalog maps button labels", ButtonIconCatalogTests.MapsButtonLabels),
+    ("UiAccentCatalog maps event and pattern colors", UiAccentCatalogTests.MapsEventAndPatternColors),
     ("RuleSimulationService normalizes chat command matching", RuleSimulationTests.MatchesChatCommandWithNormalization),
     ("RuleSimulationService builds representative test events", RuleSimulationTests.BuildsRepresentativeEvents)
 };
@@ -876,6 +877,18 @@ static class ButtonIconCatalogTests
         TestAssert.Equal("Play", playIcon);
 
         TestAssert.False(ButtonIconCatalog.TryGetIconKey("Texto sin icono", out _));
+    }
+}
+
+static class UiAccentCatalogTests
+{
+    public static void MapsEventAndPatternColors()
+    {
+        TestAssert.Equal("#14B8A6", UiAccentCatalog.ForEventKind(TwitchEventKind.Follow));
+        TestAssert.Equal("#FB923C", UiAccentCatalog.ForEventKind(TwitchEventKind.ChannelPointRedemption));
+        TestAssert.Equal("#EC4899", UiAccentCatalog.ForLightPattern(LightPattern.Rave));
+        TestAssert.Equal("#14B8A6", UiAccentCatalog.AudioSingle);
+        TestAssert.Equal("#37C7F3", UiAccentCatalog.ObsImage);
     }
 }
 

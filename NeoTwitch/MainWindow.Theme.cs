@@ -4,6 +4,7 @@ using System.Windows.Controls.Primitives;
 using System.Windows.Media;
 using NeoTwitch.Models;
 using NeoTwitch.Services;
+using NeoTwitch.Services.Ui;
 using NeoTwitch.ViewModels.Activity;
 using NeoTwitch.ViewModels.Library;
 
@@ -353,7 +354,7 @@ public partial class MainWindow
             }
 
             var selected = tileKind == selectedKind;
-            var accentColor = EventKindAccent(tileKind);
+            var accentColor = UiAccentCatalog.ForEventKind(tileKind);
             var accent = FrozenBrushFrom(accentColor);
             button.Background = selected
                 ? TranslucentBrushFrom(accentColor)
@@ -380,20 +381,6 @@ public partial class MainWindow
         ];
     }
 
-    private static string EventKindAccent(TwitchEventKind kind)
-    {
-        return kind switch
-        {
-            TwitchEventKind.Follow => "#14B8A6",
-            TwitchEventKind.Subscription => "#B56CFF",
-            TwitchEventKind.Raid => "#F43F5E",
-            TwitchEventKind.Cheer => "#37C7F3",
-            TwitchEventKind.ChatCommand => "#22C55E",
-            TwitchEventKind.ChannelPointRedemption => "#FB923C",
-            _ => "#94A3B8"
-        };
-    }
-
     private void UpdatePatternTileSelection()
     {
         if (_initializingComponent)
@@ -416,7 +403,7 @@ public partial class MainWindow
             }
 
             var selected = tilePattern == selectedPattern;
-            var accentColor = PatternAccent(tilePattern);
+            var accentColor = UiAccentCatalog.ForLightPattern(tilePattern);
             var accent = FrozenBrushFrom(accentColor);
             button.Background = palette.Input;
             button.BorderBrush = selected
@@ -436,8 +423,8 @@ public partial class MainWindow
         }
 
         var palette = _config.DarkMode ? ThemePalette.Dark : ThemePalette.Light;
-        ApplyRuleAudioModeButtonTheme(RuleSingleAudioModeButton, _ruleAudioMode == AudioSourceMode.Single, "#14B8A6", palette);
-        ApplyRuleAudioModeButtonTheme(RuleGroupAudioModeButton, _ruleAudioMode == AudioSourceMode.Group, "#B56CFF", palette);
+        ApplyRuleAudioModeButtonTheme(RuleSingleAudioModeButton, _ruleAudioMode == AudioSourceMode.Single, UiAccentCatalog.AudioSingle, palette);
+        ApplyRuleAudioModeButtonTheme(RuleGroupAudioModeButton, _ruleAudioMode == AudioSourceMode.Group, UiAccentCatalog.AudioGroup, palette);
     }
 
     private static void ApplyRuleAudioModeButtonTheme(System.Windows.Controls.Button button, bool active, string accentColor, ThemePalette palette)
@@ -462,10 +449,10 @@ public partial class MainWindow
             ? mode
             : MediaSourceMode.Single;
 
-        ApplyRuleAudioModeButtonTheme(RuleObsImageModeButton, mediaKind == ObsMediaKind.Image, "#37C7F3", palette);
-        ApplyRuleAudioModeButtonTheme(RuleObsVideoModeButton, mediaKind == ObsMediaKind.Video, "#B56CFF", palette);
-        ApplyRuleAudioModeButtonTheme(RuleObsSingleMediaModeButton, sourceMode == MediaSourceMode.Single, "#14B8A6", palette);
-        ApplyRuleAudioModeButtonTheme(RuleObsGroupMediaModeButton, sourceMode == MediaSourceMode.Group, "#22C55E", palette);
+        ApplyRuleAudioModeButtonTheme(RuleObsImageModeButton, mediaKind == ObsMediaKind.Image, UiAccentCatalog.ObsImage, palette);
+        ApplyRuleAudioModeButtonTheme(RuleObsVideoModeButton, mediaKind == ObsMediaKind.Video, UiAccentCatalog.ObsVideo, palette);
+        ApplyRuleAudioModeButtonTheme(RuleObsSingleMediaModeButton, sourceMode == MediaSourceMode.Single, UiAccentCatalog.MediaSingle, palette);
+        ApplyRuleAudioModeButtonTheme(RuleObsGroupMediaModeButton, sourceMode == MediaSourceMode.Group, UiAccentCatalog.MediaGroup, palette);
     }
 
     private IEnumerable<System.Windows.Controls.Button> PatternTileButtons()
@@ -480,21 +467,6 @@ public partial class MainWindow
             PatternSparkleTileButton,
             PatternRaveTileButton
         ];
-    }
-
-    private static string PatternAccent(LightPattern pattern)
-    {
-        return pattern switch
-        {
-            LightPattern.Solid => "#14B8A6",
-            LightPattern.Pulse => "#B56CFF",
-            LightPattern.Rainbow => "#37C7F3",
-            LightPattern.Chase => "#22C55E",
-            LightPattern.Theater => "#F59E0B",
-            LightPattern.Sparkle => "#FACC15",
-            LightPattern.Rave => "#EC4899",
-            _ => "#94A3B8"
-        };
     }
 
     private void UpdateBackgroundPatternTileSelection()
@@ -519,7 +491,7 @@ public partial class MainWindow
             }
 
             var selected = tilePattern == selectedPattern;
-            var accentColor = PatternAccent(tilePattern);
+            var accentColor = UiAccentCatalog.ForLightPattern(tilePattern);
             var accent = FrozenBrushFrom(accentColor);
             button.Background = palette.Input;
             button.BorderBrush = selected

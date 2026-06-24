@@ -1,10 +1,12 @@
 using NeoTwitch.Models;
 using NeoTwitch.Services;
+using NeoTwitch.Services.Activity;
 using NeoTwitch.Services.Alerts;
 using NeoTwitch.Services.Configuration;
 using NeoTwitch.Services.Library;
 using NeoTwitch.Services.Lights;
 using NeoTwitch.Services.Status;
+using NeoTwitch.ViewModels.Activity;
 using NeoTwitch.ViewModels.Library;
 using NeoTwitch.ViewModels.Status;
 
@@ -37,6 +39,8 @@ var tests = new (string Name, Action Body)[]
     ("MediaRuleAssetService resolves image and video durations", MediaRuleAssetTests.ResolvesImageAndVideoDurations),
     ("ConnectionStateService resolves service states", ConnectionStateTests.ResolvesServiceStates),
     ("ConnectionStateService maps visual metadata", ConnectionStateTests.MapsVisualMetadata),
+    ("ActivityLogService trims activity and dashboard entries", ActivityLogServiceTests.TrimsActivityAndDashboardEntries),
+    ("ActivityLogService filters entries and search text", ActivityLogServiceTests.FiltersEntriesAndSearchText),
     ("RuleSimulationService normalizes chat command matching", RuleSimulationTests.MatchesChatCommandWithNormalization),
     ("RuleSimulationService builds representative test events", RuleSimulationTests.BuildsRepresentativeEvents)
 };
@@ -692,6 +696,45 @@ static class ConnectionStateTests
         var appWarning = ConnectionStateService.GetAppStateVisual(ConnectionVisualState.Warning);
         TestAssert.Equal("Estado: Hay puntos por revisar", appWarning.Text);
         TestAssert.Contains("appstate_warning.png", appWarning.IconPath);
+    }
+}
+
+static class ActivityLogServiceTests
+{
+    public static void TrimsActivityAndDashboardEntries()
+    {
+        var activity = new ActivityLogService();
+
+        for (var i = 0; i < ActivityLogService.MaxActivityEntries + 5; i++)
+        {
+            activity.Add($"Sistema: mensaje {i}", ActivityLogKind.Info);
+        }
+
+        TestAssert.Equal(ActivityLogService.MaxActivityEntries, activity.Entries.Count);
+        TestAssert.Equal(ActivityLogService.MaxDashboardEntries, activity.DashboardEntries.Count);
+        TestAssert.Contains("mensaje 254", activity.Entries[0].Message);
+        TestAssert.Contains("mensaje 254", activity.DashboardEntries[0].Message);
+    }
+
+    public static void FiltersEntriesAndSearchText()
+    {
+        var activity = new ActivityLogService();
+        var twitch = activity.Add("Twitch: conectado", ActivityLogKind.Twitch);
+        var arduino = activity.Add("Arduino: puerto COM3 conectado", ActivityLogKind.Arduino);
+
+        TestAssert.True(activity.Matches(twitch));
+        activity.SetFilter("TWITCH", false);
+        TestAssert.False(activity.Matches(twitch));
+        TestAssert.True(activity.Matches(arduino));
+
+        activity.ResetFilters();
+        activity.SetSearchText("COM3");
+        TestAssert.False(activity.Matches(twitch));
+        TestAssert.True(activity.Matches(arduino));
+
+        activity.Clear();
+        TestAssert.Equal(0, activity.Entries.Count);
+        TestAssert.Equal(0, activity.DashboardEntries.Count);
     }
 }
 

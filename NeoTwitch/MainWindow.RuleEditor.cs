@@ -1081,7 +1081,7 @@ public partial class MainWindow
 
     private void ClearLogButton_Click(object sender, RoutedEventArgs e)
     {
-        _activity.Clear();
+        _activityLog.Clear();
     }
 
     internal void RuleSearchBox_TextChanged(object sender, TextChangedEventArgs e)

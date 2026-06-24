@@ -22,14 +22,7 @@ public partial class MainWindow
             return;
         }
 
-        if (button.IsChecked == true)
-        {
-            _activityEnabledFilters.Add(filter);
-        }
-        else
-        {
-            _activityEnabledFilters.Remove(filter);
-        }
+        _activityLog.SetFilter(filter, button.IsChecked == true);
 
         ApplyActivityFilterButtonTheme(button, _config.DarkMode ? ThemePalette.Dark : ThemePalette.Light);
         _activityViewSource.View?.Refresh();
@@ -42,34 +35,27 @@ public partial class MainWindow
             return;
         }
 
-        _activitySearchText = textBox.Text.Trim();
+        _activityLog.SetSearchText(textBox.Text);
         _activityViewSource.View?.Refresh();
     }
 
     internal void ClearActivityFiltersButton_Click(object sender, RoutedEventArgs e)
     {
-        _activityEnabledFilters.Clear();
+        _activityLog.ResetFilters();
         foreach (var button in ActivityFilterButtons())
         {
-            var filter = button.Tag?.ToString() ?? "";
-            if (!string.IsNullOrWhiteSpace(filter))
-            {
-                _activityEnabledFilters.Add(filter);
-            }
-
             button.IsChecked = true;
             ApplyActivityFilterButtonTheme(button, _config.DarkMode ? ThemePalette.Dark : ThemePalette.Light);
         }
 
         ActivitySearchBox.Text = "";
-        _activitySearchText = "";
+        _activityLog.SetSearchText("");
         _activityViewSource.View?.Refresh();
     }
 
     internal void ClearActivityHistoryButton_Click(object sender, RoutedEventArgs e)
     {
-        _activity.Clear();
-        _dashboardActivity.Clear();
+        _activityLog.Clear();
     }
 
     private void ActivityViewSource_Filter(object sender, FilterEventArgs e)
@@ -80,7 +66,7 @@ public partial class MainWindow
             return;
         }
 
-        e.Accepted = entry.MatchesFilter(_activityEnabledFilters, _activitySearchText);
+        e.Accepted = _activityLog.Matches(entry);
     }
 
     private void ApplyActivityFilterButtonTheme(ToggleButton button, ThemePalette palette)
@@ -130,19 +116,7 @@ public partial class MainWindow
     {
         Dispatcher.BeginInvoke(() =>
         {
-            var entry = new ActivityLogEntry(message, kind);
-            _activity.Insert(0, entry);
-            _dashboardActivity.Insert(0, entry);
-
-            while (_activity.Count > 250)
-            {
-                _activity.RemoveAt(_activity.Count - 1);
-            }
-
-            while (_dashboardActivity.Count > 10)
-            {
-                _dashboardActivity.RemoveAt(_dashboardActivity.Count - 1);
-            }
+            _activityLog.Add(message, kind);
         });
     }
 }

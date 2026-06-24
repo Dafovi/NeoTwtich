@@ -17,6 +17,7 @@ using System.Windows.Shapes;
 using System.Windows.Threading;
 using NeoTwitch.Models;
 using NeoTwitch.Services;
+using NeoTwitch.Services.Activity;
 using NeoTwitch.Services.Alerts;
 using NeoTwitch.Services.Text;
 using NeoTwitch.Shared;
@@ -54,8 +55,7 @@ public partial class MainWindow : Window
     private readonly IUiTextService _text = UiTextService.CreateDefault();
     private readonly AppStartupOptions _startupOptions;
     private readonly TwitchEventSubClient _eventSubClient;
-    private readonly ObservableCollection<ActivityLogEntry> _activity = [];
-    private readonly ObservableCollection<ActivityLogEntry> _dashboardActivity = [];
+    private readonly ActivityLogService _activityLog = new();
     private readonly ObservableCollection<AudioLibraryRow> _audioLibraryRows = [];
     private readonly ObservableCollection<AudioGroupRow> _audioGroupRows = [];
     private readonly ObservableCollection<MediaLibraryRow> _imageLibraryRows = [];
@@ -76,17 +76,6 @@ public partial class MainWindow : Window
     private readonly SemaphoreSlim _effectGate = new(1, 1);
     private readonly AlertQueueService _alertQueue = new();
     private IReadOnlyList<SerialPortInfo> _availablePorts = [];
-    private readonly HashSet<string> _activityEnabledFilters = new(StringComparer.OrdinalIgnoreCase)
-    {
-        "TWITCH",
-        "ARDUINO",
-        "ALEXA",
-        "AUDIO",
-        "OBS",
-        "EVENTO",
-        "SISTEMA",
-        "IMPORTANTE"
-    };
     private readonly UiOption<TwitchEventKind>[] _eventOptions =
     [
         new("Nuevo seguidor", TwitchEventKind.Follow),
@@ -163,7 +152,6 @@ public partial class MainWindow : Window
     private DateTimeOffset _lastArduinoReconnectAttempt = DateTimeOffset.MinValue;
     private string _twitchConnectionError = "";
     private string _obsConnectionError = "";
-    private string _activitySearchText = "";
     private string _ruleSearchText = "";
     private string _ruleStatusFilter = EventRuleFilterService.AllStatus;
     private string _ruleCategoryFilter = "";
@@ -251,10 +239,10 @@ public partial class MainWindow : Window
         _loadingUi = true;
         try
         {
-            _activityViewSource.Source = _activity;
+            _activityViewSource.Source = _activityLog.Entries;
             _activityViewSource.Filter += ActivityViewSource_Filter;
             ActivityList.ItemsSource = _activityViewSource.View;
-            DashboardActivityList.ItemsSource = _dashboardActivity;
+            DashboardActivityList.ItemsSource = _activityLog.DashboardEntries;
             AudioLibraryList.ItemsSource = _audioLibraryRows;
             AudioGroupsList.ItemsSource = _audioGroupRows;
             ImageLibraryList.ItemsSource = _imageLibraryRows;

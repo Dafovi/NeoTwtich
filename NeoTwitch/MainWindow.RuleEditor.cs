@@ -284,7 +284,7 @@ public partial class MainWindow
             return;
         }
 
-        var simulatedEvent = BuildSimulatedEvent(rule);
+        var simulatedEvent = RuleSimulationService.BuildEvent(rule);
 
         if (!rule.Matches(simulatedEvent))
         {
@@ -299,7 +299,7 @@ public partial class MainWindow
             return;
         }
         AddLog(
-            $"Simulando {DescribeSimulatedEvent(simulatedEvent)} para regla '{rule.Name}'. Acciones: {DescribeRuleActions(rule)}.",
+            $"Simulando {RuleSimulationService.DescribeEvent(simulatedEvent)} para regla '{rule.Name}'. Acciones: {RuleSimulationService.DescribeActions(rule)}.",
             ActivityLogKind.Event);
 
         await RunRuleAsync(rule, simulatedEvent);
@@ -324,32 +324,6 @@ public partial class MainWindow
             : TryFindResource("PrimaryButton") as Style;
         SetButtonIcon(RuleTestButton, isRunning ? "Parar prueba" : "Probar alerta", isRunning ? "Square" : "Play");
         ApplyButtonTheme(RuleTestButton, _config.DarkMode ? ThemePalette.Dark : ThemePalette.Light);
-    }
-
-    private TwitchEvent BuildSimulatedEvent(EventRule rule)
-    {
-        var kind = rule.EventKind == TwitchEventKind.Test
-            ? TwitchEventKind.Follow
-            : rule.EventKind;
-        var userName = "Prueba";
-        var bits = Math.Max(1, rule.MinimumBits);
-        var viewers = 18;
-        var rewardTitle = FirstNonEmpty(rule.CustomRewardTitle, "Canje de prueba");
-        var message = kind == TwitchEventKind.ChatCommand
-            ? FirstNonEmpty(rule.ChatCommand, "!baile mensaje de prueba")
-            : "Mensaje de prueba";
-
-        return new TwitchEvent
-        {
-            Kind = kind,
-            UserName = userName,
-            RewardTitle = kind == TwitchEventKind.ChannelPointRedemption ? rewardTitle : null,
-            Bits = kind == TwitchEventKind.Cheer ? bits : null,
-            ViewerCount = kind == TwitchEventKind.Raid ? viewers : null,
-            Message = kind == TwitchEventKind.ChatCommand ? message : "Mensaje de prueba",
-            RawType = "simulator",
-            Title = $"Simulacion: {DisplayNames.For(kind)} de {userName}"
-        };
     }
 
     private bool ValidateSimulatedRun(EventRule rule, TwitchEvent twitchEvent)
@@ -382,74 +356,12 @@ public partial class MainWindow
         }
 
         if (rule.EventKind == TwitchEventKind.ChatCommand
-            && !EventRuleMatchesChatCommand(rule, twitchEvent.Message))
+            && !RuleSimulationService.MatchesChatCommand(rule, twitchEvent.Message))
         {
             AddLog("Simulador: el mensaje no empieza con el comando configurado.", ActivityLogKind.Important);
         }
 
         return true;
-    }
-
-    private static bool EventRuleMatchesChatCommand(EventRule rule, string? message)
-    {
-        if (rule.EventKind != TwitchEventKind.ChatCommand)
-        {
-            return true;
-        }
-
-        var command = rule.ChatCommand.Trim();
-        if (string.IsNullOrWhiteSpace(command))
-        {
-            return false;
-        }
-
-        if (!command.StartsWith('!'))
-        {
-            command = $"!{command}";
-        }
-
-        var firstToken = message?.Trim().Split([' ', '\t'], StringSplitOptions.RemoveEmptyEntries).FirstOrDefault();
-        return string.Equals(firstToken, command, StringComparison.OrdinalIgnoreCase);
-    }
-
-    private static string DescribeSimulatedEvent(TwitchEvent twitchEvent)
-    {
-        var user = FirstNonEmpty(twitchEvent.UserName ?? "", "Prueba");
-        return twitchEvent.Kind switch
-        {
-            TwitchEventKind.Cheer => $"{twitchEvent.Bits ?? 0} bits de {user}",
-            TwitchEventKind.Raid => $"raid de {user} con {twitchEvent.ViewerCount ?? 0} viewers",
-            TwitchEventKind.ChannelPointRedemption => $"canje '{FirstNonEmpty(twitchEvent.RewardTitle ?? "", "Canje de prueba")}' de {user}",
-            TwitchEventKind.ChatCommand => $"comando de chat de {user}: {FirstNonEmpty(twitchEvent.Message ?? "", "sin mensaje")}",
-            _ => $"{DisplayNames.For(twitchEvent.Kind)} de {user}"
-        };
-    }
-
-    private static string DescribeRuleActions(EventRule rule)
-    {
-        List<string> actions = [];
-
-        if (rule.UseLights)
-        {
-            actions.Add("luces");
-        }
-
-        if (rule.PlayAudio)
-        {
-            actions.Add("audio");
-        }
-
-        if (rule.SendChatMessage)
-        {
-            actions.Add("chat");
-        }
-
-        if (rule.SendAlexaEvent)
-        {
-            actions.Add("Alexa");
-        }
-
-        return actions.Count == 0 ? "ninguna accion activa" : string.Join(", ", actions);
     }
 
     internal void RuleAudioModeButton_Click(object sender, RoutedEventArgs e)

@@ -722,10 +722,10 @@ public partial class MainWindow
             return true;
         }
 
-        return ContainsIgnoreCase(row.Name, search)
-            || ContainsIgnoreCase(row.FilePath, search)
-            || ContainsIgnoreCase(row.GroupName, search)
-            || ContainsIgnoreCase(row.MetadataText, search);
+        return TextSearchHelper.ContainsIgnoreCase(row.Name, search)
+            || TextSearchHelper.ContainsIgnoreCase(row.FilePath, search)
+            || TextSearchHelper.ContainsIgnoreCase(row.GroupName, search)
+            || TextSearchHelper.ContainsIgnoreCase(row.MetadataText, search);
     }
 
     private void UpdateMediaFilterButtons(MediaLibraryKind kind)

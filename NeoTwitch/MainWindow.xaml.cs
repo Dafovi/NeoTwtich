@@ -165,7 +165,7 @@ public partial class MainWindow : Window
     private string _obsConnectionError = "";
     private string _activitySearchText = "";
     private string _ruleSearchText = "";
-    private string _ruleStatusFilter = "ALL";
+    private string _ruleStatusFilter = EventRuleFilterService.AllStatus;
     private string _ruleCategoryFilter = "";
     private string _audioSearchText = "";
     private string _audioFilter = "ALL";

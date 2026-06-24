@@ -580,10 +580,10 @@ public partial class MainWindow
             return true;
         }
 
-        return ContainsIgnoreCase(row.Name, _audioSearchText)
-            || ContainsIgnoreCase(row.FilePath, _audioSearchText)
-            || ContainsIgnoreCase(row.AssignedAlertText, _audioSearchText)
-            || ContainsIgnoreCase(row.GroupName, _audioSearchText);
+        return TextSearchHelper.ContainsIgnoreCase(row.Name, _audioSearchText)
+            || TextSearchHelper.ContainsIgnoreCase(row.FilePath, _audioSearchText)
+            || TextSearchHelper.ContainsIgnoreCase(row.AssignedAlertText, _audioSearchText)
+            || TextSearchHelper.ContainsIgnoreCase(row.GroupName, _audioSearchText);
     }
 
     private static bool RuleUsesAudioAsset(EventRule rule, AudioAssetConfig audio)

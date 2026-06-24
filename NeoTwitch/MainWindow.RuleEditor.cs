@@ -1122,7 +1122,7 @@ public partial class MainWindow
         }
 
         button.IsChecked = true;
-        _ruleStatusFilter = button.Tag?.ToString() ?? "ALL";
+        _ruleStatusFilter = button.Tag?.ToString() ?? EventRuleFilterService.AllStatus;
 
         foreach (var filterButton in RuleStatusFilterButtons())
         {
@@ -1156,45 +1156,11 @@ public partial class MainWindow
             return;
         }
 
-        e.Accepted = RuleMatchesFilters(rule);
-    }
-
-    private bool RuleMatchesFilters(EventRule rule)
-    {
-        if (_ruleStatusFilter == "ACTIVE" && !rule.IsEnabled)
-        {
-            return false;
-        }
-
-        if (_ruleStatusFilter == "INACTIVE" && rule.IsEnabled)
-        {
-            return false;
-        }
-
-        if (!string.IsNullOrWhiteSpace(_ruleCategoryFilter)
-            && !string.Equals(rule.EventKind.ToString(), _ruleCategoryFilter, StringComparison.OrdinalIgnoreCase))
-        {
-            return false;
-        }
-
-        if (string.IsNullOrWhiteSpace(_ruleSearchText))
-        {
-            return true;
-        }
-
-        var text = _ruleSearchText;
-        return ContainsIgnoreCase(rule.Name, text)
-            || ContainsIgnoreCase(rule.DisplayLabel, text)
-            || ContainsIgnoreCase(rule.ChatCommand, text)
-            || ContainsIgnoreCase(rule.CustomRewardTitle, text)
-            || ContainsIgnoreCase(rule.ChatMessageTemplate, text)
-            || ContainsIgnoreCase(DisplayNames.For(rule.EventKind), text);
-    }
-
-    private static bool ContainsIgnoreCase(string? value, string query)
-    {
-        return !string.IsNullOrWhiteSpace(value)
-            && value.Contains(query, StringComparison.OrdinalIgnoreCase);
+        e.Accepted = EventRuleFilterService.Matches(
+            rule,
+            _ruleStatusFilter,
+            _ruleCategoryFilter,
+            _ruleSearchText);
     }
 
     private void RefreshRulesView()
@@ -1247,7 +1213,7 @@ public partial class MainWindow
 
     private void ShowAllRuleFilters()
     {
-        _ruleStatusFilter = "ALL";
+        _ruleStatusFilter = EventRuleFilterService.AllStatus;
         _ruleCategoryFilter = "";
         RuleFilterAllButton.IsChecked = true;
         RuleFilterActiveButton.IsChecked = false;

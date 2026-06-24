@@ -8,9 +8,6 @@ namespace NeoTwitch.Services;
 
 public sealed class VersionCheckService
 {
-    public static string ReleasesUrl => NeoTwitchProduct.ReleasesUrl;
-    public static string LatestReleaseUrl => NeoTwitchProduct.LatestReleaseUrl;
-
     private readonly HttpClient _http = new()
     {
         Timeout = TimeSpan.FromSeconds(8)
@@ -34,7 +31,7 @@ public sealed class VersionCheckService
         var currentVersionText = NeoTwitchProduct.CurrentVersionText;
         var isNewer = IsNewer(latestVersionText, currentVersionText);
         var releaseUrl = string.IsNullOrWhiteSpace(release.HtmlUrl)
-            ? LatestReleaseUrl
+            ? NeoTwitchProduct.LatestReleaseUrl
             : release.HtmlUrl;
 
         return new VersionCheckResult(currentVersionText, latestVersionText, releaseUrl, isNewer);

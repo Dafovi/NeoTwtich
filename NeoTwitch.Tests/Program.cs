@@ -6,6 +6,8 @@ var tests = new (string Name, Action Body)[]
 {
     ("ConfigurationItemFactory creates inactive action defaults", ConfigurationFactoryTests.CreateRuleUsesSafeDefaults),
     ("ConfigurationItemFactory suggests first available pin", ConfigurationFactoryTests.CreateLedStripSuggestsFirstAvailablePin),
+    ("AppConfig default rules keep expected starter alerts", AppConfigTests.DefaultRulesKeepStarterAlerts),
+    ("AppConfig default services keep optional integrations disabled", AppConfigTests.DefaultServicesKeepOptionalIntegrationsDisabled),
     ("EventRuleFilterService filters status and category", EventRuleFilterTests.FiltersStatusAndCategory),
     ("EventRuleFilterService searches editable text", EventRuleFilterTests.SearchesEditableText),
     ("EventRuleSnapshotService clones editable values independently", EventRuleSnapshotTests.CloneCopiesEditableValues),
@@ -46,6 +48,42 @@ if (failures > 0)
 
 Console.WriteLine($"{tests.Length} test(s) pasaron.");
 return 0;
+
+static class AppConfigTests
+{
+    public static void DefaultRulesKeepStarterAlerts()
+    {
+        var config = AppConfig.CreateDefault();
+
+        TestAssert.Equal(6, config.Rules.Count);
+        TestAssert.Equal("Seguidor", config.Rules[0].Name);
+        TestAssert.True(config.Rules[0].IsEnabled);
+        TestAssert.Equal(TwitchEventKind.Follow, config.Rules[0].EventKind);
+        TestAssert.Equal("Suscripcion", config.Rules[1].Name);
+        TestAssert.Equal(TwitchEventKind.Subscription, config.Rules[1].EventKind);
+        TestAssert.Equal("Raid", config.Rules[2].Name);
+        TestAssert.Equal(TwitchEventKind.Raid, config.Rules[2].EventKind);
+        TestAssert.Equal("Bits", config.Rules[3].Name);
+        TestAssert.Equal(TwitchEventKind.Cheer, config.Rules[3].EventKind);
+        TestAssert.Equal("Comando chat", config.Rules[4].Name);
+        TestAssert.Equal(TwitchEventKind.ChatCommand, config.Rules[4].EventKind);
+        TestAssert.Equal("Canje personalizado", config.Rules[5].Name);
+        TestAssert.Equal(TwitchEventKind.ChannelPointRedemption, config.Rules[5].EventKind);
+    }
+
+    public static void DefaultServicesKeepOptionalIntegrationsDisabled()
+    {
+        var config = AppConfig.CreateDefault();
+
+        TestAssert.True(config.AutoConnectTwitch);
+        TestAssert.False(config.ArduinoEnabled);
+        TestAssert.False(config.AutoConnectArduino);
+        TestAssert.False(config.Alexa.Enabled);
+        TestAssert.False(config.Obs.Enabled);
+        TestAssert.Equal(1, config.LedStrips.Count);
+        TestAssert.Equal(6, config.LedStrips[0].Pin);
+    }
+}
 
 static class ConfigurationFactoryTests
 {

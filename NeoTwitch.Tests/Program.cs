@@ -12,6 +12,8 @@ var tests = new (string Name, Action Body)[]
     ("EventRuleFilterService searches editable text", EventRuleFilterTests.SearchesEditableText),
     ("EventRuleSnapshotService clones editable values independently", EventRuleSnapshotTests.CloneCopiesEditableValues),
     ("EventRuleSnapshotService detects editable changes", EventRuleSnapshotTests.DetectsEditableChanges),
+    ("EventRuleMatcherService resolves normal event matches", EventRuleMatcherTests.ResolvesNormalEventMatches),
+    ("EventRuleMatcherService keeps highest bits threshold", EventRuleMatcherTests.KeepsHighestBitsThreshold),
     ("AlertDurationService resolves maximum positive duration", AlertDurationTests.ResolvesMaximumPositiveDuration),
     ("AlertDurationService clamps synchronized durations", AlertDurationTests.ClampsSynchronizedDurations),
     ("RuleSimulationService normalizes chat command matching", RuleSimulationTests.MatchesChatCommandWithNormalization),
@@ -249,6 +251,43 @@ static class RuleSimulationTests
 
         TestAssert.Equal(TwitchEventKind.Follow, test.Kind);
         TestAssert.Contains("Simulacion", test.Title);
+    }
+}
+
+static class EventRuleMatcherTests
+{
+    public static void ResolvesNormalEventMatches()
+    {
+        var rules = new[]
+        {
+            new EventRule { Name = "Follow activo", EventKind = TwitchEventKind.Follow, IsEnabled = true },
+            new EventRule { Name = "Follow inactivo", EventKind = TwitchEventKind.Follow, IsEnabled = false },
+            new EventRule { Name = "Raid activo", EventKind = TwitchEventKind.Raid, IsEnabled = true }
+        };
+
+        var matches = EventRuleMatcherService.ResolveMatches(rules, new TwitchEvent { Kind = TwitchEventKind.Follow });
+
+        TestAssert.Equal(1, matches.Length);
+        TestAssert.Equal("Follow activo", matches[0].Name);
+    }
+
+    public static void KeepsHighestBitsThreshold()
+    {
+        var rules = new[]
+        {
+            new EventRule { Name = "Bits 1", EventKind = TwitchEventKind.Cheer, MinimumBits = 1 },
+            new EventRule { Name = "Bits 100", EventKind = TwitchEventKind.Cheer, MinimumBits = 100 },
+            new EventRule { Name = "Bits 500", EventKind = TwitchEventKind.Cheer, MinimumBits = 500 }
+        };
+
+        var matches = EventRuleMatcherService.ResolveMatches(rules, new TwitchEvent
+        {
+            Kind = TwitchEventKind.Cheer,
+            Bits = 250
+        });
+
+        TestAssert.Equal(1, matches.Length);
+        TestAssert.Equal("Bits 100", matches[0].Name);
     }
 }
 

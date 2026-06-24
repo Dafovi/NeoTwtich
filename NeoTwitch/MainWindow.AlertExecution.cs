@@ -59,19 +59,7 @@ public partial class MainWindow
 
     private EventRule[] ResolveMatchingRules(TwitchEvent twitchEvent)
     {
-        var matchingRules = _config.Rules
-            .Where(rule => rule.Matches(twitchEvent))
-            .ToArray();
-
-        if (twitchEvent.Kind != TwitchEventKind.Cheer || matchingRules.Length == 0)
-        {
-            return matchingRules;
-        }
-
-        var highestThreshold = matchingRules.Max(rule => rule.MinimumBits);
-        return matchingRules
-            .Where(rule => rule.MinimumBits == highestThreshold)
-            .ToArray();
+        return EventRuleMatcherService.ResolveMatches(_config.Rules, twitchEvent);
     }
 
     private async Task SendRuleChatMessageAsync(EventRule rule, TwitchEvent twitchEvent)

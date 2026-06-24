@@ -19,6 +19,7 @@ using NeoTwitch.Models;
 using NeoTwitch.Services;
 using NeoTwitch.Services.Activity;
 using NeoTwitch.Services.Alerts;
+using NeoTwitch.Services.Dashboard;
 using NeoTwitch.Services.Text;
 using NeoTwitch.Shared;
 using NeoTwitch.ViewModels.Activity;
@@ -56,6 +57,7 @@ public partial class MainWindow : Window
     private readonly AppStartupOptions _startupOptions;
     private readonly TwitchEventSubClient _eventSubClient;
     private readonly ActivityLogService _activityLog = new();
+    private readonly DashboardSummaryService _dashboardSummary = new();
     private readonly ObservableCollection<AudioLibraryRow> _audioLibraryRows = [];
     private readonly ObservableCollection<AudioGroupRow> _audioGroupRows = [];
     private readonly ObservableCollection<MediaLibraryRow> _imageLibraryRows = [];
@@ -180,11 +182,6 @@ public partial class MainWindow : Window
     private CancellationTokenSource? _currentEffectCts;
     private string _eventSubscriptionSignature = "";
     private bool _hasShownTrayNotice;
-    private int _dashboardFollowersToday;
-    private int _dashboardSubscriptionsToday;
-    private int _dashboardBitsToday;
-    private int _dashboardChatMessagesToday;
-    private int _dashboardEventsToday;
     private int _ruleLedPreviewStep;
     private int _backgroundLedPreviewStep;
     private AudioPlayback? _currentPlayback;

@@ -18,7 +18,7 @@ public partial class MainWindow
             return;
         }
 
-        _dashboardEventsToday += count;
+        _dashboardSummary.RegisterMatchedRules(count);
         UpdateDashboardSummary();
     }
 
@@ -30,22 +30,7 @@ public partial class MainWindow
             return;
         }
 
-        switch (twitchEvent.Kind)
-        {
-            case TwitchEventKind.Follow:
-                _dashboardFollowersToday++;
-                break;
-            case TwitchEventKind.Subscription:
-                _dashboardSubscriptionsToday++;
-                break;
-            case TwitchEventKind.Cheer:
-                _dashboardBitsToday += Math.Max(0, twitchEvent.Bits ?? 0);
-                break;
-            case TwitchEventKind.ChatCommand:
-                _dashboardChatMessagesToday++;
-                break;
-        }
-
+        _dashboardSummary.RegisterTwitchEvent(twitchEvent);
         UpdateDashboardSummary();
     }
 
@@ -184,11 +169,12 @@ public partial class MainWindow
             return;
         }
 
-        DashboardFollowersSummaryText.Text = $"+{_dashboardFollowersToday}";
-        DashboardSubsSummaryText.Text = $"+{_dashboardSubscriptionsToday}";
-        DashboardBitsSummaryText.Text = $"+{_dashboardBitsToday}";
-        DashboardChatSummaryText.Text = _dashboardChatMessagesToday.ToString();
-        DashboardEventsSummaryText.Text = _dashboardEventsToday.ToString();
+        var summary = _dashboardSummary.Snapshot;
+        DashboardFollowersSummaryText.Text = $"+{summary.Followers}";
+        DashboardSubsSummaryText.Text = $"+{summary.Subscriptions}";
+        DashboardBitsSummaryText.Text = $"+{summary.Bits}";
+        DashboardChatSummaryText.Text = summary.ChatMessages.ToString();
+        DashboardEventsSummaryText.Text = summary.Events.ToString();
 
         DashboardFollowersSummaryText.Foreground = FrozenBrushFrom("#14B8A6");
         DashboardSubsSummaryText.Foreground = FrozenBrushFrom("#B56CFF");

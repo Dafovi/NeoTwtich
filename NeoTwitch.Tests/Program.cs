@@ -3,6 +3,7 @@ using NeoTwitch.Services;
 using NeoTwitch.Services.Activity;
 using NeoTwitch.Services.Alerts;
 using NeoTwitch.Services.Configuration;
+using NeoTwitch.Services.Dashboard;
 using NeoTwitch.Services.Library;
 using NeoTwitch.Services.Lights;
 using NeoTwitch.Services.Status;
@@ -41,6 +42,8 @@ var tests = new (string Name, Action Body)[]
     ("ConnectionStateService maps visual metadata", ConnectionStateTests.MapsVisualMetadata),
     ("ActivityLogService trims activity and dashboard entries", ActivityLogServiceTests.TrimsActivityAndDashboardEntries),
     ("ActivityLogService filters entries and search text", ActivityLogServiceTests.FiltersEntriesAndSearchText),
+    ("DashboardSummaryService counts Twitch events", DashboardSummaryTests.CountsTwitchEvents),
+    ("DashboardSummaryService counts matched rules safely", DashboardSummaryTests.CountsMatchedRulesSafely),
     ("RuleSimulationService normalizes chat command matching", RuleSimulationTests.MatchesChatCommandWithNormalization),
     ("RuleSimulationService builds representative test events", RuleSimulationTests.BuildsRepresentativeEvents)
 };
@@ -735,6 +738,36 @@ static class ActivityLogServiceTests
         activity.Clear();
         TestAssert.Equal(0, activity.Entries.Count);
         TestAssert.Equal(0, activity.DashboardEntries.Count);
+    }
+}
+
+static class DashboardSummaryTests
+{
+    public static void CountsTwitchEvents()
+    {
+        var summary = new DashboardSummaryService();
+
+        summary.RegisterTwitchEvent(new TwitchEvent { Kind = TwitchEventKind.Follow });
+        summary.RegisterTwitchEvent(new TwitchEvent { Kind = TwitchEventKind.Subscription });
+        summary.RegisterTwitchEvent(new TwitchEvent { Kind = TwitchEventKind.Cheer, Bits = 100 });
+        summary.RegisterTwitchEvent(new TwitchEvent { Kind = TwitchEventKind.Cheer, Bits = -10 });
+        summary.RegisterTwitchEvent(new TwitchEvent { Kind = TwitchEventKind.ChatCommand });
+        var snapshot = summary.Snapshot;
+
+        TestAssert.Equal(1, snapshot.Followers);
+        TestAssert.Equal(1, snapshot.Subscriptions);
+        TestAssert.Equal(100, snapshot.Bits);
+        TestAssert.Equal(1, snapshot.ChatMessages);
+    }
+
+    public static void CountsMatchedRulesSafely()
+    {
+        var summary = new DashboardSummaryService();
+
+        summary.RegisterMatchedRules(3);
+        summary.RegisterMatchedRules(-10);
+
+        TestAssert.Equal(3, summary.Snapshot.Events);
     }
 }
 

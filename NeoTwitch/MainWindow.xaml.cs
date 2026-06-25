@@ -79,52 +79,12 @@ public partial class MainWindow : Window
     private readonly SemaphoreSlim _effectGate = new(1, 1);
     private readonly AlertQueueService _alertQueue = new();
     private IReadOnlyList<SerialPortInfo> _availablePorts = [];
-    private readonly UiOption<TwitchEventKind>[] _eventOptions =
-    [
-        new("Nuevo seguidor", TwitchEventKind.Follow),
-        new("Nueva suscripcion", TwitchEventKind.Subscription),
-        new("Raid recibida", TwitchEventKind.Raid),
-        new("Bits", TwitchEventKind.Cheer),
-        new("Comando de chat", TwitchEventKind.ChatCommand),
-        new("Canje de puntos", TwitchEventKind.ChannelPointRedemption),
-        new("Prueba manual", TwitchEventKind.Test)
-    ];
-    private readonly UiOption<string>[] _ruleCategoryOptions =
-    [
-        new("Todas las categorias", ""),
-        new("Seguidores", nameof(TwitchEventKind.Follow)),
-        new("Suscripciones", nameof(TwitchEventKind.Subscription)),
-        new("Raids", nameof(TwitchEventKind.Raid)),
-        new("Bits", nameof(TwitchEventKind.Cheer)),
-        new("Comandos de chat", nameof(TwitchEventKind.ChatCommand)),
-        new("Canjes de puntos", nameof(TwitchEventKind.ChannelPointRedemption))
-    ];
-    private readonly UiOption<LightPattern>[] _patternOptions =
-    [
-        new("Color fijo", LightPattern.Solid),
-        new("Pulso", LightPattern.Pulse),
-        new("Arcoiris", LightPattern.Rainbow),
-        new("Carrera", LightPattern.Chase),
-        new("Teatro", LightPattern.Theater),
-        new("Destellos", LightPattern.Sparkle),
-        new("Rave", LightPattern.Rave)
-    ];
-    private readonly UiOption<string>[] _themeModeOptions =
-    [
-        new("Seguir Windows", "System"),
-        new("Claro", "Light"),
-        new("Oscuro", "Dark")
-    ];
-    private readonly UiOption<ObsMediaKind>[] _obsMediaKindOptions =
-    [
-        new("Imagen", ObsMediaKind.Image),
-        new("Video", ObsMediaKind.Video)
-    ];
-    private readonly UiOption<MediaSourceMode>[] _mediaSourceModeOptions =
-    [
-        new("Un archivo", MediaSourceMode.Single),
-        new("Grupo aleatorio", MediaSourceMode.Group)
-    ];
+    private readonly IReadOnlyList<UiOption<TwitchEventKind>> _eventOptions = UiOptionCatalog.EventOptions;
+    private readonly IReadOnlyList<UiOption<string>> _ruleCategoryOptions = UiOptionCatalog.RuleCategoryOptions;
+    private readonly IReadOnlyList<UiOption<LightPattern>> _patternOptions = UiOptionCatalog.PatternOptions;
+    private readonly IReadOnlyList<UiOption<string>> _themeModeOptions = UiOptionCatalog.ThemeModeOptions;
+    private readonly IReadOnlyList<UiOption<ObsMediaKind>> _obsMediaKindOptions = UiOptionCatalog.ObsMediaKindOptions;
+    private readonly IReadOnlyList<UiOption<MediaSourceMode>> _mediaSourceModeOptions = UiOptionCatalog.MediaSourceModeOptions;
 
     private AppConfig _config = AppConfig.CreateDefault();
     private bool _initializingComponent;

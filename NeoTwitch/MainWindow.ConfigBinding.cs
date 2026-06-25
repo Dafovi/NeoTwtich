@@ -3,6 +3,7 @@ using System.Windows;
 using NeoTwitch.Models;
 using NeoTwitch.Services;
 using NeoTwitch.Services.Lights;
+using NeoTwitch.Services.Ui;
 using NeoTwitch.Shared;
 using NeoTwitch.ViewModels.Activity;
 using NeoTwitch.ViewModels.Library;
@@ -418,46 +419,62 @@ public partial class MainWindow
             ? selectedPattern
             : LightPattern.Pulse;
 
-        SetVisible(kind == TwitchEventKind.ChannelPointRedemption, RewardTitleLabel, RewardTitleBox);
-        SetVisible(kind == TwitchEventKind.ChatCommand, ChatCommandLabel, ChatCommandBox);
-        SetVisible(kind == TwitchEventKind.Cheer, MinimumBitsLabel, MinimumBitsBox);
         var hasAudios = _config.AudioLibrary.Count > 0;
         var hasGroups = _config.AudioGroups.Count > 0;
-        SetVisible(playAudio, AudioDetailsPanel, AudioLabel, AudioPanel);
-        SetVisible(playAudio && _ruleAudioMode == AudioSourceMode.Single && hasAudios, RuleAudioSinglePanel);
-        SetVisible(playAudio && _ruleAudioMode == AudioSourceMode.Group && hasGroups, RuleAudioGroupPanel);
-        SetVisible(playAudio && ((_ruleAudioMode == AudioSourceMode.Single && !hasAudios) || (_ruleAudioMode == AudioSourceMode.Group && !hasGroups)), RuleAudioEmptyHintText);
-        SetVisible(sendChat, ChatDetailsPanel, ChatMessageLabel, ChatMessageBox);
-        SetVisible(arduinoAvailable, UseLightsActionCard);
-        SetVisible(alexaAvailable, AlexaActionCard);
-        SetVisible(alexaAvailable && sendAlexa, AlexaDetailsPanel, AlexaRuleHintText);
-        SetVisible(obsAvailable, ObsActionCard);
-        SetVisible(obsAvailable, ObsDetailsPanel);
-        SetVisible(obsAvailable && sendObsScene, ObsSceneDetailsPanel);
-        SetVisible(obsAvailable && sendObsScene && !string.IsNullOrWhiteSpace(selectedObsSceneName), ObsSceneTimingGrid);
-        SetVisible(obsAvailable && sendObsScene && !sendObsMedia && returnObsScene, ObsReturnDelayPanel);
-        SetVisible(obsAvailable && sendObsScene && _obsSceneRows.Count == 0, RuleObsEmptyHintText);
-        SetVisible(obsAvailable && sendObsMedia, ObsMediaDetailsPanel);
-        SetVisible(obsAvailable && sendObsMedia && obsMediaKind == ObsMediaKind.Image, ObsMediaDurationPanel);
-        SetVisible(obsAvailable && sendObsMedia && obsMediaSourceMode == MediaSourceMode.Single && obsMediaHasAssets, RuleObsMediaAssetPanel);
-        SetVisible(obsAvailable && sendObsMedia && obsMediaSourceMode == MediaSourceMode.Group && obsMediaHasGroups, RuleObsMediaGroupPanel);
-        SetVisible(obsAvailable && sendObsMedia
-            && ((obsMediaSourceMode == MediaSourceMode.Single && !obsMediaHasAssets)
-                || (obsMediaSourceMode == MediaSourceMode.Group && !obsMediaHasGroups)), RuleObsMediaEmptyHintText);
+        var visibility = OptionVisibilityService.ResolveRule(new RuleOptionVisibilityInput(
+            kind,
+            arduinoAvailable,
+            useLights,
+            playAudio,
+            _ruleAudioMode,
+            hasAudios,
+            hasGroups,
+            sendChat,
+            alexaAvailable,
+            sendAlexa,
+            obsAvailable,
+            sendObsScene,
+            selectedObsSceneName,
+            returnObsScene,
+            _obsSceneRows.Count > 0,
+            sendObsMedia,
+            obsMediaKind,
+            obsMediaSourceMode,
+            obsMediaHasAssets,
+            obsMediaHasGroups,
+            pattern));
 
-        SetVisible(useLights, LightConfigurationPanel, LightOptionsSeparator, TargetPinsLabel, TargetPinsChoiceBox, PatternGrid, RuleLedPreviewPanel);
-        var usesAnyLightColor = useLights
-            && (LightPatternCapabilities.UsesPrimaryColor(pattern)
-                || LightPatternCapabilities.UsesSecondaryColor(pattern)
-                || LightPatternCapabilities.UsesTertiaryColor(pattern));
-        SetVisible(usesAnyLightColor, ColorOptionsGrid);
-        SetVisible(useLights && LightPatternCapabilities.UsesPrimaryColor(pattern), PrimaryColorPanel);
-        SetVisible(useLights && LightPatternCapabilities.UsesSecondaryColor(pattern), SecondaryColorLabel, SecondaryColorPanel);
-        SetVisible(useLights && LightPatternCapabilities.UsesTertiaryColor(pattern), TertiaryColorLabel, TertiaryColorPanel);
-        SetVisible(useLights && LightPatternCapabilities.UsesBrightness(pattern), BrightnessGrid);
-        SetVisible(useLights && !playAudio, DurationGrid);
-        SetVisible(useLights && LightPatternCapabilities.UsesCycle(pattern), CycleGrid);
-        SetVisible(useLights && LightPatternCapabilities.UsesStep(pattern), StepGrid);
+        SetVisible(visibility.ShowRewardTitle, RewardTitleLabel, RewardTitleBox);
+        SetVisible(visibility.ShowChatCommand, ChatCommandLabel, ChatCommandBox);
+        SetVisible(visibility.ShowMinimumBits, MinimumBitsLabel, MinimumBitsBox);
+        SetVisible(visibility.ShowAudioDetails, AudioDetailsPanel, AudioLabel, AudioPanel);
+        SetVisible(visibility.ShowAudioSingle, RuleAudioSinglePanel);
+        SetVisible(visibility.ShowAudioGroup, RuleAudioGroupPanel);
+        SetVisible(visibility.ShowAudioEmptyHint, RuleAudioEmptyHintText);
+        SetVisible(visibility.ShowChatDetails, ChatDetailsPanel, ChatMessageLabel, ChatMessageBox);
+        SetVisible(visibility.ShowLightsAction, UseLightsActionCard);
+        SetVisible(visibility.ShowAlexaAction, AlexaActionCard);
+        SetVisible(visibility.ShowAlexaDetails, AlexaDetailsPanel, AlexaRuleHintText);
+        SetVisible(visibility.ShowObsAction, ObsActionCard);
+        SetVisible(visibility.ShowObsDetails, ObsDetailsPanel);
+        SetVisible(visibility.ShowObsSceneDetails, ObsSceneDetailsPanel);
+        SetVisible(visibility.ShowObsSceneTiming, ObsSceneTimingGrid);
+        SetVisible(visibility.ShowObsReturnDelay, ObsReturnDelayPanel);
+        SetVisible(visibility.ShowObsEmptyHint, RuleObsEmptyHintText);
+        SetVisible(visibility.ShowObsMediaDetails, ObsMediaDetailsPanel);
+        SetVisible(visibility.ShowObsMediaDuration, ObsMediaDurationPanel);
+        SetVisible(visibility.ShowObsMediaAsset, RuleObsMediaAssetPanel);
+        SetVisible(visibility.ShowObsMediaGroup, RuleObsMediaGroupPanel);
+        SetVisible(visibility.ShowObsMediaEmptyHint, RuleObsMediaEmptyHintText);
+        SetVisible(visibility.ShowLightConfiguration, LightConfigurationPanel, LightOptionsSeparator, TargetPinsLabel, TargetPinsChoiceBox, PatternGrid, RuleLedPreviewPanel);
+        SetVisible(visibility.ShowLightColorOptions, ColorOptionsGrid);
+        SetVisible(visibility.ShowPrimaryColor, PrimaryColorPanel);
+        SetVisible(visibility.ShowSecondaryColor, SecondaryColorLabel, SecondaryColorPanel);
+        SetVisible(visibility.ShowTertiaryColor, TertiaryColorLabel, TertiaryColorPanel);
+        SetVisible(visibility.ShowBrightness, BrightnessGrid);
+        SetVisible(visibility.ShowDuration, DurationGrid);
+        SetVisible(visibility.ShowCycle, CycleGrid);
+        SetVisible(visibility.ShowStep, StepGrid);
         UpdateRuleAudioModeSelection();
         UpdateRuleObsMediaModeSelection();
         RefreshRuleObsMediaChoices();
@@ -496,7 +513,6 @@ public partial class MainWindow
     private void UpdateBackgroundOptionVisibility()
     {
         var arduinoAvailable = _config.ArduinoEnabled;
-        var enabled = arduinoAvailable && BackgroundEnabledCheck.IsChecked == true;
         var alexaEnabled = BackgroundAlexaEnabledCheck.IsChecked == true;
         var alexaTurnOffAfterEvent = BackgroundAlexaTurnOffAfterEventCheck.IsChecked == true;
         var alexaAvailable = _config.Alexa.IsConfigured;
@@ -504,22 +520,26 @@ public partial class MainWindow
             ? selectedPattern
             : LightPattern.Solid;
 
-        SetVisible(alexaAvailable, BackgroundAlexaEnabledCheck, BackgroundAlexaTurnOffAfterEventCheck, StopAlexaBackgroundButton);
-        SetVisible(!alexaAvailable, AlexaBackgroundUnavailableText);
-        SetVisible(alexaAvailable && (alexaEnabled || alexaTurnOffAfterEvent), BackgroundAlexaEventsGrid, ApplyAlexaBackgroundButton);
-        SetVisible(arduinoAvailable, BackgroundEnabledCheck);
-        SetVisible(enabled, BackgroundPatternGrid, BackgroundLedPreviewPanel, ApplyArduinoBackgroundButton);
-        var usesAnyBackgroundColor = enabled
-            && (LightPatternCapabilities.UsesPrimaryColor(pattern)
-                || LightPatternCapabilities.UsesSecondaryColor(pattern)
-                || LightPatternCapabilities.UsesTertiaryColor(pattern));
-        SetVisible(usesAnyBackgroundColor, BackgroundColorOptionsGrid);
-        SetVisible(enabled && LightPatternCapabilities.UsesBrightness(pattern), BackgroundBrightnessPanel);
-        SetVisible(enabled && LightPatternCapabilities.UsesPrimaryColor(pattern), BackgroundPrimaryColorLabel, BackgroundPrimaryColorPanel);
-        SetVisible(enabled && LightPatternCapabilities.UsesSecondaryColor(pattern), BackgroundSecondaryColorLabel, BackgroundSecondaryColorPanel);
-        SetVisible(enabled && LightPatternCapabilities.UsesTertiaryColor(pattern), BackgroundTertiaryColorLabel, BackgroundTertiaryColorPanel);
-        SetVisible(enabled && LightPatternCapabilities.UsesCycle(pattern), BackgroundCycleGrid);
-        SetVisible(enabled && LightPatternCapabilities.UsesStep(pattern), BackgroundStepGrid);
+        var visibility = OptionVisibilityService.ResolveBackground(new BackgroundOptionVisibilityInput(
+            arduinoAvailable,
+            BackgroundEnabledCheck.IsChecked == true,
+            alexaAvailable,
+            alexaEnabled,
+            alexaTurnOffAfterEvent,
+            pattern));
+
+        SetVisible(visibility.ShowAlexaControls, BackgroundAlexaEnabledCheck, BackgroundAlexaTurnOffAfterEventCheck, StopAlexaBackgroundButton);
+        SetVisible(visibility.ShowAlexaUnavailable, AlexaBackgroundUnavailableText);
+        SetVisible(visibility.ShowAlexaEvents, BackgroundAlexaEventsGrid, ApplyAlexaBackgroundButton);
+        SetVisible(visibility.ShowArduinoEnabled, BackgroundEnabledCheck);
+        SetVisible(visibility.ShowArduinoBackground, BackgroundPatternGrid, BackgroundLedPreviewPanel, ApplyArduinoBackgroundButton);
+        SetVisible(visibility.ShowColorOptions, BackgroundColorOptionsGrid);
+        SetVisible(visibility.ShowBrightness, BackgroundBrightnessPanel);
+        SetVisible(visibility.ShowPrimaryColor, BackgroundPrimaryColorLabel, BackgroundPrimaryColorPanel);
+        SetVisible(visibility.ShowSecondaryColor, BackgroundSecondaryColorLabel, BackgroundSecondaryColorPanel);
+        SetVisible(visibility.ShowTertiaryColor, BackgroundTertiaryColorLabel, BackgroundTertiaryColorPanel);
+        SetVisible(visibility.ShowCycle, BackgroundCycleGrid);
+        SetVisible(visibility.ShowStep, BackgroundStepGrid);
     }
 
     private void ApplyBackgroundOutputMode()

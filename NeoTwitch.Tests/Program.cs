@@ -61,6 +61,8 @@ var tests = new (string Name, Action Body)[]
     ("CircularProgressGeometryService builds arc geometry", CircularProgressGeometryTests.BuildsArcGeometry),
     ("IconPathCatalog returns known icons and fallback", IconPathCatalogTests.ReturnsKnownIconsAndFallback),
     ("ButtonIconCatalog maps button labels", ButtonIconCatalogTests.MapsButtonLabels),
+    ("OptionVisibilityService resolves rule panels", OptionVisibilityTests.ResolvesRulePanels),
+    ("OptionVisibilityService resolves background panels", OptionVisibilityTests.ResolvesBackgroundPanels),
     ("UiAccentCatalog maps event and pattern colors", UiAccentCatalogTests.MapsEventAndPatternColors),
     ("UiBrushFactory creates frozen brushes", UiBrushFactoryTests.CreatesFrozenBrushes),
     ("RuleSimulationService normalizes chat command matching", RuleSimulationTests.MatchesChatCommandWithNormalization),
@@ -1003,6 +1005,103 @@ static class ButtonIconCatalogTests
         TestAssert.Equal("Play", playIcon);
 
         TestAssert.False(ButtonIconCatalog.TryGetIconKey("Texto sin icono", out _));
+    }
+}
+
+static class OptionVisibilityTests
+{
+    public static void ResolvesRulePanels()
+    {
+        var visibility = OptionVisibilityService.ResolveRule(new RuleOptionVisibilityInput(
+            TwitchEventKind.Cheer,
+            ArduinoAvailable: true,
+            UseLights: true,
+            PlayAudio: true,
+            AudioSourceMode.Single,
+            HasAudioAssets: false,
+            HasAudioGroups: false,
+            SendChatMessage: true,
+            AlexaAvailable: true,
+            SendAlexaEvent: true,
+            ObsAvailable: true,
+            SendObsScene: true,
+            SelectedObsSceneName: "Recortes",
+            ReturnObsScene: true,
+            HasObsScenes: true,
+            SendObsMedia: true,
+            ObsMediaKind.Image,
+            MediaSourceMode.Single,
+            HasObsMediaAssets: true,
+            HasObsMediaGroups: false,
+            LightPattern.Pulse));
+
+        TestAssert.True(visibility.ShowMinimumBits);
+        TestAssert.False(visibility.ShowRewardTitle);
+        TestAssert.True(visibility.ShowAudioDetails);
+        TestAssert.True(visibility.ShowAudioEmptyHint);
+        TestAssert.True(visibility.ShowChatDetails);
+        TestAssert.True(visibility.ShowAlexaDetails);
+        TestAssert.True(visibility.ShowObsSceneTiming);
+        TestAssert.False(visibility.ShowObsReturnDelay);
+        TestAssert.True(visibility.ShowObsMediaDuration);
+        TestAssert.True(visibility.ShowLightConfiguration);
+        TestAssert.True(visibility.ShowSecondaryColor);
+        TestAssert.True(visibility.ShowBrightness);
+        TestAssert.False(visibility.ShowDuration);
+
+        var videoVisibility = OptionVisibilityService.ResolveRule(new RuleOptionVisibilityInput(
+            TwitchEventKind.Follow,
+            ArduinoAvailable: true,
+            UseLights: false,
+            PlayAudio: false,
+            AudioSourceMode.Single,
+            HasAudioAssets: true,
+            HasAudioGroups: false,
+            SendChatMessage: false,
+            AlexaAvailable: false,
+            SendAlexaEvent: false,
+            ObsAvailable: true,
+            SendObsScene: false,
+            SelectedObsSceneName: "",
+            ReturnObsScene: false,
+            HasObsScenes: true,
+            SendObsMedia: true,
+            ObsMediaKind.Video,
+            MediaSourceMode.Group,
+            HasObsMediaAssets: false,
+            HasObsMediaGroups: true,
+            LightPattern.Solid));
+
+        TestAssert.False(videoVisibility.ShowObsMediaDuration);
+    }
+
+    public static void ResolvesBackgroundPanels()
+    {
+        var visible = OptionVisibilityService.ResolveBackground(new BackgroundOptionVisibilityInput(
+            ArduinoAvailable: true,
+            BackgroundEnabled: true,
+            AlexaAvailable: true,
+            AlexaEnabled: false,
+            AlexaTurnOffAfterEvent: true,
+            LightPattern.Rave));
+
+        TestAssert.True(visible.ShowAlexaControls);
+        TestAssert.False(visible.ShowAlexaUnavailable);
+        TestAssert.True(visible.ShowAlexaEvents);
+        TestAssert.True(visible.ShowArduinoBackground);
+        TestAssert.True(visible.ShowColorOptions);
+        TestAssert.True(visible.ShowBrightness);
+
+        var unavailable = OptionVisibilityService.ResolveBackground(new BackgroundOptionVisibilityInput(
+            ArduinoAvailable: false,
+            BackgroundEnabled: true,
+            AlexaAvailable: false,
+            AlexaEnabled: false,
+            AlexaTurnOffAfterEvent: false,
+            LightPattern.Solid));
+
+        TestAssert.False(unavailable.ShowArduinoBackground);
+        TestAssert.True(unavailable.ShowAlexaUnavailable);
     }
 }
 

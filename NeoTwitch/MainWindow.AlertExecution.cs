@@ -217,7 +217,7 @@ public partial class MainWindow
             }
 
             playback?.Play();
-            await WaitForRuleEffectAsync(playback, command, obsMediaHide, effectCts.Token);
+            await AlertEffectWaitService.WaitAsync(playback, command, obsMediaHide, effectCts.Token);
 
             if (command is not null)
             {
@@ -296,32 +296,6 @@ public partial class MainWindow
             _alertQueue.MarkFinished(queueSlot);
             _effectGate.Release();
         }
-    }
-
-    private static async Task WaitForRuleEffectAsync(
-        AudioPlayback? playback,
-        LightCommand? command,
-        ObsMediaHideRequest? obsMediaHide,
-        CancellationToken cancellationToken)
-    {
-        var duration = AlertDurationService.ResolveMaxEffectDuration(
-            playback?.Duration,
-            command is null ? null : TimeSpan.FromMilliseconds(command.DurationMs),
-            obsMediaHide?.Duration);
-
-        if (duration is { TotalMilliseconds: > 0 })
-        {
-            await Task.Delay(duration.Value, cancellationToken);
-            return;
-        }
-
-        if (playback is not null)
-        {
-            await playback.Completion.WaitAsync(cancellationToken);
-            return;
-        }
-
-        await Task.Delay(500, cancellationToken);
     }
 
     private async Task StopCurrentEffectAsync()

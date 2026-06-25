@@ -43,6 +43,7 @@ var tests = new (string Name, Action Body)[]
     ("AudioRuleAssetService detects rule asset usage", AudioRuleAssetTests.DetectsRuleAssetUsage),
     ("LibraryGroupService creates and reuses groups", LibraryGroupServiceTests.CreatesAndReusesGroups),
     ("LibraryGroupService clears group references", LibraryGroupServiceTests.ClearsGroupReferences),
+    ("MediaLibraryKindCatalog maps media metadata", MediaLibraryKindCatalogTests.MapsMediaMetadata),
     ("LibraryRowFilterService filters audio rows", LibraryRowFilterTests.FiltersAudioRows),
     ("LibraryRowFilterService filters media rows", LibraryRowFilterTests.FiltersMediaRows),
     ("MediaRuleAssetService resolves single media assets", MediaRuleAssetTests.ResolvesSingleMediaAssets),
@@ -743,6 +744,25 @@ static class LibraryGroupServiceTests
         TestAssert.False(rules[0].PlayAudio);
         TestAssert.Equal("g1", rules[1].AudioGroupId);
         TestAssert.True(rules[1].PlayAudio);
+    }
+}
+
+static class MediaLibraryKindCatalogTests
+{
+    public static void MapsMediaMetadata()
+    {
+        var image = MediaLibraryKindCatalog.Get(MediaLibraryKind.Image);
+        var video = MediaLibraryKindCatalog.Get(MediaLibraryKind.Video);
+
+        TestAssert.Equal(UiTextKeys.ImagesTitle, image.TitleKey);
+        TestAssert.Equal("#37C7F3", image.AccentColor);
+        TestAssert.Contains("media_image.png", image.IconPath);
+        TestAssert.Equal(ObsMediaKind.Image, image.ObsKind);
+
+        TestAssert.Equal(UiTextKeys.VideosTitle, video.TitleKey);
+        TestAssert.Equal("#B56CFF", video.AccentColor);
+        TestAssert.Contains("media_video.png", video.IconPath);
+        TestAssert.Equal(ObsMediaKind.Video, video.ObsKind);
     }
 }
 

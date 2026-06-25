@@ -7,7 +7,6 @@ using NeoTwitch.Models;
 using NeoTwitch.Services;
 using NeoTwitch.Services.Library;
 using NeoTwitch.Services.Text;
-using NeoTwitch.Shared;
 using NeoTwitch.ViewModels.Activity;
 using NeoTwitch.ViewModels.Library;
 using NeoTwitch.ViewModels.Obs;
@@ -138,9 +137,7 @@ public partial class MainWindow
     {
         var dialog = new WpfOpenFileDialog
         {
-            Filter = kind == MediaLibraryKind.Image
-                ? "Imagenes|*.png;*.jpg;*.jpeg;*.gif;*.bmp;*.webp|Todos los archivos|*.*"
-                : "Videos|*.mp4;*.mov;*.webm;*.mkv;*.avi;*.wmv|Todos los archivos|*.*",
+            Filter = MediaLibraryKindCatalog.Get(kind).FileDialogFilter,
             CheckFileExists = true
         };
 
@@ -444,10 +441,9 @@ public partial class MainWindow
             return;
         }
 
-        var obsKind = kind == MediaLibraryKind.Image ? ObsMediaKind.Image : ObsMediaKind.Video;
-        var sourceName = kind == MediaLibraryKind.Image
-            ? NeoTwitchProduct.Obs.PreviewImageSourceName
-            : NeoTwitchProduct.Obs.PreviewVideoSourceName;
+        var info = MediaLibraryKindCatalog.Get(kind);
+        var obsKind = info.ObsKind;
+        var sourceName = info.PreviewSourceName;
         var duration = obsKind == ObsMediaKind.Video
             ? TimeSpan.FromMilliseconds(asset.DurationMs > 0 ? asset.DurationMs : 5000)
             : TimeSpan.FromSeconds(5);
@@ -620,7 +616,7 @@ public partial class MainWindow
                 ImageSavedCountText.Text = library.Count.ToString();
                 ImageGroupCountText.Text = groups.Count.ToString();
                 LastImageText.Text = lastAsset?.DisplayName ?? "Sin uso";
-                ImageLibraryFooterText.Text = $"Mostrando {rows.Length} de {library.Count} imagenes{groupFilterText}";
+                ImageLibraryFooterText.Text = $"Mostrando {rows.Length} de {library.Count} {MediaLibraryKindCatalog.Get(kind).FooterNoun}{groupFilterText}";
                 NewImageGroupBox.Items.Refresh();
             }
             else
@@ -628,7 +624,7 @@ public partial class MainWindow
                 VideoSavedCountText.Text = library.Count.ToString();
                 VideoGroupCountText.Text = groups.Count.ToString();
                 LastVideoText.Text = lastAsset?.DisplayName ?? "Sin uso";
-                VideoLibraryFooterText.Text = $"Mostrando {rows.Length} de {library.Count} videos{groupFilterText}";
+                VideoLibraryFooterText.Text = $"Mostrando {rows.Length} de {library.Count} {MediaLibraryKindCatalog.Get(kind).FooterNoun}{groupFilterText}";
                 NewVideoGroupBox.Items.Refresh();
             }
 
@@ -677,7 +673,8 @@ public partial class MainWindow
         IReadOnlyDictionary<string, string> groupsById,
         int index)
     {
-        var accentColor = kind == MediaLibraryKind.Image ? "#37C7F3" : "#B56CFF";
+        var info = MediaLibraryKindCatalog.Get(kind);
+        var accentColor = info.AccentColor;
         var metadata = kind == MediaLibraryKind.Image
             ? asset.ResolutionText
             : MediaMetadataService.BuildVideoMetadata(asset);
@@ -689,7 +686,7 @@ public partial class MainWindow
             asset.GroupId,
             groupsById.TryGetValue(asset.GroupId, out var groupName) ? groupName : _text.Get(UiTextKeys.LibraryNoGroup),
             metadata,
-            kind == MediaLibraryKind.Image ? "Assets/Icons/media_image.png" : "Assets/Icons/media_video.png",
+            info.IconPath,
             FrozenBrushFrom(accentColor),
             TranslucentBrushFrom(accentColor),
             index,
@@ -714,7 +711,7 @@ public partial class MainWindow
         }
 
         var palette = _config.DarkMode ? ThemePalette.Dark : ThemePalette.Light;
-        var accentColor = kind == MediaLibraryKind.Image ? "#37C7F3" : "#B56CFF";
+        var accentColor = MediaLibraryKindCatalog.Get(kind).AccentColor;
         var filter = GetMediaFilter(kind);
         var buttons = kind == MediaLibraryKind.Image
             ? new[] { ImageFilterAllButton, ImageFilterWithGroupButton, ImageFilterNoGroupButton }
@@ -778,9 +775,7 @@ public partial class MainWindow
 
     private string MediaLibraryTitle(MediaLibraryKind kind)
     {
-        return kind == MediaLibraryKind.Image
-            ? _text.Get(UiTextKeys.ImagesTitle)
-            : _text.Get(UiTextKeys.VideosTitle);
+        return _text.Get(MediaLibraryKindCatalog.Get(kind).TitleKey);
     }
 
     private void UpdateVideoVolumeText()

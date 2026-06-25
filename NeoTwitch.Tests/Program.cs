@@ -41,6 +41,8 @@ var tests = new (string Name, Action Body)[]
     ("AudioRuleAssetService resolves single assets", AudioRuleAssetTests.ResolvesSingleAssets),
     ("AudioRuleAssetService resolves group assets with existing files", AudioRuleAssetTests.ResolvesGroupAssetsWithExistingFiles),
     ("AudioRuleAssetService detects rule asset usage", AudioRuleAssetTests.DetectsRuleAssetUsage),
+    ("LibraryGroupService creates and reuses groups", LibraryGroupServiceTests.CreatesAndReusesGroups),
+    ("LibraryGroupService clears group references", LibraryGroupServiceTests.ClearsGroupReferences),
     ("LibraryRowFilterService filters audio rows", LibraryRowFilterTests.FiltersAudioRows),
     ("LibraryRowFilterService filters media rows", LibraryRowFilterTests.FiltersMediaRows),
     ("MediaRuleAssetService resolves single media assets", MediaRuleAssetTests.ResolvesSingleMediaAssets),
@@ -690,6 +692,57 @@ static class LibraryRowFilterTests
         TestAssert.True(LibraryRowFilterService.MatchesMedia(row, "g1", LibraryRowFilterService.MediaWithGroupFilter, "800"));
         TestAssert.False(LibraryRowFilterService.MatchesMedia(row, "g2", LibraryRowFilterService.AllFilter, ""));
         TestAssert.False(LibraryRowFilterService.MatchesMedia(row, "", LibraryRowFilterService.MediaNoGroupFilter, ""));
+    }
+}
+
+static class LibraryGroupServiceTests
+{
+    public static void CreatesAndReusesGroups()
+    {
+        var groups = new List<AudioGroupConfig>();
+
+        var created = LibraryGroupService.GetOrCreate<AudioGroupConfig>(groups, " Reacciones ");
+        var reused = LibraryGroupService.GetOrCreate<AudioGroupConfig>(groups, "reacciones");
+        var invalid = LibraryGroupService.GetOrCreate<AudioGroupConfig>(groups, " ");
+
+        TestAssert.True(created.IsValid);
+        TestAssert.True(created.Created);
+        TestAssert.Equal("Reacciones", created.Group?.Name);
+        TestAssert.False(reused.Created);
+        TestAssert.Same(created.Group, reused.Group);
+        TestAssert.False(invalid.IsValid);
+        TestAssert.Equal(1, groups.Count);
+    }
+
+    public static void ClearsGroupReferences()
+    {
+        var assets = new List<AudioAssetConfig>
+        {
+            new() { GroupId = "g1" },
+            new() { GroupId = "g1" },
+            new() { GroupId = "g2" }
+        };
+        var rules = new List<EventRule>
+        {
+            new() { AudioSourceMode = AudioSourceMode.Group, AudioGroupId = "g1", PlayAudio = true },
+            new() { AudioSourceMode = AudioSourceMode.Single, AudioGroupId = "g1", PlayAudio = true },
+            new() { AudioSourceMode = AudioSourceMode.Group, AudioGroupId = "g2", PlayAudio = true }
+        };
+
+        var counted = LibraryGroupService.CountAssetsInGroup(assets, "g1");
+        var clearedAssets = LibraryGroupService.ClearGroupFromAssets(assets, "g1");
+        var clearedRules = LibraryGroupService.ClearAudioGroupFromRules(rules, "g1");
+
+        TestAssert.Equal(2, counted);
+        TestAssert.Equal(2, clearedAssets);
+        TestAssert.Equal("", assets[0].GroupId);
+        TestAssert.Equal("", assets[1].GroupId);
+        TestAssert.Equal("g2", assets[2].GroupId);
+        TestAssert.Equal(1, clearedRules);
+        TestAssert.Equal("", rules[0].AudioGroupId);
+        TestAssert.False(rules[0].PlayAudio);
+        TestAssert.Equal("g1", rules[1].AudioGroupId);
+        TestAssert.True(rules[1].PlayAudio);
     }
 }
 

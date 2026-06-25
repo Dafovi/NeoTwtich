@@ -156,24 +156,26 @@ public partial class MainWindow
             return;
         }
 
-        var existing = _config.AudioGroups.FirstOrDefault(group =>
-            string.Equals(group.Name, name, StringComparison.OrdinalIgnoreCase));
-        if (existing is not null)
+        var mutation = LibraryGroupService.GetOrCreate<AudioGroupConfig>(_config.AudioGroups, name);
+        if (!mutation.IsValid || mutation.Group is null)
         {
-            NewAudioGroupBox.SelectedValue = existing.Id;
+            return;
+        }
+
+        if (!mutation.Created)
+        {
+            NewAudioGroupBox.SelectedValue = mutation.Group.Id;
             NewAudioGroupNameBox.Text = "";
             return;
         }
 
-        var group = new AudioGroupConfig { Name = name };
-        _config.AudioGroups.Add(group);
-        NewAudioGroupBox.SelectedValue = group.Id;
+        NewAudioGroupBox.SelectedValue = mutation.Group.Id;
         NewAudioGroupNameBox.Text = "";
 
         SaveConfig();
         RefreshAudioLibraryView();
         UpdateRuleOptionVisibility();
-        AddLog(_text.Format(UiTextKeys.LibraryGroupCreatedLog, _text.Get(UiTextKeys.AudioTitle), group.Name), ActivityLogKind.Audio);
+        AddLog(_text.Format(UiTextKeys.LibraryGroupCreatedLog, _text.Get(UiTextKeys.AudioTitle), mutation.Group.Name), ActivityLogKind.Audio);
     }
 
     internal void ViewAudioGroupButton_Click(object sender, RoutedEventArgs e)
@@ -211,7 +213,7 @@ public partial class MainWindow
             return;
         }
 
-        var audioCount = _config.AudioLibrary.Count(audio => string.Equals(audio.GroupId, group.Id, StringComparison.OrdinalIgnoreCase));
+        var audioCount = LibraryGroupService.CountAssetsInGroup(_config.AudioLibrary, group.Id);
         if (WpfMessageBox.Show(
                 this,
                 _text.Format(UiTextKeys.LibraryDeleteGroupPrompt, group.Name, audioCount),
@@ -222,17 +224,8 @@ public partial class MainWindow
             return;
         }
 
-        foreach (var audio in _config.AudioLibrary.Where(audio => string.Equals(audio.GroupId, group.Id, StringComparison.OrdinalIgnoreCase)))
-        {
-            audio.GroupId = "";
-        }
-
-        foreach (var rule in _config.Rules.Where(rule => rule.AudioSourceMode == AudioSourceMode.Group
-                     && string.Equals(rule.AudioGroupId, group.Id, StringComparison.OrdinalIgnoreCase)))
-        {
-            rule.AudioGroupId = "";
-            rule.PlayAudio = false;
-        }
+        LibraryGroupService.ClearGroupFromAssets(_config.AudioLibrary, group.Id);
+        LibraryGroupService.ClearAudioGroupFromRules(_config.Rules, group.Id);
 
         _config.AudioGroups.Remove(group);
         if (string.Equals(_audioGroupFilterId, group.Id, StringComparison.OrdinalIgnoreCase))

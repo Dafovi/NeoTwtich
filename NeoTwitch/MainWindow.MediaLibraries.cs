@@ -257,37 +257,40 @@ public partial class MainWindow
         }
 
         var groups = GetMediaGroups(kind);
-        var existing = groups.FirstOrDefault(group => string.Equals(group.Name, name, StringComparison.OrdinalIgnoreCase));
-        if (existing is not null)
+        var mutation = LibraryGroupService.GetOrCreate<MediaGroupConfig>(groups, name);
+        if (!mutation.IsValid || mutation.Group is null)
+        {
+            return;
+        }
+
+        if (!mutation.Created)
         {
             if (kind == MediaLibraryKind.Image)
             {
-                NewImageGroupBox.SelectedValue = existing.Id;
+                NewImageGroupBox.SelectedValue = mutation.Group.Id;
             }
             else
             {
-                NewVideoGroupBox.SelectedValue = existing.Id;
+                NewVideoGroupBox.SelectedValue = mutation.Group.Id;
             }
 
             nameBox.Text = "";
             return;
         }
 
-        var group = new MediaGroupConfig { Name = name };
-        groups.Add(group);
         if (kind == MediaLibraryKind.Image)
         {
-            NewImageGroupBox.SelectedValue = group.Id;
+            NewImageGroupBox.SelectedValue = mutation.Group.Id;
         }
         else
         {
-            NewVideoGroupBox.SelectedValue = group.Id;
+            NewVideoGroupBox.SelectedValue = mutation.Group.Id;
         }
 
         nameBox.Text = "";
         SaveConfig();
         RefreshMediaLibraryView(kind);
-        AddLog(_text.Format(UiTextKeys.LibraryGroupCreatedLog, title, group.Name), ActivityLogKind.Info);
+        AddLog(_text.Format(UiTextKeys.LibraryGroupCreatedLog, title, mutation.Group.Name), ActivityLogKind.Info);
     }
 
     internal void ViewImageGroupButton_Click(object sender, RoutedEventArgs e)
@@ -357,7 +360,7 @@ public partial class MainWindow
         }
 
         var library = GetMediaLibrary(kind);
-        var count = library.Count(asset => string.Equals(asset.GroupId, group.Id, StringComparison.OrdinalIgnoreCase));
+        var count = LibraryGroupService.CountAssetsInGroup(library, group.Id);
         var title = MediaLibraryTitle(kind);
         if (WpfMessageBox.Show(
                 this,
@@ -369,10 +372,7 @@ public partial class MainWindow
             return;
         }
 
-        foreach (var asset in library.Where(asset => string.Equals(asset.GroupId, group.Id, StringComparison.OrdinalIgnoreCase)))
-        {
-            asset.GroupId = "";
-        }
+        LibraryGroupService.ClearGroupFromAssets(library, group.Id);
 
         groups.Remove(group);
         if (kind == MediaLibraryKind.Image && string.Equals(_imageGroupFilterId, group.Id, StringComparison.OrdinalIgnoreCase))

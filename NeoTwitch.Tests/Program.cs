@@ -4,11 +4,13 @@ using NeoTwitch.Services.Activity;
 using NeoTwitch.Services.Alerts;
 using NeoTwitch.Services.Configuration;
 using NeoTwitch.Services.Dashboard;
+using NeoTwitch.Services.Diagnostics;
 using NeoTwitch.Services.Library;
 using NeoTwitch.Services.Lights;
 using NeoTwitch.Services.Status;
 using NeoTwitch.Services.Text;
 using NeoTwitch.Services.Ui;
+using NeoTwitch.Shared;
 using NeoTwitch.ViewModels.Activity;
 using NeoTwitch.ViewModels.Library;
 using NeoTwitch.ViewModels.Status;
@@ -51,6 +53,8 @@ var tests = new (string Name, Action Body)[]
     ("MediaRuleAssetService resolves image and video durations", MediaRuleAssetTests.ResolvesImageAndVideoDurations),
     ("ConnectionStateService resolves service states", ConnectionStateTests.ResolvesServiceStates),
     ("ConnectionStateService maps visual metadata", ConnectionStateTests.MapsVisualMetadata),
+    ("DiagnosticReportService builds report without network", DiagnosticReportServiceTests.BuildsReportWithoutNetwork),
+    ("DiagnosticReportService reports missing audio", DiagnosticReportServiceTests.ReportsMissingAudio),
     ("ActivityLogService trims activity and dashboard entries", ActivityLogServiceTests.TrimsActivityAndDashboardEntries),
     ("ActivityLogService filters entries and search text", ActivityLogServiceTests.FiltersEntriesAndSearchText),
     ("DashboardSummaryService counts Twitch events", DashboardSummaryTests.CountsTwitchEvents),
@@ -871,6 +875,66 @@ static class ConnectionStateTests
         var appWarning = ConnectionStateService.GetAppStateVisual(ConnectionVisualState.Warning);
         TestAssert.Equal("Estado: Hay puntos por revisar", appWarning.Text);
         TestAssert.Contains("appstate_warning.png", appWarning.IconPath);
+    }
+}
+
+static class DiagnosticReportServiceTests
+{
+    public static void BuildsReportWithoutNetwork()
+    {
+        var config = AppConfig.CreateDefault();
+        var service = CreateService();
+
+        var result = service.BuildAsync(new DiagnosticReportContext(
+            config,
+            @"C:\tmp\missing-settings.json",
+            @"C:\tmp\missing-backups",
+            EventSubRunning: false,
+            StreamStatus: null,
+            LightHasOpenPort: false,
+            LightCurrentPort: "",
+            LightAckStatusText: "",
+            RuleHasValidAudio: _ => true)).GetAwaiter().GetResult();
+
+        TestAssert.Contains("Diagnostico Neo Twitch", result.Report);
+        TestAssert.Contains("Twitch", result.Report);
+        TestAssert.True(result.WarningCount > 0);
+    }
+
+    public static void ReportsMissingAudio()
+    {
+        var config = AppConfig.CreateDefault();
+        config.Rules.Clear();
+        config.Rules.Add(new EventRule
+        {
+            Name = "Audio roto",
+            IsEnabled = true,
+            EventKind = TwitchEventKind.Follow,
+            PlayAudio = true
+        });
+        var service = CreateService();
+
+        var result = service.BuildAsync(new DiagnosticReportContext(
+            config,
+            @"C:\tmp\missing-settings.json",
+            @"C:\tmp\missing-backups",
+            EventSubRunning: false,
+            StreamStatus: null,
+            LightHasOpenPort: false,
+            LightCurrentPort: "",
+            LightAckStatusText: "",
+            RuleHasValidAudio: _ => false)).GetAwaiter().GetResult();
+
+        TestAssert.Contains("Alertas con audio faltante", result.Report);
+    }
+
+    private static DiagnosticReportService CreateService()
+    {
+        return new DiagnosticReportService(_ => Task.FromResult(new VersionCheckResult(
+            NeoTwitchProduct.CurrentVersionText,
+            NeoTwitchProduct.CurrentVersionText,
+            "https://example.test/release",
+            IsUpdateAvailable: false)));
     }
 }
 

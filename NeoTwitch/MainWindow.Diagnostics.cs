@@ -1,19 +1,13 @@
-using System.IO;
-using System.Text;
 using System.Windows;
 using System.Windows.Controls;
-using NeoTwitch.Models;
 using NeoTwitch.Services;
+using NeoTwitch.Services.Diagnostics;
 using NeoTwitch.Services.Status;
 using NeoTwitch.Services.Ui;
-using NeoTwitch.Shared;
 using NeoTwitch.ViewModels.Activity;
 using NeoTwitch.ViewModels.Status;
 using WpfClipboard = System.Windows.Clipboard;
 using WpfMessageBox = System.Windows.MessageBox;
-using WpfOpenFileDialog = Microsoft.Win32.OpenFileDialog;
-using WpfSaveFileDialog = Microsoft.Win32.SaveFileDialog;
-using static NeoTwitch.Services.Text.UiTextFormatter;
 using static NeoTwitch.Services.Ui.UiBrushFactory;
 
 namespace NeoTwitch;
@@ -149,253 +143,17 @@ public partial class MainWindow
 
     private async Task<DiagnosticResult> BuildDiagnosticsReportAsync()
     {
-        var body = new StringBuilder();
-        var warningCount = 0;
-
-        void Section(string title)
-        {
-            if (body.Length > 0)
-            {
-                body.AppendLine();
-            }
-
-            body.AppendLine(title);
-        }
-
-        void Line(string level, string message)
-        {
-            body.AppendLine($"{level} {message}");
-            if (string.Equals(level, "[REVISAR]", StringComparison.Ordinal))
-            {
-                warningCount++;
-            }
-        }
-
-        void Ok(string message) => Line("[OK]", message);
-        void Info(string message) => Line("[INFO]", message);
-        void Warn(string message) => Line("[REVISAR]", message);
-
-        Section("Version");
-        Ok($"Version local: V{NeoTwitchProduct.CurrentVersionText}.");
-        try
-        {
-            using var versionCts = new CancellationTokenSource(TimeSpan.FromSeconds(6));
-            var version = await _updateService.CheckLatestAsync(versionCts.Token);
-            if (version.IsUpdateAvailable)
-            {
-                Warn($"Hay una version nueva: V{version.LatestVersion}. Releases: {version.ReleaseUrl}");
-            }
-            else
-            {
-                Ok("La app esta al dia segun el ultimo release de GitHub.");
-            }
-        }
-        catch (Exception ex)
-        {
-            Info($"No pude consultar GitHub ahora mismo: {ex.Message}");
-        }
-
-        Section("Archivos");
-        if (File.Exists(_settingsStore.SettingsPath))
-        {
-            Ok($"Configuracion encontrada: {_settingsStore.SettingsPath}");
-        }
-        else
-        {
-            Warn($"No existe todavia el archivo de configuracion: {_settingsStore.SettingsPath}");
-        }
-
-        if (Directory.Exists(_settingsStore.BackupDirectory))
-        {
-            var backupCount = Directory.EnumerateFiles(_settingsStore.BackupDirectory, "*.json").Count();
-            Ok($"Backups automaticos: {backupCount} archivo(s) en {_settingsStore.BackupDirectory}");
-        }
-        else
-        {
-            Info($"La carpeta de backups se creara cuando haya cambios guardados: {_settingsStore.BackupDirectory}");
-        }
-
-        Section("Twitch");
-        if (string.IsNullOrWhiteSpace(_config.TwitchClientId))
-        {
-            Warn("Falta el Client ID de Twitch.");
-        }
-        else
-        {
-            Ok("Client ID configurado.");
-        }
-
-        if (_config.Token.HasToken)
-        {
-            var missingScopes = TwitchAuthService.GetMissingScopes(_config.Token);
-            if (missingScopes.Count == 0)
-            {
-                Ok($"Token guardado con permisos necesarios. Expira: {_config.Token.ExpiresAt.LocalDateTime:g}.");
-            }
-            else
-            {
-                Warn($"Twitch necesita reautorizar permisos: {string.Join(", ", missingScopes)}.");
-            }
-        }
-        else
-        {
-            Warn("No hay sesion de Twitch autorizada.");
-        }
-
-        if (_config.Channel.IsReady)
-        {
-            Ok($"Canal: {FirstNonEmpty(_config.Channel.DisplayName, _config.Channel.Login, "sin nombre")}.");
-        }
-        else
-        {
-            Warn("No hay canal de Twitch resuelto todavia.");
-        }
-
-        Info(_eventSubClient.IsRunning
-            ? "EventSub esta escuchando eventos."
-            : "EventSub no esta activo en este momento.");
-
-        if (_streamStatus is { IsLive: true } live)
-        {
-            Ok($"Canal en directo con {live.ViewerCount} espectadores.");
-        }
-        else if (_streamStatus is { IsLive: false })
-        {
-            Info("Canal sin directo activo.");
-        }
-        else
-        {
-            Info("Estado del directo no consultado en esta sesion.");
-        }
-
-        Section("Arduino");
-        if (!_config.ArduinoEnabled)
-        {
-            Info("Arduino esta desactivado en Conexiones.");
-        }
-        else
-        {
-            var ports = SerialLightController.GetAvailablePortInfos();
-            if (ports.Count == 0)
-            {
-                Warn("No encontre puertos COM disponibles.");
-            }
-            else
-            {
-                Info($"Puertos detectados: {string.Join(", ", ports.Select(port => port.DisplayName))}.");
-            }
-
-            if (string.IsNullOrWhiteSpace(_config.SerialPort))
-            {
-                Warn("No hay puerto COM configurado para Arduino.");
-            }
-            else if (ports.Any(port => string.Equals(port.PortName, _config.SerialPort, StringComparison.OrdinalIgnoreCase)))
-            {
-                Ok($"Puerto configurado disponible: {_config.SerialPort}.");
-            }
-            else
-            {
-                Warn($"El puerto configurado {_config.SerialPort} no aparece conectado ahora.");
-            }
-
-            Info(_lightController.HasOpenPort
-                ? $"Arduino conectado en {_lightController.CurrentPort}. {_lightController.AckStatusText}."
-                : "Arduino no esta conectado desde la app.");
-            Ok($"{_config.LedStrips.Count} salida(s) LED configurada(s), {_config.LedStrips.Sum(strip => strip.LedCount)} LEDs en total.");
-        }
-
-        Section("Alexa");
-        if (!_config.Alexa.Enabled)
-        {
-            Info("Alexa esta desactivada. Esto es correcto si no la quieres usar.");
-        }
-        else if (_config.Alexa.IsConfigured)
-        {
-            Ok("Alexa relay configurado.");
-        }
-        else
-        {
-            Warn("Alexa esta activa, pero falta una URL valida del relay.");
-        }
-
-        if (_config.BackgroundAlexaEnabled)
-        {
-            Info($"Fondo Alexa encendido: {_config.BackgroundAlexaOnEventName}. Apagado: {_config.BackgroundAlexaOffEventName}.");
-        }
-
-        Section("Alertas");
-        var activeRules = _config.Rules.Where(rule => rule.IsEnabled).ToArray();
-        if (activeRules.Length == 0)
-        {
-            Warn("No hay reglas activas.");
-        }
-        else
-        {
-            Ok($"{activeRules.Length} regla(s) activa(s) de {_config.Rules.Count} total(es).");
-        }
-
-        var rulesWithoutAction = activeRules
-            .Where(rule => !rule.UseLights && !rule.PlayAudio && !rule.SendChatMessage && !rule.SendAlexaEvent)
-            .Select(rule => rule.Name)
-            .ToArray();
-        if (rulesWithoutAction.Length > 0)
-        {
-            Warn($"Alertas activas sin acciones: {FormatNameList(rulesWithoutAction)}.");
-        }
-
-        var missingAudio = activeRules
-            .Where(rule => rule.PlayAudio && !RuleHasValidAudio(rule))
-            .Select(rule => rule.Name)
-            .ToArray();
-        if (missingAudio.Length > 0)
-        {
-            Warn($"Alertas con audio faltante: {FormatNameList(missingAudio)}.");
-        }
-
-        var chatCommandsWithoutCommand = activeRules
-            .Where(rule => rule.EventKind == TwitchEventKind.ChatCommand && string.IsNullOrWhiteSpace(rule.ChatCommand))
-            .Select(rule => rule.Name)
-            .ToArray();
-        if (chatCommandsWithoutCommand.Length > 0)
-        {
-            Warn($"Comandos de chat sin comando escrito: {FormatNameList(chatCommandsWithoutCommand)}.");
-        }
-
-        var rulesWithInvalidPins = activeRules
-            .Where(rule => rule.UseLights && !string.IsNullOrWhiteSpace(rule.TargetPins) && LightCommand.ParsePins(rule.TargetPins).Count == 0)
-            .Select(rule => rule.Name)
-            .ToArray();
-        if (rulesWithInvalidPins.Length > 0)
-        {
-            Warn($"Alertas con pines LED no validos: {FormatNameList(rulesWithInvalidPins)}.");
-        }
-
-        var activeAlexaRules = activeRules.Count(rule => rule.SendAlexaEvent);
-        if (activeAlexaRules > 0 && !_config.Alexa.IsConfigured)
-        {
-            Warn($"{activeAlexaRules} regla(s) intentan enviar Alexa, pero el relay no esta listo.");
-        }
-
-        Section("Fondo y cola");
-        Info(_config.BackgroundEnabled
-            ? $"Fondo LED activo: {DisplayNames.For(_config.BackgroundPattern)} en pines {FirstNonEmpty(_config.BackgroundTargetPins, "todos")}."
-            : "Fondo LED apagado.");
-        Info(_config.BackgroundAlexaEnabled
-            ? $"Fondo Alexa activo con evento {_config.BackgroundAlexaOnEventName}."
-            : "Fondo Alexa apagado.");
-        Ok($"Cola: misma regla max {_config.MaxQueuedSameRuleAlerts}, cooldown {_config.SameRuleQueueCooldownMs} ms. Distintas max {_config.MaxQueuedDifferentRuleAlerts}, cooldown {_config.DifferentRuleQueueCooldownMs} ms.");
-
-        var header = new StringBuilder();
-        header.AppendLine("Diagnostico Neo Twitch");
-        header.AppendLine(warningCount == 0
-            ? "Estado general: sin advertencias."
-            : $"Estado general: {warningCount} punto(s) por revisar.");
-        header.AppendLine($"Fecha: {DateTime.Now:g}");
-        header.AppendLine();
-        header.Append(body);
-        header.AppendLine();
-        header.AppendLine("Este diagnostico no ejecuta eventos, no prende luces, no envia chat y no dispara Alexa.");
-
-        return new DiagnosticResult(header.ToString(), warningCount);
+        var context = new DiagnosticReportContext(
+            _config,
+            _settingsStore.SettingsPath,
+            _settingsStore.BackupDirectory,
+            _eventSubClient.IsRunning,
+            _streamStatus,
+            _lightController.HasOpenPort,
+            _lightController.CurrentPort,
+            _lightController.AckStatusText,
+            RuleHasValidAudio);
+        var service = new DiagnosticReportService(_updateService);
+        return await service.BuildAsync(context);
     }
 }

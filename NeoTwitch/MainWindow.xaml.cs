@@ -26,6 +26,7 @@ using NeoTwitch.ViewModels.Activity;
 using NeoTwitch.ViewModels.Library;
 using NeoTwitch.ViewModels.Obs;
 using NeoTwitch.ViewModels.Status;
+using NeoTwitch.ViewModels.Ui;
 using Forms = System.Windows.Forms;
 using DrawingIcon = System.Drawing.Icon;
 using WpfClipboard = System.Windows.Clipboard;
@@ -606,97 +607,10 @@ public partial class MainWindow : Window
         }
     }
 
-    private sealed record UiOption<T>(string Label, T Value)
-    {
-        public override string ToString() => Label;
-    }
-
-    private sealed record DiagnosticResult(string Report, int WarningCount);
-
-    private sealed record RuleLedPreviewDot(
-        SolidColorBrush Fill,
-        System.Windows.Media.Color GlowColor,
-        double GlowOpacity,
-        double GlowRadius);
-
     [DllImport("dwmapi.dll")]
     private static extern int DwmSetWindowAttribute(
         IntPtr hwnd,
         int attribute,
         ref int attributeValue,
         int attributeSize);
-
-    private sealed record ThemePalette(
-        SolidColorBrush Window,
-        SolidColorBrush Sidebar,
-        SolidColorBrush Surface,
-        SolidColorBrush Input,
-        SolidColorBrush Button,
-        SolidColorBrush Border,
-        SolidColorBrush Text,
-        SolidColorBrush MutedText,
-        SolidColorBrush SidebarText,
-        SolidColorBrush SidebarMutedText,
-        SolidColorBrush SidebarCard,
-        SolidColorBrush SidebarCardBorder,
-        SolidColorBrush Console,
-        SolidColorBrush ConsoleMutedText,
-        SolidColorBrush ScrollTrack,
-        SolidColorBrush Accent,
-        SolidColorBrush NavSelected,
-        SolidColorBrush DangerSurface,
-        SolidColorBrush DangerText,
-        SolidColorBrush DangerBorder)
-    {
-        public static ThemePalette Light { get; } = new(
-            BrushFrom("#F7FAFC"),
-            BrushFrom("#FFFFFF"),
-            BrushFrom("#FFFFFF"),
-            BrushFrom("#F8FAFC"),
-            BrushFrom("#EEF2F6"),
-            BrushFrom("#E2E8F0"),
-            BrushFrom("#0B1117"),
-            BrushFrom("#475569"),
-            BrushFrom("#0B1117"),
-            BrushFrom("#64748B"),
-            BrushFrom("#F8FAFC"),
-            BrushFrom("#E2E8F0"),
-            BrushFrom("#0B1117"),
-            BrushFrom("#94A3B8"),
-            BrushFrom("#E2E8F0"),
-            BrushFrom("#14B8A6"),
-            BrushFrom("#14B8A6"),
-            BrushFrom("#FFF1F2"),
-            BrushFrom("#B91C1C"),
-            BrushFrom("#FDA4AF"));
-
-        public static ThemePalette Dark { get; } = new(
-            BrushFrom("#081117"),
-            BrushFrom("#0F1822"),
-            BrushFrom("#121A24"),
-            BrushFrom("#0F1822"),
-            BrushFrom("#162231"),
-            BrushFrom("#233142"),
-            BrushFrom("#E6EEF2"),
-            BrushFrom("#A7B4BE"),
-            BrushFrom("#E6EEF2"),
-            BrushFrom("#A7B4BE"),
-            BrushFrom("#162231"),
-            BrushFrom("#233142"),
-            BrushFrom("#050A0E"),
-            BrushFrom("#64748B"),
-            BrushFrom("#132330"),
-            BrushFrom("#14B8A6"),
-            BrushFrom("#092C2D"),
-            BrushFrom("#3A1418"),
-            BrushFrom("#FDA4AF"),
-            BrushFrom("#7F1D1D"));
-
-        private static SolidColorBrush BrushFrom(string hex)
-        {
-            var brush = new SolidColorBrush((System.Windows.Media.Color)System.Windows.Media.ColorConverter.ConvertFromString(hex));
-            brush.Freeze();
-            return brush;
-        }
-    }
 }

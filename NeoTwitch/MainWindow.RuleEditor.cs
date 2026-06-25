@@ -6,6 +6,7 @@ using NeoTwitch.Models;
 using NeoTwitch.Services;
 using NeoTwitch.Services.Alerts;
 using NeoTwitch.Services.Lights;
+using NeoTwitch.Services.Ui;
 using NeoTwitch.ViewModels.Activity;
 using WpfMessageBox = System.Windows.MessageBox;
 using static NeoTwitch.Services.Text.UiTextFormatter;

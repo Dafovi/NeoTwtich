@@ -1,6 +1,7 @@
 using System.Collections.ObjectModel;
 using NeoTwitch.Models;
 using NeoTwitch.Services.Lights;
+using NeoTwitch.ViewModels.Ui;
 using static NeoTwitch.Services.Ui.UiBrushFactory;
 
 namespace NeoTwitch;

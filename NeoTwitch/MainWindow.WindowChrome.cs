@@ -9,6 +9,12 @@ namespace NeoTwitch;
 
 public partial class MainWindow
 {
+    private const int DwmWindowAttributeBorderColor = 34;
+    private const int DwmWindowAttributeCaptionColor = 35;
+    private const int DwmWindowAttributeTextColor = 36;
+    private const int AppCaptionColor = 0x0017110B;
+    private const int AppCaptionTextColor = 0x00FFFFFF;
+
     private void ApplyWindowChromeColor()
     {
         try
@@ -138,4 +144,11 @@ public partial class MainWindow
 
         return false;
     }
+
+    [DllImport("dwmapi.dll")]
+    private static extern int DwmSetWindowAttribute(
+        IntPtr hwnd,
+        int attribute,
+        ref int attributeValue,
+        int attributeSize);
 }

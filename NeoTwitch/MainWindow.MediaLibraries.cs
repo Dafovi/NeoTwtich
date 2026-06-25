@@ -421,8 +421,8 @@ public partial class MainWindow
 
         if (!_config.Obs.IsConfigured || !_obsService.IsConnected)
         {
-            AddLog("OBS: conecta OBS antes de probar imagenes o videos.", ActivityLogKind.Important);
-            WpfMessageBox.Show(this, "Conecta OBS desde Conexiones antes de probar imagenes o videos.", "OBS", MessageBoxButton.OK, MessageBoxImage.Information);
+            AddLog(_text.Get(UiTextKeys.MediaObsConnectRequiredLog), ActivityLogKind.Important);
+            WpfMessageBox.Show(this, _text.Get(UiTextKeys.MediaObsConnectRequiredPrompt), "OBS", MessageBoxButton.OK, MessageBoxImage.Information);
             return;
         }
 
@@ -430,14 +430,14 @@ public partial class MainWindow
         var asset = library.FirstOrDefault(item => string.Equals(item.Id, assetId, StringComparison.OrdinalIgnoreCase));
         if (asset is null || !File.Exists(asset.FilePath))
         {
-            AddLog("OBS: el archivo seleccionado no existe.", ActivityLogKind.Important);
+            AddLog(_text.Get(UiTextKeys.MediaObsMissingFileLog), ActivityLogKind.Important);
             return;
         }
 
         var sceneName = _obsService.CurrentScene;
         if (string.IsNullOrWhiteSpace(sceneName))
         {
-            AddLog("OBS: no hay una escena actual para probar el medio.", ActivityLogKind.Important);
+            AddLog(_text.Get(UiTextKeys.MediaObsMissingSceneLog), ActivityLogKind.Important);
             return;
         }
 
@@ -469,7 +469,7 @@ public partial class MainWindow
             _mediaPreviewHideRequest = new ObsMediaHideRequest(sceneName, sourceName, duration, DateTimeOffset.UtcNow);
             WriteObsOverlayState(asset, obsKind, duration);
             MarkObsMediaAssetUsed(obsKind, asset);
-            AddLog($"OBS: probando {MediaLibraryTitle(kind).ToLowerInvariant()} '{asset.DisplayName}'.", ActivityLogKind.Obs);
+            AddLog(_text.Format(UiTextKeys.MediaObsPreviewLog, MediaLibraryTitle(kind).ToLowerInvariant(), asset.DisplayName), ActivityLogKind.Obs);
 
             await Task.Delay(duration, previewCts.Token);
             await StopMediaPreviewAsync();
@@ -592,7 +592,7 @@ public partial class MainWindow
                 groupRows.Add(new MediaGroupRow(
                     group.Id,
                     group.Name,
-                    $"{count} archivo{(count == 1 ? "" : "s")}",
+                    _text.Format(UiTextKeys.LibraryFileCount, count, count == 1 ? "" : "s"),
                     FrozenBrushFrom((groupIndex++ % 4) switch
                     {
                         0 => "#14B8A6",
@@ -615,7 +615,7 @@ public partial class MainWindow
             {
                 ImageSavedCountText.Text = library.Count.ToString();
                 ImageGroupCountText.Text = groups.Count.ToString();
-                LastImageText.Text = lastAsset?.DisplayName ?? "Sin uso";
+                LastImageText.Text = lastAsset?.DisplayName ?? _text.Get(UiTextKeys.LibraryLastUnused);
                 ImageLibraryFooterText.Text = $"Mostrando {rows.Length} de {library.Count} {MediaLibraryKindCatalog.Get(kind).FooterNoun}{groupFilterText}";
                 NewImageGroupBox.Items.Refresh();
             }
@@ -623,7 +623,7 @@ public partial class MainWindow
             {
                 VideoSavedCountText.Text = library.Count.ToString();
                 VideoGroupCountText.Text = groups.Count.ToString();
-                LastVideoText.Text = lastAsset?.DisplayName ?? "Sin uso";
+                LastVideoText.Text = lastAsset?.DisplayName ?? _text.Get(UiTextKeys.LibraryLastUnused);
                 VideoLibraryFooterText.Text = $"Mostrando {rows.Length} de {library.Count} {MediaLibraryKindCatalog.Get(kind).FooterNoun}{groupFilterText}";
                 NewVideoGroupBox.Items.Refresh();
             }

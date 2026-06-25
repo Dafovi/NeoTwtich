@@ -2,6 +2,7 @@ using System.Windows;
 using System.Windows.Controls;
 using System.Windows.Media;
 using NeoTwitch.Models;
+using NeoTwitch.Services.Dashboard;
 using NeoTwitch.Services.Status;
 using NeoTwitch.Services.Ui;
 using NeoTwitch.ViewModels.Status;
@@ -64,7 +65,11 @@ public partial class MainWindow
                     : _config.Token.HasToken
                         ? "Sesion autorizada"
                         : "Sin conectar";
-        TwitchStatusText.Text = BuildTwitchStatusText();
+        TwitchStatusText.Text = DashboardStatusTextService.BuildTwitchStatusText(
+            _isTwitchAuthorizing,
+            _isTwitchConnecting,
+            _streamStatus,
+            _eventSubClient.IsRunning);
         UpdateTwitchLiveIndicator();
         UpdateChannelAvatar();
 
@@ -156,7 +161,11 @@ public partial class MainWindow
                 ? "Configuracion incompleta"
                 : "Desactivado";
         AlexaSidebarStatusText.Text = _config.Alexa.IsConfigured
-            ? BuildAlexaSidebarStatusText()
+            ? DashboardStatusTextService.BuildAlexaSidebarStatusText(
+                _config.BackgroundAlexaEnabled,
+                _config.BackgroundAlexaOnEventName,
+                _config.BackgroundAlexaTurnOffAfterEvent,
+                _config.BackgroundAlexaOffEventName)
             : status;
         UpdateConnectionButtons();
         RefreshDashboardConnectionStates();
@@ -310,33 +319,4 @@ public partial class MainWindow
         badge.BorderThickness = new Thickness(1);
     }
 
-    private string BuildTwitchStatusText()
-    {
-        if (_isTwitchAuthorizing)
-        {
-            return "Esperando autorizacion de Twitch.";
-        }
-
-        if (_isTwitchConnecting)
-        {
-            return "Conectando EventSub y chat de Twitch.";
-        }
-
-        if (_streamStatus is { IsLive: true } live)
-        {
-            var game = string.IsNullOrWhiteSpace(live.GameName)
-                ? ""
-                : $" en {live.GameName}";
-            return $"En directo{game}. {live.ViewerCount} espectadores.";
-        }
-
-        if (_streamStatus is { IsLive: false })
-        {
-            return "Canal sin directo activo.";
-        }
-
-        return _eventSubClient.IsRunning
-            ? "Escuchando eventos. Directo sin consultar."
-            : "Listo para conectar eventos.";
-    }
 }

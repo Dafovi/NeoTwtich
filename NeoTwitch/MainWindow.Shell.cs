@@ -9,6 +9,7 @@ using System.Windows.Interop;
 using System.Windows.Media;
 using System.Windows.Media.Imaging;
 using NeoTwitch.Models;
+using NeoTwitch.Services.Dashboard;
 using NeoTwitch.Services;
 using NeoTwitch.Services.Ui;
 using NeoTwitch.Shared;
@@ -55,19 +56,6 @@ public partial class MainWindow
         TestObsButton.Content = _isObsConnecting
             ? "Actualizando..."
             : "Actualizar escenas";
-    }
-
-    private string BuildAlexaSidebarStatusText()
-    {
-        var background = _config.BackgroundAlexaEnabled
-            ? $"Fondo: {_config.BackgroundAlexaOnEventName}"
-            : "Fondo sin mantener";
-
-        var endBehavior = _config.BackgroundAlexaTurnOffAfterEvent
-            ? $"Al finalizar: {_config.BackgroundAlexaOffEventName}"
-            : "Al finalizar: conserva estado";
-
-        return $"{background}. {endBehavior}.";
     }
 
     private void UpdateTwitchLiveIndicator()

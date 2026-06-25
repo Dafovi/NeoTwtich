@@ -59,6 +59,8 @@ var tests = new (string Name, Action Body)[]
     ("ActivityLogService filters entries and search text", ActivityLogServiceTests.FiltersEntriesAndSearchText),
     ("DashboardSummaryService counts Twitch events", DashboardSummaryTests.CountsTwitchEvents),
     ("DashboardSummaryService counts matched rules safely", DashboardSummaryTests.CountsMatchedRulesSafely),
+    ("DashboardStatusTextService formats live Twitch status", DashboardStatusTextTests.FormatsLiveTwitchStatus),
+    ("DashboardStatusTextService formats Alexa background status", DashboardStatusTextTests.FormatsAlexaBackgroundStatus),
     ("UiTextFormatter formats fallback text", UiTextFormatterTests.FormatsFallbackText),
     ("UiTextFormatter builds bounded secret masks", UiTextFormatterTests.BuildsBoundedSecretMasks),
     ("CircularProgressGeometryService calculates percentages", CircularProgressGeometryTests.CalculatesPercentages),
@@ -1004,6 +1006,31 @@ static class DashboardSummaryTests
         summary.RegisterMatchedRules(-10);
 
         TestAssert.Equal(3, summary.Snapshot.Events);
+    }
+}
+
+static class DashboardStatusTextTests
+{
+    public static void FormatsLiveTwitchStatus()
+    {
+        var text = DashboardStatusTextService.BuildTwitchStatusText(
+            isAuthorizing: false,
+            isConnecting: false,
+            new TwitchStreamStatus(true, 23, "Stream", "Just Chatting"),
+            eventSubRunning: true);
+
+        TestAssert.Equal("En directo en Just Chatting. 23 espectadores.", text);
+    }
+
+    public static void FormatsAlexaBackgroundStatus()
+    {
+        var text = DashboardStatusTextService.BuildAlexaSidebarStatusText(
+            backgroundEnabled: true,
+            backgroundOnEventName: "luz_encendida",
+            turnOffAfterEvent: false,
+            backgroundOffEventName: "luz_apagada");
+
+        TestAssert.Equal("Fondo: luz_encendida. Al finalizar: conserva estado.", text);
     }
 }
 

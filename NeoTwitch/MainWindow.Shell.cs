@@ -11,6 +11,7 @@ using System.Windows.Media.Imaging;
 using NeoTwitch.Models;
 using NeoTwitch.Services.Dashboard;
 using NeoTwitch.Services;
+using NeoTwitch.Services.Status;
 using NeoTwitch.Services.Ui;
 using NeoTwitch.Shared;
 using NeoTwitch.ViewModels.Activity;
@@ -25,37 +26,31 @@ public partial class MainWindow
 {
     private void UpdateConnectionButtons()
     {
-        var twitchBusy = _isTwitchAuthorizing || _isTwitchConnecting;
-        TwitchButton.IsEnabled = !twitchBusy;
-        TwitchButton.Content = _isTwitchAuthorizing
-            ? "Autorizando..."
-            : _isTwitchConnecting
-                ? "Conectando..."
-                : _eventSubClient.IsRunning
-                    ? "Desconectar Twitch"
-                    : "Conectar Twitch";
+        ApplyButtonState(TwitchButton, ConnectionButtonStateService.ResolveTwitch(
+            _isTwitchAuthorizing,
+            _isTwitchConnecting,
+            _eventSubClient.IsRunning));
+        ApplyButtonState(ConnectArduinoButton, ConnectionButtonStateService.ResolveArduino(
+            _config.ArduinoEnabled,
+            _isArduinoConnecting));
+        ApplyButtonState(TestAlexaButton, ConnectionButtonStateService.ResolveAlexa(
+            _config.Alexa.Enabled,
+            _isAlexaConnecting));
+        ApplyButtonState(ConnectObsButton, ConnectionButtonStateService.ResolveObs(
+            _config.Obs.Enabled,
+            _isObsConnecting,
+            _isObsSceneActionRunning,
+            _obsService.IsConnected));
+        ApplyButtonState(TestObsButton, ConnectionButtonStateService.ResolveObsTest(
+            _config.Obs.Enabled,
+            _isObsConnecting,
+            _isObsSceneActionRunning));
+    }
 
-        ConnectArduinoButton.IsEnabled = !_isArduinoConnecting && _config.ArduinoEnabled;
-        ConnectArduinoButton.Content = _isArduinoConnecting
-            ? "Conectando..."
-            : "Conectar Arduino";
-
-        TestAlexaButton.IsEnabled = !_isAlexaConnecting && _config.Alexa.Enabled;
-        TestAlexaButton.Content = _isAlexaConnecting
-            ? "Probando..."
-            : "Probar Alexa";
-
-        var obsBusy = _isObsConnecting || _isObsSceneActionRunning;
-        ConnectObsButton.IsEnabled = !obsBusy && _config.Obs.Enabled;
-        ConnectObsButton.Content = _isObsConnecting
-            ? "Conectando..."
-            : _obsService.IsConnected
-                ? "Desconectar OBS"
-                : "Conectar OBS";
-        TestObsButton.IsEnabled = !obsBusy && _config.Obs.Enabled;
-        TestObsButton.Content = _isObsConnecting
-            ? "Actualizando..."
-            : "Actualizar escenas";
+    private static void ApplyButtonState(System.Windows.Controls.Button button, ConnectionButtonState state)
+    {
+        button.IsEnabled = state.IsEnabled;
+        button.Content = state.Content;
     }
 
     private void UpdateTwitchLiveIndicator()

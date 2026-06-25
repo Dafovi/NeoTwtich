@@ -53,6 +53,8 @@ var tests = new (string Name, Action Body)[]
     ("MediaRuleAssetService resolves image and video durations", MediaRuleAssetTests.ResolvesImageAndVideoDurations),
     ("ConnectionStateService resolves service states", ConnectionStateTests.ResolvesServiceStates),
     ("ConnectionStateService maps visual metadata", ConnectionStateTests.MapsVisualMetadata),
+    ("ConnectionButtonStateService disables Twitch while busy", ConnectionButtonStateTests.DisablesTwitchWhileBusy),
+    ("ConnectionButtonStateService maps OBS buttons", ConnectionButtonStateTests.MapsObsButtons),
     ("DiagnosticReportService builds report without network", DiagnosticReportServiceTests.BuildsReportWithoutNetwork),
     ("DiagnosticReportService reports missing audio", DiagnosticReportServiceTests.ReportsMissingAudio),
     ("ActivityLogService trims activity and dashboard entries", ActivityLogServiceTests.TrimsActivityAndDashboardEntries),
@@ -877,6 +879,38 @@ static class ConnectionStateTests
         var appWarning = ConnectionStateService.GetAppStateVisual(ConnectionVisualState.Warning);
         TestAssert.Equal("Estado: Hay puntos por revisar", appWarning.Text);
         TestAssert.Contains("appstate_warning.png", appWarning.IconPath);
+    }
+}
+
+static class ConnectionButtonStateTests
+{
+    public static void DisablesTwitchWhileBusy()
+    {
+        var state = ConnectionButtonStateService.ResolveTwitch(
+            isAuthorizing: false,
+            isConnecting: true,
+            isRunning: false);
+
+        TestAssert.False(state.IsEnabled);
+        TestAssert.Equal("Conectando...", state.Content);
+    }
+
+    public static void MapsObsButtons()
+    {
+        var connected = ConnectionButtonStateService.ResolveObs(
+            enabled: true,
+            isConnecting: false,
+            isSceneActionRunning: false,
+            isConnected: true);
+        var busyTest = ConnectionButtonStateService.ResolveObsTest(
+            enabled: true,
+            isConnecting: true,
+            isSceneActionRunning: false);
+
+        TestAssert.True(connected.IsEnabled);
+        TestAssert.Equal("Desconectar OBS", connected.Content);
+        TestAssert.False(busyTest.IsEnabled);
+        TestAssert.Equal("Actualizando...", busyTest.Content);
     }
 }
 

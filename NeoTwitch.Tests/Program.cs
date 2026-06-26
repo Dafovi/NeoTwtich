@@ -91,6 +91,7 @@ var tests = new (string Name, Action Body)[]
     ("OptionVisibilityService resolves background panels", OptionVisibilityTests.ResolvesBackgroundPanels),
     ("UiAccentCatalog maps event and pattern colors", UiAccentCatalogTests.MapsEventAndPatternColors),
     ("UiBrushFactory creates frozen brushes", UiBrushFactoryTests.CreatesFrozenBrushes),
+    ("ThemeResourceService applies palette resources", ThemeResourceTests.AppliesPaletteResources),
     ("RuleSimulationService normalizes chat command matching", RuleSimulationTests.MatchesChatCommandWithNormalization),
     ("RuleSimulationService builds representative test events", RuleSimulationTests.BuildsRepresentativeEvents)
 };
@@ -1803,6 +1804,21 @@ static class UiBrushFactoryTests
         TestAssert.True(translucent.IsFrozen);
         TestAssert.Equal((byte)0x22, translucent.Color.A);
         TestAssert.Equal((byte)0x14, translucent.Color.R);
+    }
+}
+
+static class ThemeResourceTests
+{
+    public static void AppliesPaletteResources()
+    {
+        var resources = new System.Windows.ResourceDictionary();
+        var palette = ThemePalette.Dark;
+
+        ThemeResourceService.Apply(resources, palette);
+
+        TestAssert.Same(palette.Window, resources["ThemeWindowBrush"]);
+        TestAssert.Same(palette.Accent, resources["ThemeSelectionBrush"]);
+        TestAssert.Same(palette.Accent, resources[System.Windows.SystemColors.HighlightBrushKey]);
     }
 }
 

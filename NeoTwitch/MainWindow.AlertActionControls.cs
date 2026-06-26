@@ -1,0 +1,61 @@
+using WpfBorder = System.Windows.Controls.Border;
+using WpfButton = System.Windows.Controls.Button;
+using WpfCheckBox = System.Windows.Controls.CheckBox;
+using WpfComboBox = System.Windows.Controls.ComboBox;
+using WpfGrid = System.Windows.Controls.Grid;
+using WpfStackPanel = System.Windows.Controls.StackPanel;
+using WpfTextBlock = System.Windows.Controls.TextBlock;
+using WpfTextBox = System.Windows.Controls.TextBox;
+
+namespace NeoTwitch;
+
+public partial class MainWindow
+{
+    private WpfBorder AudioActionCard => AlertsView.AudioActionCard;
+    private WpfCheckBox PlayAudioCheck => AlertsView.PlayAudioCheck;
+    private WpfStackPanel AudioDetailsPanel => AlertsView.AudioDetailsPanel;
+    private WpfTextBlock AudioLabel => AlertsView.AudioLabel;
+    private WpfGrid AudioPanel => AlertsView.AudioPanel;
+    private WpfButton RuleSingleAudioModeButton => AlertsView.RuleSingleAudioModeButton;
+    private WpfButton RuleGroupAudioModeButton => AlertsView.RuleGroupAudioModeButton;
+    private WpfStackPanel RuleAudioSinglePanel => AlertsView.RuleAudioSinglePanel;
+    private WpfComboBox RuleAudioAssetBox => AlertsView.RuleAudioAssetBox;
+    private WpfStackPanel RuleAudioGroupPanel => AlertsView.RuleAudioGroupPanel;
+    private WpfComboBox RuleAudioGroupBox => AlertsView.RuleAudioGroupBox;
+    private WpfTextBlock RuleAudioEmptyHintText => AlertsView.RuleAudioEmptyHintText;
+    private WpfBorder ChatActionCard => AlertsView.ChatActionCard;
+    private WpfCheckBox ChatMessageCheck => AlertsView.ChatMessageCheck;
+    private WpfStackPanel ChatDetailsPanel => AlertsView.ChatDetailsPanel;
+    private WpfTextBlock ChatMessageLabel => AlertsView.ChatMessageLabel;
+    private WpfTextBox ChatMessageBox => AlertsView.ChatMessageBox;
+    private WpfBorder AlexaActionCard => AlertsView.AlexaActionCard;
+    private WpfCheckBox AlexaEventCheck => AlertsView.AlexaEventCheck;
+    private WpfStackPanel AlexaDetailsPanel => AlertsView.AlexaDetailsPanel;
+    private WpfTextBlock AlexaRuleHintText => AlertsView.AlexaRuleHintText;
+    private WpfBorder ObsActionCard => AlertsView.ObsActionCard;
+    private WpfCheckBox ObsSceneCheck => AlertsView.ObsSceneCheck;
+    private WpfStackPanel ObsDetailsPanel => AlertsView.ObsDetailsPanel;
+    private WpfStackPanel ObsSceneDetailsPanel => AlertsView.ObsSceneDetailsPanel;
+    private WpfComboBox RuleObsSceneBox => AlertsView.RuleObsSceneBox;
+    private WpfGrid ObsSceneTimingGrid => AlertsView.ObsSceneTimingGrid;
+    private WpfTextBox ObsSceneDelayBox => AlertsView.ObsSceneDelayBox;
+    private WpfCheckBox ObsReturnCheck => AlertsView.ObsReturnCheck;
+    private WpfStackPanel ObsReturnDelayPanel => AlertsView.ObsReturnDelayPanel;
+    private WpfTextBox ObsReturnDelayBox => AlertsView.ObsReturnDelayBox;
+    private WpfTextBlock RuleObsEmptyHintText => AlertsView.RuleObsEmptyHintText;
+    private WpfCheckBox ObsMediaCheck => AlertsView.ObsMediaCheck;
+    private WpfStackPanel ObsMediaDetailsPanel => AlertsView.ObsMediaDetailsPanel;
+    private WpfComboBox RuleObsMediaKindBox => AlertsView.RuleObsMediaKindBox;
+    private WpfButton RuleObsImageModeButton => AlertsView.RuleObsImageModeButton;
+    private WpfButton RuleObsVideoModeButton => AlertsView.RuleObsVideoModeButton;
+    private WpfComboBox RuleObsMediaSourceModeBox => AlertsView.RuleObsMediaSourceModeBox;
+    private WpfButton RuleObsSingleMediaModeButton => AlertsView.RuleObsSingleMediaModeButton;
+    private WpfButton RuleObsGroupMediaModeButton => AlertsView.RuleObsGroupMediaModeButton;
+    private WpfStackPanel RuleObsMediaAssetPanel => AlertsView.RuleObsMediaAssetPanel;
+    private WpfComboBox RuleObsMediaAssetBox => AlertsView.RuleObsMediaAssetBox;
+    private WpfStackPanel RuleObsMediaGroupPanel => AlertsView.RuleObsMediaGroupPanel;
+    private WpfComboBox RuleObsMediaGroupBox => AlertsView.RuleObsMediaGroupBox;
+    private WpfStackPanel ObsMediaDurationPanel => AlertsView.ObsMediaDurationPanel;
+    private WpfTextBox ObsMediaDurationBox => AlertsView.ObsMediaDurationBox;
+    private WpfTextBlock RuleObsMediaEmptyHintText => AlertsView.RuleObsMediaEmptyHintText;
+}

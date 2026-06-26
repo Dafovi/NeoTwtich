@@ -1,0 +1,63 @@
+using WpfBorder = System.Windows.Controls.Border;
+using WpfButton = System.Windows.Controls.Button;
+using WpfCheckBox = System.Windows.Controls.CheckBox;
+using WpfComboBox = System.Windows.Controls.ComboBox;
+using WpfDockPanel = System.Windows.Controls.DockPanel;
+using WpfExpander = System.Windows.Controls.Expander;
+using WpfGrid = System.Windows.Controls.Grid;
+using WpfItemsControl = System.Windows.Controls.ItemsControl;
+using WpfPath = System.Windows.Shapes.Path;
+using WpfSeparator = System.Windows.Controls.Separator;
+using WpfSlider = System.Windows.Controls.Slider;
+using WpfStackPanel = System.Windows.Controls.StackPanel;
+using WpfTextBlock = System.Windows.Controls.TextBlock;
+using WpfTextBox = System.Windows.Controls.TextBox;
+
+namespace NeoTwitch;
+
+public partial class MainWindow
+{
+    private WpfBorder UseLightsActionCard => AlertsView.UseLightsActionCard;
+    private WpfCheckBox UseLightsCheck => AlertsView.UseLightsCheck;
+    private WpfExpander LightConfigurationPanel => AlertsView.LightConfigurationPanel;
+    private WpfSeparator LightOptionsSeparator => AlertsView.LightOptionsSeparator;
+    private WpfTextBlock TargetPinsLabel => AlertsView.TargetPinsLabel;
+    private WpfComboBox TargetPinsChoiceBox => AlertsView.TargetPinsChoiceBox;
+    private WpfTextBox TargetPinsBox => AlertsView.TargetPinsBox;
+    private WpfStackPanel PatternGrid => AlertsView.PatternGrid;
+    private WpfComboBox PatternBox => AlertsView.PatternBox;
+    private WpfButton PatternSolidTileButton => AlertsView.PatternSolidTileButton;
+    private WpfButton PatternPulseTileButton => AlertsView.PatternPulseTileButton;
+    private WpfButton PatternRainbowTileButton => AlertsView.PatternRainbowTileButton;
+    private WpfButton PatternChaseTileButton => AlertsView.PatternChaseTileButton;
+    private WpfButton PatternTheaterTileButton => AlertsView.PatternTheaterTileButton;
+    private WpfButton PatternSparkleTileButton => AlertsView.PatternSparkleTileButton;
+    private WpfButton PatternRaveTileButton => AlertsView.PatternRaveTileButton;
+    private WpfGrid ColorOptionsGrid => AlertsView.ColorOptionsGrid;
+    private WpfStackPanel PrimaryColorPanel => AlertsView.PrimaryColorPanel;
+    private WpfButton PrimaryColorButton => AlertsView.PrimaryColorButton;
+    private WpfTextBox PrimaryColorBox => AlertsView.PrimaryColorBox;
+    private WpfTextBlock SecondaryColorLabel => AlertsView.SecondaryColorLabel;
+    private WpfDockPanel SecondaryColorPanel => AlertsView.SecondaryColorPanel;
+    private WpfButton SecondaryColorButton => AlertsView.SecondaryColorButton;
+    private WpfTextBox SecondaryColorBox => AlertsView.SecondaryColorBox;
+    private WpfTextBlock TertiaryColorLabel => AlertsView.TertiaryColorLabel;
+    private WpfDockPanel TertiaryColorPanel => AlertsView.TertiaryColorPanel;
+    private WpfButton TertiaryColorButton => AlertsView.TertiaryColorButton;
+    private WpfTextBox TertiaryColorBox => AlertsView.TertiaryColorBox;
+    private WpfGrid BrightnessGrid => AlertsView.BrightnessGrid;
+    private WpfTextBlock BrightnessValueText => AlertsView.BrightnessValueText;
+    private WpfPath BrightnessArc => AlertsView.BrightnessArc;
+    private WpfSlider BrightnessSlider => AlertsView.BrightnessSlider;
+    private WpfGrid DurationGrid => AlertsView.DurationGrid;
+    private WpfTextBox DurationValueText => AlertsView.DurationValueText;
+    private WpfSlider DurationSlider => AlertsView.DurationSlider;
+    private WpfGrid CycleGrid => AlertsView.CycleGrid;
+    private WpfTextBox CycleValueText => AlertsView.CycleValueText;
+    private WpfSlider CycleSlider => AlertsView.CycleSlider;
+    private WpfGrid StepGrid => AlertsView.StepGrid;
+    private WpfTextBox StepValueText => AlertsView.StepValueText;
+    private WpfSlider StepSlider => AlertsView.StepSlider;
+    private WpfBorder RuleLedPreviewPanel => AlertsView.RuleLedPreviewPanel;
+    private WpfItemsControl RuleLedPreviewList => AlertsView.RuleLedPreviewList;
+}

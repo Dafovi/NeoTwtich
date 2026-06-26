@@ -135,25 +135,15 @@ public partial class MainWindow
         IReadOnlyDictionary<string, string> groupsById,
         int index)
     {
-        var info = MediaLibraryKindCatalog.Get(kind);
-        var accentColor = info.AccentColor;
-        var metadata = kind == MediaLibraryKind.Image
-            ? asset.ResolutionText
-            : MediaMetadataService.BuildVideoMetadata(asset);
-
-        return new MediaLibraryRow(
-            asset.Id,
-            asset.DisplayName,
-            asset.FilePath,
-            asset.GroupId,
-            groupsById.TryGetValue(asset.GroupId, out var groupName) ? groupName : _text.Get(UiTextKeys.LibraryNoGroup),
-            metadata,
-            info.IconPath,
-            FrozenBrushFrom(accentColor),
-            TranslucentBrushFrom(accentColor),
+        return LibraryRowFactoryService.CreateMediaRow(
+            kind,
+            asset,
+            groupsById,
+            _text.Get(UiTextKeys.LibraryNoGroup),
             index,
             _config.Obs.IsConfigured && _obsService.IsConnected && !_isObsConnecting,
-            _previewingMediaKind == kind && string.Equals(_previewingMediaId, asset.Id, StringComparison.OrdinalIgnoreCase));
+            _previewingMediaKind,
+            _previewingMediaId);
     }
 
     private bool MediaRowMatchesFilters(MediaLibraryKind kind, MediaLibraryRow row)

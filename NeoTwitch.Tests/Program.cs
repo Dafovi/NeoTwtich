@@ -50,6 +50,8 @@ var tests = new (string Name, Action Body)[]
     ("LibraryGroupService creates and reuses groups", LibraryGroupServiceTests.CreatesAndReusesGroups),
     ("LibraryGroupService clears group references", LibraryGroupServiceTests.ClearsGroupReferences),
     ("MediaLibraryKindCatalog maps media metadata", MediaLibraryKindCatalogTests.MapsMediaMetadata),
+    ("LibraryRowFactoryService builds audio rows", LibraryRowFactoryTests.BuildsAudioRows),
+    ("LibraryRowFactoryService builds media rows", LibraryRowFactoryTests.BuildsMediaRows),
     ("LibraryRowFilterService filters audio rows", LibraryRowFilterTests.FiltersAudioRows),
     ("LibraryRowFilterService filters media rows", LibraryRowFilterTests.FiltersMediaRows),
     ("MediaRuleAssetService resolves single media assets", MediaRuleAssetTests.ResolvesSingleMediaAssets),
@@ -894,6 +896,74 @@ static class LibraryGroupServiceTests
         TestAssert.False(rules[0].PlayAudio);
         TestAssert.Equal("g1", rules[1].AudioGroupId);
         TestAssert.True(rules[1].PlayAudio);
+    }
+}
+
+static class LibraryRowFactoryTests
+{
+    public static void BuildsAudioRows()
+    {
+        var audio = new AudioAssetConfig
+        {
+            Id = "audio-1",
+            Name = "Follow",
+            GroupId = "group-1",
+            FilePath = @"C:\audios\follow.mp3",
+            DurationMs = 3000
+        };
+        var rules = new[]
+        {
+            new EventRule
+            {
+                Name = "Nuevo seguidor",
+                EventKind = TwitchEventKind.Follow,
+                PlayAudio = true,
+                AudioSourceMode = AudioSourceMode.Single,
+                AudioAssetId = "AUDIO-1"
+            }
+        };
+
+        var row = LibraryRowFactoryService.CreateAudioRow(
+            audio,
+            rules,
+            new Dictionary<string, string> { ["group-1"] = "Seguidores" },
+            "Sin grupo",
+            "audio-1",
+            isAudioPreviewActive: true,
+            index: 2);
+
+        TestAssert.Equal("Nuevo seguidor", row.AssignedAlertText);
+        TestAssert.Equal("Seguidores", row.GroupName);
+        TestAssert.True(row.HasAssignedAlert);
+        TestAssert.True(row.IsPreviewing);
+        TestAssert.Equal(2, row.Index);
+    }
+
+    public static void BuildsMediaRows()
+    {
+        var video = new MediaAssetConfig
+        {
+            Id = "video-1",
+            Name = "Intro",
+            GroupId = "group-1",
+            DurationMs = 4500
+        };
+
+        var row = LibraryRowFactoryService.CreateMediaRow(
+            MediaLibraryKind.Video,
+            video,
+            new Dictionary<string, string> { ["group-1"] = "Videos" },
+            "Sin grupo",
+            index: 3,
+            canPreview: true,
+            previewingMediaKind: MediaLibraryKind.Video,
+            previewingMediaId: "VIDEO-1");
+
+        TestAssert.Equal("Videos", row.GroupName);
+        TestAssert.Contains("00:04", row.MetadataText);
+        TestAssert.True(row.CanPreview);
+        TestAssert.True(row.IsPreviewing);
+        TestAssert.Equal(3, row.Index);
     }
 }
 

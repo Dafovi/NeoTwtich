@@ -153,31 +153,13 @@ public partial class MainWindow
 
     private AudioLibraryRow CreateAudioLibraryRow(AudioAssetConfig audio, IReadOnlyDictionary<string, string> groupsById, int index)
     {
-        var assignedRules = _config.Rules
-            .Where(rule => AudioRuleAssetService.RuleUsesAudioAsset(rule, audio))
-            .ToArray();
-        var assignedText = assignedRules.Length switch
-        {
-            0 => "",
-            1 => assignedRules[0].Name,
-            _ => $"{assignedRules[0].Name} +{assignedRules.Length - 1}"
-        };
-        var accentColor = assignedRules.Length > 0
-            ? UiAccentCatalog.ForEventKind(assignedRules[0].EventKind)
-            : "#64748B";
-
-        return new AudioLibraryRow(
-            audio.Id,
-            audio.DisplayName,
-            audio.FilePath,
-            audio.GroupId,
-            assignedText,
-            groupsById.TryGetValue(audio.GroupId, out var groupName) ? groupName : _text.Get(UiTextKeys.LibraryNoGroup),
-            audio.DurationText,
-            assignedRules.Length > 0,
-            string.Equals(_previewingAudioId, audio.Id, StringComparison.OrdinalIgnoreCase) && _audioPreviewPlayback is not null,
-            FrozenBrushFrom(accentColor),
-            TranslucentBrushFrom(accentColor),
+        return LibraryRowFactoryService.CreateAudioRow(
+            audio,
+            _config.Rules,
+            groupsById,
+            _text.Get(UiTextKeys.LibraryNoGroup),
+            _previewingAudioId,
+            _audioPreviewPlayback is not null,
             index);
     }
 

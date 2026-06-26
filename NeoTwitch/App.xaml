@@ -5,6 +5,7 @@
     <Application.Resources>
         <ResourceDictionary>
         <ResourceDictionary.MergedDictionaries>
+            <ResourceDictionary Source="Resources/Styles/TypographyStyles.xaml" />
             <ResourceDictionary Source="Resources/Styles/ActivityStyles.xaml" />
         </ResourceDictionary.MergedDictionaries>
 
@@ -22,20 +23,6 @@
         <SolidColorBrush x:Key="ThemeConsoleBrush" Color="#0B1117" />
         <SolidColorBrush x:Key="ThemeScrollThumbBrush" Color="#14B8A6" />
         <SolidColorBrush x:Key="ThemeScrollTrackBrush" Color="#E2E8F0" />
-
-        <Style TargetType="TextBlock">
-            <Setter Property="Foreground" Value="{DynamicResource ThemeTextBrush}" />
-            <Setter Property="FontFamily" Value="Segoe UI Variable Text, Segoe UI" />
-        </Style>
-
-        <Style x:Key="TitleText" TargetType="TextBlock" BasedOn="{StaticResource {x:Type TextBlock}}">
-            <Setter Property="FontFamily" Value="Segoe UI Variable Display, Segoe UI" />
-            <Setter Property="FontWeight" Value="SemiBold" />
-        </Style>
-
-        <Style x:Key="MutedText" TargetType="TextBlock" BasedOn="{StaticResource {x:Type TextBlock}}">
-            <Setter Property="Foreground" Value="{DynamicResource ThemeMutedTextBrush}" />
-        </Style>
 
         <Style TargetType="TextBox">
             <Setter Property="MinHeight" Value="34" />

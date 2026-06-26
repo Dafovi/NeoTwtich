@@ -18,10 +18,7 @@ public partial class MainWindow
     {
         try
         {
-            SaveGlobalSettingsFromFields();
-            SaveCurrentRuleFromFields();
-            SaveCurrentStripFromFields();
-            SaveBackgroundFromFields();
+            SaveEditableStateFromFields();
             SaveConfig();
 
             var result = await BuildDiagnosticsReportAsync();

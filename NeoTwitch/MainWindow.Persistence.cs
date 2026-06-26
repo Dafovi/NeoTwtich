@@ -4,6 +4,14 @@ namespace NeoTwitch;
 
 public partial class MainWindow
 {
+    private void SaveEditableStateFromFields()
+    {
+        SaveGlobalSettingsFromFields();
+        SaveCurrentRuleFromFields();
+        SaveCurrentStripFromFields();
+        SaveBackgroundFromFields();
+    }
+
     private void SaveConfig()
     {
         try

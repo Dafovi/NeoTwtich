@@ -12,10 +12,7 @@ public partial class MainWindow
 {
     internal async void SaveButton_Click(object sender, RoutedEventArgs e)
     {
-        SaveGlobalSettingsFromFields();
-        SaveCurrentRuleFromFields();
-        SaveCurrentStripFromFields();
-        SaveBackgroundFromFields();
+        SaveEditableStateFromFields();
         SaveConfig();
         await ApplyBackgroundStateAsync();
         AddLog("Configuracion guardada.");
@@ -25,10 +22,7 @@ public partial class MainWindow
     {
         try
         {
-            SaveGlobalSettingsFromFields();
-            SaveCurrentRuleFromFields();
-            SaveCurrentStripFromFields();
-            SaveBackgroundFromFields();
+            SaveEditableStateFromFields();
             SaveConfig();
 
             var dialog = new WpfSaveFileDialog
@@ -67,10 +61,7 @@ public partial class MainWindow
     {
         try
         {
-            SaveGlobalSettingsFromFields();
-            SaveCurrentRuleFromFields();
-            SaveCurrentStripFromFields();
-            SaveBackgroundFromFields();
+            SaveEditableStateFromFields();
             SaveConfig();
 
             Directory.CreateDirectory(_settingsStore.BackupDirectory);

@@ -1,6 +1,7 @@
 using System.Windows;
 using System.Windows.Controls;
 using NeoTwitch.Services.Ui;
+using static NeoTwitch.Services.Ui.ThemeElementClassifier;
 using static NeoTwitch.Services.Ui.UiBrushFactory;
 
 namespace NeoTwitch;
@@ -82,51 +83,4 @@ public partial class MainWindow
         button.BorderBrush = palette.Border;
     }
 
-    private static bool IsColorButton(System.Windows.Controls.Button button)
-    {
-        return !string.IsNullOrWhiteSpace(button.Name)
-            && button.Name.EndsWith("ColorButton", StringComparison.OrdinalIgnoreCase);
-    }
-
-    private static bool IsActivityFeedListBox(System.Windows.Controls.ListBox listBox)
-    {
-        return string.Equals(listBox.Name, "ActivityList", StringComparison.OrdinalIgnoreCase)
-            || string.Equals(listBox.Name, "DashboardActivityList", StringComparison.OrdinalIgnoreCase);
-    }
-
-    private static bool IsWindowControlButton(System.Windows.Controls.Button button)
-    {
-        return string.Equals(button.Name, "MinimizeWindowButton", StringComparison.OrdinalIgnoreCase)
-            || string.Equals(button.Name, "MaximizeWindowButton", StringComparison.OrdinalIgnoreCase)
-            || string.Equals(button.Name, "CloseWindowButton", StringComparison.OrdinalIgnoreCase);
-    }
-
-    private static bool IsSidebarBorder(Border border)
-    {
-        return string.Equals(border.Name, "SidebarChrome", StringComparison.OrdinalIgnoreCase);
-    }
-
-    private static bool IsTitleBarBorder(Border border)
-    {
-        return string.Equals(border.Name, "TitleBarChrome", StringComparison.OrdinalIgnoreCase);
-    }
-
-    private static bool IsConsoleBorder(Border border)
-    {
-        return string.Equals(border.Name, "MiniConsolePanel", StringComparison.OrdinalIgnoreCase);
-    }
-
-    private static bool IsInsideNamedElement(DependencyObject element, string name)
-    {
-        for (var current = element; current is not null; current = System.Windows.Media.VisualTreeHelper.GetParent(current))
-        {
-            if (current is FrameworkElement frameworkElement
-                && string.Equals(frameworkElement.Name, name, StringComparison.OrdinalIgnoreCase))
-            {
-                return true;
-            }
-        }
-
-        return false;
-    }
 }

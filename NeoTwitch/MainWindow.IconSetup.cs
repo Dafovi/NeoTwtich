@@ -1,6 +1,7 @@
 using System.Windows;
 using System.Windows.Controls;
 using NeoTwitch.Services.Ui;
+using static NeoTwitch.Services.Ui.ThemeElementClassifier;
 using WpfButton = System.Windows.Controls.Button;
 
 namespace NeoTwitch;

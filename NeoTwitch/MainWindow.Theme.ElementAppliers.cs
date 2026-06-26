@@ -3,6 +3,7 @@ using System.Windows.Controls;
 using System.Windows.Controls.Primitives;
 using NeoTwitch.Services.Ui;
 using NeoTwitch.ViewModels.Activity;
+using static NeoTwitch.Services.Ui.ThemeElementClassifier;
 using static NeoTwitch.Services.Ui.UiBrushFactory;
 using WpfBrushes = System.Windows.Media.Brushes;
 using WpfButton = System.Windows.Controls.Button;

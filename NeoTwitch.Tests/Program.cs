@@ -32,6 +32,7 @@ var tests = new (string Name, Action Body)[]
     ("EventRuleSnapshotService detects editable changes", EventRuleSnapshotTests.DetectsEditableChanges),
     ("RuleEditorValueService resolves fallback names", RuleEditorValueTests.ResolvesFallbackNames),
     ("RuleEditorValueService resolves legacy audio paths", RuleEditorValueTests.ResolvesLegacyAudioPaths),
+    ("RuleObsMediaChoiceService resolves image and video libraries", RuleObsMediaChoiceTests.ResolvesImageAndVideoLibraries),
     ("EventRuleMatcherService resolves normal event matches", EventRuleMatcherTests.ResolvesNormalEventMatches),
     ("EventRuleMatcherService keeps highest bits threshold", EventRuleMatcherTests.KeepsHighestBitsThreshold),
     ("AlertDurationService resolves maximum positive duration", AlertDurationTests.ResolvesMaximumPositiveDuration),
@@ -405,6 +406,37 @@ static class RuleEditorValueTests
         TestAssert.Equal(
             "",
             RuleEditorValueService.ResolveLegacyAudioPath(AudioSourceMode.Single, "missing", library));
+    }
+}
+
+static class RuleObsMediaChoiceTests
+{
+    public static void ResolvesImageAndVideoLibraries()
+    {
+        var images = new[] { new MediaAssetConfig { Id = "image-1" } };
+        var videos = new[] { new MediaAssetConfig { Id = "video-1" } };
+        var imageGroups = new[] { new MediaGroupConfig { Id = "image-group" } };
+        var videoGroups = new[] { new MediaGroupConfig { Id = "video-group" } };
+
+        var imageChoice = RuleObsMediaChoiceService.Resolve(
+            ObsMediaKind.Image,
+            images,
+            videos,
+            imageGroups,
+            videoGroups);
+        var videoChoice = RuleObsMediaChoiceService.Resolve(
+            ObsMediaKind.Video,
+            images,
+            videos,
+            imageGroups,
+            videoGroups);
+
+        TestAssert.Same(images, imageChoice.Assets);
+        TestAssert.Same(imageGroups, imageChoice.Groups);
+        TestAssert.True(imageChoice.HasAssets);
+        TestAssert.True(imageChoice.HasGroups);
+        TestAssert.Same(videos, videoChoice.Assets);
+        TestAssert.Same(videoGroups, videoChoice.Groups);
     }
 }
 

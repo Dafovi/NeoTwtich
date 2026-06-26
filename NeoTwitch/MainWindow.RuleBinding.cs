@@ -174,8 +174,12 @@ public partial class MainWindow
         var obsMediaSourceMode = RuleObsMediaSourceModeBox.SelectedValue is MediaSourceMode selectedObsMediaSourceMode
             ? selectedObsMediaSourceMode
             : MediaSourceMode.Single;
-        var obsMediaHasAssets = (obsMediaKind == ObsMediaKind.Image ? _config.ImageLibrary.Count : _config.VideoLibrary.Count) > 0;
-        var obsMediaHasGroups = (obsMediaKind == ObsMediaKind.Image ? _config.ImageGroups.Count : _config.VideoGroups.Count) > 0;
+        var obsMediaChoices = RuleObsMediaChoiceService.Resolve(
+            obsMediaKind,
+            _config.ImageLibrary,
+            _config.VideoLibrary,
+            _config.ImageGroups,
+            _config.VideoGroups);
         var pattern = PatternBox.SelectedValue is LightPattern selectedPattern
             ? selectedPattern
             : LightPattern.Pulse;
@@ -201,8 +205,8 @@ public partial class MainWindow
             sendObsMedia,
             obsMediaKind,
             obsMediaSourceMode,
-            obsMediaHasAssets,
-            obsMediaHasGroups,
+            obsMediaChoices.HasAssets,
+            obsMediaChoices.HasGroups,
             pattern));
 
         SetVisible(visibility.ShowRewardTitle, RewardTitleLabel, RewardTitleBox);
@@ -254,16 +258,15 @@ public partial class MainWindow
             ? selectedKind
             : ObsMediaKind.Image;
 
-        if (kind == ObsMediaKind.Image)
-        {
-            RuleObsMediaAssetBox.ItemsSource = _config.ImageLibrary;
-            RuleObsMediaGroupBox.ItemsSource = _config.ImageGroups;
-        }
-        else
-        {
-            RuleObsMediaAssetBox.ItemsSource = _config.VideoLibrary;
-            RuleObsMediaGroupBox.ItemsSource = _config.VideoGroups;
-        }
+        var choices = RuleObsMediaChoiceService.Resolve(
+            kind,
+            _config.ImageLibrary,
+            _config.VideoLibrary,
+            _config.ImageGroups,
+            _config.VideoGroups);
+
+        RuleObsMediaAssetBox.ItemsSource = choices.Assets;
+        RuleObsMediaGroupBox.ItemsSource = choices.Groups;
 
         RuleObsMediaAssetBox.DisplayMemberPath = nameof(MediaAssetConfig.DisplayName);
         RuleObsMediaAssetBox.SelectedValuePath = nameof(MediaAssetConfig.Id);

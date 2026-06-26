@@ -78,17 +78,19 @@ public partial class MainWindow
                 _audioGroupRows.Add(row);
             }
 
-            AudioSavedCountText.Text = _config.AudioLibrary.Count.ToString();
-            AudioGroupCountText.Text = _config.AudioGroups.Count.ToString();
-            var lastAudio = _config.AudioLibrary
-                .Where(audio => audio.LastUsedAt is not null)
-                .OrderByDescending(audio => audio.LastUsedAt)
-                .FirstOrDefault();
-            LastAudioText.Text = lastAudio?.DisplayName ?? "Sin uso";
-            var groupFilterText = string.IsNullOrWhiteSpace(_audioGroupFilterId)
-                ? ""
-                : $" del grupo {groupsById.GetValueOrDefault(_audioGroupFilterId, "seleccionado")}";
-            AudioLibraryFooterText.Text = $"Mostrando {rows.Length} de {_config.AudioLibrary.Count} audios{groupFilterText}";
+            var summary = LibrarySummaryService.Create(
+                _config.AudioLibrary,
+                _config.AudioGroups,
+                rows.Length,
+                _audioGroupFilterId,
+                groupsById,
+                "audios",
+                _text.Get(UiTextKeys.LibraryLastUnused),
+                _text.Get(UiTextKeys.LibrarySelectedGroup));
+            AudioSavedCountText.Text = summary.AssetCountText;
+            AudioGroupCountText.Text = summary.GroupCountText;
+            LastAudioText.Text = summary.LastAssetText;
+            AudioLibraryFooterText.Text = summary.FooterText;
 
             RuleAudioAssetBox.Items.Refresh();
             RuleAudioGroupBox.Items.Refresh();

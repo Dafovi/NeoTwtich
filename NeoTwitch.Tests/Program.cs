@@ -55,6 +55,7 @@ var tests = new (string Name, Action Body)[]
     ("LibraryGroupService creates and reuses groups", LibraryGroupServiceTests.CreatesAndReusesGroups),
     ("LibraryGroupService clears group references", LibraryGroupServiceTests.ClearsGroupReferences),
     ("LibraryGroupRowFactoryService builds audio and media groups", LibraryGroupRowFactoryTests.BuildsAudioAndMediaGroups),
+    ("LibrarySummaryService formats counts and last usage", LibrarySummaryTests.FormatsCountsAndLastUsage),
     ("MediaLibraryKindCatalog maps media metadata", MediaLibraryKindCatalogTests.MapsMediaMetadata),
     ("MediaPreviewPlanService builds OBS preview plans", MediaPreviewPlanTests.BuildsPreviewPlans),
     ("LibraryRowFactoryService builds audio rows", LibraryRowFactoryTests.BuildsAudioRows),
@@ -1067,6 +1068,49 @@ static class LibraryGroupRowFactoryTests
 
         TestAssert.Equal(1, mediaRows.Count);
         TestAssert.Equal("1 archivo", mediaRows[0].CountText);
+    }
+}
+
+static class LibrarySummaryTests
+{
+    public static void FormatsCountsAndLastUsage()
+    {
+        var assets = new[]
+        {
+            new AudioAssetConfig
+            {
+                Name = "Antiguo",
+                GroupId = "g1",
+                LastUsedAt = new DateTimeOffset(2026, 1, 1, 0, 0, 0, TimeSpan.Zero)
+            },
+            new AudioAssetConfig
+            {
+                Name = "Reciente",
+                GroupId = "g1",
+                LastUsedAt = new DateTimeOffset(2026, 1, 2, 0, 0, 0, TimeSpan.Zero)
+            },
+            new AudioAssetConfig
+            {
+                Name = "Sin uso",
+                GroupId = ""
+            }
+        };
+        var groups = new[] { new AudioGroupConfig { Id = "g1", Name = "Seguidores" } };
+
+        var summary = LibrarySummaryService.Create(
+            assets,
+            groups,
+            visibleCount: 2,
+            groupFilterId: "g1",
+            new Dictionary<string, string> { ["g1"] = "Seguidores" },
+            "audios",
+            "Sin uso",
+            "seleccionado");
+
+        TestAssert.Equal("3", summary.AssetCountText);
+        TestAssert.Equal("1", summary.GroupCountText);
+        TestAssert.Equal("Reciente", summary.LastAssetText);
+        TestAssert.Equal("Mostrando 2 de 3 audios del grupo Seguidores", summary.FooterText);
     }
 }
 

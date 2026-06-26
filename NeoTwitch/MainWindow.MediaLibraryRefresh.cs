@@ -54,29 +54,30 @@ public partial class MainWindow
                 groupRows.Add(row);
             }
 
-            var lastAsset = library
-                .Where(asset => asset.LastUsedAt is not null)
-                .OrderByDescending(asset => asset.LastUsedAt)
-                .FirstOrDefault();
-
-            var groupFilterText = string.IsNullOrWhiteSpace(groupFilterId)
-                ? ""
-                : $" del grupo {groupsById.GetValueOrDefault(groupFilterId, _text.Get(UiTextKeys.LibrarySelectedGroup))}";
+            var summary = LibrarySummaryService.Create(
+                library,
+                groups,
+                rows.Length,
+                groupFilterId,
+                groupsById,
+                MediaLibraryKindCatalog.Get(kind).FooterNoun,
+                _text.Get(UiTextKeys.LibraryLastUnused),
+                _text.Get(UiTextKeys.LibrarySelectedGroup));
 
             if (kind == MediaLibraryKind.Image)
             {
-                ImageSavedCountText.Text = library.Count.ToString();
-                ImageGroupCountText.Text = groups.Count.ToString();
-                LastImageText.Text = lastAsset?.DisplayName ?? _text.Get(UiTextKeys.LibraryLastUnused);
-                ImageLibraryFooterText.Text = $"Mostrando {rows.Length} de {library.Count} {MediaLibraryKindCatalog.Get(kind).FooterNoun}{groupFilterText}";
+                ImageSavedCountText.Text = summary.AssetCountText;
+                ImageGroupCountText.Text = summary.GroupCountText;
+                LastImageText.Text = summary.LastAssetText;
+                ImageLibraryFooterText.Text = summary.FooterText;
                 NewImageGroupBox.Items.Refresh();
             }
             else
             {
-                VideoSavedCountText.Text = library.Count.ToString();
-                VideoGroupCountText.Text = groups.Count.ToString();
-                LastVideoText.Text = lastAsset?.DisplayName ?? _text.Get(UiTextKeys.LibraryLastUnused);
-                VideoLibraryFooterText.Text = $"Mostrando {rows.Length} de {library.Count} {MediaLibraryKindCatalog.Get(kind).FooterNoun}{groupFilterText}";
+                VideoSavedCountText.Text = summary.AssetCountText;
+                VideoGroupCountText.Text = summary.GroupCountText;
+                LastVideoText.Text = summary.LastAssetText;
+                VideoLibraryFooterText.Text = summary.FooterText;
                 NewVideoGroupBox.Items.Refresh();
             }
 

@@ -4,6 +4,7 @@ using System.Windows.Controls;
 using System.Windows.Input;
 using System.Windows.Media;
 using NeoTwitch.Models;
+using NeoTwitch.Services.Ui;
 using WpfButton = System.Windows.Controls.Button;
 using WpfColor = System.Windows.Media.Color;
 using WpfColorConverter = System.Windows.Media.ColorConverter;
@@ -70,7 +71,7 @@ public partial class ColorPickerDialog : Window
         Foreground = textBrush;
         Divider.Background = borderBrush;
 
-        foreach (var textBox in FindVisualChildren<WpfTextBox>(this))
+        foreach (var textBox in VisualTreeTraversalService.FindChildren<WpfTextBox>(this))
         {
             textBox.Background = panelBrush;
             textBox.BorderBrush = borderBrush;
@@ -79,7 +80,7 @@ public partial class ColorPickerDialog : Window
             textBox.FontFamily = FontFamily;
         }
 
-        foreach (var button in FindVisualChildren<WpfButton>(this))
+        foreach (var button in VisualTreeTraversalService.FindChildren<WpfButton>(this))
         {
             button.Background = buttonBrush;
             button.BorderBrush = borderBrush;
@@ -87,7 +88,7 @@ public partial class ColorPickerDialog : Window
             button.FontFamily = FontFamily;
         }
 
-        foreach (var block in FindVisualChildren<TextBlock>(this))
+        foreach (var block in VisualTreeTraversalService.FindChildren<TextBlock>(this))
         {
             block.Foreground = textBrush;
             block.FontFamily = FontFamily;
@@ -379,22 +380,5 @@ public partial class ColorPickerDialog : Window
 
         saturation = max == 0 ? 0 : delta / max;
         value = max;
-    }
-
-    private static IEnumerable<T> FindVisualChildren<T>(DependencyObject root) where T : DependencyObject
-    {
-        for (var i = 0; i < VisualTreeHelper.GetChildrenCount(root); i++)
-        {
-            var child = VisualTreeHelper.GetChild(root, i);
-            if (child is T typed)
-            {
-                yield return typed;
-            }
-
-            foreach (var descendant in FindVisualChildren<T>(child))
-            {
-                yield return descendant;
-            }
-        }
     }
 }

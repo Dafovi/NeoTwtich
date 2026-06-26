@@ -87,6 +87,8 @@ var tests = new (string Name, Action Body)[]
     ("CircularProgressGeometryService builds arc geometry", CircularProgressGeometryTests.BuildsArcGeometry),
     ("IconPathCatalog returns known icons and fallback", IconPathCatalogTests.ReturnsKnownIconsAndFallback),
     ("ButtonIconCatalog maps button labels", ButtonIconCatalogTests.MapsButtonLabels),
+    ("ButtonIconContentService builds icon button content", ButtonIconContentTests.BuildsIconButtonContent),
+    ("VisualTreeTraversalService finds descendants", VisualTreeTraversalTests.FindsDescendants),
     ("OptionVisibilityService resolves rule panels", OptionVisibilityTests.ResolvesRulePanels),
     ("OptionVisibilityService resolves background panels", OptionVisibilityTests.ResolvesBackgroundPanels),
     ("UiAccentCatalog maps event and pattern colors", UiAccentCatalogTests.MapsEventAndPatternColors),
@@ -1683,6 +1685,48 @@ static class ButtonIconCatalogTests
     }
 }
 
+static class ButtonIconContentTests
+{
+    public static void BuildsIconButtonContent()
+    {
+        TestThread.RunSta(() =>
+        {
+            var button = new System.Windows.Controls.Button
+            {
+                Content = "Guardar cambios"
+            };
+
+            TestAssert.True(ButtonIconContentService.TrySetButtonIcon(button, "Guardar cambios"));
+            TestAssert.True(button.Content is System.Windows.Controls.StackPanel);
+            var panel = (System.Windows.Controls.StackPanel)button.Content;
+            TestAssert.Equal(2, panel.Children.Count);
+            TestAssert.True(panel.Children[0] is System.Windows.Shapes.Path);
+            TestAssert.True(panel.Children[1] is System.Windows.Controls.TextBlock);
+            TestAssert.Equal("Guardar cambios", ((System.Windows.Controls.TextBlock)panel.Children[1]).Text);
+        });
+    }
+}
+
+static class VisualTreeTraversalTests
+{
+    public static void FindsDescendants()
+    {
+        TestThread.RunSta(() =>
+        {
+            var root = new System.Windows.Controls.StackPanel();
+            var border = new System.Windows.Controls.Border();
+            var nested = new System.Windows.Controls.Button();
+            border.Child = nested;
+            root.Children.Add(border);
+
+            var buttons = VisualTreeTraversalService.FindChildren<System.Windows.Controls.Button>(root).ToList();
+
+            TestAssert.Equal(1, buttons.Count);
+            TestAssert.True(ReferenceEquals(nested, buttons[0]));
+        });
+    }
+}
+
 static class OptionVisibilityTests
 {
     public static void ResolvesRulePanels()
@@ -1869,6 +1913,34 @@ static class TestAssert
         if (!ReferenceEquals(expected, actual))
         {
             throw new InvalidOperationException("Se esperaba la misma instancia.");
+        }
+    }
+}
+
+static class TestThread
+{
+    public static void RunSta(Action action)
+    {
+        Exception? failure = null;
+        var thread = new System.Threading.Thread(() =>
+        {
+            try
+            {
+                action();
+            }
+            catch (Exception exception)
+            {
+                failure = exception;
+            }
+        });
+
+        thread.SetApartmentState(System.Threading.ApartmentState.STA);
+        thread.Start();
+        thread.Join();
+
+        if (failure is not null)
+        {
+            throw failure;
         }
     }
 }

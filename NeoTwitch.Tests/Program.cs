@@ -53,6 +53,7 @@ var tests = new (string Name, Action Body)[]
     ("LibraryGroupService creates and reuses groups", LibraryGroupServiceTests.CreatesAndReusesGroups),
     ("LibraryGroupService clears group references", LibraryGroupServiceTests.ClearsGroupReferences),
     ("MediaLibraryKindCatalog maps media metadata", MediaLibraryKindCatalogTests.MapsMediaMetadata),
+    ("MediaPreviewPlanService builds OBS preview plans", MediaPreviewPlanTests.BuildsPreviewPlans),
     ("LibraryRowFactoryService builds audio rows", LibraryRowFactoryTests.BuildsAudioRows),
     ("LibraryRowFactoryService builds media rows", LibraryRowFactoryTests.BuildsMediaRows),
     ("LibraryRowFilterService filters audio rows", LibraryRowFilterTests.FiltersAudioRows),
@@ -1041,6 +1042,27 @@ static class MediaLibraryKindCatalogTests
         TestAssert.Equal("#B56CFF", video.AccentColor);
         TestAssert.Contains("media_video.png", video.IconPath);
         TestAssert.Equal(ObsMediaKind.Video, video.ObsKind);
+    }
+}
+
+static class MediaPreviewPlanTests
+{
+    public static void BuildsPreviewPlans()
+    {
+        var video = new MediaAssetConfig { DurationMs = 2500 };
+        var videoPlan = MediaPreviewPlanService.Build(MediaLibraryKind.Video, video, " Gameplay ", 42);
+
+        TestAssert.Equal("Gameplay", videoPlan!.SceneName);
+        TestAssert.Equal(ObsMediaKind.Video, videoPlan.ObsKind);
+        TestAssert.Equal(2500d, videoPlan.Duration.TotalMilliseconds);
+        TestAssert.Equal<int?>(42, videoPlan.VolumePercent);
+
+        var imagePlan = MediaPreviewPlanService.Build(MediaLibraryKind.Image, new MediaAssetConfig(), "Escena", 80);
+
+        TestAssert.Equal(ObsMediaKind.Image, imagePlan!.ObsKind);
+        TestAssert.Equal(TimeSpan.FromSeconds(5), imagePlan.Duration);
+        TestAssert.Equal<int?>(null, imagePlan.VolumePercent);
+        TestAssert.Same(null, MediaPreviewPlanService.Build(MediaLibraryKind.Image, new MediaAssetConfig(), "", 80));
     }
 }
 

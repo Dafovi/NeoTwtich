@@ -62,19 +62,12 @@ public partial class MainWindow
             return;
         }
 
-        var sceneName = _obsService.CurrentScene;
-        if (string.IsNullOrWhiteSpace(sceneName))
+        var plan = MediaPreviewPlanService.Build(kind, asset, _obsService.CurrentScene, _config.VideoVolumePercent);
+        if (plan is null)
         {
             AddLog(_text.Get(UiTextKeys.MediaObsMissingSceneLog), ActivityLogKind.Important);
             return;
         }
-
-        var info = MediaLibraryKindCatalog.Get(kind);
-        var obsKind = info.ObsKind;
-        var sourceName = info.PreviewSourceName;
-        var duration = obsKind == ObsMediaKind.Video
-            ? TimeSpan.FromMilliseconds(asset.DurationMs > 0 ? asset.DurationMs : 5000)
-            : TimeSpan.FromSeconds(5);
 
         await StopMediaPreviewAsync();
         var previewCts = new CancellationTokenSource();
@@ -86,20 +79,20 @@ public partial class MainWindow
         try
         {
             var result = await _obsService.ShowMediaSourceAsync(
-                sceneName,
-                sourceName,
+                plan.SceneName,
+                plan.SourceName,
                 asset.FilePath,
-                obsKind,
+                plan.ObsKind,
                 _config.Obs,
-                obsKind == ObsMediaKind.Video ? _config.VideoVolumePercent : null,
+                plan.VolumePercent,
                 previewCts.Token);
             ApplyObsResult(result);
-            _mediaPreviewHideRequest = new ObsMediaHideRequest(sceneName, sourceName, duration, DateTimeOffset.UtcNow);
-            WriteObsOverlayState(asset, obsKind, duration);
-            MarkObsMediaAssetUsed(obsKind, asset);
+            _mediaPreviewHideRequest = new ObsMediaHideRequest(plan.SceneName, plan.SourceName, plan.Duration, DateTimeOffset.UtcNow);
+            WriteObsOverlayState(asset, plan.ObsKind, plan.Duration);
+            MarkObsMediaAssetUsed(plan.ObsKind, asset);
             AddLog(_text.Format(UiTextKeys.MediaObsPreviewLog, MediaLibraryTitle(kind).ToLowerInvariant(), asset.DisplayName), ActivityLogKind.Obs);
 
-            await Task.Delay(duration, previewCts.Token);
+            await Task.Delay(plan.Duration, previewCts.Token);
             await StopMediaPreviewAsync();
         }
         catch (OperationCanceledException)

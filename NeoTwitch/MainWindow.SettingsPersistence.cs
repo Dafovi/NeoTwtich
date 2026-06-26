@@ -93,36 +93,20 @@ public partial class MainWindow
             return;
         }
 
-        var confirm = WpfMessageBox.Show(
-            this,
-            "Importar esta configuracion reemplazara la configuracion actual. Se creara un backup automatico antes de guardar.\n\nQuieres continuar?",
-            "Importar configuracion",
-            MessageBoxButton.YesNo,
-            MessageBoxImage.Question);
-
-        if (confirm != MessageBoxResult.Yes)
+        if (!ConfirmSettingsReplacement(
+                "Importar configuracion",
+                "Importar esta configuracion reemplazara la configuracion actual. Se creara un backup automatico antes de guardar.\n\nQuieres continuar?"))
         {
             return;
         }
 
         try
         {
-            if (_eventSubClient.IsRunning)
-            {
-                await _eventSubClient.StopAsync();
-                _eventSubscriptionSignature = "";
-                _streamStatus = null;
-            }
-
-            _config = _settingsStore.Import(dialog.FileName);
-            LoadConfigIntoUi();
-            AddLog($"Configuracion importada: {dialog.FileName}", ActivityLogKind.Important);
-            WpfMessageBox.Show(
-                this,
-                "Configuracion importada correctamente. Revisa Twitch, Arduino y Alexa antes de salir en vivo.",
+            await ReplaceSettingsFromFileAsync(
+                dialog.FileName,
+                $"Configuracion importada: {dialog.FileName}",
                 "Importar configuracion",
-                MessageBoxButton.OK,
-                MessageBoxImage.Information);
+                "Configuracion importada correctamente. Revisa Twitch, Arduino y Alexa antes de salir en vivo.");
         }
         catch (Exception ex)
         {
@@ -149,36 +133,20 @@ public partial class MainWindow
             return;
         }
 
-        var confirm = WpfMessageBox.Show(
-            this,
-            "Restaurar este backup reemplazara la configuracion actual. Se creara un backup automatico antes de guardar.\n\nQuieres continuar?",
-            "Restaurar backup",
-            MessageBoxButton.YesNo,
-            MessageBoxImage.Question);
-
-        if (confirm != MessageBoxResult.Yes)
+        if (!ConfirmSettingsReplacement(
+                "Restaurar backup",
+                "Restaurar este backup reemplazara la configuracion actual. Se creara un backup automatico antes de guardar.\n\nQuieres continuar?"))
         {
             return;
         }
 
         try
         {
-            if (_eventSubClient.IsRunning)
-            {
-                await _eventSubClient.StopAsync();
-                _eventSubscriptionSignature = "";
-                _streamStatus = null;
-            }
-
-            _config = _settingsStore.Import(dialog.FileName);
-            LoadConfigIntoUi();
-            AddLog($"Backup restaurado: {dialog.FileName}", ActivityLogKind.Important);
-            WpfMessageBox.Show(
-                this,
-                "Backup restaurado correctamente. Revisa Twitch, Arduino y Alexa antes de salir en vivo.",
+            await ReplaceSettingsFromFileAsync(
+                dialog.FileName,
+                $"Backup restaurado: {dialog.FileName}",
                 "Restaurar backup",
-                MessageBoxButton.OK,
-                MessageBoxImage.Information);
+                "Backup restaurado correctamente. Revisa Twitch, Arduino y Alexa antes de salir en vivo.");
         }
         catch (Exception ex)
         {
@@ -186,5 +154,39 @@ public partial class MainWindow
             AddLog($"Backups: no pude restaurar ({ex.Message}).", ActivityLogKind.Important);
             WpfMessageBox.Show(this, ex.Message, "Restaurar backup", MessageBoxButton.OK, MessageBoxImage.Warning);
         }
+    }
+
+    private bool ConfirmSettingsReplacement(string title, string message)
+    {
+        return WpfMessageBox.Show(
+            this,
+            message,
+            title,
+            MessageBoxButton.YesNo,
+            MessageBoxImage.Question) == MessageBoxResult.Yes;
+    }
+
+    private async Task ReplaceSettingsFromFileAsync(
+        string path,
+        string logMessage,
+        string title,
+        string successMessage)
+    {
+        if (_eventSubClient.IsRunning)
+        {
+            await _eventSubClient.StopAsync();
+            _eventSubscriptionSignature = "";
+            _streamStatus = null;
+        }
+
+        _config = _settingsStore.Import(path);
+        LoadConfigIntoUi();
+        AddLog(logMessage, ActivityLogKind.Important);
+        WpfMessageBox.Show(
+            this,
+            successMessage,
+            title,
+            MessageBoxButton.OK,
+            MessageBoxImage.Information);
     }
 }

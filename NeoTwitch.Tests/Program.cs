@@ -72,6 +72,7 @@ var tests = new (string Name, Action Body)[]
     ("ObsSceneViewService builds rows and choices", ObsSceneViewTests.BuildsRowsAndChoices),
     ("DiagnosticReportService builds report without network", DiagnosticReportServiceTests.BuildsReportWithoutNetwork),
     ("DiagnosticReportService reports missing audio", DiagnosticReportServiceTests.ReportsMissingAudio),
+    ("VersionComparisonService compares normalized tags", VersionComparisonTests.ComparesNormalizedTags),
     ("ActivityLogService trims activity and dashboard entries", ActivityLogServiceTests.TrimsActivityAndDashboardEntries),
     ("ActivityLogService filters entries and search text", ActivityLogServiceTests.FiltersEntriesAndSearchText),
     ("DashboardConnectionStateService resolves all services", DashboardConnectionStateTests.ResolvesAllServices),
@@ -1442,6 +1443,19 @@ static class DiagnosticReportServiceTests
             NeoTwitchProduct.CurrentVersionText,
             "https://example.test/release",
             IsUpdateAvailable: false)));
+    }
+}
+
+static class VersionComparisonTests
+{
+    public static void ComparesNormalizedTags()
+    {
+        TestAssert.True(VersionComparisonService.IsNewer("V2.2.4", "2.2.3"));
+        TestAssert.False(VersionComparisonService.IsNewer("v2.2.3", "V2.2.3"));
+        TestAssert.False(VersionComparisonService.IsNewer("nope", "V2.2.3"));
+
+        TestAssert.True(VersionComparisonService.TryParseVersion("V2.2.4", out var parsed));
+        TestAssert.Equal(new Version(2, 2, 4), parsed);
     }
 }
 

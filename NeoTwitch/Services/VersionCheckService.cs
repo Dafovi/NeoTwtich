@@ -29,27 +29,13 @@ public sealed class VersionCheckService
 
         var latestVersionText = NeoTwitchProduct.NormalizeVersionText(release.TagName);
         var currentVersionText = NeoTwitchProduct.CurrentVersionText;
-        var isNewer = IsNewer(latestVersionText, currentVersionText);
+        var isNewer = VersionComparisonService.IsNewer(latestVersionText, currentVersionText);
         var releaseUrl = string.IsNullOrWhiteSpace(release.HtmlUrl)
             ? NeoTwitchProduct.LatestReleaseUrl
             : release.HtmlUrl;
 
         return new VersionCheckResult(currentVersionText, latestVersionText, releaseUrl, isNewer);
     }
-
-    private static bool IsNewer(string latestVersionText, string currentVersionText)
-    {
-        return TryParseVersion(latestVersionText, out var latestVersion)
-            && TryParseVersion(currentVersionText, out var currentVersion)
-            && latestVersion.CompareTo(currentVersion) > 0;
-    }
-
-    private static bool TryParseVersion(string value, out Version version)
-    {
-        var normalized = NeoTwitchProduct.NormalizeVersionText(value);
-        return Version.TryParse(normalized, out version!);
-    }
-
     private sealed record GitHubRelease(
         [property: JsonPropertyName("tag_name")] string TagName,
         [property: JsonPropertyName("html_url")] string HtmlUrl);

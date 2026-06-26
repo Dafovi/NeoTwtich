@@ -1,7 +1,6 @@
 using NeoTwitch.Models;
 using NeoTwitch.Services;
 using NeoTwitch.Services.Alerts;
-using NeoTwitch.ViewModels.Activity;
 using NeoTwitch.ViewModels.Obs;
 
 namespace NeoTwitch;
@@ -124,64 +123,14 @@ public partial class MainWindow
         }
         finally
         {
-            _currentPlayback = null;
-            if (ReferenceEquals(_currentEffectCts, effectCts))
-            {
-                _currentEffectCts = null;
-            }
-            UpdateRuleTestButtonState();
-
-            if (shouldRestoreBackground || wasCancelled)
-            {
-                try
-                {
-                    await RestoreBackgroundStateAsync();
-                }
-                catch (Exception ex)
-                {
-                    CrashReporter.Log(ex, "No se pudo restaurar el fondo despues de una regla.");
-                    AddLog($"Fondo: {ex.Message}");
-                }
-            }
-
-            if (!_currentObsCleanedByStop && obsMediaHide is not null)
-            {
-                try
-                {
-                    if (wasCancelled)
-                    {
-                        await HideRuleObsMediaAsync(obsMediaHide, CancellationToken.None);
-                    }
-                    else if (obsMediaHideTask is not null)
-                    {
-                        await obsMediaHideTask;
-                    }
-                }
-                catch (Exception ex)
-                {
-                    CrashReporter.Log(ex, "No se pudo ocultar el medio OBS despues de una regla.");
-                    AddLog($"OBS: {ex.Message}", ActivityLogKind.Important);
-                }
-            }
-
-            if (!_currentObsCleanedByStop)
-            {
-                await RestoreRuleObsSceneAsync(obsRestore, wasCancelled);
-            }
-
-            if (ReferenceEquals(_currentObsRestore, obsRestore))
-            {
-                _currentObsRestore = null;
-            }
-
-            if (ReferenceEquals(_currentObsMediaHide, obsMediaHide))
-            {
-                _currentObsMediaHide = null;
-            }
-
-            effectCts.Dispose();
-            _alertQueue.MarkFinished(queueSlot);
-            _effectGate.Release();
+            await CleanupRuleExecutionAsync(
+                effectCts,
+                queueSlot,
+                shouldRestoreBackground,
+                wasCancelled,
+                obsRestore,
+                obsMediaHide,
+                obsMediaHideTask);
         }
     }
 

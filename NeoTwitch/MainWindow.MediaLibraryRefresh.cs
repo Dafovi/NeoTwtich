@@ -4,7 +4,6 @@ using NeoTwitch.Services.Library;
 using NeoTwitch.Services.Text;
 using NeoTwitch.Services.Ui;
 using NeoTwitch.ViewModels.Library;
-using static NeoTwitch.Services.Ui.UiBrushFactory;
 
 namespace NeoTwitch;
 
@@ -47,21 +46,12 @@ public partial class MainWindow
 
             var groupRows = GetMediaGroupRows(kind);
             groupRows.Clear();
-            var groupIndex = 0;
-            foreach (var group in groups)
+            foreach (var row in LibraryGroupRowFactoryService.CreateMediaGroupRows(
+                         groups,
+                         library,
+                         count => _text.Format(UiTextKeys.LibraryFileCount, count, count == 1 ? "" : "s")))
             {
-                var count = library.Count(asset => string.Equals(asset.GroupId, group.Id, StringComparison.OrdinalIgnoreCase));
-                groupRows.Add(new MediaGroupRow(
-                    group.Id,
-                    group.Name,
-                    _text.Format(UiTextKeys.LibraryFileCount, count, count == 1 ? "" : "s"),
-                    FrozenBrushFrom((groupIndex++ % 4) switch
-                    {
-                        0 => "#14B8A6",
-                        1 => "#B56CFF",
-                        2 => "#37C7F3",
-                        _ => "#22C55E"
-                    })));
+                groupRows.Add(row);
             }
 
             var lastAsset = library

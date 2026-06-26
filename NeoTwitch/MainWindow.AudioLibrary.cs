@@ -9,7 +9,6 @@ using NeoTwitch.Services.Text;
 using NeoTwitch.Services.Ui;
 using NeoTwitch.ViewModels.Activity;
 using NeoTwitch.ViewModels.Library;
-using static NeoTwitch.Services.Ui.UiBrushFactory;
 using WpfMessageBox = System.Windows.MessageBox;
 using WpfOpenFileDialog = Microsoft.Win32.OpenFileDialog;
 
@@ -74,21 +73,9 @@ public partial class MainWindow
             }
 
             _audioGroupRows.Clear();
-            var groupIndex = 0;
-            foreach (var group in _config.AudioGroups)
+            foreach (var row in LibraryGroupRowFactoryService.CreateAudioGroupRows(_config.AudioGroups, _config.AudioLibrary))
             {
-                var count = _config.AudioLibrary.Count(audio => string.Equals(audio.GroupId, group.Id, StringComparison.OrdinalIgnoreCase));
-                _audioGroupRows.Add(new AudioGroupRow(
-                    group.Id,
-                    group.Name,
-                    $"{count} audio{(count == 1 ? "" : "s")}",
-                    FrozenBrushFrom((groupIndex++ % 4) switch
-                    {
-                        0 => "#14B8A6",
-                        1 => "#B56CFF",
-                        2 => "#37C7F3",
-                        _ => "#22C55E"
-                    })));
+                _audioGroupRows.Add(row);
             }
 
             AudioSavedCountText.Text = _config.AudioLibrary.Count.ToString();

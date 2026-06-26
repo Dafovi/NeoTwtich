@@ -54,6 +54,7 @@ var tests = new (string Name, Action Body)[]
     ("AudioRuleAssetService detects rule asset usage", AudioRuleAssetTests.DetectsRuleAssetUsage),
     ("LibraryGroupService creates and reuses groups", LibraryGroupServiceTests.CreatesAndReusesGroups),
     ("LibraryGroupService clears group references", LibraryGroupServiceTests.ClearsGroupReferences),
+    ("LibraryGroupRowFactoryService builds audio and media groups", LibraryGroupRowFactoryTests.BuildsAudioAndMediaGroups),
     ("MediaLibraryKindCatalog maps media metadata", MediaLibraryKindCatalogTests.MapsMediaMetadata),
     ("MediaPreviewPlanService builds OBS preview plans", MediaPreviewPlanTests.BuildsPreviewPlans),
     ("LibraryRowFactoryService builds audio rows", LibraryRowFactoryTests.BuildsAudioRows),
@@ -1031,6 +1032,38 @@ static class LibraryGroupServiceTests
         TestAssert.False(rules[0].PlayAudio);
         TestAssert.Equal("g1", rules[1].AudioGroupId);
         TestAssert.True(rules[1].PlayAudio);
+    }
+}
+
+static class LibraryGroupRowFactoryTests
+{
+    public static void BuildsAudioAndMediaGroups()
+    {
+        var audioGroups = new[]
+        {
+            new AudioGroupConfig { Id = "g1", Name = "Seguidores" },
+            new AudioGroupConfig { Id = "g2", Name = "Raid" }
+        };
+        var audioRows = LibraryGroupRowFactoryService.CreateAudioGroupRows(
+            audioGroups,
+            new[]
+            {
+                new AudioAssetConfig { GroupId = "g1" },
+                new AudioAssetConfig { GroupId = "G1" },
+                new AudioAssetConfig { GroupId = "g2" }
+            });
+
+        TestAssert.Equal(2, audioRows.Count);
+        TestAssert.Equal("2 audios", audioRows[0].CountText);
+        TestAssert.Equal("1 audio", audioRows[1].CountText);
+
+        var mediaRows = LibraryGroupRowFactoryService.CreateMediaGroupRows(
+            new[] { new MediaGroupConfig { Id = "m1", Name = "Memes" } },
+            new[] { new MediaAssetConfig { GroupId = "m1" }, new MediaAssetConfig { GroupId = "" } },
+            count => $"{count} archivo{(count == 1 ? "" : "s")}");
+
+        TestAssert.Equal(1, mediaRows.Count);
+        TestAssert.Equal("1 archivo", mediaRows[0].CountText);
     }
 }
 

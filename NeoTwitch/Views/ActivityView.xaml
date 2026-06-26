@@ -34,7 +34,7 @@
                                  VerticalAlignment="Bottom"
                                  Margin="0"
                                  ToolTip="Buscar en la consola"
-                                 TextChanged="ActivitySearchBox_TextChanged" />
+                                 Text="{Binding SearchText, UpdateSourceTrigger=PropertyChanged}" />
 
                         <Button Grid.Column="3"
                                 HorizontalAlignment="Right"

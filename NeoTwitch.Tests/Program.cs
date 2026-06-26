@@ -76,6 +76,7 @@ var tests = new (string Name, Action Body)[]
     ("DashboardConnectionStateService resolves all services", DashboardConnectionStateTests.ResolvesAllServices),
     ("DashboardSummaryService counts Twitch events", DashboardSummaryTests.CountsTwitchEvents),
     ("DashboardSummaryService counts matched rules safely", DashboardSummaryTests.CountsMatchedRulesSafely),
+    ("DashboardSummaryDisplayService formats summary metrics", DashboardSummaryDisplayTests.FormatsSummaryMetrics),
     ("DashboardStatusTextService formats live Twitch status", DashboardStatusTextTests.FormatsLiveTwitchStatus),
     ("DashboardStatusTextService formats connection labels", DashboardStatusTextTests.FormatsConnectionLabels),
     ("DashboardStatusTextService formats Arduino status", DashboardStatusTextTests.FormatsArduinoStatus),
@@ -1501,6 +1502,26 @@ static class DashboardSummaryTests
         summary.RegisterMatchedRules(-10);
 
         TestAssert.Equal(3, summary.Snapshot.Events);
+    }
+}
+
+static class DashboardSummaryDisplayTests
+{
+    public static void FormatsSummaryMetrics()
+    {
+        var display = DashboardSummaryDisplayService.Build(new DashboardSummarySnapshot(
+            Followers: 1,
+            Subscriptions: 2,
+            Bits: 300,
+            ChatMessages: 4,
+            Events: 5));
+
+        TestAssert.Equal("+1", display.Followers.Text);
+        TestAssert.Equal("#14B8A6", display.Followers.Color);
+        TestAssert.Equal("+2", display.Subscriptions.Text);
+        TestAssert.Equal("+300", display.Bits.Text);
+        TestAssert.Equal("4", display.ChatMessages.Text);
+        TestAssert.Equal("5", display.Events.Text);
     }
 }
 

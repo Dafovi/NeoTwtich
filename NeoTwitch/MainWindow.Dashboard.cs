@@ -152,18 +152,18 @@ public partial class MainWindow
             return;
         }
 
-        var summary = _dashboardSummary.Snapshot;
-        DashboardFollowersSummaryText.Text = $"+{summary.Followers}";
-        DashboardSubsSummaryText.Text = $"+{summary.Subscriptions}";
-        DashboardBitsSummaryText.Text = $"+{summary.Bits}";
-        DashboardChatSummaryText.Text = summary.ChatMessages.ToString();
-        DashboardEventsSummaryText.Text = summary.Events.ToString();
+        var display = DashboardSummaryDisplayService.Build(_dashboardSummary.Snapshot);
+        DashboardFollowersSummaryText.Text = display.Followers.Text;
+        DashboardSubsSummaryText.Text = display.Subscriptions.Text;
+        DashboardBitsSummaryText.Text = display.Bits.Text;
+        DashboardChatSummaryText.Text = display.ChatMessages.Text;
+        DashboardEventsSummaryText.Text = display.Events.Text;
 
-        DashboardFollowersSummaryText.Foreground = FrozenBrushFrom("#14B8A6");
-        DashboardSubsSummaryText.Foreground = FrozenBrushFrom("#B56CFF");
-        DashboardBitsSummaryText.Foreground = FrozenBrushFrom("#37C7F3");
-        DashboardChatSummaryText.Foreground = FrozenBrushFrom("#22C55E");
-        DashboardEventsSummaryText.Foreground = FrozenBrushFrom("#84CC16");
+        DashboardFollowersSummaryText.Foreground = FrozenBrushFrom(display.Followers.Color);
+        DashboardSubsSummaryText.Foreground = FrozenBrushFrom(display.Subscriptions.Color);
+        DashboardBitsSummaryText.Foreground = FrozenBrushFrom(display.Bits.Color);
+        DashboardChatSummaryText.Foreground = FrozenBrushFrom(display.ChatMessages.Color);
+        DashboardEventsSummaryText.Foreground = FrozenBrushFrom(display.Events.Color);
 
         RefreshDashboardConnectionStates();
     }

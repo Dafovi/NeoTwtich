@@ -2,7 +2,6 @@ using System.Windows.Controls.Primitives;
 using NeoTwitch.Models;
 using NeoTwitch.Services.Ui;
 using NeoTwitch.ViewModels.Library;
-using static NeoTwitch.Services.Ui.UiBrushFactory;
 
 namespace NeoTwitch;
 
@@ -17,17 +16,13 @@ public partial class MainWindow
             "INACTIVE" => "#94A3B8",
             _ => "#14B8A6"
         };
-        var accent = FrozenBrushFrom(accentColor);
 
-        button.Background = active
-            ? TranslucentBrushFrom(accentColor)
-            : palette.Input;
-        button.Foreground = active
-            ? accent
-            : palette.MutedText;
-        button.BorderBrush = active
-            ? accent
-            : palette.Border;
+        SelectionButtonThemeService.Apply(
+            button,
+            active,
+            accentColor,
+            palette,
+            inactiveForeground: palette.MutedText);
     }
 
     private static bool IsRuleStatusFilterButton(ToggleButton button)
@@ -67,17 +62,11 @@ public partial class MainWindow
             }
 
             var selected = tileKind == selectedKind;
-            var accentColor = UiAccentCatalog.ForEventKind(tileKind);
-            var accent = FrozenBrushFrom(accentColor);
-            button.Background = selected
-                ? TranslucentBrushFrom(accentColor)
-                : palette.Input;
-            button.BorderBrush = selected
-                ? accent
-                : palette.Border;
-            button.Foreground = selected
-                ? accent
-                : palette.Text;
+            SelectionButtonThemeService.Apply(
+                button,
+                selected,
+                UiAccentCatalog.ForEventKind(tileKind),
+                palette);
         }
     }
 
@@ -116,15 +105,12 @@ public partial class MainWindow
             }
 
             var selected = tilePattern == selectedPattern;
-            var accentColor = UiAccentCatalog.ForLightPattern(tilePattern);
-            var accent = FrozenBrushFrom(accentColor);
-            button.Background = palette.Input;
-            button.BorderBrush = selected
-                ? accent
-                : palette.Border;
-            button.Foreground = selected
-                ? accent
-                : palette.Text;
+            SelectionButtonThemeService.Apply(
+                button,
+                selected,
+                UiAccentCatalog.ForLightPattern(tilePattern),
+                palette,
+                fillSelected: false);
         }
     }
 
@@ -142,9 +128,7 @@ public partial class MainWindow
 
     private static void ApplyRuleAudioModeButtonTheme(System.Windows.Controls.Button button, bool active, string accentColor, ThemePalette palette)
     {
-        button.Background = active ? TranslucentBrushFrom(accentColor) : palette.Input;
-        button.Foreground = active ? FrozenBrushFrom(accentColor) : palette.Text;
-        button.BorderBrush = active ? FrozenBrushFrom(accentColor) : palette.Border;
+        SelectionButtonThemeService.Apply(button, active, accentColor, palette);
     }
 
     private void UpdateRuleObsMediaModeSelection()
@@ -204,15 +188,12 @@ public partial class MainWindow
             }
 
             var selected = tilePattern == selectedPattern;
-            var accentColor = UiAccentCatalog.ForLightPattern(tilePattern);
-            var accent = FrozenBrushFrom(accentColor);
-            button.Background = palette.Input;
-            button.BorderBrush = selected
-                ? accent
-                : palette.Border;
-            button.Foreground = selected
-                ? accent
-                : palette.Text;
+            SelectionButtonThemeService.Apply(
+                button,
+                selected,
+                UiAccentCatalog.ForLightPattern(tilePattern),
+                palette,
+                fillSelected: false);
         }
     }
 

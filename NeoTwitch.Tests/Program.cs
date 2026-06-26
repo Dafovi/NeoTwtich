@@ -66,6 +66,8 @@ var tests = new (string Name, Action Body)[]
     ("DashboardSummaryService counts Twitch events", DashboardSummaryTests.CountsTwitchEvents),
     ("DashboardSummaryService counts matched rules safely", DashboardSummaryTests.CountsMatchedRulesSafely),
     ("DashboardStatusTextService formats live Twitch status", DashboardStatusTextTests.FormatsLiveTwitchStatus),
+    ("DashboardStatusTextService formats connection labels", DashboardStatusTextTests.FormatsConnectionLabels),
+    ("DashboardStatusTextService formats Arduino status", DashboardStatusTextTests.FormatsArduinoStatus),
     ("DashboardStatusTextService formats Alexa background status", DashboardStatusTextTests.FormatsAlexaBackgroundStatus),
     ("UiTextFormatter formats fallback text", UiTextFormatterTests.FormatsFallbackText),
     ("UiTextFormatter builds bounded secret masks", UiTextFormatterTests.BuildsBoundedSecretMasks),
@@ -1192,6 +1194,73 @@ static class DashboardStatusTextTests
             eventSubRunning: true);
 
         TestAssert.Equal("En directo en Just Chatting. 23 espectadores.", text);
+    }
+
+    public static void FormatsConnectionLabels()
+    {
+        var channel = DashboardStatusTextService.BuildChannelDisplayText(
+            channelReady: true,
+            displayName: "",
+            login: "neo_streamer");
+
+        TestAssert.Equal("neo_streamer", channel.Name);
+        TestAssert.Equal("@neo_streamer", channel.Login);
+        TestAssert.Equal(
+            "Revisar conexion",
+            DashboardStatusTextService.BuildTwitchConnectionText(
+                isAuthorizing: false,
+                isConnecting: false,
+                hasConnectionError: true,
+                eventSubRunning: true,
+                hasToken: true));
+        TestAssert.Equal(
+            "Relay configurado",
+            DashboardStatusTextService.BuildAlexaConnectionText(
+                enabled: true,
+                isConfigured: true,
+                isConnecting: false,
+                relayConnected: false));
+    }
+
+    public static void FormatsArduinoStatus()
+    {
+        TestAssert.Equal(
+            "Conectado en COM3",
+            DashboardStatusTextService.BuildArduinoConnectionText(
+                arduinoEnabled: true,
+                isConnecting: false,
+                hasConfirmedAck: true,
+                compatibleWithoutAck: false,
+                hasOpenPort: true,
+                currentPort: "COM3"));
+        TestAssert.Equal(
+            "115200 baudios. 1 tiras, 30 LEDs. Color fijo de fondo.",
+            DashboardStatusTextService.BuildArduinoStatusText(
+                arduinoEnabled: true,
+                isConnecting: false,
+                hasConfirmedAck: true,
+                compatibleWithoutAck: false,
+                hasOpenPort: true,
+                serialPort: "COM3",
+                baudRate: 115200,
+                stripCount: 1,
+                totalLeds: 30,
+                backgroundEnabled: true,
+                backgroundPattern: LightPattern.Solid));
+
+        var lights = DashboardStatusTextService.BuildLightsArduinoStatusText(
+            arduinoEnabled: true,
+            hasConfirmedAck: false,
+            compatibleWithoutAck: false,
+            hasOpenPort: true,
+            currentPort: "",
+            configuredPort: "COM4",
+            [new LedStripConfig { Pin = 6, LedCount = 30 }]);
+
+        TestAssert.Equal("Verificando", lights.Device);
+        TestAssert.Equal("COM4", lights.Port);
+        TestAssert.Equal("30", lights.LedCount);
+        TestAssert.Equal("Pin 6", lights.Pins);
     }
 
     public static void FormatsAlexaBackgroundStatus()

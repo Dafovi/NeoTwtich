@@ -6,7 +6,6 @@ using NeoTwitch.Services.Dashboard;
 using NeoTwitch.Services.Status;
 using NeoTwitch.Services.Ui;
 using NeoTwitch.ViewModels.Status;
-using static NeoTwitch.Services.Text.UiTextFormatter;
 using static NeoTwitch.Services.Ui.UiBrushFactory;
 
 namespace NeoTwitch;
@@ -45,26 +44,19 @@ public partial class MainWindow
             return;
         }
 
-        var channelName = _config.Channel.IsReady
-            ? FirstNonEmpty(_config.Channel.DisplayName, _config.Channel.Login, "Canal Twitch")
-            : "Sin Twitch";
-        var login = _config.Channel.IsReady && !string.IsNullOrWhiteSpace(_config.Channel.Login)
-            ? $"@{_config.Channel.Login}"
-            : "Sin login";
+        var channel = DashboardStatusTextService.BuildChannelDisplayText(
+            _config.Channel.IsReady,
+            _config.Channel.DisplayName,
+            _config.Channel.Login);
 
-        ChannelNameText.Text = channelName;
-        ChannelLoginText.Text = login;
-        TwitchConnectionText.Text = _isTwitchAuthorizing
-            ? "Autorizando"
-            : _isTwitchConnecting
-            ? "Conectando"
-            : !string.IsNullOrWhiteSpace(_twitchConnectionError)
-                ? "Revisar conexion"
-                : _eventSubClient.IsRunning
-                    ? "Eventos conectados"
-                    : _config.Token.HasToken
-                        ? "Sesion autorizada"
-                        : "Sin conectar";
+        ChannelNameText.Text = channel.Name;
+        ChannelLoginText.Text = channel.Login;
+        TwitchConnectionText.Text = DashboardStatusTextService.BuildTwitchConnectionText(
+            _isTwitchAuthorizing,
+            _isTwitchConnecting,
+            !string.IsNullOrWhiteSpace(_twitchConnectionError),
+            _eventSubClient.IsRunning,
+            _config.Token.HasToken);
         TwitchStatusText.Text = DashboardStatusTextService.BuildTwitchStatusText(
             _isTwitchAuthorizing,
             _isTwitchConnecting,
@@ -74,29 +66,25 @@ public partial class MainWindow
         UpdateChannelAvatar();
 
         var totalLeds = _config.LedStrips.Sum(strip => strip.LedCount);
-        var activeBackground = _config.BackgroundEnabled
-            ? $"{DisplayNames.For(_config.BackgroundPattern)} de fondo"
-            : "Fondo apagado";
-        ArduinoConnectionText.Text = !_config.ArduinoEnabled
-            ? "Desactivado"
-            : _isArduinoConnecting
-                ? "Conectando"
-            : _lightController.HasConfirmedAck || _lightController.IsCompatibleWithoutAck
-                ? $"Conectado en {_lightController.CurrentPort}"
-                : _lightController.HasOpenPort
-                    ? "Verificando Arduino"
-                : "Sin conectar";
-        ArduinoStatusText.Text = !_config.ArduinoEnabled
-            ? "Las luces Arduino no se mostraran ni ejecutaran."
-            : _isArduinoConnecting
-                ? $"Intentando conectar con {FirstNonEmpty(_config.SerialPort, "el puerto configurado")}."
-            : _lightController.HasConfirmedAck
-                ? $"{_config.BaudRate} baudios. {_config.LedStrips.Count} tiras, {totalLeds} LEDs. {activeBackground}."
-                : _lightController.IsCompatibleWithoutAck
-                    ? $"{_config.BaudRate} baudios. Modo compatible sin ACK; las luces pueden funcionar, pero el sketch no confirmo comandos."
-                : _lightController.HasOpenPort
-                    ? "El puerto esta abierto; esperando confirmacion del sketch."
-                : $"Puerto: {FirstNonEmpty(_config.SerialPort, "sin COM")}. {_config.LedStrips.Count} tiras, {totalLeds} LEDs.";
+        ArduinoConnectionText.Text = DashboardStatusTextService.BuildArduinoConnectionText(
+            _config.ArduinoEnabled,
+            _isArduinoConnecting,
+            _lightController.HasConfirmedAck,
+            _lightController.IsCompatibleWithoutAck,
+            _lightController.HasOpenPort,
+            _lightController.CurrentPort);
+        ArduinoStatusText.Text = DashboardStatusTextService.BuildArduinoStatusText(
+            _config.ArduinoEnabled,
+            _isArduinoConnecting,
+            _lightController.HasConfirmedAck,
+            _lightController.IsCompatibleWithoutAck,
+            _lightController.HasOpenPort,
+            _config.SerialPort,
+            _config.BaudRate,
+            _config.LedStrips.Count,
+            totalLeds,
+            _config.BackgroundEnabled,
+            _config.BackgroundPattern);
         RefreshDashboardConnectionStates();
         UpdateDashboardSummary();
         UpdateLightsArduinoStatus();
@@ -117,23 +105,19 @@ public partial class MainWindow
             return;
         }
 
-        var totalLeds = _config.LedStrips.Sum(strip => strip.LedCount);
-        var pins = _config.LedStrips.Count == 0
-            ? "Sin pines"
-            : string.Join(", ", _config.LedStrips.Select(strip => $"Pin {strip.Pin}"));
+        var status = DashboardStatusTextService.BuildLightsArduinoStatusText(
+            _config.ArduinoEnabled,
+            _lightController.HasConfirmedAck,
+            _lightController.IsCompatibleWithoutAck,
+            _lightController.HasOpenPort,
+            _lightController.CurrentPort,
+            _config.SerialPort,
+            _config.LedStrips);
 
-        LightsArduinoDeviceText.Text = !_config.ArduinoEnabled
-            ? "Desactivado"
-            : _lightController.HasConfirmedAck || _lightController.IsCompatibleWithoutAck
-                ? "Conectado"
-            : _lightController.HasOpenPort
-                    ? "Verificando"
-                    : "Desconectado";
-        LightsArduinoPortText.Text = _lightController.HasOpenPort
-            ? FirstNonEmpty(_lightController.CurrentPort, _config.SerialPort, "Sin COM")
-            : FirstNonEmpty(_config.SerialPort, "Sin COM");
-        LightsArduinoLedCountText.Text = totalLeds.ToString();
-        LightsArduinoPinsText.Text = pins;
+        LightsArduinoDeviceText.Text = status.Device;
+        LightsArduinoPortText.Text = status.Port;
+        LightsArduinoLedCountText.Text = status.LedCount;
+        LightsArduinoPinsText.Text = status.Pins;
     }
 
     private void UpdateAlexaStatusText()
@@ -144,22 +128,14 @@ public partial class MainWindow
             return;
         }
 
-        var status = _config.Alexa.IsConfigured
-            ? "Alexa lista. Las reglas pueden enviar eventos a la Skill/relay."
-            : _config.Alexa.Enabled
-                ? "Alexa activa, falta configurar una URL valida de Skill/relay."
-                : "Alexa desactivada. Las reglas no mostraran acciones de Alexa.";
+        var status = DashboardStatusTextService.BuildAlexaStatusText(_config.Alexa.Enabled, _config.Alexa.IsConfigured);
 
         AlexaStatusText.Text = status;
-        AlexaConnectionText.Text = _config.Alexa.IsConfigured
-            ? _isAlexaConnecting
-                ? "Conectando"
-                : _alexaRelayConnected
-                    ? "Relay conectado"
-                    : "Relay configurado"
-            : _config.Alexa.Enabled
-                ? "Configuracion incompleta"
-                : "Desactivado";
+        AlexaConnectionText.Text = DashboardStatusTextService.BuildAlexaConnectionText(
+            _config.Alexa.Enabled,
+            _config.Alexa.IsConfigured,
+            _isAlexaConnecting,
+            _alexaRelayConnected);
         AlexaSidebarStatusText.Text = _config.Alexa.IsConfigured
             ? DashboardStatusTextService.BuildAlexaSidebarStatusText(
                 _config.BackgroundAlexaEnabled,

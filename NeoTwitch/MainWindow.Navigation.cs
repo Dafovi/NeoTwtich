@@ -56,6 +56,11 @@ public partial class MainWindow
 
     internal void GoToActivityButton_Click(object sender, RoutedEventArgs e)
     {
+        GoToActivity();
+    }
+
+    private void GoToActivity()
+    {
         if (int.TryParse(NavActivityButton.Tag?.ToString(), out var activityTabIndex))
         {
             if (activityTabIndex != MainTabs.SelectedIndex && !ResolvePendingRuleChanges())

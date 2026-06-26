@@ -348,7 +348,7 @@
                                         Content="Ir a actividad"
                                         HorizontalAlignment="Stretch"
                                         VerticalAlignment="Top"
-                                        Click="GoToActivityButton_Click" />
+                                        Command="{Binding GoToActivityCommand}" />
                             </Grid>
                             <ListBox x:Name="DashboardActivityList"
                                      BorderThickness="0"

@@ -76,6 +76,7 @@ var tests = new (string Name, Action Body)[]
     ("VersionComparisonService compares normalized tags", VersionComparisonTests.ComparesNormalizedTags),
     ("ActivityLogService trims activity and dashboard entries", ActivityLogServiceTests.TrimsActivityAndDashboardEntries),
     ("ActivityLogService filters entries and search text", ActivityLogServiceTests.FiltersEntriesAndSearchText),
+    ("ActivityViewModel filters entries view", ActivityViewModelTests.FiltersEntriesView),
     ("DashboardConnectionStateService resolves all services", DashboardConnectionStateTests.ResolvesAllServices),
     ("DashboardSummaryService counts Twitch events", DashboardSummaryTests.CountsTwitchEvents),
     ("DashboardSummaryService counts matched rules safely", DashboardSummaryTests.CountsMatchedRulesSafely),
@@ -1539,6 +1540,41 @@ static class ActivityLogServiceTests
         activity.Clear();
         TestAssert.Equal(0, activity.Entries.Count);
         TestAssert.Equal(0, activity.DashboardEntries.Count);
+    }
+}
+
+static class ActivityViewModelTests
+{
+    public static void FiltersEntriesView()
+    {
+        TestThread.RunSta(() =>
+        {
+            var activity = new ActivityLogService();
+            var viewModel = new ActivityViewModel(activity);
+
+            activity.Add("Twitch: conectado", ActivityLogKind.Twitch);
+            activity.Add("Arduino: puerto COM3 conectado", ActivityLogKind.Arduino);
+            viewModel.Refresh();
+
+            TestAssert.Equal(2, viewModel.EntriesView.Cast<ActivityLogEntry>().Count());
+
+            viewModel.SetFilter("TWITCH", enabled: false);
+            var filtered = viewModel.EntriesView.Cast<ActivityLogEntry>().ToArray();
+            TestAssert.Equal(1, filtered.Length);
+            TestAssert.Contains("Arduino", filtered[0].Message);
+
+            viewModel.SearchText = "COM3";
+            TestAssert.Equal(1, viewModel.EntriesView.Cast<ActivityLogEntry>().Count());
+
+            viewModel.ClearFilters();
+            TestAssert.Equal("", viewModel.SearchText);
+            TestAssert.True(viewModel.IsFilterEnabled("TWITCH"));
+            TestAssert.Equal(2, viewModel.EntriesView.Cast<ActivityLogEntry>().Count());
+
+            viewModel.ClearHistory();
+            TestAssert.Equal(0, activity.Entries.Count);
+            TestAssert.Equal(0, viewModel.DashboardEntries.Count);
+        });
     }
 }
 

@@ -1,7 +1,6 @@
 using System.Collections.ObjectModel;
 using System.Windows.Data;
 using System.Windows.Threading;
-using NeoTwitch.ViewModels.Activity;
 using NeoTwitch.ViewModels.Library;
 using NeoTwitch.ViewModels.Obs;
 using NeoTwitch.ViewModels.Ui;
@@ -20,7 +19,6 @@ public partial class MainWindow
     private readonly ObservableCollection<ObsSceneChoice> _obsSceneChoices = [];
     private readonly ObservableCollection<RuleLedPreviewDot> _ruleLedPreviewDots = [];
     private readonly ObservableCollection<RuleLedPreviewDot> _backgroundLedPreviewDots = [];
-    private readonly CollectionViewSource _activityViewSource = new();
     private readonly CollectionViewSource _rulesViewSource = new();
     private readonly DispatcherTimer _ruleLedPreviewTimer = new();
     private readonly DispatcherTimer _backgroundLedPreviewTimer = new();

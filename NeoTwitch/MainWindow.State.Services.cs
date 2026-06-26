@@ -1,6 +1,7 @@
 using NeoTwitch.Models;
 using NeoTwitch.Services;
 using NeoTwitch.Services.Text;
+using NeoTwitch.ViewModels.Activity;
 
 namespace NeoTwitch;
 
@@ -22,6 +23,7 @@ public partial class MainWindow
     private AppUpdateService _updateService => _services.UpdateService;
     private IUiTextService _text => _services.Text;
     private Services.Activity.ActivityLogService _activityLog => _services.ActivityLog;
+    private ActivityViewModel _activityViewModel => _services.ActivityViewModel;
     private Services.Dashboard.DashboardSummaryService _dashboardSummary => _services.DashboardSummary;
     private Services.Alerts.AlertQueueService _alertQueue => _services.AlertQueue;
 }

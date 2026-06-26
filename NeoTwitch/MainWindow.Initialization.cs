@@ -11,10 +11,9 @@ public partial class MainWindow
         _loadingUi = true;
         try
         {
-            _activityViewSource.Source = _activityLog.Entries;
-            _activityViewSource.Filter += ActivityViewSource_Filter;
-            ActivityList.ItemsSource = _activityViewSource.View;
-            DashboardActivityList.ItemsSource = _activityLog.DashboardEntries;
+            ActivityView.DataContext = _activityViewModel;
+            ActivityList.ItemsSource = _activityViewModel.EntriesView;
+            DashboardActivityList.ItemsSource = _activityViewModel.DashboardEntries;
             AudioLibraryList.ItemsSource = _audioLibraryRows;
             AudioGroupsList.ItemsSource = _audioGroupRows;
             ImageLibraryList.ItemsSource = _imageLibraryRows;

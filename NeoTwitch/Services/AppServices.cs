@@ -2,6 +2,7 @@ using NeoTwitch.Services.Activity;
 using NeoTwitch.Services.Alerts;
 using NeoTwitch.Services.Dashboard;
 using NeoTwitch.Services.Text;
+using NeoTwitch.ViewModels.Activity;
 
 namespace NeoTwitch.Services;
 
@@ -20,6 +21,7 @@ public sealed class AppServices
         AppUpdateService updateService,
         IUiTextService text,
         ActivityLogService activityLog,
+        ActivityViewModel activityViewModel,
         DashboardSummaryService dashboardSummary,
         AlertQueueService alertQueue)
     {
@@ -35,6 +37,7 @@ public sealed class AppServices
         UpdateService = updateService;
         Text = text;
         ActivityLog = activityLog;
+        ActivityViewModel = activityViewModel;
         DashboardSummary = dashboardSummary;
         AlertQueue = alertQueue;
     }
@@ -63,12 +66,15 @@ public sealed class AppServices
 
     public ActivityLogService ActivityLog { get; }
 
+    public ActivityViewModel ActivityViewModel { get; }
+
     public DashboardSummaryService DashboardSummary { get; }
 
     public AlertQueueService AlertQueue { get; }
 
     public static AppServices CreateDefault()
     {
+        var activityLog = new ActivityLogService();
         return new AppServices(
             new SettingsStore(),
             new AudioPlayerService(),
@@ -81,7 +87,8 @@ public sealed class AppServices
             new WindowsStartupService(),
             new AppUpdateService(),
             UiTextService.CreateDefault(),
-            new ActivityLogService(),
+            activityLog,
+            new ActivityViewModel(activityLog),
             new DashboardSummaryService(),
             new AlertQueueService());
     }

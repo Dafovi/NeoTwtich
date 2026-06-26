@@ -30,6 +30,8 @@ var tests = new (string Name, Action Body)[]
     ("EventRuleFilterService searches editable text", EventRuleFilterTests.SearchesEditableText),
     ("EventRuleSnapshotService clones editable values independently", EventRuleSnapshotTests.CloneCopiesEditableValues),
     ("EventRuleSnapshotService detects editable changes", EventRuleSnapshotTests.DetectsEditableChanges),
+    ("RuleEditorValueService resolves fallback names", RuleEditorValueTests.ResolvesFallbackNames),
+    ("RuleEditorValueService resolves legacy audio paths", RuleEditorValueTests.ResolvesLegacyAudioPaths),
     ("EventRuleMatcherService resolves normal event matches", EventRuleMatcherTests.ResolvesNormalEventMatches),
     ("EventRuleMatcherService keeps highest bits threshold", EventRuleMatcherTests.KeepsHighestBitsThreshold),
     ("AlertDurationService resolves maximum positive duration", AlertDurationTests.ResolvesMaximumPositiveDuration),
@@ -369,6 +371,40 @@ static class EventRuleSnapshotTests
             CycleMs = 90,
             StepMs = 140
         };
+    }
+}
+
+static class RuleEditorValueTests
+{
+    public static void ResolvesFallbackNames()
+    {
+        TestAssert.Equal(
+            "Mi alerta",
+            RuleEditorValueService.ResolveRuleName("  Mi alerta  ", "Anterior", TwitchEventKind.Follow));
+        TestAssert.Equal(
+            "Anterior",
+            RuleEditorValueService.ResolveRuleName(" ", "  Anterior  ", TwitchEventKind.Follow));
+        TestAssert.Equal(
+            DisplayNames.For(TwitchEventKind.Follow),
+            RuleEditorValueService.ResolveRuleName("", "", TwitchEventKind.Follow));
+    }
+
+    public static void ResolvesLegacyAudioPaths()
+    {
+        var library = new[]
+        {
+            new AudioAssetConfig { Id = "asset-1", FilePath = @"C:\audios\follow.mp3" }
+        };
+
+        TestAssert.Equal(
+            @"C:\audios\follow.mp3",
+            RuleEditorValueService.ResolveLegacyAudioPath(AudioSourceMode.Single, "ASSET-1", library));
+        TestAssert.Equal(
+            "",
+            RuleEditorValueService.ResolveLegacyAudioPath(AudioSourceMode.Group, "asset-1", library));
+        TestAssert.Equal(
+            "",
+            RuleEditorValueService.ResolveLegacyAudioPath(AudioSourceMode.Single, "missing", library));
     }
 }
 

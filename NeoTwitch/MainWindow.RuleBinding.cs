@@ -1,4 +1,5 @@
 using NeoTwitch.Models;
+using NeoTwitch.Services.Alerts;
 using NeoTwitch.Services.Lights;
 using NeoTwitch.Services.Ui;
 using NeoTwitch.Shared;
@@ -91,13 +92,7 @@ public partial class MainWindow
             return false;
         }
 
-        var ruleName = RuleNameBox.Text.Trim();
-        if (string.IsNullOrWhiteSpace(ruleName))
-        {
-            ruleName = string.IsNullOrWhiteSpace(rule.Name)
-                ? DisplayNames.For(kind)
-                : rule.Name;
-        }
+        var ruleName = RuleEditorValueService.ResolveRuleName(RuleNameBox.Text, rule.Name, kind);
 
         rule.IsEnabled = RuleEnabledCheck.IsChecked == true;
         rule.Name = ruleName;
@@ -129,9 +124,10 @@ public partial class MainWindow
         rule.AudioSourceMode = _ruleAudioMode;
         rule.AudioAssetId = RuleAudioAssetBox.SelectedValue as string ?? "";
         rule.AudioGroupId = RuleAudioGroupBox.SelectedValue as string ?? "";
-        rule.AudioPath = rule.AudioSourceMode == AudioSourceMode.Single
-            ? _config.AudioLibrary.FirstOrDefault(audio => string.Equals(audio.Id, rule.AudioAssetId, StringComparison.OrdinalIgnoreCase))?.FilePath ?? ""
-            : "";
+        rule.AudioPath = RuleEditorValueService.ResolveLegacyAudioPath(
+            rule.AudioSourceMode,
+            rule.AudioAssetId,
+            _config.AudioLibrary);
         rule.Pattern = PatternBox.SelectedValue is LightPattern pattern ? pattern : LightPattern.Pulse;
         rule.TargetPins = string.Join(", ", LightCommand.ParsePins(TargetPinsBox.Text));
         rule.PrimaryColor = LightCommand.NormalizeColor(PrimaryColorBox.Text);

@@ -64,6 +64,7 @@ var tests = new (string Name, Action Body)[]
     ("ConnectionStateService maps visual metadata", ConnectionStateTests.MapsVisualMetadata),
     ("ConnectionButtonStateService disables Twitch while busy", ConnectionButtonStateTests.DisablesTwitchWhileBusy),
     ("ConnectionButtonStateService maps OBS buttons", ConnectionButtonStateTests.MapsObsButtons),
+    ("ObsStatusTextService builds display values", ObsStatusTextTests.BuildsDisplayValues),
     ("DiagnosticReportService builds report without network", DiagnosticReportServiceTests.BuildsReportWithoutNetwork),
     ("DiagnosticReportService reports missing audio", DiagnosticReportServiceTests.ReportsMissingAudio),
     ("ActivityLogService trims activity and dashboard entries", ActivityLogServiceTests.TrimsActivityAndDashboardEntries),
@@ -1178,6 +1179,52 @@ static class ConnectionButtonStateTests
         TestAssert.Equal("Desconectar OBS", connected.Content);
         TestAssert.False(busyTest.IsEnabled);
         TestAssert.Equal("Actualizando...", busyTest.Content);
+    }
+}
+
+static class ObsStatusTextTests
+{
+    public static void BuildsDisplayValues()
+    {
+        var disabled = ObsStatusTextService.Build(
+            enabled: false,
+            isConnecting: false,
+            isConnected: false,
+            connectionError: "",
+            currentScene: "",
+            host: "",
+            port: 4455,
+            version: "",
+            sceneCount: -10,
+            studioMode: false);
+
+        TestAssert.Equal("Desactivado", disabled.State);
+        TestAssert.Contains("OBS desactivado", disabled.StatusText);
+        TestAssert.Equal("Sin escena", disabled.CurrentScene);
+        TestAssert.Equal("127.0.0.1", disabled.Host);
+        TestAssert.Equal("0", disabled.SceneCount);
+
+        var connected = ObsStatusTextService.Build(
+            enabled: true,
+            isConnecting: false,
+            isConnected: true,
+            connectionError: "",
+            currentScene: " Gameplay ",
+            host: " localhost ",
+            port: 4455,
+            version: "30.2",
+            sceneCount: 4,
+            studioMode: true);
+
+        TestAssert.Equal("Conectado", connected.State);
+        TestAssert.Contains("localhost:4455", connected.StatusText);
+        TestAssert.Equal("Gameplay", connected.CurrentScene);
+        TestAssert.Equal("Activado", connected.StudioMode);
+
+        var warning = ObsStatusTextService.Build(true, false, false, " fallido ", "", "127.0.0.1", 4455, "", 0, false);
+
+        TestAssert.Equal("Revisar conexion", warning.State);
+        TestAssert.Equal("fallido", warning.StatusText);
     }
 }
 

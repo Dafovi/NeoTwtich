@@ -5,6 +5,7 @@ using System.Windows.Controls;
 using NeoTwitch.Models;
 using NeoTwitch.Services;
 using NeoTwitch.Services.Library;
+using NeoTwitch.Services.Status;
 using NeoTwitch.Shared;
 using NeoTwitch.ViewModels.Activity;
 using NeoTwitch.ViewModels.Library;
@@ -244,35 +245,29 @@ public partial class MainWindow
             return;
         }
 
-        var state = !_config.Obs.Enabled
-            ? "Desactivado"
-            : _isObsConnecting
-                ? "Conectando"
-                : _obsService.IsConnected
-                    ? "Conectado"
-                    : !string.IsNullOrWhiteSpace(_obsConnectionError)
-                        ? "Revisar conexion"
-                        : "Desconectado";
+        var status = ObsStatusTextService.Build(
+            _config.Obs.Enabled,
+            _isObsConnecting,
+            _obsService.IsConnected,
+            _obsConnectionError,
+            _obsService.CurrentScene,
+            _config.Obs.Host,
+            _config.Obs.Port,
+            _obsService.Version,
+            _obsService.Scenes.Count,
+            _obsService.StudioMode);
 
-        var statusText = !_config.Obs.Enabled
-            ? "OBS desactivado. Las acciones OBS no se mostraran ni ejecutaran."
-            : _obsService.IsConnected
-                ? $"OBS conectado en {_config.Obs.Host}:{_config.Obs.Port}."
-                : !string.IsNullOrWhiteSpace(_obsConnectionError)
-                    ? _obsConnectionError
-                    : "Conecta OBS Studio para leer escenas y preparar automatizaciones.";
-
-        ObsStatusText.Text = statusText;
-        ObsConnectionHelpText.Text = statusText;
+        ObsStatusText.Text = status.StatusText;
+        ObsConnectionHelpText.Text = status.StatusText;
         UpdateObsOverlayFields();
 
-        ObsConnectionStateText.Text = state;
-        ObsCurrentSceneText.Text = FirstNonEmpty(_obsService.CurrentScene, "Sin escena");
-        ObsHostSummaryText.Text = FirstNonEmpty(_config.Obs.Host, "127.0.0.1");
-        ObsPortSummaryText.Text = _config.Obs.Port.ToString();
-        ObsVersionText.Text = FirstNonEmpty(_obsService.Version, "Sin version");
-        ObsSceneCountText.Text = _obsService.Scenes.Count.ToString();
-        ObsStudioModeText.Text = _obsService.StudioMode ? "Activado" : "Desactivado";
+        ObsConnectionStateText.Text = status.State;
+        ObsCurrentSceneText.Text = status.CurrentScene;
+        ObsHostSummaryText.Text = status.Host;
+        ObsPortSummaryText.Text = status.Port;
+        ObsVersionText.Text = status.Version;
+        ObsSceneCountText.Text = status.SceneCount;
+        ObsStudioModeText.Text = status.StudioMode;
         ObsScenesList.IsEnabled = _config.Obs.Enabled
             && _obsService.IsConnected
             && !_isObsConnecting

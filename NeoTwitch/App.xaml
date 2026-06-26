@@ -4,28 +4,28 @@
              xmlns:local="clr-namespace:NeoTwitch">
     <Application.Resources>
         <ResourceDictionary>
-        <ResourceDictionary.MergedDictionaries>
-            <ResourceDictionary Source="Resources/Styles/TypographyStyles.xaml" />
-            <ResourceDictionary Source="Resources/Styles/ButtonStyles.xaml" />
-            <ResourceDictionary Source="Resources/Styles/InputStyles.xaml" />
-            <ResourceDictionary Source="Resources/Styles/ControlStyles.xaml" />
-            <ResourceDictionary Source="Resources/Styles/ActivityStyles.xaml" />
-        </ResourceDictionary.MergedDictionaries>
+            <ResourceDictionary.MergedDictionaries>
+                <ResourceDictionary Source="Resources/Styles/TypographyStyles.xaml" />
+                <ResourceDictionary Source="Resources/Styles/ButtonStyles.xaml" />
+                <ResourceDictionary Source="Resources/Styles/InputStyles.xaml" />
+                <ResourceDictionary Source="Resources/Styles/ControlStyles.xaml" />
+                <ResourceDictionary Source="Resources/Styles/ActivityStyles.xaml" />
+            </ResourceDictionary.MergedDictionaries>
 
-        <SolidColorBrush x:Key="ThemeWindowBrush" Color="#F7FAFC" />
-        <SolidColorBrush x:Key="ThemeSidebarBrush" Color="#FFFFFF" />
-        <SolidColorBrush x:Key="ThemeSurfaceBrush" Color="#FFFFFF" />
-        <SolidColorBrush x:Key="ThemeInputBrush" Color="#F8FAFC" />
-        <SolidColorBrush x:Key="ThemeButtonBrush" Color="#EEF2F6" />
-        <SolidColorBrush x:Key="ThemeBorderBrush" Color="#E2E8F0" />
-        <SolidColorBrush x:Key="ThemeTextBrush" Color="#0B1117" />
-        <SolidColorBrush x:Key="ThemeMutedTextBrush" Color="#475569" />
-        <SolidColorBrush x:Key="ThemeSidebarTextBrush" Color="#0B1117" />
-        <SolidColorBrush x:Key="ThemeSidebarMutedTextBrush" Color="#64748B" />
-        <SolidColorBrush x:Key="ThemeSelectionBrush" Color="#14B8A6" />
-        <SolidColorBrush x:Key="ThemeConsoleBrush" Color="#0B1117" />
-        <SolidColorBrush x:Key="ThemeScrollThumbBrush" Color="#14B8A6" />
-        <SolidColorBrush x:Key="ThemeScrollTrackBrush" Color="#E2E8F0" />
+            <SolidColorBrush x:Key="ThemeWindowBrush" Color="#F7FAFC" />
+            <SolidColorBrush x:Key="ThemeSidebarBrush" Color="#FFFFFF" />
+            <SolidColorBrush x:Key="ThemeSurfaceBrush" Color="#FFFFFF" />
+            <SolidColorBrush x:Key="ThemeInputBrush" Color="#F8FAFC" />
+            <SolidColorBrush x:Key="ThemeButtonBrush" Color="#EEF2F6" />
+            <SolidColorBrush x:Key="ThemeBorderBrush" Color="#E2E8F0" />
+            <SolidColorBrush x:Key="ThemeTextBrush" Color="#0B1117" />
+            <SolidColorBrush x:Key="ThemeMutedTextBrush" Color="#475569" />
+            <SolidColorBrush x:Key="ThemeSidebarTextBrush" Color="#0B1117" />
+            <SolidColorBrush x:Key="ThemeSidebarMutedTextBrush" Color="#64748B" />
+            <SolidColorBrush x:Key="ThemeSelectionBrush" Color="#14B8A6" />
+            <SolidColorBrush x:Key="ThemeConsoleBrush" Color="#0B1117" />
+            <SolidColorBrush x:Key="ThemeScrollThumbBrush" Color="#14B8A6" />
+            <SolidColorBrush x:Key="ThemeScrollTrackBrush" Color="#E2E8F0" />
 
         </ResourceDictionary>
     </Application.Resources>

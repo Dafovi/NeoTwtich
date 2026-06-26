@@ -73,6 +73,7 @@ var tests = new (string Name, Action Body)[]
     ("DiagnosticReportService reports missing audio", DiagnosticReportServiceTests.ReportsMissingAudio),
     ("ActivityLogService trims activity and dashboard entries", ActivityLogServiceTests.TrimsActivityAndDashboardEntries),
     ("ActivityLogService filters entries and search text", ActivityLogServiceTests.FiltersEntriesAndSearchText),
+    ("DashboardConnectionStateService resolves all services", DashboardConnectionStateTests.ResolvesAllServices),
     ("DashboardSummaryService counts Twitch events", DashboardSummaryTests.CountsTwitchEvents),
     ("DashboardSummaryService counts matched rules safely", DashboardSummaryTests.CountsMatchedRulesSafely),
     ("DashboardStatusTextService formats live Twitch status", DashboardStatusTextTests.FormatsLiveTwitchStatus),
@@ -1440,6 +1441,36 @@ static class ActivityLogServiceTests
         activity.Clear();
         TestAssert.Equal(0, activity.Entries.Count);
         TestAssert.Equal(0, activity.DashboardEntries.Count);
+    }
+}
+
+static class DashboardConnectionStateTests
+{
+    public static void ResolvesAllServices()
+    {
+        var states = DashboardConnectionStateService.Resolve(new DashboardConnectionStateInput(
+            TwitchAuthorizing: false,
+            TwitchConnecting: true,
+            TwitchHasConnectionError: false,
+            TwitchHasToken: false,
+            ArduinoEnabled: true,
+            ArduinoConnecting: false,
+            ArduinoHasConfirmedAck: true,
+            ArduinoCompatibleWithoutAck: false,
+            ArduinoHasOpenPort: false,
+            AlexaEnabled: true,
+            AlexaConnecting: false,
+            AlexaIsConfigured: true,
+            AlexaRelayConnected: false,
+            ObsEnabled: false,
+            ObsConnecting: false,
+            ObsIsConnected: false,
+            ObsHasConnectionError: false));
+
+        TestAssert.Equal(ConnectionVisualState.Connecting, states.Twitch);
+        TestAssert.Equal(ConnectionVisualState.Connected, states.Arduino);
+        TestAssert.Equal(ConnectionVisualState.Warning, states.Alexa);
+        TestAssert.Equal(ConnectionVisualState.Disabled, states.Obs);
     }
 }
 

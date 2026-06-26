@@ -1,11 +1,7 @@
-using System.Windows;
-using System.Windows.Controls;
-using System.Windows.Media;
 using NeoTwitch.Models;
 using NeoTwitch.Services.Dashboard;
 using NeoTwitch.Services.Status;
 using NeoTwitch.Services.Ui;
-using NeoTwitch.ViewModels.Status;
 using static NeoTwitch.Services.Ui.UiBrushFactory;
 
 namespace NeoTwitch;
@@ -174,125 +170,58 @@ public partial class MainWindow
 
     private void RefreshDashboardConnectionStates()
     {
-        var twitchState = ConnectionStateService.ResolveTwitch(
+        var states = DashboardConnectionStateService.Resolve(new DashboardConnectionStateInput(
             _isTwitchAuthorizing,
             _isTwitchConnecting,
             !string.IsNullOrWhiteSpace(_twitchConnectionError),
-            _config.Token.HasToken);
-        var arduinoState = ConnectionStateService.ResolveArduino(
+            _config.Token.HasToken,
             _config.ArduinoEnabled,
             _isArduinoConnecting,
             _lightController.HasConfirmedAck,
             _lightController.IsCompatibleWithoutAck,
-            _lightController.HasOpenPort);
-        var alexaState = ConnectionStateService.ResolveAlexa(
+            _lightController.HasOpenPort,
             _config.Alexa.Enabled,
             _isAlexaConnecting,
             _config.Alexa.IsConfigured,
-            _alexaRelayConnected);
-        var obsState = ConnectionStateService.ResolveObs(
+            _alexaRelayConnected,
             _config.Obs.Enabled,
             _isObsConnecting,
             _obsService.IsConnected,
-            !string.IsNullOrWhiteSpace(_obsConnectionError));
+            !string.IsNullOrWhiteSpace(_obsConnectionError)));
 
-        SetDashboardConnectionState(
+        ConnectionVisualThemeService.ApplyDashboardState(
             DashboardTwitchStateText,
             DashboardTwitchStatusIcon,
-            twitchState,
-            warningText: "Revisar");
-        SetDashboardConnectionState(
+            ConnectionStateService.GetVisual(states.Twitch, warningText: "Revisar"));
+        ConnectionVisualThemeService.ApplyDashboardState(
             DashboardArduinoStateText,
             DashboardArduinoStatusIcon,
-            arduinoState,
-            warningText: "Sin respuesta");
-        SetDashboardConnectionState(
+            ConnectionStateService.GetVisual(states.Arduino, warningText: "Sin respuesta"));
+        ConnectionVisualThemeService.ApplyDashboardState(
             DashboardAlexaStateText,
             DashboardAlexaStatusIcon,
-            alexaState,
-            warningText: _config.Alexa.IsConfigured ? "Configurado" : "Incompleta");
-        SetDashboardConnectionState(
+            ConnectionStateService.GetVisual(states.Alexa, warningText: _config.Alexa.IsConfigured ? "Configurado" : "Incompleta"));
+        ConnectionVisualThemeService.ApplyDashboardState(
             DashboardObsStateText,
             DashboardObsStatusIcon,
-            obsState,
-            warningText: "Revisar");
+            ConnectionStateService.GetVisual(states.Obs, warningText: "Revisar"));
 
-        SetConnectionBadgeState(
+        ConnectionVisualThemeService.ApplyConnectionBadge(
             ConnectionsTwitchBadge,
             ConnectionsTwitchBadgeText,
-            twitchState,
-            warningText: "Revisar");
-        SetConnectionBadgeState(
+            ConnectionStateService.GetVisual(states.Twitch, warningText: "Revisar"));
+        ConnectionVisualThemeService.ApplyConnectionBadge(
             ConnectionsArduinoBadge,
             ConnectionsArduinoBadgeText,
-            arduinoState,
-            warningText: "Sin respuesta");
-        SetConnectionBadgeState(
+            ConnectionStateService.GetVisual(states.Arduino, warningText: "Sin respuesta"));
+        ConnectionVisualThemeService.ApplyConnectionBadge(
             ConnectionsAlexaBadge,
             ConnectionsAlexaBadgeText,
-            alexaState,
-            warningText: _config.Alexa.IsConfigured ? "Configurado" : "Incompleta");
-        SetConnectionBadgeState(
+            ConnectionStateService.GetVisual(states.Alexa, warningText: _config.Alexa.IsConfigured ? "Configurado" : "Incompleta"));
+        ConnectionVisualThemeService.ApplyConnectionBadge(
             ConnectionsObsBadge,
             ConnectionsObsBadgeText,
-            obsState,
-            warningText: "Revisar");
-    }
-
-    private static void SetDashboardConnectionState(
-        TextBlock stateText,
-        Border statusIcon,
-        ConnectionVisualState state,
-        string connectedText = "Conectado",
-        string disconnectedText = "Desconectado",
-        string disabledText = "Desactivado",
-        string connectingText = "Conectando",
-        string warningText = "Revisar")
-    {
-        var (text, color, icon) = ConnectionStateService.GetVisual(
-            state,
-            connectedText,
-            disconnectedText,
-            disabledText,
-            connectingText,
-            warningText);
-        var brush = FrozenBrushFrom(color);
-
-        stateText.Text = text;
-        stateText.Foreground = brush;
-        statusIcon.Background = brush;
-        statusIcon.OpacityMask = new ImageBrush
-        {
-            ImageSource = PackImageLoader.Load(icon),
-            Stretch = Stretch.Uniform
-        };
-        statusIcon.ToolTip = text;
-    }
-
-    private static void SetConnectionBadgeState(
-        Border badge,
-        TextBlock textBlock,
-        ConnectionVisualState state,
-        string connectedText = "Conectado",
-        string disconnectedText = "Desconectado",
-        string disabledText = "Desactivado",
-        string connectingText = "Conectando",
-        string warningText = "Revisar")
-    {
-        var (text, color, _) = ConnectionStateService.GetVisual(
-            state,
-            connectedText,
-            disconnectedText,
-            disabledText,
-            connectingText,
-            warningText);
-        var brush = FrozenBrushFrom(color);
-
-        textBlock.Text = text;
-        textBlock.Foreground = brush;
-        badge.Background = TranslucentBrushFrom(color);
-        badge.BorderBrush = brush;
-        badge.BorderThickness = new Thickness(1);
+            ConnectionStateService.GetVisual(states.Obs, warningText: "Revisar"));
     }
 
 }

@@ -1,18 +1,10 @@
-using System.Collections.ObjectModel;
 using System.Windows;
-using System.Windows.Data;
-using System.Windows.Threading;
 using NeoTwitch.Models;
 using NeoTwitch.Services;
-using NeoTwitch.Services.Activity;
 using NeoTwitch.Services.Alerts;
-using NeoTwitch.Services.Dashboard;
-using NeoTwitch.Services.Text;
 using NeoTwitch.Services.Ui;
-using NeoTwitch.ViewModels.Activity;
 using NeoTwitch.ViewModels.Library;
 using NeoTwitch.ViewModels.Obs;
-using NeoTwitch.ViewModels.Status;
 using NeoTwitch.ViewModels.Ui;
 using DrawingIcon = System.Drawing.Icon;
 using Forms = System.Windows.Forms;
@@ -22,40 +14,9 @@ namespace NeoTwitch;
 public partial class MainWindow
 {
     private const int LightStopSettleMs = 120;
-    private readonly SettingsStore _settingsStore = new();
-    private readonly AudioPlayerService _audioPlayer = new();
-    private readonly SerialLightController _lightController = new();
-    private readonly TwitchAuthService _authService = new();
-    private readonly TwitchChatService _chatService = new();
-    private readonly AlexaRelayService _alexaRelayService = new();
-    private readonly ObsWebSocketService _obsService = new();
-    private readonly ObsOverlayService _obsOverlayService = new();
-    private readonly WindowsStartupService _windowsStartupService = new();
-    private readonly AppUpdateService _updateService = new();
-    private readonly IUiTextService _text = UiTextService.CreateDefault();
-    private readonly AppStartupOptions _startupOptions;
-    private readonly TwitchEventSubClient _eventSubClient;
-    private readonly ActivityLogService _activityLog = new();
-    private readonly DashboardSummaryService _dashboardSummary = new();
-    private readonly ObservableCollection<AudioLibraryRow> _audioLibraryRows = [];
-    private readonly ObservableCollection<AudioGroupRow> _audioGroupRows = [];
-    private readonly ObservableCollection<MediaLibraryRow> _imageLibraryRows = [];
-    private readonly ObservableCollection<MediaGroupRow> _imageGroupRows = [];
-    private readonly ObservableCollection<MediaLibraryRow> _videoLibraryRows = [];
-    private readonly ObservableCollection<MediaGroupRow> _videoGroupRows = [];
-    private readonly ObservableCollection<ObsSceneRow> _obsSceneRows = [];
-    private readonly ObservableCollection<ObsSceneChoice> _obsSceneChoices = [];
-    private readonly ObservableCollection<RuleLedPreviewDot> _ruleLedPreviewDots = [];
-    private readonly ObservableCollection<RuleLedPreviewDot> _backgroundLedPreviewDots = [];
-    private readonly CollectionViewSource _activityViewSource = new();
-    private readonly CollectionViewSource _rulesViewSource = new();
-    private readonly DispatcherTimer _ruleLedPreviewTimer = new();
-    private readonly DispatcherTimer _backgroundLedPreviewTimer = new();
-    private readonly DispatcherTimer _arduinoMonitorTimer = new();
     private readonly Random _previewRandom = new();
     private readonly Random _audioRandom = new();
     private readonly SemaphoreSlim _effectGate = new(1, 1);
-    private readonly AlertQueueService _alertQueue = new();
     private IReadOnlyList<SerialPortInfo> _availablePorts = [];
     private readonly IReadOnlyList<UiOption<TwitchEventKind>> _eventOptions = UiOptionCatalog.EventOptions;
     private readonly IReadOnlyList<UiOption<string>> _ruleCategoryOptions = UiOptionCatalog.RuleCategoryOptions;
@@ -139,11 +100,4 @@ public partial class MainWindow
     private DrawingIcon? _trayIcon;
     private Forms.NotifyIcon? _notifyIcon;
 
-    public ObservableCollection<AudioGroupChoice> AudioGroupChoices { get; } = [];
-
-    public ObservableCollection<AudioAlertChoice> AudioAlertChoices { get; } = [];
-
-    public ObservableCollection<MediaGroupChoice> ImageGroupChoices { get; } = [];
-
-    public ObservableCollection<MediaGroupChoice> VideoGroupChoices { get; } = [];
 }

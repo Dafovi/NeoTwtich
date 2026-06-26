@@ -1,5 +1,6 @@
 using NeoTwitch.Models;
 using NeoTwitch.Services;
+using NeoTwitch.Services.Alerts;
 using NeoTwitch.Services.Library;
 using NeoTwitch.Shared;
 using NeoTwitch.ViewModels.Activity;
@@ -13,7 +14,7 @@ public partial class MainWindow
 {
     private async Task<ObsSceneRestoreRequest?> SendRuleObsSceneAsync(EventRule rule, CancellationToken cancellationToken)
     {
-        if (!rule.SendObsScene || !_config.Obs.IsConfigured || string.IsNullOrWhiteSpace(rule.ObsSceneName))
+        if (!ObsRulePlanService.ShouldSendScene(rule, _config.Obs.IsConfigured))
         {
             return null;
         }
@@ -36,22 +37,15 @@ public partial class MainWindow
             }
 
             var previousScene = _obsService.CurrentScene;
-            var targetScene = rule.ObsSceneName.Trim();
+            var targetScene = ObsRulePlanService.ResolveTargetScene(rule);
             var result = await _obsService.SetCurrentProgramSceneAsync(targetScene, cancellationToken);
             ApplyObsResult(result);
             AddLog($"OBS: escena '{targetScene}' enviada para '{rule.Name}'.", ActivityLogKind.Obs);
 
-            if (!rule.ObsReturnToPreviousScene
-                || string.IsNullOrWhiteSpace(previousScene)
-                || string.Equals(previousScene, targetScene, StringComparison.OrdinalIgnoreCase))
-            {
-                return null;
-            }
-
-            return new ObsSceneRestoreRequest(
+            return ObsRulePlanService.BuildSceneRestoreRequest(
+                rule,
                 previousScene,
                 targetScene,
-                TimeSpan.FromMilliseconds(Math.Clamp(rule.ObsReturnDelayMs, 0, ApplicationLimits.MaxAlertDurationMs)),
                 DateTimeOffset.UtcNow);
         }
         catch (OperationCanceledException)
@@ -116,7 +110,7 @@ public partial class MainWindow
 
     private async Task<ObsMediaHideRequest?> SendRuleObsMediaAsync(EventRule rule, CancellationToken cancellationToken)
     {
-        if (!rule.SendObsMedia || !_config.Obs.IsConfigured)
+        if (!ObsRulePlanService.ShouldSendMedia(rule, _config.Obs.IsConfigured))
         {
             return null;
         }
@@ -140,9 +134,7 @@ public partial class MainWindow
                 return null;
             }
 
-            var sceneName = rule.SendObsScene && !string.IsNullOrWhiteSpace(rule.ObsSceneName)
-                ? rule.ObsSceneName.Trim()
-                : _obsService.CurrentScene;
+            var sceneName = ObsRulePlanService.ResolveMediaSceneName(rule, _obsService.CurrentScene);
 
             if (string.IsNullOrWhiteSpace(sceneName))
             {
@@ -150,9 +142,10 @@ public partial class MainWindow
                 return null;
             }
 
-            var sourceName = rule.ObsMediaKind == ObsMediaKind.Image
-                ? NeoTwitchProduct.Obs.AlertImageSourceName
-                : NeoTwitchProduct.Obs.AlertVideoSourceName;
+            var sourceName = ObsRulePlanService.ResolveAlertSourceName(
+                rule.ObsMediaKind,
+                NeoTwitchProduct.Obs.AlertImageSourceName,
+                NeoTwitchProduct.Obs.AlertVideoSourceName);
             var mediaDuration = MediaRuleAssetService.ResolveRuleMediaDuration(rule, asset);
             var result = await _obsService.ShowMediaSourceAsync(
                 sceneName,
@@ -168,7 +161,7 @@ public partial class MainWindow
             MarkObsMediaAssetUsed(rule.ObsMediaKind, asset);
             AddLog($"OBS: medio '{asset.DisplayName}' mostrado en '{sceneName}'.", ActivityLogKind.Obs);
 
-            return new ObsMediaHideRequest(
+            return ObsRulePlanService.BuildMediaHideRequest(
                 sceneName,
                 sourceName,
                 mediaDuration,

@@ -150,15 +150,8 @@ public partial class MainWindow
             obsRestore = await SendRuleObsSceneAsync(rule, effectCts.Token);
             _currentObsRestore = obsRestore;
             obsMediaHide = await SendRuleObsMediaAsync(rule, effectCts.Token);
-            if (obsRestore is not null && obsMediaHide is not null)
-            {
-                obsRestore = obsRestore with
-                {
-                    Delay = obsMediaHide.Duration,
-                    StartedAt = obsMediaHide.StartedAt
-                };
-                _currentObsRestore = obsRestore;
-            }
+            obsRestore = ObsRulePlanService.AlignSceneRestoreWithMedia(obsRestore, obsMediaHide);
+            _currentObsRestore = obsRestore;
 
             _currentObsMediaHide = obsMediaHide;
             if (obsMediaHide is not null)

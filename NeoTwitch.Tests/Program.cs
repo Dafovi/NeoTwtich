@@ -13,6 +13,7 @@ using NeoTwitch.Services.Ui;
 using NeoTwitch.Shared;
 using NeoTwitch.ViewModels.Activity;
 using NeoTwitch.ViewModels.Library;
+using NeoTwitch.ViewModels.Obs;
 using NeoTwitch.ViewModels.Status;
 
 var tests = new (string Name, Action Body)[]
@@ -38,6 +39,8 @@ var tests = new (string Name, Action Body)[]
     ("EventRuleMatcherService keeps highest bits threshold", EventRuleMatcherTests.KeepsHighestBitsThreshold),
     ("AlertDurationService resolves maximum positive duration", AlertDurationTests.ResolvesMaximumPositiveDuration),
     ("AlertDurationService clamps synchronized durations", AlertDurationTests.ClampsSynchronizedDurations),
+    ("ObsRulePlanService resolves scene restore", ObsRulePlanTests.ResolvesSceneRestore),
+    ("ObsRulePlanService resolves media plans", ObsRulePlanTests.ResolvesMediaPlans),
     ("LightControlInputService resolves presets", LightControlInputTests.ResolvesPresets),
     ("LightControlInputService parses and clamps values", LightControlInputTests.ParsesAndClampsValues),
     ("RulePinChoiceService builds pin choices", RulePinChoiceTests.BuildsPinChoices),
@@ -611,6 +614,60 @@ static class AlertDurationTests
 
         var tooLong = AlertDurationService.ResolveSynchronizedEffectDurationMs(TimeSpan.FromMilliseconds(ApplicationLimits.MaxAlertDurationMs + 10_000));
         TestAssert.Equal(ApplicationLimits.MaxAlertDurationMs, tooLong);
+    }
+}
+
+static class ObsRulePlanTests
+{
+    public static void ResolvesSceneRestore()
+    {
+        var startedAt = new DateTimeOffset(2026, 1, 1, 0, 0, 0, TimeSpan.Zero);
+        var rule = new EventRule
+        {
+            SendObsScene = true,
+            ObsSceneName = " Recortes ",
+            ObsReturnToPreviousScene = true,
+            ObsReturnDelayMs = 1200
+        };
+
+        TestAssert.True(ObsRulePlanService.ShouldSendScene(rule, obsConfigured: true));
+        TestAssert.False(ObsRulePlanService.ShouldSendScene(rule, obsConfigured: false));
+        TestAssert.Equal("Recortes", ObsRulePlanService.ResolveTargetScene(rule));
+
+        var restore = ObsRulePlanService.BuildSceneRestoreRequest(rule, " Gameplay ", "Recortes", startedAt);
+
+        TestAssert.Equal("Gameplay", restore!.PreviousScene);
+        TestAssert.Equal("Recortes", restore.TargetScene);
+        TestAssert.Equal(1200d, restore.Delay.TotalMilliseconds);
+        TestAssert.Equal(startedAt, restore.StartedAt);
+        TestAssert.Same(null, ObsRulePlanService.BuildSceneRestoreRequest(rule, "Recortes", "Recortes", startedAt));
+    }
+
+    public static void ResolvesMediaPlans()
+    {
+        var startedAt = new DateTimeOffset(2026, 1, 1, 0, 0, 0, TimeSpan.Zero);
+        var rule = new EventRule
+        {
+            SendObsMedia = true,
+            SendObsScene = true,
+            ObsSceneName = " BRB ",
+            ObsMediaKind = ObsMediaKind.Video
+        };
+
+        TestAssert.True(ObsRulePlanService.ShouldSendMedia(rule, obsConfigured: true));
+        TestAssert.Equal("BRB", ObsRulePlanService.ResolveMediaSceneName(rule, "Actual"));
+        TestAssert.Equal(
+            "video-source",
+            ObsRulePlanService.ResolveAlertSourceName(ObsMediaKind.Video, "image-source", "video-source"));
+
+        var media = ObsRulePlanService.BuildMediaHideRequest(" BRB ", " source ", TimeSpan.FromSeconds(3), startedAt);
+        var restore = new ObsSceneRestoreRequest("Gameplay", "BRB", TimeSpan.FromSeconds(1), startedAt.AddSeconds(-1));
+        var aligned = ObsRulePlanService.AlignSceneRestoreWithMedia(restore, media);
+
+        TestAssert.Equal("BRB", media.SceneName);
+        TestAssert.Equal("source", media.SourceName);
+        TestAssert.Equal(media.Duration, aligned!.Delay);
+        TestAssert.Equal(media.StartedAt, aligned.StartedAt);
     }
 }
 

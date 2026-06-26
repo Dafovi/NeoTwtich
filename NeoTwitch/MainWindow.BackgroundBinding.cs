@@ -50,18 +50,18 @@ public partial class MainWindow
             alexaTurnOffAfterEvent,
             pattern));
 
-        SetVisible(visibility.ShowAlexaControls, BackgroundAlexaEnabledCheck, BackgroundAlexaTurnOffAfterEventCheck, StopAlexaBackgroundButton);
-        SetVisible(visibility.ShowAlexaUnavailable, AlexaBackgroundUnavailableText);
-        SetVisible(visibility.ShowAlexaEvents, BackgroundAlexaEventsGrid, ApplyAlexaBackgroundButton);
-        SetVisible(visibility.ShowArduinoEnabled, BackgroundEnabledCheck);
-        SetVisible(visibility.ShowArduinoBackground, BackgroundPatternGrid, BackgroundLedPreviewPanel, ApplyArduinoBackgroundButton);
-        SetVisible(visibility.ShowColorOptions, BackgroundColorOptionsGrid);
-        SetVisible(visibility.ShowBrightness, BackgroundBrightnessPanel);
-        SetVisible(visibility.ShowPrimaryColor, BackgroundPrimaryColorLabel, BackgroundPrimaryColorPanel);
-        SetVisible(visibility.ShowSecondaryColor, BackgroundSecondaryColorLabel, BackgroundSecondaryColorPanel);
-        SetVisible(visibility.ShowTertiaryColor, BackgroundTertiaryColorLabel, BackgroundTertiaryColorPanel);
-        SetVisible(visibility.ShowCycle, BackgroundCycleGrid);
-        SetVisible(visibility.ShowStep, BackgroundStepGrid);
+        UiVisibilityService.SetVisible(visibility.ShowAlexaControls, BackgroundAlexaEnabledCheck, BackgroundAlexaTurnOffAfterEventCheck, StopAlexaBackgroundButton);
+        UiVisibilityService.SetVisible(visibility.ShowAlexaUnavailable, AlexaBackgroundUnavailableText);
+        UiVisibilityService.SetVisible(visibility.ShowAlexaEvents, BackgroundAlexaEventsGrid, ApplyAlexaBackgroundButton);
+        UiVisibilityService.SetVisible(visibility.ShowArduinoEnabled, BackgroundEnabledCheck);
+        UiVisibilityService.SetVisible(visibility.ShowArduinoBackground, BackgroundPatternGrid, BackgroundLedPreviewPanel, ApplyArduinoBackgroundButton);
+        UiVisibilityService.SetVisible(visibility.ShowColorOptions, BackgroundColorOptionsGrid);
+        UiVisibilityService.SetVisible(visibility.ShowBrightness, BackgroundBrightnessPanel);
+        UiVisibilityService.SetVisible(visibility.ShowPrimaryColor, BackgroundPrimaryColorLabel, BackgroundPrimaryColorPanel);
+        UiVisibilityService.SetVisible(visibility.ShowSecondaryColor, BackgroundSecondaryColorLabel, BackgroundSecondaryColorPanel);
+        UiVisibilityService.SetVisible(visibility.ShowTertiaryColor, BackgroundTertiaryColorLabel, BackgroundTertiaryColorPanel);
+        UiVisibilityService.SetVisible(visibility.ShowCycle, BackgroundCycleGrid);
+        UiVisibilityService.SetVisible(visibility.ShowStep, BackgroundStepGrid);
     }
 
     private void ApplyBackgroundOutputMode()

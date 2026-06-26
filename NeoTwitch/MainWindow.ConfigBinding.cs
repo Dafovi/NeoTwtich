@@ -1,4 +1,3 @@
-using System.Windows;
 using NeoTwitch.Models;
 using NeoTwitch.Services;
 using NeoTwitch.Services.Configuration;
@@ -171,15 +170,6 @@ public partial class MainWindow
         catch (Exception ex)
         {
             AddLog($"Inicio con Windows: {ex.Message}", ActivityLogKind.Important);
-        }
-    }
-
-    private static void SetVisible(bool isVisible, params UIElement[] elements)
-    {
-        var visibility = isVisible ? Visibility.Visible : Visibility.Collapsed;
-        foreach (var element in elements)
-        {
-            element.Visibility = visibility;
         }
     }
 

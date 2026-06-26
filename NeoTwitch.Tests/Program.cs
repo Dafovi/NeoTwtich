@@ -92,6 +92,7 @@ var tests = new (string Name, Action Body)[]
     ("VisualTreeTraversalService finds descendants", VisualTreeTraversalTests.FindsDescendants),
     ("FilterButtonThemeService applies active and inactive colors", FilterButtonThemeTests.AppliesActiveAndInactiveColors),
     ("ColorConversionService converts hex and HSV values", ColorConversionTests.ConvertsHexAndHsvValues),
+    ("UiVisibilityService toggles multiple elements", UiVisibilityTests.TogglesMultipleElements),
     ("OptionVisibilityService resolves rule panels", OptionVisibilityTests.ResolvesRulePanels),
     ("OptionVisibilityService resolves background panels", OptionVisibilityTests.ResolvesBackgroundPanels),
     ("UiAccentCatalog maps event and pattern colors", UiAccentCatalogTests.MapsEventAndPatternColors),
@@ -1804,6 +1805,26 @@ static class ColorConversionTests
         TestAssert.Equal(180d, Math.Round(hsv.Hue));
         TestAssert.Equal(1d, Math.Round(hsv.Saturation, 2));
         TestAssert.Equal(1d, Math.Round(hsv.Value, 2));
+    }
+}
+
+static class UiVisibilityTests
+{
+    public static void TogglesMultipleElements()
+    {
+        TestThread.RunSta(() =>
+        {
+            var first = new System.Windows.Controls.TextBlock();
+            var second = new System.Windows.Controls.Border();
+
+            UiVisibilityService.SetVisible(false, first, second);
+            TestAssert.Equal(System.Windows.Visibility.Collapsed, first.Visibility);
+            TestAssert.Equal(System.Windows.Visibility.Collapsed, second.Visibility);
+
+            UiVisibilityService.SetVisible(true, first, second);
+            TestAssert.Equal(System.Windows.Visibility.Visible, first.Visibility);
+            TestAssert.Equal(System.Windows.Visibility.Visible, second.Visibility);
+        });
     }
 }
 

@@ -5,6 +5,7 @@ using System.Windows.Controls;
 using NeoTwitch.Models;
 using NeoTwitch.Services;
 using NeoTwitch.Services.Library;
+using NeoTwitch.Services.Obs;
 using NeoTwitch.Services.Status;
 using NeoTwitch.Shared;
 using NeoTwitch.ViewModels.Activity;
@@ -290,12 +291,9 @@ public partial class MainWindow
 
         _obsConnectionError = "";
         _obsSceneRows.Clear();
-        foreach (var scene in result.Scenes)
+        foreach (var scene in ObsSceneViewService.BuildRows(result.Scenes, result.CurrentScene))
         {
-            _obsSceneRows.Add(new ObsSceneRow(
-                scene.Name,
-                string.Equals(scene.Name, result.CurrentScene, StringComparison.OrdinalIgnoreCase),
-                scene.Name.Length > 24 ? $"{scene.Name[..24]}..." : scene.Name));
+            _obsSceneRows.Add(scene);
         }
 
         RefreshObsSceneChoices();
@@ -320,15 +318,13 @@ public partial class MainWindow
     private void RefreshObsSceneChoices()
     {
         var selected = RuleObsSceneBox.SelectedValue as string ?? "";
+        var choices = ObsSceneViewService.BuildChoices(_obsSceneRows);
         _obsSceneChoices.Clear();
-        _obsSceneChoices.Add(new ObsSceneChoice("", "Mantener escena actual"));
-        foreach (var scene in _obsSceneRows)
+        foreach (var choice in choices)
         {
-            _obsSceneChoices.Add(new ObsSceneChoice(scene.Name, scene.Name));
+            _obsSceneChoices.Add(choice);
         }
 
-        RuleObsSceneBox.SelectedValue = _obsSceneChoices.Any(choice => string.Equals(choice.Name, selected, StringComparison.OrdinalIgnoreCase))
-            ? selected
-            : "";
+        RuleObsSceneBox.SelectedValue = ObsSceneViewService.ResolveSelectedSceneName(selected, _obsSceneChoices);
     }
 }

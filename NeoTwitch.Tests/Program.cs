@@ -7,6 +7,7 @@ using NeoTwitch.Services.Dashboard;
 using NeoTwitch.Services.Diagnostics;
 using NeoTwitch.Services.Library;
 using NeoTwitch.Services.Lights;
+using NeoTwitch.Services.Obs;
 using NeoTwitch.Services.Status;
 using NeoTwitch.Services.Text;
 using NeoTwitch.Services.Ui;
@@ -66,6 +67,7 @@ var tests = new (string Name, Action Body)[]
     ("ConnectionButtonStateService disables Twitch while busy", ConnectionButtonStateTests.DisablesTwitchWhileBusy),
     ("ConnectionButtonStateService maps OBS buttons", ConnectionButtonStateTests.MapsObsButtons),
     ("ObsStatusTextService builds display values", ObsStatusTextTests.BuildsDisplayValues),
+    ("ObsSceneViewService builds rows and choices", ObsSceneViewTests.BuildsRowsAndChoices),
     ("DiagnosticReportService builds report without network", DiagnosticReportServiceTests.BuildsReportWithoutNetwork),
     ("DiagnosticReportService reports missing audio", DiagnosticReportServiceTests.ReportsMissingAudio),
     ("ActivityLogService trims activity and dashboard entries", ActivityLogServiceTests.TrimsActivityAndDashboardEntries),
@@ -1247,6 +1249,30 @@ static class ObsStatusTextTests
 
         TestAssert.Equal("Revisar conexion", warning.State);
         TestAssert.Equal("fallido", warning.StatusText);
+    }
+}
+
+static class ObsSceneViewTests
+{
+    public static void BuildsRowsAndChoices()
+    {
+        var rows = ObsSceneViewService.BuildRows(
+        [
+            new ObsSceneInfo("Gameplay"),
+            new ObsSceneInfo("Una escena con nombre demasiado largo para tarjeta"),
+            new ObsSceneInfo("")
+        ], "gameplay", shortNameLength: 10);
+
+        TestAssert.Equal(2, rows.Count);
+        TestAssert.True(rows[0].IsCurrent);
+        TestAssert.Equal("Una escena...", rows[1].ShortName);
+
+        var choices = ObsSceneViewService.BuildChoices(rows);
+
+        TestAssert.Equal(3, choices.Count);
+        TestAssert.Equal("Mantener escena actual", choices[0].Label);
+        TestAssert.Equal("Gameplay", ObsSceneViewService.ResolveSelectedSceneName("Gameplay", choices));
+        TestAssert.Equal("", ObsSceneViewService.ResolveSelectedSceneName("No existe", choices));
     }
 }
 

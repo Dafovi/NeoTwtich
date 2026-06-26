@@ -184,9 +184,7 @@ public partial class MainWindow
         foreach (var button in new[] { AudioFilterAllButton, AudioFilterWithAlertButton, AudioFilterNoGroupButton })
         {
             var active = string.Equals(button.Tag?.ToString(), _audioFilter, StringComparison.OrdinalIgnoreCase);
-            button.Background = active ? TranslucentBrushFrom("#14B8A6") : palette.Input;
-            button.Foreground = active ? FrozenBrushFrom("#14B8A6") : palette.Text;
-            button.BorderBrush = active ? FrozenBrushFrom("#14B8A6") : palette.Border;
+            FilterButtonThemeService.Apply(button, active, "#14B8A6", palette);
         }
     }
 }

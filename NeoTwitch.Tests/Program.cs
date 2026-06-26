@@ -89,6 +89,7 @@ var tests = new (string Name, Action Body)[]
     ("ButtonIconCatalog maps button labels", ButtonIconCatalogTests.MapsButtonLabels),
     ("ButtonIconContentService builds icon button content", ButtonIconContentTests.BuildsIconButtonContent),
     ("VisualTreeTraversalService finds descendants", VisualTreeTraversalTests.FindsDescendants),
+    ("FilterButtonThemeService applies active and inactive colors", FilterButtonThemeTests.AppliesActiveAndInactiveColors),
     ("OptionVisibilityService resolves rule panels", OptionVisibilityTests.ResolvesRulePanels),
     ("OptionVisibilityService resolves background panels", OptionVisibilityTests.ResolvesBackgroundPanels),
     ("UiAccentCatalog maps event and pattern colors", UiAccentCatalogTests.MapsEventAndPatternColors),
@@ -1723,6 +1724,28 @@ static class VisualTreeTraversalTests
 
             TestAssert.Equal(1, buttons.Count);
             TestAssert.True(ReferenceEquals(nested, buttons[0]));
+        });
+    }
+}
+
+static class FilterButtonThemeTests
+{
+    public static void AppliesActiveAndInactiveColors()
+    {
+        TestThread.RunSta(() =>
+        {
+            var palette = ThemePalette.Dark;
+            var button = new System.Windows.Controls.Button();
+
+            FilterButtonThemeService.Apply(button, active: true, "#14B8A6", palette);
+            TestAssert.Equal(
+                ((System.Windows.Media.SolidColorBrush)UiBrushFactory.FrozenBrushFrom("#14B8A6")).Color,
+                ((System.Windows.Media.SolidColorBrush)button.Foreground).Color);
+
+            FilterButtonThemeService.Apply(button, active: false, "#14B8A6", palette);
+            TestAssert.Same(palette.Input, button.Background);
+            TestAssert.Same(palette.Text, button.Foreground);
+            TestAssert.Same(palette.Border, button.BorderBrush);
         });
     }
 }

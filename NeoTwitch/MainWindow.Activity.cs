@@ -5,7 +5,6 @@ using System.Windows.Data;
 using NeoTwitch.Services.Activity;
 using NeoTwitch.Services.Ui;
 using NeoTwitch.ViewModels.Activity;
-using static NeoTwitch.Services.Ui.UiBrushFactory;
 
 namespace NeoTwitch;
 
@@ -74,19 +73,12 @@ public partial class MainWindow
     private void ApplyActivityFilterButtonTheme(ToggleButton button, ThemePalette palette)
     {
         var filter = button.Tag?.ToString() ?? "";
-        var accentColor = ActivityLogVisuals.FilterAccent(filter);
-        var accent = FrozenBrushFrom(accentColor);
-        var active = button.IsChecked == true;
-
-        button.Background = active
-            ? TranslucentBrushFrom(accentColor)
-            : palette.Input;
-        button.Foreground = active
-            ? accent
-            : palette.MutedText;
-        button.BorderBrush = active
-            ? accent
-            : palette.Border;
+        FilterButtonThemeService.Apply(
+            button,
+            button.IsChecked == true,
+            ActivityLogVisuals.FilterAccent(filter),
+            palette,
+            inactiveForeground: palette.MutedText);
     }
 
     private IEnumerable<ToggleButton> ActivityFilterButtons()

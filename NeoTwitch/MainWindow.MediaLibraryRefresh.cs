@@ -172,9 +172,7 @@ public partial class MainWindow
         foreach (var button in buttons)
         {
             var active = string.Equals(button.Tag?.ToString(), filter, StringComparison.OrdinalIgnoreCase);
-            button.Background = active ? TranslucentBrushFrom(accentColor) : palette.Input;
-            button.Foreground = active ? FrozenBrushFrom(accentColor) : palette.Text;
-            button.BorderBrush = active ? FrozenBrushFrom(accentColor) : palette.Border;
+            FilterButtonThemeService.Apply(button, active, accentColor, palette);
         }
     }
 

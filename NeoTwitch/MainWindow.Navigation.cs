@@ -54,11 +54,6 @@ public partial class MainWindow
         UpdateNavigationButtons();
     }
 
-    internal void GoToActivityButton_Click(object sender, RoutedEventArgs e)
-    {
-        GoToActivity();
-    }
-
     private void GoToActivity()
     {
         if (int.TryParse(NavActivityButton.Tag?.ToString(), out var activityTabIndex))

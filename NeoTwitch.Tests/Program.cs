@@ -32,6 +32,7 @@ var tests = new (string Name, Action Body)[]
     ("EventRuleSnapshotService detects editable changes", EventRuleSnapshotTests.DetectsEditableChanges),
     ("RuleEditorValueService resolves fallback names", RuleEditorValueTests.ResolvesFallbackNames),
     ("RuleEditorValueService resolves legacy audio paths", RuleEditorValueTests.ResolvesLegacyAudioPaths),
+    ("RuleEditorFormService applies normalized values", RuleEditorFormTests.AppliesNormalizedValues),
     ("RuleObsMediaChoiceService resolves image and video libraries", RuleObsMediaChoiceTests.ResolvesImageAndVideoLibraries),
     ("EventRuleMatcherService resolves normal event matches", EventRuleMatcherTests.ResolvesNormalEventMatches),
     ("EventRuleMatcherService keeps highest bits threshold", EventRuleMatcherTests.KeepsHighestBitsThreshold),
@@ -406,6 +407,75 @@ static class RuleEditorValueTests
         TestAssert.Equal(
             "",
             RuleEditorValueService.ResolveLegacyAudioPath(AudioSourceMode.Single, "missing", library));
+    }
+}
+
+static class RuleEditorFormTests
+{
+    public static void AppliesNormalizedValues()
+    {
+        var rule = new EventRule { Name = "Existente" };
+        var library = new[]
+        {
+            new AudioAssetConfig { Id = "audio-1", FilePath = @"C:\audios\alerta.mp3" }
+        };
+
+        RuleEditorFormService.Apply(
+            rule,
+            new RuleEditorFormValues(
+                IsEnabled: true,
+                RuleNameText: " ",
+                EventKind: TwitchEventKind.Cheer,
+                CustomRewardTitle: " reward ",
+                ChatCommand: " !rave ",
+                MinimumBitsText: "0",
+                SendChatMessage: true,
+                ChatMessageTemplate: " hola @{user} ",
+                SendAlexaEvent: true,
+                SendObsScene: true,
+                ObsSceneName: " Recortes ",
+                ObsSceneDelayText: "-1",
+                ObsReturnToPreviousScene: true,
+                ObsReturnDelayText: "",
+                SendObsMedia: true,
+                ObsMediaKind: ObsMediaKind.Video,
+                ObsMediaSourceMode: MediaSourceMode.Group,
+                ObsMediaAssetId: " media-1 ",
+                ObsMediaGroupId: " group-1 ",
+                ObsMediaDurationText: "10",
+                UseLights: true,
+                PlayAudio: true,
+                AudioSourceMode: AudioSourceMode.Single,
+                AudioAssetId: "AUDIO-1",
+                AudioGroupId: " group-a ",
+                Pattern: LightPattern.Rave,
+                TargetPins: "2, 3",
+                PrimaryColor: "00ff00",
+                SecondaryColor: "#bad",
+                TertiaryColor: "",
+                Brightness: 50.6,
+                DurationMs: 1234.4,
+                CycleMs: 88.8,
+                StepMs: 9.2),
+            library);
+
+        TestAssert.True(rule.IsEnabled);
+        TestAssert.Equal("Existente", rule.Name);
+        TestAssert.Equal(TwitchEventKind.Cheer, rule.EventKind);
+        TestAssert.Equal(1, rule.MinimumBits);
+        TestAssert.Equal("Recortes", rule.ObsSceneName);
+        TestAssert.Equal(0, rule.ObsSceneDelayMs);
+        TestAssert.Equal(15000, rule.ObsReturnDelayMs);
+        TestAssert.Equal(250, rule.ObsMediaDurationMs);
+        TestAssert.Equal(@"C:\audios\alerta.mp3", rule.AudioPath);
+        TestAssert.Equal("2, 3", rule.TargetPins);
+        TestAssert.Equal("#00FF00", rule.PrimaryColor);
+        TestAssert.Equal("#FFFFFF", rule.SecondaryColor);
+        TestAssert.Equal("#FFFFFF", rule.TertiaryColor);
+        TestAssert.Equal(51, rule.Brightness);
+        TestAssert.Equal(1234, rule.DurationMs);
+        TestAssert.Equal(89, rule.CycleMs);
+        TestAssert.Equal(10, rule.StepMs);
     }
 }
 

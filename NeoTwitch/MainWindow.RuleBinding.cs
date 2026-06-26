@@ -3,7 +3,6 @@ using NeoTwitch.Services.Alerts;
 using NeoTwitch.Services.Lights;
 using NeoTwitch.Services.Ui;
 using NeoTwitch.Shared;
-using static NeoTwitch.Services.InputValueParser;
 
 namespace NeoTwitch;
 
@@ -92,51 +91,56 @@ public partial class MainWindow
             return false;
         }
 
-        var ruleName = RuleEditorValueService.ResolveRuleName(RuleNameBox.Text, rule.Name, kind);
-
-        rule.IsEnabled = RuleEnabledCheck.IsChecked == true;
-        rule.Name = ruleName;
-        rule.EventKind = kind;
-        rule.CustomRewardTitle = RewardTitleBox.Text.Trim();
-        rule.ChatCommand = ChatCommandBox.Text.Trim();
-        rule.MinimumBits = ParseInt(MinimumBitsBox.Text, 1, 1, 1_000_000);
-        rule.SendChatMessage = ChatMessageCheck.IsChecked == true;
-        rule.ChatMessageTemplate = ChatMessageBox.Text.Trim();
-        rule.SendAlexaEvent = AlexaEventCheck.IsChecked == true;
-        rule.SendObsScene = ObsSceneCheck.IsChecked == true;
-        rule.ObsSceneName = RuleObsSceneBox.SelectedValue as string ?? RuleObsSceneBox.Text.Trim();
-        rule.ObsSceneDelayMs = ParseInt(ObsSceneDelayBox.Text, 0, 0, 600000);
-        rule.ObsReturnToPreviousScene = ObsReturnCheck.IsChecked == true;
-        rule.ObsReturnDelayMs = ParseInt(ObsReturnDelayBox.Text, 15000, 0, 600000);
-        rule.SendObsMedia = ObsMediaCheck.IsChecked == true;
-        rule.ObsMediaKind = RuleObsMediaKindBox.SelectedValue is ObsMediaKind mediaKind
-            ? mediaKind
+        var mediaKind = RuleObsMediaKindBox.SelectedValue is ObsMediaKind selectedMediaKind
+            ? selectedMediaKind
             : ObsMediaKind.Image;
-        rule.ObsMediaSourceMode = RuleObsMediaSourceModeBox.SelectedValue is MediaSourceMode mediaSourceMode
-            ? mediaSourceMode
+        var mediaSourceMode = RuleObsMediaSourceModeBox.SelectedValue is MediaSourceMode selectedMediaSourceMode
+            ? selectedMediaSourceMode
             : MediaSourceMode.Single;
         RefreshRuleObsMediaChoices();
-        rule.ObsMediaAssetId = RuleObsMediaAssetBox.SelectedValue as string ?? "";
-        rule.ObsMediaGroupId = RuleObsMediaGroupBox.SelectedValue as string ?? "";
-        rule.ObsMediaDurationMs = ParseInt(ObsMediaDurationBox.Text, 5000, 250, 600000);
-        rule.UseLights = UseLightsCheck.IsChecked == true;
-        rule.PlayAudio = PlayAudioCheck.IsChecked == true;
-        rule.AudioSourceMode = _ruleAudioMode;
-        rule.AudioAssetId = RuleAudioAssetBox.SelectedValue as string ?? "";
-        rule.AudioGroupId = RuleAudioGroupBox.SelectedValue as string ?? "";
-        rule.AudioPath = RuleEditorValueService.ResolveLegacyAudioPath(
-            rule.AudioSourceMode,
-            rule.AudioAssetId,
+
+        var pattern = PatternBox.SelectedValue is LightPattern selectedPattern
+            ? selectedPattern
+            : LightPattern.Pulse;
+
+        RuleEditorFormService.Apply(
+            rule,
+            new RuleEditorFormValues(
+                RuleEnabledCheck.IsChecked == true,
+                RuleNameBox.Text,
+                kind,
+                RewardTitleBox.Text,
+                ChatCommandBox.Text,
+                MinimumBitsBox.Text,
+                ChatMessageCheck.IsChecked == true,
+                ChatMessageBox.Text,
+                AlexaEventCheck.IsChecked == true,
+                ObsSceneCheck.IsChecked == true,
+                RuleObsSceneBox.SelectedValue as string ?? RuleObsSceneBox.Text,
+                ObsSceneDelayBox.Text,
+                ObsReturnCheck.IsChecked == true,
+                ObsReturnDelayBox.Text,
+                ObsMediaCheck.IsChecked == true,
+                mediaKind,
+                mediaSourceMode,
+                RuleObsMediaAssetBox.SelectedValue as string ?? "",
+                RuleObsMediaGroupBox.SelectedValue as string ?? "",
+                ObsMediaDurationBox.Text,
+                UseLightsCheck.IsChecked == true,
+                PlayAudioCheck.IsChecked == true,
+                _ruleAudioMode,
+                RuleAudioAssetBox.SelectedValue as string ?? "",
+                RuleAudioGroupBox.SelectedValue as string ?? "",
+                pattern,
+                TargetPinsBox.Text,
+                PrimaryColorBox.Text,
+                SecondaryColorBox.Text,
+                TertiaryColorBox.Text,
+                BrightnessSlider.Value,
+                DurationSlider.Value,
+                CycleSlider.Value,
+                StepSlider.Value),
             _config.AudioLibrary);
-        rule.Pattern = PatternBox.SelectedValue is LightPattern pattern ? pattern : LightPattern.Pulse;
-        rule.TargetPins = string.Join(", ", LightCommand.ParsePins(TargetPinsBox.Text));
-        rule.PrimaryColor = LightCommand.NormalizeColor(PrimaryColorBox.Text);
-        rule.SecondaryColor = LightCommand.NormalizeColor(SecondaryColorBox.Text);
-        rule.TertiaryColor = LightCommand.NormalizeColor(TertiaryColorBox.Text);
-        rule.Brightness = (int)Math.Round(BrightnessSlider.Value);
-        rule.DurationMs = (int)Math.Round(DurationSlider.Value);
-        rule.CycleMs = (int)Math.Round(CycleSlider.Value);
-        rule.StepMs = (int)Math.Round(StepSlider.Value);
 
         UpdateColorButtons();
         UpdateSliderLabels();

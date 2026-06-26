@@ -7,7 +7,6 @@ using NeoTwitch.Models;
 using NeoTwitch.Services.Ui;
 using WpfButton = System.Windows.Controls.Button;
 using WpfColor = System.Windows.Media.Color;
-using WpfColorConverter = System.Windows.Media.ColorConverter;
 using WpfMouseEventArgs = System.Windows.Input.MouseEventArgs;
 using WpfPoint = System.Windows.Point;
 using WpfTextBox = System.Windows.Controls.TextBox;
@@ -27,8 +26,8 @@ public partial class ColorPickerDialog : Window
     {
         InitializeComponent();
         _darkMode = darkMode;
-        _currentColor = ParseColor(initialHex, WpfColor.FromRgb(152, 92, 246));
-        SelectedColorHex = ToHex(_currentColor);
+        _currentColor = ColorConversionService.ParseColor(initialHex, WpfColor.FromRgb(152, 92, 246));
+        SelectedColorHex = ColorConversionService.ToHex(_currentColor);
         ApplyDialogTheme();
         BuildRecentColors(recentColors);
         SetFromColor(_currentColor);
@@ -120,7 +119,7 @@ public partial class ColorPickerDialog : Window
             .Append("#FACC15")
             .Append("#FF7A18")
             .Append("#F43F5E")
-            .Select(color => ToHex(ParseColor(color, Colors.Transparent)))
+            .Select(color => ColorConversionService.ToHex(ColorConversionService.ParseColor(color, Colors.Transparent)))
             .Where(color => color != "#000000")
             .Distinct(StringComparer.OrdinalIgnoreCase)
             .Take(ApplicationLimits.MaxRecentColors);
@@ -133,7 +132,7 @@ public partial class ColorPickerDialog : Window
                 Height = 38,
                 Margin = new Thickness(0, 0, 10, 0),
                 BorderThickness = new Thickness(1),
-                Background = new SolidColorBrush(ParseColor(colorHex, Colors.White)),
+                Background = new SolidColorBrush(ColorConversionService.ParseColor(colorHex, Colors.White)),
                 BorderBrush = new SolidColorBrush(WpfColor.FromRgb(51, 65, 85)),
                 ToolTip = colorHex,
                 Tag = colorHex
@@ -143,7 +142,7 @@ public partial class ColorPickerDialog : Window
             {
                 if (button.Tag is string hex)
                 {
-                    SetFromColor(ParseColor(hex, _currentColor));
+                    SetFromColor(ColorConversionService.ParseColor(hex, _currentColor));
                 }
             };
 
@@ -153,7 +152,10 @@ public partial class ColorPickerDialog : Window
 
     private void SetFromColor(WpfColor color)
     {
-        RgbToHsv(color, out _hue, out _saturation, out _value);
+        var hsv = ColorConversionService.ToHsv(color);
+        _hue = hsv.Hue;
+        _saturation = hsv.Saturation;
+        _value = hsv.Value;
         UpdateHueSurface();
         UpdateHueThumb();
         UpdateThumb();
@@ -162,7 +164,7 @@ public partial class ColorPickerDialog : Window
 
     private void UpdateFromHsv()
     {
-        var color = HsvToRgb(_hue, _saturation, _value);
+        var color = ColorConversionService.FromHsv(_hue, _saturation, _value);
         UpdateFields(color);
     }
 
@@ -171,7 +173,7 @@ public partial class ColorPickerDialog : Window
         _updatingFields = true;
         try
         {
-            SelectedColorHex = ToHex(color);
+            SelectedColorHex = ColorConversionService.ToHex(color);
             HexBox.Text = SelectedColorHex;
             RedBox.Text = color.R.ToString(CultureInfo.InvariantCulture);
             GreenBox.Text = color.G.ToString(CultureInfo.InvariantCulture);
@@ -186,7 +188,7 @@ public partial class ColorPickerDialog : Window
 
     private void UpdateHueSurface()
     {
-        HueSurface.Fill = new SolidColorBrush(HsvToRgb(_hue, 1, 1));
+        HueSurface.Fill = new SolidColorBrush(ColorConversionService.FromHsv(_hue, 1, 1));
     }
 
     private void UpdateThumb()
@@ -284,7 +286,7 @@ public partial class ColorPickerDialog : Window
 
         if (text.Length == 7)
         {
-            SetFromColor(ParseColor(text, HsvToRgb(_hue, _saturation, _value)));
+            SetFromColor(ColorConversionService.ParseColor(text, ColorConversionService.FromHsv(_hue, _saturation, _value)));
         }
     }
 
@@ -313,72 +315,4 @@ public partial class ColorPickerDialog : Window
         DialogResult = false;
     }
 
-    private static WpfColor ParseColor(string? value, WpfColor fallback)
-    {
-        try
-        {
-            var text = string.IsNullOrWhiteSpace(value) ? "" : value.Trim();
-            if (!text.StartsWith('#'))
-            {
-                text = $"#{text}";
-            }
-
-            return (WpfColor)WpfColorConverter.ConvertFromString(text)!;
-        }
-        catch
-        {
-            return fallback;
-        }
-    }
-
-    private static string ToHex(WpfColor color) => $"#{color.R:X2}{color.G:X2}{color.B:X2}";
-
-    private static WpfColor HsvToRgb(double hue, double saturation, double value)
-    {
-        var chroma = value * saturation;
-        var huePrime = (hue % 360) / 60.0;
-        var x = chroma * (1 - Math.Abs(huePrime % 2 - 1));
-
-        var (r1, g1, b1) = huePrime switch
-        {
-            < 1 => (chroma, x, 0d),
-            < 2 => (x, chroma, 0d),
-            < 3 => (0d, chroma, x),
-            < 4 => (0d, x, chroma),
-            < 5 => (x, 0d, chroma),
-            _ => (chroma, 0d, x)
-        };
-
-        var match = value - chroma;
-        return WpfColor.FromRgb(
-            (byte)Math.Round((r1 + match) * 255),
-            (byte)Math.Round((g1 + match) * 255),
-            (byte)Math.Round((b1 + match) * 255));
-    }
-
-    private static void RgbToHsv(WpfColor color, out double hue, out double saturation, out double value)
-    {
-        var red = color.R / 255d;
-        var green = color.G / 255d;
-        var blue = color.B / 255d;
-        var max = Math.Max(red, Math.Max(green, blue));
-        var min = Math.Min(red, Math.Min(green, blue));
-        var delta = max - min;
-
-        hue = delta switch
-        {
-            0 => 0,
-            _ when max == red => 60 * (((green - blue) / delta) % 6),
-            _ when max == green => 60 * (((blue - red) / delta) + 2),
-            _ => 60 * (((red - green) / delta) + 4)
-        };
-
-        if (hue < 0)
-        {
-            hue += 360;
-        }
-
-        saturation = max == 0 ? 0 : delta / max;
-        value = max;
-    }
 }

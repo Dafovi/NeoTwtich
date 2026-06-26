@@ -91,6 +91,7 @@ var tests = new (string Name, Action Body)[]
     ("ButtonIconContentService builds icon button content", ButtonIconContentTests.BuildsIconButtonContent),
     ("VisualTreeTraversalService finds descendants", VisualTreeTraversalTests.FindsDescendants),
     ("FilterButtonThemeService applies active and inactive colors", FilterButtonThemeTests.AppliesActiveAndInactiveColors),
+    ("ColorConversionService converts hex and HSV values", ColorConversionTests.ConvertsHexAndHsvValues),
     ("OptionVisibilityService resolves rule panels", OptionVisibilityTests.ResolvesRulePanels),
     ("OptionVisibilityService resolves background panels", OptionVisibilityTests.ResolvesBackgroundPanels),
     ("UiAccentCatalog maps event and pattern colors", UiAccentCatalogTests.MapsEventAndPatternColors),
@@ -1780,6 +1781,29 @@ static class FilterButtonThemeTests
             TestAssert.Same(palette.Text, button.Foreground);
             TestAssert.Same(palette.Border, button.BorderBrush);
         });
+    }
+}
+
+static class ColorConversionTests
+{
+    public static void ConvertsHexAndHsvValues()
+    {
+        var fallback = System.Windows.Media.Color.FromRgb(1, 2, 3);
+        var parsed = ColorConversionService.ParseColor("14B8A6", fallback);
+
+        TestAssert.Equal((byte)0x14, parsed.R);
+        TestAssert.Equal((byte)0xB8, parsed.G);
+        TestAssert.Equal((byte)0xA6, parsed.B);
+        TestAssert.Equal("#14B8A6", ColorConversionService.ToHex(parsed));
+        TestAssert.Equal(fallback, ColorConversionService.ParseColor("nope", fallback));
+
+        var red = ColorConversionService.FromHsv(0, 1, 1);
+        TestAssert.Equal("#FF0000", ColorConversionService.ToHex(red));
+
+        var hsv = ColorConversionService.ToHsv(System.Windows.Media.Color.FromRgb(0, 255, 255));
+        TestAssert.Equal(180d, Math.Round(hsv.Hue));
+        TestAssert.Equal(1d, Math.Round(hsv.Saturation, 2));
+        TestAssert.Equal(1d, Math.Round(hsv.Value, 2));
     }
 }
 

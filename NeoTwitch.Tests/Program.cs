@@ -28,6 +28,7 @@ var tests = new (string Name, Action Body)[]
     ("AppConfig default services keep optional integrations disabled", AppConfigTests.DefaultServicesKeepOptionalIntegrationsDisabled),
     ("AppConfigNormalizer trims and clamps loaded settings", AppConfigNormalizerTests.TrimsAndClampsLoadedSettings),
     ("AppConfigNormalizer migrates legacy rule audio paths", AppConfigNormalizerTests.MigratesLegacyRuleAudioPaths),
+    ("GlobalSettingsFormService applies normalized values", GlobalSettingsFormTests.AppliesNormalizedValues),
     ("EventRuleFilterService filters status and category", EventRuleFilterTests.FiltersStatusAndCategory),
     ("EventRuleFilterService searches editable text", EventRuleFilterTests.SearchesEditableText),
     ("EventRuleSnapshotService clones editable values independently", EventRuleSnapshotTests.CloneCopiesEditableValues),
@@ -285,6 +286,73 @@ static class AppConfigNormalizerTests
         TestAssert.Equal(@"C:\stream\follow.mp3", normalized.AudioLibrary[0].FilePath);
         TestAssert.Equal(AudioSourceMode.Single, normalized.Rules[0].AudioSourceMode);
         TestAssert.Equal(normalized.AudioLibrary[0].Id, normalized.Rules[0].AudioAssetId);
+    }
+}
+
+static class GlobalSettingsFormTests
+{
+    public static void AppliesNormalizedValues()
+    {
+        var config = AppConfig.CreateDefault();
+
+        GlobalSettingsFormService.Apply(
+            config,
+            new GlobalSettingsFormValues(
+                " client ",
+                " secret ",
+                " COM7 ",
+                "999999",
+                ArduinoEnabled: true,
+                AutoConnectTwitch: false,
+                AutoConnectArduino: true,
+                StartHidden: true,
+                StartWithWindows: true,
+                ThemeMode: "dark",
+                CloseToTray: false,
+                AlertVolumePercent: 42.6,
+                VideoVolumePercent: 12.2,
+                MaxQueuedSameRuleAlerts: "999",
+                SameRuleQueueCooldownMs: "-1",
+                MaxQueuedDifferentRuleAlerts: "abc",
+                DifferentRuleQueueCooldownMs: "700000",
+                AlexaEnabled: true,
+                AlexaRelayUrl: " https://relay ",
+                AlexaAuthToken: " token ",
+                ObsEnabled: true,
+                ObsHost: "",
+                ObsPort: "999999",
+                ObsPassword: "pass",
+                ObsAutoReconnect: true,
+                ObsOverlayWidth: "10",
+                ObsOverlayHeight: "99999",
+                ObsOverlayMediaWidth: "bad",
+                ObsOverlayMediaHeight: "5",
+                ObsOverlayPositionMode: "",
+                ObsOverlayX: "-1",
+                ObsOverlayY: "99999"));
+
+        TestAssert.Equal("client", config.TwitchClientId);
+        TestAssert.Equal("COM7", config.SerialPort);
+        TestAssert.Equal(ApplicationLimits.MaxBaudRate, config.BaudRate);
+        TestAssert.True(config.ArduinoEnabled);
+        TestAssert.False(config.AutoConnectTwitch);
+        TestAssert.Equal("Dark", config.ThemeMode);
+        TestAssert.Equal(43, config.AlertVolumePercent);
+        TestAssert.Equal(12, config.VideoVolumePercent);
+        TestAssert.Equal(100, config.MaxQueuedSameRuleAlerts);
+        TestAssert.Equal(0, config.SameRuleQueueCooldownMs);
+        TestAssert.Equal(3, config.MaxQueuedDifferentRuleAlerts);
+        TestAssert.Equal(600000, config.DifferentRuleQueueCooldownMs);
+        TestAssert.Equal("https://relay", config.Alexa.RelayUrl);
+        TestAssert.Equal("127.0.0.1", config.Obs.Host);
+        TestAssert.Equal(ApplicationLimits.MaxNetworkPort, config.Obs.Port);
+        TestAssert.Equal(320, config.Obs.OverlayWidth);
+        TestAssert.Equal(4320, config.Obs.OverlayHeight);
+        TestAssert.Equal(720, config.Obs.OverlayMediaWidth);
+        TestAssert.Equal(32, config.Obs.OverlayMediaHeight);
+        TestAssert.Equal("Center", config.Obs.OverlayPositionMode);
+        TestAssert.Equal(0, config.Obs.OverlayX);
+        TestAssert.Equal(4320, config.Obs.OverlayY);
     }
 }
 

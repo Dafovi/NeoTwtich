@@ -1,11 +1,11 @@
 using System.Windows;
 using NeoTwitch.Models;
 using NeoTwitch.Services;
+using NeoTwitch.Services.Configuration;
 using NeoTwitch.Services.Lights;
 using NeoTwitch.Shared;
 using NeoTwitch.ViewModels.Activity;
 using NeoTwitch.ViewModels.Library;
-using static NeoTwitch.Services.InputValueParser;
 
 namespace NeoTwitch;
 
@@ -119,39 +119,41 @@ public partial class MainWindow
             return;
         }
 
-        _config.TwitchClientId = ClientIdBox.Text.Trim();
-        _config.TwitchClientSecret = ClientSecretBox.Text.Trim();
-        _config.SerialPort = ParsePort(PortComboBox.SelectedValue as string ?? PortComboBox.Text);
-        _config.BaudRate = ParseInt(BaudRateBox.Text, 115200, 300, 921600);
-        _config.ArduinoEnabled = ArduinoEnabledCheck.IsChecked == true;
-        _config.AutoConnectTwitch = AutoTwitchCheck.IsChecked == true;
-        _config.AutoConnectArduino = AutoArduinoCheck.IsChecked == true;
-        _config.StartHidden = StartHiddenCheck.IsChecked == true;
-        _config.StartWithWindows = StartWithWindowsCheck.IsChecked == true;
-        _config.ThemeMode = ThemeModeService.Normalize(ThemeModeBox.SelectedValue as string ?? _config.ThemeMode);
-        _config.DarkMode = ThemeModeService.ResolveDarkMode(_config.ThemeMode);
-        _config.CloseToTray = CloseToTrayCheck.IsChecked == true;
-        _config.AlertVolumePercent = (int)Math.Round(AlertVolumeSlider.Value);
-        _config.VideoVolumePercent = (int)Math.Round(VideoVolumeSlider.Value);
-        _config.MaxQueuedSameRuleAlerts = ParseInt(MaxQueuedSameRuleAlertsBox.Text, 1, 0, 100);
-        _config.SameRuleQueueCooldownMs = ParseInt(SameRuleQueueCooldownBox.Text, 0, 0, 600000);
-        _config.MaxQueuedDifferentRuleAlerts = ParseInt(MaxQueuedDifferentRuleAlertsBox.Text, 3, 0, 100);
-        _config.DifferentRuleQueueCooldownMs = ParseInt(DifferentRuleQueueCooldownBox.Text, 0, 0, 600000);
-        _config.Alexa.Enabled = AlexaEnabledCheck.IsChecked == true;
-        _config.Alexa.RelayUrl = AlexaRelayUrlBox.Text.Trim();
-        _config.Alexa.AuthToken = AlexaAuthTokenBox.Text.Trim();
-        _config.Obs.Enabled = ObsEnabledCheck.IsChecked == true;
-        _config.Obs.Host = string.IsNullOrWhiteSpace(ObsHostBox.Text) ? "127.0.0.1" : ObsHostBox.Text.Trim();
-        _config.Obs.Port = ParseInt(ObsPortBox.Text, 4455, 1, 65535);
-        _config.Obs.Password = ObsPasswordBox.Text;
-        _config.Obs.AutoReconnect = ObsAutoReconnectCheck.IsChecked == true;
-        _config.Obs.OverlayWidth = ParseInt(ObsOverlayWidthBox.Text, 1920, 320, 7680);
-        _config.Obs.OverlayHeight = ParseInt(ObsOverlayHeightBox.Text, 1080, 180, 4320);
-        _config.Obs.OverlayMediaWidth = ParseInt(ObsOverlayMediaWidthBox.Text, 720, 32, 7680);
-        _config.Obs.OverlayMediaHeight = ParseInt(ObsOverlayMediaHeightBox.Text, 420, 32, 4320);
-        _config.Obs.OverlayPositionMode = ObsOverlayPositionBox.SelectedValue as string ?? "Center";
-        _config.Obs.OverlayX = ParseInt(ObsOverlayXBox.Text, 0, 0, 7680);
-        _config.Obs.OverlayY = ParseInt(ObsOverlayYBox.Text, 0, 0, 4320);
+        GlobalSettingsFormService.Apply(
+            _config,
+            new GlobalSettingsFormValues(
+                ClientIdBox.Text,
+                ClientSecretBox.Text,
+                PortComboBox.SelectedValue as string ?? PortComboBox.Text,
+                BaudRateBox.Text,
+                ArduinoEnabledCheck.IsChecked == true,
+                AutoTwitchCheck.IsChecked == true,
+                AutoArduinoCheck.IsChecked == true,
+                StartHiddenCheck.IsChecked == true,
+                StartWithWindowsCheck.IsChecked == true,
+                ThemeModeBox.SelectedValue as string ?? _config.ThemeMode,
+                CloseToTrayCheck.IsChecked == true,
+                AlertVolumeSlider.Value,
+                VideoVolumeSlider.Value,
+                MaxQueuedSameRuleAlertsBox.Text,
+                SameRuleQueueCooldownBox.Text,
+                MaxQueuedDifferentRuleAlertsBox.Text,
+                DifferentRuleQueueCooldownBox.Text,
+                AlexaEnabledCheck.IsChecked == true,
+                AlexaRelayUrlBox.Text,
+                AlexaAuthTokenBox.Text,
+                ObsEnabledCheck.IsChecked == true,
+                ObsHostBox.Text,
+                ObsPortBox.Text,
+                ObsPasswordBox.Text,
+                ObsAutoReconnectCheck.IsChecked == true,
+                ObsOverlayWidthBox.Text,
+                ObsOverlayHeightBox.Text,
+                ObsOverlayMediaWidthBox.Text,
+                ObsOverlayMediaHeightBox.Text,
+                ObsOverlayPositionBox.SelectedValue as string ?? "Center",
+                ObsOverlayXBox.Text,
+                ObsOverlayYBox.Text));
     }
 
     private void ApplyStartWithWindowsRegistration()

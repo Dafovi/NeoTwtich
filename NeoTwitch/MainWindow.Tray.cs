@@ -1,10 +1,8 @@
 using System.ComponentModel;
-using System.Drawing;
 using System.Windows;
 using NeoTwitch.Services.Shell;
 using NeoTwitch.Shared;
 using Forms = System.Windows.Forms;
-using DrawingIcon = System.Drawing.Icon;
 
 namespace NeoTwitch;
 
@@ -101,17 +99,9 @@ public partial class MainWindow
             return;
         }
 
-        try
+        if (TrayNotificationService.TryShowBackgroundNotice(_notifyIcon, NeoTwitchProduct.DisplayName, _hasShownTrayNotice))
         {
-            _notifyIcon.BalloonTipTitle = $"{NeoTwitchProduct.DisplayName} sigue activo";
-            _notifyIcon.BalloonTipText = "La app quedo en segundo plano. Abrela desde el icono de la bandeja cuando la necesites.";
-            _notifyIcon.BalloonTipIcon = Forms.ToolTipIcon.Info;
-            _notifyIcon.ShowBalloonTip(_hasShownTrayNotice ? 2500 : 4000);
             _hasShownTrayNotice = true;
-        }
-        catch
-        {
-            // Windows can suppress tray notifications; the app still remains available in the tray.
         }
     }
 

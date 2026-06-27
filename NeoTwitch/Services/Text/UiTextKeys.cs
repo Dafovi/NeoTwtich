@@ -107,6 +107,17 @@ public static class UiTextKeys
     public const string AppStateOk = "app_state.ok";
     public const string AppStateWarning = "app_state.warning";
     public const string AppStateError = "app_state.error";
+    public const string ConnectionButtonTwitchAuthorizing = "connection_button.twitch_authorizing";
+    public const string ConnectionButtonConnecting = "connection_button.connecting";
+    public const string ConnectionButtonTwitchDisconnect = "connection_button.twitch_disconnect";
+    public const string ConnectionButtonTwitchConnect = "connection_button.twitch_connect";
+    public const string ConnectionButtonArduinoConnect = "connection_button.arduino_connect";
+    public const string ConnectionButtonAlexaTesting = "connection_button.alexa_testing";
+    public const string ConnectionButtonAlexaTest = "connection_button.alexa_test";
+    public const string ConnectionButtonObsDisconnect = "connection_button.obs_disconnect";
+    public const string ConnectionButtonObsConnect = "connection_button.obs_connect";
+    public const string ConnectionButtonObsScenesUpdating = "connection_button.obs_scenes_updating";
+    public const string ConnectionButtonObsScenesRefresh = "connection_button.obs_scenes_refresh";
 
     public const string TrayBackgroundTitle = "tray.background_title";
     public const string TrayBackgroundText = "tray.background_text";

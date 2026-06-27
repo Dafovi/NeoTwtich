@@ -12,6 +12,7 @@ using NeoTwitch.Models;
 using NeoTwitch.Services.Dashboard;
 using NeoTwitch.Services;
 using NeoTwitch.Services.Status;
+using NeoTwitch.Services.Text;
 using NeoTwitch.Services.Ui;
 using NeoTwitch.Shared;
 using NeoTwitch.ViewModels.Activity;
@@ -26,25 +27,47 @@ public partial class MainWindow
 {
     private void UpdateConnectionButtons()
     {
+        var labels = GetConnectionButtonLabels();
         ApplyButtonState(TwitchButton, ConnectionButtonStateService.ResolveTwitch(
             _isTwitchAuthorizing,
             _isTwitchConnecting,
-            _eventSubClient.IsRunning));
+            _eventSubClient.IsRunning,
+            labels));
         ApplyButtonState(ConnectArduinoButton, ConnectionButtonStateService.ResolveArduino(
             _config.ArduinoEnabled,
-            _isArduinoConnecting));
+            _isArduinoConnecting,
+            labels));
         ApplyButtonState(TestAlexaButton, ConnectionButtonStateService.ResolveAlexa(
             _config.Alexa.Enabled,
-            _isAlexaConnecting));
+            _isAlexaConnecting,
+            labels));
         ApplyButtonState(ConnectObsButton, ConnectionButtonStateService.ResolveObs(
             _config.Obs.Enabled,
             _isObsConnecting,
             _isObsSceneActionRunning,
-            _obsService.IsConnected));
+            _obsService.IsConnected,
+            labels));
         ApplyButtonState(TestObsButton, ConnectionButtonStateService.ResolveObsTest(
             _config.Obs.Enabled,
             _isObsConnecting,
-            _isObsSceneActionRunning));
+            _isObsSceneActionRunning,
+            labels));
+    }
+
+    private ConnectionButtonLabels GetConnectionButtonLabels()
+    {
+        return new ConnectionButtonLabels(
+            _text.Get(UiTextKeys.ConnectionButtonTwitchAuthorizing),
+            _text.Get(UiTextKeys.ConnectionButtonConnecting),
+            _text.Get(UiTextKeys.ConnectionButtonTwitchDisconnect),
+            _text.Get(UiTextKeys.ConnectionButtonTwitchConnect),
+            _text.Get(UiTextKeys.ConnectionButtonArduinoConnect),
+            _text.Get(UiTextKeys.ConnectionButtonAlexaTesting),
+            _text.Get(UiTextKeys.ConnectionButtonAlexaTest),
+            _text.Get(UiTextKeys.ConnectionButtonObsDisconnect),
+            _text.Get(UiTextKeys.ConnectionButtonObsConnect),
+            _text.Get(UiTextKeys.ConnectionButtonObsScenesUpdating),
+            _text.Get(UiTextKeys.ConnectionButtonObsScenesRefresh));
     }
 
     private static void ApplyButtonState(System.Windows.Controls.Button button, ConnectionButtonState state)

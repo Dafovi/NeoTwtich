@@ -1366,12 +1366,26 @@ static class ConnectionStateTests
 
 static class ConnectionButtonStateTests
 {
+    private static readonly ConnectionButtonLabels Labels = new(
+        "Autorizando...",
+        "Conectando...",
+        "Desconectar Twitch",
+        "Conectar Twitch",
+        "Conectar Arduino",
+        "Probando...",
+        "Probar Alexa",
+        "Desconectar OBS",
+        "Conectar OBS",
+        "Actualizando...",
+        "Actualizar escenas");
+
     public static void DisablesTwitchWhileBusy()
     {
         var state = ConnectionButtonStateService.ResolveTwitch(
             isAuthorizing: false,
             isConnecting: true,
-            isRunning: false);
+            isRunning: false,
+            Labels);
 
         TestAssert.False(state.IsEnabled);
         TestAssert.Equal("Conectando...", state.Content);
@@ -1383,11 +1397,13 @@ static class ConnectionButtonStateTests
             enabled: true,
             isConnecting: false,
             isSceneActionRunning: false,
-            isConnected: true);
+            isConnected: true,
+            Labels);
         var busyTest = ConnectionButtonStateService.ResolveObsTest(
             enabled: true,
             isConnecting: true,
-            isSceneActionRunning: false);
+            isSceneActionRunning: false,
+            Labels);
 
         TestAssert.True(connected.IsEnabled);
         TestAssert.Equal("Desconectar OBS", connected.Content);

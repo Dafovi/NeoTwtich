@@ -87,6 +87,7 @@ var tests = new (string Name, Action Body)[]
     ("DashboardStatusTextService formats connection labels", DashboardStatusTextTests.FormatsConnectionLabels),
     ("DashboardStatusTextService formats Arduino status", DashboardStatusTextTests.FormatsArduinoStatus),
     ("DashboardStatusTextService formats Alexa background status", DashboardStatusTextTests.FormatsAlexaBackgroundStatus),
+    ("SpanishUiTextCatalog contains all text keys", UiTextCatalogTests.ContainsAllTextKeys),
     ("UiTextFormatter formats fallback text", UiTextFormatterTests.FormatsFallbackText),
     ("UiTextFormatter builds bounded secret masks", UiTextFormatterTests.BuildsBoundedSecretMasks),
     ("CircularProgressGeometryService calculates percentages", CircularProgressGeometryTests.CalculatesPercentages),
@@ -1750,6 +1751,23 @@ static class DashboardStatusTextTests
             backgroundOffEventName: "luz_apagada");
 
         TestAssert.Equal("Fondo: luz_encendida. Al finalizar: conserva estado.", text);
+    }
+}
+
+static class UiTextCatalogTests
+{
+    public static void ContainsAllTextKeys()
+    {
+        var catalog = SpanishUiTextCatalog.Create();
+        var keyFields = typeof(UiTextKeys)
+            .GetFields(System.Reflection.BindingFlags.Public | System.Reflection.BindingFlags.Static)
+            .Where(field => field.IsLiteral && field.FieldType == typeof(string));
+
+        foreach (var field in keyFields)
+        {
+            var key = (string)field.GetRawConstantValue()!;
+            TestAssert.True(catalog.ContainsKey(key), $"Falta texto para la key '{key}'.");
+        }
     }
 }
 

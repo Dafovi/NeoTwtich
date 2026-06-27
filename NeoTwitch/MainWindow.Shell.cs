@@ -73,7 +73,7 @@ public partial class MainWindow
     private static void ApplyButtonState(System.Windows.Controls.Button button, ConnectionButtonState state)
     {
         button.IsEnabled = state.IsEnabled;
-        button.Content = state.Content;
+        ButtonIconContentService.SetButtonIcon(button, state.Content, state.IconKey);
     }
 
     private void UpdateTwitchLiveIndicator()

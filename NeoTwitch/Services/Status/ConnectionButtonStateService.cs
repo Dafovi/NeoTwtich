@@ -1,6 +1,6 @@
 namespace NeoTwitch.Services.Status;
 
-public sealed record ConnectionButtonState(bool IsEnabled, string Content);
+public sealed record ConnectionButtonState(bool IsEnabled, string Content, string IconKey);
 
 public sealed record ConnectionButtonLabels(
     string TwitchAuthorizing,
@@ -32,21 +32,23 @@ public static class ConnectionButtonStateService
                     ? labels.TwitchDisconnect
                     : labels.TwitchConnect;
 
-        return new ConnectionButtonState(!busy, content);
+        return new ConnectionButtonState(!busy, content, "Plug");
     }
 
     public static ConnectionButtonState ResolveArduino(bool enabled, bool isConnecting, ConnectionButtonLabels labels)
     {
         return new ConnectionButtonState(
             enabled && !isConnecting,
-            isConnecting ? labels.Connecting : labels.ArduinoConnect);
+            isConnecting ? labels.Connecting : labels.ArduinoConnect,
+            "Plug");
     }
 
     public static ConnectionButtonState ResolveAlexa(bool enabled, bool isConnecting, ConnectionButtonLabels labels)
     {
         return new ConnectionButtonState(
             enabled && !isConnecting,
-            isConnecting ? labels.AlexaTesting : labels.AlexaTest);
+            isConnecting ? labels.AlexaTesting : labels.AlexaTest,
+            "Play");
     }
 
     public static ConnectionButtonState ResolveObs(
@@ -63,7 +65,7 @@ public static class ConnectionButtonStateService
                 ? labels.ObsDisconnect
                 : labels.ObsConnect;
 
-        return new ConnectionButtonState(enabled && !busy, content);
+        return new ConnectionButtonState(enabled && !busy, content, "Plug");
     }
 
     public static ConnectionButtonState ResolveObsTest(
@@ -75,6 +77,7 @@ public static class ConnectionButtonStateService
         var busy = isConnecting || isSceneActionRunning;
         return new ConnectionButtonState(
             enabled && !busy,
-            isConnecting ? labels.ObsScenesUpdating : labels.ObsScenesRefresh);
+            isConnecting ? labels.ObsScenesUpdating : labels.ObsScenesRefresh,
+            "Refresh");
     }
 }

@@ -1389,6 +1389,7 @@ static class ConnectionButtonStateTests
 
         TestAssert.False(state.IsEnabled);
         TestAssert.Equal("Conectando...", state.Content);
+        TestAssert.Equal("Plug", state.IconKey);
     }
 
     public static void MapsObsButtons()
@@ -1407,8 +1408,10 @@ static class ConnectionButtonStateTests
 
         TestAssert.True(connected.IsEnabled);
         TestAssert.Equal("Desconectar OBS", connected.Content);
+        TestAssert.Equal("Plug", connected.IconKey);
         TestAssert.False(busyTest.IsEnabled);
         TestAssert.Equal("Actualizando...", busyTest.Content);
+        TestAssert.Equal("Refresh", busyTest.IconKey);
     }
 }
 

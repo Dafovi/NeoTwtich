@@ -1,4 +1,5 @@
 using System.Windows;
+using NeoTwitch.Services.Text;
 
 namespace NeoTwitch;
 
@@ -9,6 +10,6 @@ public partial class MainWindow
         SaveEditableStateFromFields();
         SaveConfig();
         await ApplyBackgroundStateAsync();
-        AddLog("Configuracion guardada.");
+        AddLog(_text.Get(UiTextKeys.SettingsSavedLog));
     }
 }

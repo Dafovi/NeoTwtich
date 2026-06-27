@@ -1,5 +1,6 @@
 using NeoTwitch.Services;
 using NeoTwitch.Models;
+using NeoTwitch.Services.Text;
 using NeoTwitch.Shared;
 using NeoTwitch.ViewModels.Library;
 
@@ -83,7 +84,7 @@ public partial class MainWindow
     private void LoadSettingsMetadataIntoUi()
     {
         SettingsPathText.Text = _settingsStore.SettingsPath;
-        BackupPathText.Text = $"Backups automaticos: {_settingsStore.BackupDirectory}";
+        BackupPathText.Text = _text.Format(UiTextKeys.SettingsAutomaticBackupsText, _settingsStore.BackupDirectory);
         SettingsVersionText.Text = $"V{NeoTwitchProduct.CurrentVersionText}";
         UpdateCloseBehaviorCards();
     }

@@ -1,6 +1,7 @@
 using System.IO;
 using System.Windows;
 using NeoTwitch.Services;
+using NeoTwitch.Services.Text;
 using NeoTwitch.ViewModels.Activity;
 using WpfMessageBox = System.Windows.MessageBox;
 using WpfOpenFileDialog = Microsoft.Win32.OpenFileDialog;
@@ -19,15 +20,15 @@ public partial class MainWindow
             Directory.CreateDirectory(_settingsStore.BackupDirectory);
             var backupPath = Path.Combine(_settingsStore.BackupDirectory, $"settings-manual-{DateTime.Now:yyyyMMdd-HHmmss}.json");
             _settingsStore.Export(_config, backupPath);
-            BackupPathText.Text = $"Ultimo backup manual: {backupPath}";
-            AddLog($"Backup creado: {backupPath}");
-            WpfMessageBox.Show(this, "Backup creado correctamente.", "Backups", MessageBoxButton.OK, MessageBoxImage.Information);
+            BackupPathText.Text = _text.Format(UiTextKeys.SettingsManualBackupText, backupPath);
+            AddLog(_text.Format(UiTextKeys.SettingsBackupCreatedLog, backupPath));
+            WpfMessageBox.Show(this, _text.Get(UiTextKeys.SettingsBackupSuccessPrompt), _text.Get(UiTextKeys.SettingsBackupTitle), MessageBoxButton.OK, MessageBoxImage.Information);
         }
         catch (Exception ex)
         {
-            CrashReporter.Log(ex, "No se pudo crear un backup manual.");
-            AddLog($"Backups: no pude crear backup ({ex.Message}).", ActivityLogKind.Important);
-            WpfMessageBox.Show(this, ex.Message, "Backups", MessageBoxButton.OK, MessageBoxImage.Warning);
+            CrashReporter.Log(ex, _text.Get(UiTextKeys.SettingsBackupCreateFailureCrash));
+            AddLog(_text.Format(UiTextKeys.SettingsBackupCreateFailureLog, ex.Message), ActivityLogKind.Important);
+            WpfMessageBox.Show(this, ex.Message, _text.Get(UiTextKeys.SettingsBackupTitle), MessageBoxButton.OK, MessageBoxImage.Warning);
         }
     }
 
@@ -35,8 +36,8 @@ public partial class MainWindow
     {
         var dialog = new WpfOpenFileDialog
         {
-            Title = "Restaurar backup",
-            Filter = "Backup Neo Twitch (*.json)|*.json|Todos los archivos (*.*)|*.*",
+            Title = _text.Get(UiTextKeys.SettingsRestoreBackupTitle),
+            Filter = _text.Get(UiTextKeys.SettingsBackupFileFilter),
             CheckFileExists = true,
             InitialDirectory = Directory.Exists(_settingsStore.BackupDirectory)
                 ? _settingsStore.BackupDirectory
@@ -49,8 +50,8 @@ public partial class MainWindow
         }
 
         if (!ConfirmSettingsReplacement(
-                "Restaurar backup",
-                "Restaurar este backup reemplazara la configuracion actual. Se creara un backup automatico antes de guardar.\n\nQuieres continuar?"))
+                _text.Get(UiTextKeys.SettingsRestoreBackupTitle),
+                _text.Get(UiTextKeys.SettingsRestoreBackupPrompt)))
         {
             return;
         }
@@ -59,15 +60,15 @@ public partial class MainWindow
         {
             await ReplaceSettingsFromFileAsync(
                 dialog.FileName,
-                $"Backup restaurado: {dialog.FileName}",
-                "Restaurar backup",
-                "Backup restaurado correctamente. Revisa Twitch, Arduino y Alexa antes de salir en vivo.");
+                _text.Format(UiTextKeys.SettingsBackupRestoredLog, dialog.FileName),
+                _text.Get(UiTextKeys.SettingsRestoreBackupTitle),
+                _text.Get(UiTextKeys.SettingsBackupRestoreSuccessPrompt));
         }
         catch (Exception ex)
         {
-            CrashReporter.Log(ex, "No se pudo restaurar el backup.");
-            AddLog($"Backups: no pude restaurar ({ex.Message}).", ActivityLogKind.Important);
-            WpfMessageBox.Show(this, ex.Message, "Restaurar backup", MessageBoxButton.OK, MessageBoxImage.Warning);
+            CrashReporter.Log(ex, _text.Get(UiTextKeys.SettingsBackupRestoreFailureCrash));
+            AddLog(_text.Format(UiTextKeys.SettingsBackupRestoreFailureLog, ex.Message), ActivityLogKind.Important);
+            WpfMessageBox.Show(this, ex.Message, _text.Get(UiTextKeys.SettingsRestoreBackupTitle), MessageBoxButton.OK, MessageBoxImage.Warning);
         }
     }
 }

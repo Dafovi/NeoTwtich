@@ -67,6 +67,22 @@ public static class UiTextKeys
     public const string BackgroundScheduledFailureCrash = "background.scheduled_failure_crash";
     public const string BackgroundScheduledFailureLog = "background.scheduled_failure_log";
 
+    public const string SettingsAutomaticBackupsText = "settings.automatic_backups_text";
+    public const string SettingsManualBackupText = "settings.manual_backup_text";
+    public const string SettingsSavedLog = "settings.saved_log";
+    public const string SettingsBackupTitle = "settings.backup_title";
+    public const string SettingsBackupCreatedLog = "settings.backup_created_log";
+    public const string SettingsBackupSuccessPrompt = "settings.backup_success_prompt";
+    public const string SettingsBackupCreateFailureCrash = "settings.backup_create_failure_crash";
+    public const string SettingsBackupCreateFailureLog = "settings.backup_create_failure_log";
+    public const string SettingsRestoreBackupTitle = "settings.restore_backup_title";
+    public const string SettingsBackupFileFilter = "settings.backup_file_filter";
+    public const string SettingsRestoreBackupPrompt = "settings.restore_backup_prompt";
+    public const string SettingsBackupRestoredLog = "settings.backup_restored_log";
+    public const string SettingsBackupRestoreSuccessPrompt = "settings.backup_restore_success_prompt";
+    public const string SettingsBackupRestoreFailureCrash = "settings.backup_restore_failure_crash";
+    public const string SettingsBackupRestoreFailureLog = "settings.backup_restore_failure_log";
+
     public const string TrayBackgroundTitle = "tray.background_title";
     public const string TrayBackgroundText = "tray.background_text";
     public const string TrayHiddenLog = "tray.hidden_log";

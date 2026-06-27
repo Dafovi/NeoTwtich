@@ -24,9 +24,9 @@ public static class ObsSceneViewService
             .ToList();
     }
 
-    public static IReadOnlyList<ObsSceneChoice> BuildChoices(IEnumerable<ObsSceneRow> rows)
+    public static IReadOnlyList<ObsSceneChoice> BuildChoices(IEnumerable<ObsSceneRow> rows, string keepCurrentLabel)
     {
-        return new[] { new ObsSceneChoice("", "Mantener escena actual") }
+        return new[] { new ObsSceneChoice("", keepCurrentLabel) }
             .Concat(rows.Select(scene => new ObsSceneChoice(scene.Name, scene.Name)))
             .ToList();
     }

@@ -145,6 +145,7 @@ public static class SpanishUiTextCatalog
             [UiTextKeys.ObsNoVersion] = "Sin version",
             [UiTextKeys.ObsStudioModeEnabled] = "Activado",
             [UiTextKeys.ObsStudioModeDisabled] = "Desactivado",
+            [UiTextKeys.ObsKeepCurrentScene] = "Mantener escena actual",
 
             [UiTextKeys.TrayBackgroundTitle] = "{0} sigue activo",
             [UiTextKeys.TrayBackgroundText] = "La app quedo en segundo plano. Abrela desde el icono de la bandeja cuando la necesites.",

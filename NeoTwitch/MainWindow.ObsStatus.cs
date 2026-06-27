@@ -113,7 +113,7 @@ public partial class MainWindow
     private void RefreshObsSceneChoices()
     {
         var selected = RuleObsSceneBox.SelectedValue as string ?? "";
-        var choices = ObsSceneViewService.BuildChoices(_obsSceneRows);
+        var choices = ObsSceneViewService.BuildChoices(_obsSceneRows, _text.Get(UiTextKeys.ObsKeepCurrentScene));
         _obsSceneChoices.Clear();
         foreach (var choice in choices)
         {

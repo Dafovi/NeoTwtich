@@ -141,6 +141,7 @@ public static class UiTextKeys
     public const string ObsNoVersion = "obs.no_version";
     public const string ObsStudioModeEnabled = "obs.studio_mode_enabled";
     public const string ObsStudioModeDisabled = "obs.studio_mode_disabled";
+    public const string ObsKeepCurrentScene = "obs.keep_current_scene";
 
     public const string TrayBackgroundTitle = "tray.background_title";
     public const string TrayBackgroundText = "tray.background_text";

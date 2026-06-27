@@ -1493,7 +1493,7 @@ static class ObsSceneViewTests
         TestAssert.True(rows[0].IsCurrent);
         TestAssert.Equal("Una escena...", rows[1].ShortName);
 
-        var choices = ObsSceneViewService.BuildChoices(rows);
+        var choices = ObsSceneViewService.BuildChoices(rows, "Mantener escena actual");
 
         TestAssert.Equal(3, choices.Count);
         TestAssert.Equal("Mantener escena actual", choices[0].Label);

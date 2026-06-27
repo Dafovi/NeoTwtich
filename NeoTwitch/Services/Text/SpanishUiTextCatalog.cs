@@ -33,7 +33,16 @@ public static class SpanishUiTextCatalog
             [UiTextKeys.MediaObsConnectRequiredPrompt] = "Conecta OBS desde Conexiones antes de probar imagenes o videos.",
             [UiTextKeys.MediaObsMissingFileLog] = "OBS: el archivo seleccionado no existe.",
             [UiTextKeys.MediaObsMissingSceneLog] = "OBS: no hay una escena actual para probar el medio.",
-            [UiTextKeys.MediaObsPreviewLog] = "OBS: probando {0} '{1}'."
+            [UiTextKeys.MediaObsPreviewLog] = "OBS: probando {0} '{1}'.",
+
+            [UiTextKeys.DiagnosticsWindowTitle] = "Diagnostico Neo Twitch",
+            [UiTextKeys.DiagnosticsNoWarningsTitle] = "Diagnostico sin advertencias",
+            [UiTextKeys.DiagnosticsWarningsTitle] = "Diagnostico con {0} punto(s) por revisar",
+            [UiTextKeys.DiagnosticsCopyReport] = "Copiar reporte",
+            [UiTextKeys.DiagnosticsClose] = "Cerrar",
+            [UiTextKeys.DiagnosticsCopiedLog] = "Diagnostico copiado al portapapeles.",
+            [UiTextKeys.DiagnosticsSuccessLog] = "Diagnostico: sin advertencias.",
+            [UiTextKeys.DiagnosticsWarningsLog] = "Diagnostico: {0} punto(s) por revisar."
         };
     }
 }

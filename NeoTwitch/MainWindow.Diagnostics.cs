@@ -23,8 +23,8 @@ public partial class MainWindow
             var result = await BuildDiagnosticsReportAsync();
             AddLog(
                 result.WarningCount == 0
-                    ? "Diagnostico: sin advertencias."
-                    : $"Diagnostico: {result.WarningCount} punto(s) por revisar.",
+                    ? _text.Get(Services.Text.UiTextKeys.DiagnosticsSuccessLog)
+                    : _text.Format(Services.Text.UiTextKeys.DiagnosticsWarningsLog, result.WarningCount),
                 result.WarningCount == 0 ? ActivityLogKind.Info : ActivityLogKind.Important);
             UpdateSettingsAppState(result.WarningCount == 0
                 ? ConnectionVisualState.Connected
@@ -54,7 +54,8 @@ public partial class MainWindow
     {
         var window = new DiagnosticsReportWindow(
             result,
-            () => AddLog("Diagnostico copiado al portapapeles."))
+            _text,
+            () => AddLog(_text.Get(Services.Text.UiTextKeys.DiagnosticsCopiedLog)))
         {
             Owner = this,
             Icon = Icon

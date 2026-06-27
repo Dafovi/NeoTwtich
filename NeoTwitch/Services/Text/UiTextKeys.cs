@@ -30,4 +30,13 @@ public static class UiTextKeys
     public const string MediaObsMissingFileLog = "media.obs_missing_file_log";
     public const string MediaObsMissingSceneLog = "media.obs_missing_scene_log";
     public const string MediaObsPreviewLog = "media.obs_preview_log";
+
+    public const string DiagnosticsWindowTitle = "diagnostics.window_title";
+    public const string DiagnosticsNoWarningsTitle = "diagnostics.no_warnings_title";
+    public const string DiagnosticsWarningsTitle = "diagnostics.warnings_title";
+    public const string DiagnosticsCopyReport = "diagnostics.copy_report";
+    public const string DiagnosticsClose = "diagnostics.close";
+    public const string DiagnosticsCopiedLog = "diagnostics.copied_log";
+    public const string DiagnosticsSuccessLog = "diagnostics.success_log";
+    public const string DiagnosticsWarningsLog = "diagnostics.warnings_log";
 }

@@ -1,7 +1,7 @@
 using System.ComponentModel;
 using System.Drawing;
-using System.IO;
 using System.Windows;
+using NeoTwitch.Services.Shell;
 using NeoTwitch.Shared;
 using Forms = System.Windows.Forms;
 using DrawingIcon = System.Drawing.Icon;
@@ -16,7 +16,7 @@ public partial class MainWindow
         menu.Items.Add("Abrir", null, (_, _) => ShowFromTray());
         menu.Items.Add("Salir", null, async (_, _) => await ExitApplicationAsync());
 
-        _trayIcon = LoadAppIcon();
+        _trayIcon = AppIconLoader.Load();
         _notifyIcon = new Forms.NotifyIcon
         {
             Icon = _trayIcon,
@@ -26,42 +26,6 @@ public partial class MainWindow
         };
 
         _notifyIcon.DoubleClick += (_, _) => ShowFromTray();
-    }
-
-    private static DrawingIcon LoadAppIcon()
-    {
-        try
-        {
-            if (!string.IsNullOrWhiteSpace(Environment.ProcessPath) && File.Exists(Environment.ProcessPath))
-            {
-                var icon = DrawingIcon.ExtractAssociatedIcon(Environment.ProcessPath);
-                if (icon is not null)
-                {
-                    return icon;
-                }
-            }
-        }
-        catch
-        {
-            // Try the bundled WPF resource below.
-        }
-
-        try
-        {
-            var resource = System.Windows.Application.GetResourceStream(new Uri(NeoTwitchProduct.AppIconIcoResource, UriKind.Relative));
-            if (resource?.Stream is not null)
-            {
-                using var stream = resource.Stream;
-                using var icon = new DrawingIcon(stream);
-                return (DrawingIcon)icon.Clone();
-            }
-        }
-        catch
-        {
-            // Fall back to a generic app icon only if the bundled icon cannot be loaded.
-        }
-
-        return (DrawingIcon)SystemIcons.Application.Clone();
     }
 
     private void ShowFromTray()

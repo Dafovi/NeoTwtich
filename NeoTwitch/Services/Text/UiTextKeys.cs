@@ -39,4 +39,14 @@ public static class UiTextKeys
     public const string DiagnosticsCopiedLog = "diagnostics.copied_log";
     public const string DiagnosticsSuccessLog = "diagnostics.success_log";
     public const string DiagnosticsWarningsLog = "diagnostics.warnings_log";
+
+    public const string TwitchTitle = "twitch.title";
+    public const string TwitchLoginTitle = "twitch.login_title";
+    public const string TwitchDisconnectedLog = "twitch.disconnected_log";
+    public const string TwitchMissingClientId = "twitch.missing_client_id";
+    public const string TwitchAuthorizePrompt = "twitch.authorize_prompt";
+    public const string TwitchAuthorizedLog = "twitch.authorized_log";
+    public const string TwitchMissingScopes = "twitch.missing_scopes";
+    public const string TwitchReauthRequiredLog = "twitch.reauth_required_log";
+    public const string TwitchListeningLog = "twitch.listening_log";
 }

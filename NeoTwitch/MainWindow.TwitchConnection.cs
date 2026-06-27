@@ -1,6 +1,7 @@
 using System.Windows;
 using NeoTwitch.Models;
 using NeoTwitch.Services;
+using NeoTwitch.Services.Text;
 using NeoTwitch.ViewModels.Activity;
 using WpfClipboard = System.Windows.Clipboard;
 using WpfMessageBox = System.Windows.MessageBox;
@@ -26,7 +27,7 @@ public partial class MainWindow
                 _eventSubscriptionSignature = "";
                 _streamStatus = null;
                 _twitchConnectionError = "";
-                AddLog("Twitch desconectado.");
+                AddLog(_text.Get(UiTextKeys.TwitchDisconnectedLog));
                 UpdateStatusText();
                 return;
             }
@@ -43,7 +44,7 @@ public partial class MainWindow
             _twitchConnectionError = ex.Message;
             UpdateStatusText();
             AddLog($"Twitch: {ex.Message}");
-            WpfMessageBox.Show(this, ex.Message, "Twitch", MessageBoxButton.OK, MessageBoxImage.Warning);
+            WpfMessageBox.Show(this, ex.Message, _text.Get(UiTextKeys.TwitchTitle), MessageBoxButton.OK, MessageBoxImage.Warning);
         }
     }
 
@@ -51,7 +52,7 @@ public partial class MainWindow
     {
         if (string.IsNullOrWhiteSpace(_config.TwitchClientId))
         {
-            throw new InvalidOperationException("Escribe primero el Client ID de Twitch.");
+            throw new InvalidOperationException(_text.Get(UiTextKeys.TwitchMissingClientId));
         }
 
         _isTwitchAuthorizing = true;
@@ -64,15 +65,15 @@ public partial class MainWindow
             _authService.OpenVerificationPage(session);
             WpfMessageBox.Show(
                 this,
-                $"Autoriza la app en Twitch con el codigo {session.UserCode}. El codigo ya quedo copiado al portapapeles.",
-                "Login Twitch",
+                _text.Format(UiTextKeys.TwitchAuthorizePrompt, session.UserCode),
+                _text.Get(UiTextKeys.TwitchLoginTitle),
                 MessageBoxButton.OK,
                 MessageBoxImage.Information);
 
             _config.Token = await _authService.PollForTokenAsync(_config.TwitchClientId, session, AddLog, CancellationToken.None);
             _config.Channel = await _authService.GetCurrentUserAsync(_config, CancellationToken.None);
             SaveConfig();
-            AddLog($"Twitch autorizado como {_config.Channel.DisplayName}.");
+            AddLog(_text.Format(UiTextKeys.TwitchAuthorizedLog, _config.Channel.DisplayName));
         }
         finally
         {
@@ -92,7 +93,7 @@ public partial class MainWindow
             var missingScopes = TwitchAuthService.GetMissingScopes(_config.Token);
             if (missingScopes.Count > 0)
             {
-                throw new InvalidOperationException($"Twitch necesita autorizar permisos nuevos: {string.Join(", ", missingScopes)}. Presiona Conectar Twitch para iniciar sesion otra vez.");
+                throw new InvalidOperationException(_text.Format(UiTextKeys.TwitchMissingScopes, string.Join(", ", missingScopes)));
             }
 
             try
@@ -101,7 +102,7 @@ public partial class MainWindow
             }
             catch (Exception ex) when (allowInteractiveReauth && TwitchConnectionRecoveryService.IsRecoverableRefreshError(ex))
             {
-                AddLog("Twitch necesita autorizar de nuevo porque el token guardado no se pudo refrescar.", ActivityLogKind.Twitch);
+                AddLog(_text.Get(UiTextKeys.TwitchReauthRequiredLog), ActivityLogKind.Twitch);
                 _config.Token = new TwitchTokenInfo();
                 _config.Channel = new TwitchChannelInfo();
                 SaveConfig();
@@ -117,7 +118,7 @@ public partial class MainWindow
             await _eventSubClient.StartAsync();
             _eventSubscriptionSignature = BuildEventSubscriptionSignature();
             await RefreshTwitchStreamStatusAsync();
-            AddLog("Twitch escuchando eventos.");
+            AddLog(_text.Get(UiTextKeys.TwitchListeningLog));
         }
         catch (Exception ex)
         {

@@ -49,4 +49,9 @@ public static class UiTextKeys
     public const string TwitchMissingScopes = "twitch.missing_scopes";
     public const string TwitchReauthRequiredLog = "twitch.reauth_required_log";
     public const string TwitchListeningLog = "twitch.listening_log";
+
+    public const string ObsRuleMissingMediaLog = "obs.rule_missing_media_log";
+    public const string ObsRuleMissingSceneLog = "obs.rule_missing_scene_log";
+    public const string ObsRuleMediaShownLog = "obs.rule_media_shown_log";
+    public const string ObsRuleMediaHiddenLog = "obs.rule_media_hidden_log";
 }

@@ -2,6 +2,7 @@ using NeoTwitch.Models;
 using NeoTwitch.Services;
 using NeoTwitch.Services.Alerts;
 using NeoTwitch.Services.Library;
+using NeoTwitch.Services.Text;
 using NeoTwitch.Shared;
 using NeoTwitch.ViewModels.Activity;
 using NeoTwitch.ViewModels.Library;
@@ -22,7 +23,7 @@ public partial class MainWindow
         var asset = ResolveRuleObsMediaAsset(rule);
         if (asset is null)
         {
-            AddLog($"OBS: la regla '{rule.Name}' no tiene un archivo valido para mostrar.", ActivityLogKind.Important);
+            AddLog(_text.Format(UiTextKeys.ObsRuleMissingMediaLog, rule.Name), ActivityLogKind.Important);
             return null;
         }
 
@@ -42,7 +43,7 @@ public partial class MainWindow
 
             if (string.IsNullOrWhiteSpace(sceneName))
             {
-                AddLog("OBS: no hay una escena actual para mostrar el medio.", ActivityLogKind.Important);
+                AddLog(_text.Get(UiTextKeys.ObsRuleMissingSceneLog), ActivityLogKind.Important);
                 return null;
             }
 
@@ -63,7 +64,7 @@ public partial class MainWindow
             ApplyObsResult(result);
             WriteObsOverlayState(asset, rule.ObsMediaKind, mediaDuration);
             MarkObsMediaAssetUsed(rule.ObsMediaKind, asset);
-            AddLog($"OBS: medio '{asset.DisplayName}' mostrado en '{sceneName}'.", ActivityLogKind.Obs);
+            AddLog(_text.Format(UiTextKeys.ObsRuleMediaShownLog, asset.DisplayName, sceneName), ActivityLogKind.Obs);
 
             return ObsRulePlanService.BuildMediaHideRequest(
                 sceneName,
@@ -153,6 +154,6 @@ public partial class MainWindow
             cancellationToken);
         ApplyObsResult(result);
         ClearObsOverlayState();
-        AddLog($"OBS: medio oculto en '{request.SceneName}'.", ActivityLogKind.Obs);
+        AddLog(_text.Format(UiTextKeys.ObsRuleMediaHiddenLog, request.SceneName), ActivityLogKind.Obs);
     }
 }

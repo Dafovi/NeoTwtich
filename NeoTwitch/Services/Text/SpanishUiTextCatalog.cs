@@ -52,7 +52,12 @@ public static class SpanishUiTextCatalog
             [UiTextKeys.TwitchAuthorizedLog] = "Twitch autorizado como {0}.",
             [UiTextKeys.TwitchMissingScopes] = "Twitch necesita autorizar permisos nuevos: {0}. Presiona Conectar Twitch para iniciar sesion otra vez.",
             [UiTextKeys.TwitchReauthRequiredLog] = "Twitch necesita autorizar de nuevo porque el token guardado no se pudo refrescar.",
-            [UiTextKeys.TwitchListeningLog] = "Twitch escuchando eventos."
+            [UiTextKeys.TwitchListeningLog] = "Twitch escuchando eventos.",
+
+            [UiTextKeys.ObsRuleMissingMediaLog] = "OBS: la regla '{0}' no tiene un archivo valido para mostrar.",
+            [UiTextKeys.ObsRuleMissingSceneLog] = "OBS: no hay una escena actual para mostrar el medio.",
+            [UiTextKeys.ObsRuleMediaShownLog] = "OBS: medio '{0}' mostrado en '{1}'.",
+            [UiTextKeys.ObsRuleMediaHiddenLog] = "OBS: medio oculto en '{0}'."
         };
     }
 }

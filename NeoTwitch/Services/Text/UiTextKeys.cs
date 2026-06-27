@@ -67,4 +67,12 @@ public static class UiTextKeys
     public const string UpdateCheckFailedLog = "update.check_failed_log";
     public const string UpdateLaunchingInstallerLog = "update.launching_installer_log";
     public const string UpdateLaunchFailedLog = "update.launch_failed_log";
+
+    public const string AppAlreadyOpenMessage = "app.already_open_message";
+    public const string AppStartupFailureLog = "app.startup_failure_log";
+    public const string AppUiUnhandledLog = "app.ui_unhandled_log";
+    public const string AppProcessUnhandledLog = "app.process_unhandled_log";
+    public const string AppProcessUnhandledObjectLog = "app.process_unhandled_object_log";
+    public const string AppBackgroundTaskUnhandledLog = "app.background_task_unhandled_log";
+    public const string AppFatalErrorMessage = "app.fatal_error_message";
 }

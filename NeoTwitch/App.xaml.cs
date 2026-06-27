@@ -4,6 +4,7 @@ using System.Windows;
 using System.Windows.Threading;
 using NeoTwitch.Models;
 using NeoTwitch.Services;
+using NeoTwitch.Services.Text;
 using NeoTwitch.Shared;
 
 namespace NeoTwitch;
@@ -13,6 +14,7 @@ namespace NeoTwitch;
 /// </summary>
 public partial class App : System.Windows.Application
 {
+    private static readonly IUiTextService Text = UiTextService.CreateDefault();
     private Mutex? _singleInstanceMutex;
     private bool _ownsMutex;
     private bool _exceptionLoggingRegistered;
@@ -28,7 +30,7 @@ public partial class App : System.Windows.Application
             if (!createdNew)
             {
                 System.Windows.MessageBox.Show(
-                    $"{NeoTwitchProduct.DisplayName} ya esta abierta. Revisa el icono en la bandeja del sistema.",
+                    Text.Format(UiTextKeys.AppAlreadyOpenMessage, NeoTwitchProduct.DisplayName),
                     NeoTwitchProduct.DisplayName,
                     MessageBoxButton.OK,
                     MessageBoxImage.Information);
@@ -43,7 +45,7 @@ public partial class App : System.Windows.Application
         }
         catch (Exception ex)
         {
-            var logPath = CrashReporter.Log(ex, "Fallo al iniciar la aplicacion.");
+            var logPath = CrashReporter.Log(ex, Text.Get(UiTextKeys.AppStartupFailureLog));
             ShowFatalError(logPath, ex.Message);
             Shutdown(1);
         }
@@ -75,7 +77,7 @@ public partial class App : System.Windows.Application
 
     private static void App_DispatcherUnhandledException(object sender, DispatcherUnhandledExceptionEventArgs e)
     {
-        var logPath = CrashReporter.Log(e.Exception, "Fallo no controlado en la interfaz.");
+        var logPath = CrashReporter.Log(e.Exception, Text.Get(UiTextKeys.AppUiUnhandledLog));
         ShowFatalError(logPath, e.Exception.Message);
         e.Handled = true;
         Current.Shutdown(1);
@@ -85,24 +87,24 @@ public partial class App : System.Windows.Application
     {
         if (e.ExceptionObject is Exception exception)
         {
-            CrashReporter.Log(exception, "Fallo no controlado del proceso.");
+            CrashReporter.Log(exception, Text.Get(UiTextKeys.AppProcessUnhandledLog));
         }
         else
         {
-            CrashReporter.LogMessage($"Fallo no controlado del proceso: {e.ExceptionObject}");
+            CrashReporter.LogMessage(Text.Format(UiTextKeys.AppProcessUnhandledObjectLog, e.ExceptionObject ?? ""));
         }
     }
 
     private static void TaskScheduler_UnobservedTaskException(object? sender, UnobservedTaskExceptionEventArgs e)
     {
-        CrashReporter.Log(e.Exception, "Fallo no observado en una tarea en segundo plano.");
+        CrashReporter.Log(e.Exception, Text.Get(UiTextKeys.AppBackgroundTaskUnhandledLog));
         e.SetObserved();
     }
 
     private static void ShowFatalError(string logPath, string detail)
     {
         System.Windows.MessageBox.Show(
-            $"La app no pudo iniciar correctamente.\n\nDetalle: {detail}\n\nLog: {logPath}",
+            Text.Format(UiTextKeys.AppFatalErrorMessage, detail, logPath),
             NeoTwitchProduct.DisplayName,
             MessageBoxButton.OK,
             MessageBoxImage.Error);

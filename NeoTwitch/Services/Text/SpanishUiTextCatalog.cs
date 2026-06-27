@@ -70,7 +70,15 @@ public static class SpanishUiTextCatalog
             [UiTextKeys.UpdateAvailableTitle] = "Actualizacion disponible",
             [UiTextKeys.UpdateCheckFailedLog] = "Version: no pude consultar actualizaciones ({0}).",
             [UiTextKeys.UpdateLaunchingInstallerLog] = "Version: iniciando actualizador a V{0}.",
-            [UiTextKeys.UpdateLaunchFailedLog] = "Version: no pude abrir el actualizador ({0})."
+            [UiTextKeys.UpdateLaunchFailedLog] = "Version: no pude abrir el actualizador ({0}).",
+
+            [UiTextKeys.AppAlreadyOpenMessage] = "{0} ya esta abierta. Revisa el icono en la bandeja del sistema.",
+            [UiTextKeys.AppStartupFailureLog] = "Fallo al iniciar la aplicacion.",
+            [UiTextKeys.AppUiUnhandledLog] = "Fallo no controlado en la interfaz.",
+            [UiTextKeys.AppProcessUnhandledLog] = "Fallo no controlado del proceso.",
+            [UiTextKeys.AppProcessUnhandledObjectLog] = "Fallo no controlado del proceso: {0}",
+            [UiTextKeys.AppBackgroundTaskUnhandledLog] = "Fallo no observado en una tarea en segundo plano.",
+            [UiTextKeys.AppFatalErrorMessage] = "La app no pudo iniciar correctamente.\n\nDetalle: {0}\n\nLog: {1}"
         };
     }
 }

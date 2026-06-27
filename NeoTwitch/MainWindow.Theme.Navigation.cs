@@ -1,5 +1,6 @@
 using System.Windows;
 using System.Windows.Controls;
+using NeoTwitch.Services.Navigation;
 using NeoTwitch.Services.Ui;
 
 namespace NeoTwitch;
@@ -32,11 +33,12 @@ public partial class MainWindow
             return;
         }
 
-        SetNavigationTargetVisible(NavStripsButton, LightsTab, _config.ArduinoEnabled);
-        SetNavigationTargetVisible(NavAlexaButton, AlexaTab, _config.Alexa.Enabled);
-        SetNavigationTargetVisible(NavObsButton, ObsTab, _config.Obs.Enabled);
-        SetNavigationTargetVisible(NavImagesButton, ImagesTab, _config.Obs.Enabled);
-        SetNavigationTargetVisible(NavVideosButton, VideosTab, _config.Obs.Enabled);
+        var visibility = ServiceNavigationVisibilityService.Resolve(_config);
+        SetNavigationTargetVisible(NavStripsButton, LightsTab, visibility.Lights);
+        SetNavigationTargetVisible(NavAlexaButton, AlexaTab, visibility.Alexa);
+        SetNavigationTargetVisible(NavObsButton, ObsTab, visibility.Obs);
+        SetNavigationTargetVisible(NavImagesButton, ImagesTab, visibility.Images);
+        SetNavigationTargetVisible(NavVideosButton, VideosTab, visibility.Videos);
 
         if (MainTabs.SelectedItem is TabItem { Visibility: not Visibility.Visible })
         {

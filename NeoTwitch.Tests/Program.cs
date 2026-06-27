@@ -7,6 +7,7 @@ using NeoTwitch.Services.Dashboard;
 using NeoTwitch.Services.Diagnostics;
 using NeoTwitch.Services.Library;
 using NeoTwitch.Services.Lights;
+using NeoTwitch.Services.Navigation;
 using NeoTwitch.Services.Obs;
 using NeoTwitch.Services.Status;
 using NeoTwitch.Services.Text;
@@ -69,6 +70,7 @@ var tests = new (string Name, Action Body)[]
     ("ConnectionStateService maps visual metadata", ConnectionStateTests.MapsVisualMetadata),
     ("ConnectionButtonStateService disables Twitch while busy", ConnectionButtonStateTests.DisablesTwitchWhileBusy),
     ("ConnectionButtonStateService maps OBS buttons", ConnectionButtonStateTests.MapsObsButtons),
+    ("ServiceNavigationVisibilityService hides optional service tabs", ServiceNavigationVisibilityTests.HidesOptionalServiceTabs),
     ("ObsStatusTextService builds display values", ObsStatusTextTests.BuildsDisplayValues),
     ("ObsSceneViewService builds rows and choices", ObsSceneViewTests.BuildsRowsAndChoices),
     ("DiagnosticReportService builds report without network", DiagnosticReportServiceTests.BuildsReportWithoutNetwork),
@@ -2058,6 +2060,32 @@ static class ThemeResourceTests
         TestAssert.Same(palette.Window, resources["ThemeWindowBrush"]);
         TestAssert.Same(palette.Accent, resources["ThemeSelectionBrush"]);
         TestAssert.Same(palette.Accent, resources[System.Windows.SystemColors.HighlightBrushKey]);
+    }
+}
+
+static class ServiceNavigationVisibilityTests
+{
+    public static void HidesOptionalServiceTabs()
+    {
+        var config = AppConfig.CreateDefault();
+
+        var initial = ServiceNavigationVisibilityService.Resolve(config);
+        TestAssert.False(initial.Lights);
+        TestAssert.False(initial.Alexa);
+        TestAssert.False(initial.Obs);
+        TestAssert.False(initial.Images);
+        TestAssert.False(initial.Videos);
+
+        config.ArduinoEnabled = true;
+        config.Alexa.Enabled = true;
+        config.Obs.Enabled = true;
+
+        var enabled = ServiceNavigationVisibilityService.Resolve(config);
+        TestAssert.True(enabled.Lights);
+        TestAssert.True(enabled.Alexa);
+        TestAssert.True(enabled.Obs);
+        TestAssert.True(enabled.Images);
+        TestAssert.True(enabled.Videos);
     }
 }
 

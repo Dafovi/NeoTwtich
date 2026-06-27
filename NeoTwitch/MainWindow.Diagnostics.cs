@@ -74,7 +74,6 @@ public partial class MainWindow
             _lightController.CurrentPort,
             _lightController.AckStatusText,
             RuleHasValidAudio);
-        var service = new DiagnosticReportService(_updateService);
-        return await service.BuildAsync(context);
+        return await _diagnosticReportService.BuildAsync(context);
     }
 }

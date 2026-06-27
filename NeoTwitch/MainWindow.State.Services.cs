@@ -1,5 +1,6 @@
 using NeoTwitch.Models;
 using NeoTwitch.Services;
+using NeoTwitch.Services.Diagnostics;
 using NeoTwitch.Services.Text;
 using NeoTwitch.ViewModels.Activity;
 
@@ -21,6 +22,7 @@ public partial class MainWindow
     private ObsOverlayService _obsOverlayService => _services.ObsOverlayService;
     private WindowsStartupService _windowsStartupService => _services.WindowsStartupService;
     private AppUpdateService _updateService => _services.UpdateService;
+    private DiagnosticReportService _diagnosticReportService => _services.DiagnosticReportService;
     private IUiTextService _text => _services.Text;
     private Services.Activity.ActivityLogService _activityLog => _services.ActivityLog;
     private ActivityViewModel _activityViewModel => _services.ActivityViewModel;

@@ -1,6 +1,7 @@
 using NeoTwitch.Services.Activity;
 using NeoTwitch.Services.Alerts;
 using NeoTwitch.Services.Dashboard;
+using NeoTwitch.Services.Diagnostics;
 using NeoTwitch.Services.Text;
 using NeoTwitch.ViewModels.Activity;
 
@@ -19,6 +20,7 @@ public sealed class AppServices
         ObsOverlayService obsOverlayService,
         WindowsStartupService windowsStartupService,
         AppUpdateService updateService,
+        DiagnosticReportService diagnosticReportService,
         IUiTextService text,
         ActivityLogService activityLog,
         ActivityViewModel activityViewModel,
@@ -35,6 +37,7 @@ public sealed class AppServices
         ObsOverlayService = obsOverlayService;
         WindowsStartupService = windowsStartupService;
         UpdateService = updateService;
+        DiagnosticReportService = diagnosticReportService;
         Text = text;
         ActivityLog = activityLog;
         ActivityViewModel = activityViewModel;
@@ -62,6 +65,8 @@ public sealed class AppServices
 
     public AppUpdateService UpdateService { get; }
 
+    public DiagnosticReportService DiagnosticReportService { get; }
+
     public IUiTextService Text { get; }
 
     public ActivityLogService ActivityLog { get; }
@@ -75,6 +80,7 @@ public sealed class AppServices
     public static AppServices CreateDefault()
     {
         var activityLog = new ActivityLogService();
+        var updateService = new AppUpdateService();
         return new AppServices(
             new SettingsStore(),
             new AudioPlayerService(),
@@ -85,7 +91,8 @@ public sealed class AppServices
             new ObsWebSocketService(),
             new ObsOverlayService(),
             new WindowsStartupService(),
-            new AppUpdateService(),
+            updateService,
+            new DiagnosticReportService(updateService),
             UiTextService.CreateDefault(),
             activityLog,
             new ActivityViewModel(activityLog),

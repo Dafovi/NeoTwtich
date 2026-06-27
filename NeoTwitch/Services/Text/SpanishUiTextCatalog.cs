@@ -43,6 +43,9 @@ public static class SpanishUiTextCatalog
             [UiTextKeys.DiagnosticsCopiedLog] = "Diagnostico copiado al portapapeles.",
             [UiTextKeys.DiagnosticsSuccessLog] = "Diagnostico: sin advertencias.",
             [UiTextKeys.DiagnosticsWarningsLog] = "Diagnostico: {0} punto(s) por revisar.",
+            [UiTextKeys.DiagnosticsTitle] = "Diagnostico",
+            [UiTextKeys.DiagnosticsFailureCrash] = "No se pudo ejecutar el diagnostico.",
+            [UiTextKeys.DiagnosticsFailureLog] = "Diagnostico: {0}",
 
             [UiTextKeys.TwitchTitle] = "Twitch",
             [UiTextKeys.TwitchLoginTitle] = "Login Twitch",

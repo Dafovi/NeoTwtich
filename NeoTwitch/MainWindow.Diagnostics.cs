@@ -35,10 +35,10 @@ public partial class MainWindow
         }
         catch (Exception ex)
         {
-            CrashReporter.Log(ex, "No se pudo ejecutar el diagnostico.");
-            AddLog($"Diagnostico: {ex.Message}", ActivityLogKind.Important);
+            CrashReporter.Log(ex, _text.Get(UiTextKeys.DiagnosticsFailureCrash));
+            AddLog(_text.Format(UiTextKeys.DiagnosticsFailureLog, ex.Message), ActivityLogKind.Important);
             UpdateSettingsAppState(ConnectionVisualState.Disconnected);
-            WpfMessageBox.Show(this, ex.Message, "Diagnostico", MessageBoxButton.OK, MessageBoxImage.Warning);
+            WpfMessageBox.Show(this, ex.Message, _text.Get(UiTextKeys.DiagnosticsTitle), MessageBoxButton.OK, MessageBoxImage.Warning);
         }
     }
 

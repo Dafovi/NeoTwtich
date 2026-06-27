@@ -39,6 +39,9 @@ public static class UiTextKeys
     public const string DiagnosticsCopiedLog = "diagnostics.copied_log";
     public const string DiagnosticsSuccessLog = "diagnostics.success_log";
     public const string DiagnosticsWarningsLog = "diagnostics.warnings_log";
+    public const string DiagnosticsTitle = "diagnostics.title";
+    public const string DiagnosticsFailureCrash = "diagnostics.failure_crash";
+    public const string DiagnosticsFailureLog = "diagnostics.failure_log";
 
     public const string TwitchTitle = "twitch.title";
     public const string TwitchLoginTitle = "twitch.login_title";

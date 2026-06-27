@@ -1,5 +1,6 @@
 using NeoTwitch.Models;
 using NeoTwitch.Services;
+using NeoTwitch.Services.Text;
 using NeoTwitch.Shared;
 using NeoTwitch.ViewModels.Activity;
 
@@ -21,7 +22,7 @@ public partial class MainWindow
 
         if (_config.BackgroundAlexaEnabled)
         {
-            await SendBackgroundAlexaEventAsync(_config.BackgroundAlexaOnEventName, "Fondo Alexa encendido");
+            await SendBackgroundAlexaEventAsync(_config.BackgroundAlexaOnEventName, _text.Get(UiTextKeys.BackgroundAlexaOnTitle));
         }
     }
 
@@ -36,7 +37,7 @@ public partial class MainWindow
         {
             if (string.IsNullOrWhiteSpace(_config.SerialPort))
             {
-                AddLog("No puedo aplicar fondo sin puerto COM.");
+                AddLog(_text.Get(UiTextKeys.BackgroundMissingComLog));
                 return;
             }
 
@@ -46,8 +47,8 @@ public partial class MainWindow
             }
             catch (Exception ex)
             {
-                CrashReporter.Log(ex, $"No se pudo conectar Arduino para aplicar fondo en {_config.SerialPort}.");
-                AddLog($"Arduino: no pude aplicar fondo en {_config.SerialPort}. Revisa el puerto y conecta manualmente.", ActivityLogKind.Important);
+                CrashReporter.Log(ex, _text.Format(UiTextKeys.BackgroundArduinoConnectFailureCrash, _config.SerialPort));
+                AddLog(_text.Format(UiTextKeys.BackgroundArduinoConnectFailureLog, _config.SerialPort), ActivityLogKind.Important);
                 UpdateStatusText();
                 return;
             }
@@ -61,7 +62,7 @@ public partial class MainWindow
             var command = LightCommand.FromBackground(_config);
             await _lightController.SendAsync(command, AddLog, CancellationToken.None);
             UpdateStatusText();
-            AddLog($"Fondo aplicado: {DisplayNames.For(command.Pattern)}.");
+            AddLog(_text.Format(UiTextKeys.BackgroundAppliedLog, DisplayNames.For(command.Pattern)));
         }
     }
 
@@ -81,11 +82,11 @@ public partial class MainWindow
 
         if (_config.BackgroundAlexaTurnOffAfterEvent)
         {
-            await SendBackgroundAlexaEventAsync(_config.BackgroundAlexaOffEventName, "Fondo Alexa apagado");
+            await SendBackgroundAlexaEventAsync(_config.BackgroundAlexaOffEventName, _text.Get(UiTextKeys.BackgroundAlexaOffTitle));
         }
         else if (_config.BackgroundAlexaEnabled)
         {
-            await SendBackgroundAlexaEventAsync(_config.BackgroundAlexaOnEventName, "Fondo Alexa encendido");
+            await SendBackgroundAlexaEventAsync(_config.BackgroundAlexaOnEventName, _text.Get(UiTextKeys.BackgroundAlexaOnTitle));
         }
     }
 
@@ -123,13 +124,13 @@ public partial class MainWindow
         {
             await _alexaRelayService.SendBackgroundEventAsync(_config, eventName, title, CancellationToken.None);
             _alexaRelayConnected = true;
-            AddLog($"Alexa fondo: {eventName}.", ActivityLogKind.Alexa);
+            AddLog(_text.Format(UiTextKeys.BackgroundAlexaSentLog, eventName), ActivityLogKind.Alexa);
         }
         catch (Exception ex)
         {
             _alexaRelayConnected = false;
-            CrashReporter.Log(ex, $"No se pudo enviar fondo Alexa '{eventName}'.");
-            AddLog($"Alexa fondo: {ex.Message}", ActivityLogKind.Important);
+            CrashReporter.Log(ex, _text.Format(UiTextKeys.BackgroundAlexaFailureCrash, eventName));
+            AddLog(_text.Format(UiTextKeys.BackgroundAlexaFailureLog, ex.Message), ActivityLogKind.Important);
         }
         finally
         {
@@ -158,8 +159,8 @@ public partial class MainWindow
             }
             catch (Exception ex)
             {
-                CrashReporter.Log(ex, "No se pudo aplicar el fondo programado.");
-                AddLog($"Fondo: {ex.Message}");
+                CrashReporter.Log(ex, _text.Get(UiTextKeys.BackgroundScheduledFailureCrash));
+                AddLog(_text.Format(UiTextKeys.BackgroundScheduledFailureLog, ex.Message));
             }
         });
     }

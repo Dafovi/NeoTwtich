@@ -55,6 +55,18 @@ public static class UiTextKeys
     public const string ObsRuleMediaShownLog = "obs.rule_media_shown_log";
     public const string ObsRuleMediaHiddenLog = "obs.rule_media_hidden_log";
 
+    public const string BackgroundAlexaOnTitle = "background.alexa_on_title";
+    public const string BackgroundAlexaOffTitle = "background.alexa_off_title";
+    public const string BackgroundMissingComLog = "background.missing_com_log";
+    public const string BackgroundArduinoConnectFailureLog = "background.arduino_connect_failure_log";
+    public const string BackgroundArduinoConnectFailureCrash = "background.arduino_connect_failure_crash";
+    public const string BackgroundAppliedLog = "background.applied_log";
+    public const string BackgroundAlexaSentLog = "background.alexa_sent_log";
+    public const string BackgroundAlexaFailureCrash = "background.alexa_failure_crash";
+    public const string BackgroundAlexaFailureLog = "background.alexa_failure_log";
+    public const string BackgroundScheduledFailureCrash = "background.scheduled_failure_crash";
+    public const string BackgroundScheduledFailureLog = "background.scheduled_failure_log";
+
     public const string TrayBackgroundTitle = "tray.background_title";
     public const string TrayBackgroundText = "tray.background_text";
     public const string TrayHiddenLog = "tray.hidden_log";

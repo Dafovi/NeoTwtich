@@ -59,6 +59,18 @@ public static class SpanishUiTextCatalog
             [UiTextKeys.ObsRuleMediaShownLog] = "OBS: medio '{0}' mostrado en '{1}'.",
             [UiTextKeys.ObsRuleMediaHiddenLog] = "OBS: medio oculto en '{0}'.",
 
+            [UiTextKeys.BackgroundAlexaOnTitle] = "Fondo Alexa encendido",
+            [UiTextKeys.BackgroundAlexaOffTitle] = "Fondo Alexa apagado",
+            [UiTextKeys.BackgroundMissingComLog] = "No puedo aplicar fondo sin puerto COM.",
+            [UiTextKeys.BackgroundArduinoConnectFailureLog] = "Arduino: no pude aplicar fondo en {0}. Revisa el puerto y conecta manualmente.",
+            [UiTextKeys.BackgroundArduinoConnectFailureCrash] = "No se pudo conectar Arduino para aplicar fondo en {0}.",
+            [UiTextKeys.BackgroundAppliedLog] = "Fondo aplicado: {0}.",
+            [UiTextKeys.BackgroundAlexaSentLog] = "Alexa fondo: {0}.",
+            [UiTextKeys.BackgroundAlexaFailureCrash] = "No se pudo enviar fondo Alexa '{0}'.",
+            [UiTextKeys.BackgroundAlexaFailureLog] = "Alexa fondo: {0}",
+            [UiTextKeys.BackgroundScheduledFailureCrash] = "No se pudo aplicar el fondo programado.",
+            [UiTextKeys.BackgroundScheduledFailureLog] = "Fondo: {0}",
+
             [UiTextKeys.TrayBackgroundTitle] = "{0} sigue activo",
             [UiTextKeys.TrayBackgroundText] = "La app quedo en segundo plano. Abrela desde el icono de la bandeja cuando la necesites.",
             [UiTextKeys.TrayHiddenLog] = "Ventana oculta en segundo plano.",

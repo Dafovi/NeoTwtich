@@ -1,5 +1,6 @@
 using System.Windows;
 using NeoTwitch.Services;
+using NeoTwitch.Services.Text;
 using NeoTwitch.ViewModels.Activity;
 
 namespace NeoTwitch;
@@ -10,12 +11,12 @@ public partial class MainWindow
     {
         ApplyWindowChromeColor();
         ConfigureActionIcons();
-        AddLog("Aplicacion lista.");
-        AddLog($"Configuracion: {_settingsStore.SettingsPath}");
-        AddLog($"Log de errores: {CrashReporter.PreferredLogPath}");
+        AddLog(_text.Get(UiTextKeys.StartupReadyLog));
+        AddLog(_text.Format(UiTextKeys.StartupSettingsPathLog, _settingsStore.SettingsPath));
+        AddLog(_text.Format(UiTextKeys.StartupCrashLogPathLog, CrashReporter.PreferredLogPath));
         if (!string.IsNullOrWhiteSpace(_settingsStore.LastLoadError))
         {
-            AddLog($"No pude leer la configuracion anterior: {_settingsStore.LastLoadError}");
+            AddLog(_text.Format(UiTextKeys.StartupPreviousSettingsReadFailureLog, _settingsStore.LastLoadError));
         }
 
         ApplyStartWithWindowsRegistration();
@@ -23,12 +24,12 @@ public partial class MainWindow
 
         if (_startupOptions.DebugMode)
         {
-            AddLog("Modo debug activo.");
+            AddLog(_text.Get(UiTextKeys.StartupDebugModeLog));
         }
 
         if (_startupOptions.SuppressAutoConnect)
         {
-            AddLog("Conexiones automaticas omitidas por opciones de depuracion.", ActivityLogKind.Important);
+            AddLog(_text.Get(UiTextKeys.StartupAutoConnectSuppressedLog), ActivityLogKind.Important);
         }
 
         if (_config.StartHidden && !_startupOptions.SuppressStartHidden)
@@ -45,8 +46,8 @@ public partial class MainWindow
             }
             catch (Exception ex)
             {
-                CrashReporter.Log(ex, $"No se pudo conectar Arduino automaticamente en {_config.SerialPort}.");
-                AddLog($"Arduino: no pude conectar {_config.SerialPort}. Las luces quedan desactivadas hasta reconectar el puerto.", ActivityLogKind.Important);
+                CrashReporter.Log(ex, _text.Format(UiTextKeys.StartupArduinoAutoConnectFailureCrash, _config.SerialPort));
+                AddLog(_text.Format(UiTextKeys.StartupArduinoAutoConnectFailureLog, _config.SerialPort), ActivityLogKind.Important);
                 UpdateStatusText();
             }
         }

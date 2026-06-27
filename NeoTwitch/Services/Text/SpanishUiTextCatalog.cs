@@ -156,7 +156,15 @@ public static class SpanishUiTextCatalog
             [UiTextKeys.AppProcessUnhandledLog] = "Fallo no controlado del proceso.",
             [UiTextKeys.AppProcessUnhandledObjectLog] = "Fallo no controlado del proceso: {0}",
             [UiTextKeys.AppBackgroundTaskUnhandledLog] = "Fallo no observado en una tarea en segundo plano.",
-            [UiTextKeys.AppFatalErrorMessage] = "La app no pudo iniciar correctamente.\n\nDetalle: {0}\n\nLog: {1}"
+            [UiTextKeys.AppFatalErrorMessage] = "La app no pudo iniciar correctamente.\n\nDetalle: {0}\n\nLog: {1}",
+            [UiTextKeys.StartupReadyLog] = "Aplicacion lista.",
+            [UiTextKeys.StartupSettingsPathLog] = "Configuracion: {0}",
+            [UiTextKeys.StartupCrashLogPathLog] = "Log de errores: {0}",
+            [UiTextKeys.StartupPreviousSettingsReadFailureLog] = "No pude leer la configuracion anterior: {0}",
+            [UiTextKeys.StartupDebugModeLog] = "Modo debug activo.",
+            [UiTextKeys.StartupAutoConnectSuppressedLog] = "Conexiones automaticas omitidas por opciones de depuracion.",
+            [UiTextKeys.StartupArduinoAutoConnectFailureCrash] = "No se pudo conectar Arduino automaticamente en {0}.",
+            [UiTextKeys.StartupArduinoAutoConnectFailureLog] = "Arduino: no pude conectar {0}. Las luces quedan desactivadas hasta reconectar el puerto."
         };
     }
 }

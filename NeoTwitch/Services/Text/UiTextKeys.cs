@@ -153,4 +153,12 @@ public static class UiTextKeys
     public const string AppProcessUnhandledObjectLog = "app.process_unhandled_object_log";
     public const string AppBackgroundTaskUnhandledLog = "app.background_task_unhandled_log";
     public const string AppFatalErrorMessage = "app.fatal_error_message";
+    public const string StartupReadyLog = "startup.ready_log";
+    public const string StartupSettingsPathLog = "startup.settings_path_log";
+    public const string StartupCrashLogPathLog = "startup.crash_log_path_log";
+    public const string StartupPreviousSettingsReadFailureLog = "startup.previous_settings_read_failure_log";
+    public const string StartupDebugModeLog = "startup.debug_mode_log";
+    public const string StartupAutoConnectSuppressedLog = "startup.auto_connect_suppressed_log";
+    public const string StartupArduinoAutoConnectFailureCrash = "startup.arduino_auto_connect_failure_crash";
+    public const string StartupArduinoAutoConnectFailureLog = "startup.arduino_auto_connect_failure_log";
 }

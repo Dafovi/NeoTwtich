@@ -57,7 +57,11 @@ public static class SpanishUiTextCatalog
             [UiTextKeys.ObsRuleMissingMediaLog] = "OBS: la regla '{0}' no tiene un archivo valido para mostrar.",
             [UiTextKeys.ObsRuleMissingSceneLog] = "OBS: no hay una escena actual para mostrar el medio.",
             [UiTextKeys.ObsRuleMediaShownLog] = "OBS: medio '{0}' mostrado en '{1}'.",
-            [UiTextKeys.ObsRuleMediaHiddenLog] = "OBS: medio oculto en '{0}'."
+            [UiTextKeys.ObsRuleMediaHiddenLog] = "OBS: medio oculto en '{0}'.",
+
+            [UiTextKeys.TrayBackgroundTitle] = "{0} sigue activo",
+            [UiTextKeys.TrayBackgroundText] = "La app quedo en segundo plano. Abrela desde el icono de la bandeja cuando la necesites.",
+            [UiTextKeys.TrayHiddenLog] = "Ventana oculta en segundo plano."
         };
     }
 }

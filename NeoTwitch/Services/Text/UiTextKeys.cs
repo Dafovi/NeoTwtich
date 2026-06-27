@@ -54,4 +54,8 @@ public static class UiTextKeys
     public const string ObsRuleMissingSceneLog = "obs.rule_missing_scene_log";
     public const string ObsRuleMediaShownLog = "obs.rule_media_shown_log";
     public const string ObsRuleMediaHiddenLog = "obs.rule_media_hidden_log";
+
+    public const string TrayBackgroundTitle = "tray.background_title";
+    public const string TrayBackgroundText = "tray.background_text";
+    public const string TrayHiddenLog = "tray.hidden_log";
 }

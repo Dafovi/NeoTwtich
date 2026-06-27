@@ -1,6 +1,7 @@
 using System.ComponentModel;
 using System.Windows;
 using NeoTwitch.Services.Shell;
+using NeoTwitch.Services.Text;
 using NeoTwitch.Shared;
 using Forms = System.Windows.Forms;
 
@@ -78,7 +79,7 @@ public partial class MainWindow
                 _twitchSubscriptionRefreshDebounce?.Cancel();
                 Hide();
                 ShowTrayBackgroundNotice();
-                AddLog("Ventana oculta en segundo plano.");
+                AddLog(_text.Get(UiTextKeys.TrayHiddenLog));
                 return;
             }
 
@@ -99,7 +100,11 @@ public partial class MainWindow
             return;
         }
 
-        if (TrayNotificationService.TryShowBackgroundNotice(_notifyIcon, NeoTwitchProduct.DisplayName, _hasShownTrayNotice))
+        if (TrayNotificationService.TryShowBackgroundNotice(
+            _notifyIcon,
+            _text.Format(UiTextKeys.TrayBackgroundTitle, NeoTwitchProduct.DisplayName),
+            _text.Get(UiTextKeys.TrayBackgroundText),
+            _hasShownTrayNotice))
         {
             _hasShownTrayNotice = true;
         }

@@ -4,12 +4,16 @@ namespace NeoTwitch.Services.Shell;
 
 public static class TrayNotificationService
 {
-    public static bool TryShowBackgroundNotice(Forms.NotifyIcon notifyIcon, string appName, bool alreadyShown)
+    public static bool TryShowBackgroundNotice(
+        Forms.NotifyIcon notifyIcon,
+        string title,
+        string text,
+        bool alreadyShown)
     {
         try
         {
-            notifyIcon.BalloonTipTitle = $"{appName} sigue activo";
-            notifyIcon.BalloonTipText = "La app quedo en segundo plano. Abrela desde el icono de la bandeja cuando la necesites.";
+            notifyIcon.BalloonTipTitle = title;
+            notifyIcon.BalloonTipText = text;
             notifyIcon.BalloonTipIcon = Forms.ToolTipIcon.Info;
             notifyIcon.ShowBalloonTip(alreadyShown ? 2500 : 4000);
             return true;

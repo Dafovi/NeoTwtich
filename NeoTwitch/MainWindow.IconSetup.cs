@@ -1,5 +1,6 @@
 using System.Windows;
 using System.Windows.Controls;
+using NeoTwitch.Services.Text;
 using NeoTwitch.Services.Ui;
 using static NeoTwitch.Services.Ui.ThemeElementClassifier;
 using WpfButton = System.Windows.Controls.Button;
@@ -10,17 +11,17 @@ public partial class MainWindow
 {
     private void ConfigureNavigationIcons()
     {
-        NavSettingsButton.Content = ButtonIconContentService.CreateNavigationItem("Assets/Icons/nav_panel.png", "Panel");
-        NavConnectionsButton.Content = ButtonIconContentService.CreateNavigationItem("Assets/Icons/nav_connections.png", "Conexiones");
-        NavRulesButton.Content = ButtonIconContentService.CreateNavigationItem("Assets/Icons/nav_rules.png", "Alertas");
-        NavStripsButton.Content = ButtonIconContentService.CreateNavigationItem("Assets/Icons/nav_lights.png", "Luces");
-        NavAlexaButton.Content = ButtonIconContentService.CreateNavigationItem("Assets/Icons/nav_alexa.png", "Alexa");
-        NavAudioButton.Content = ButtonIconContentService.CreateNavigationItem("Assets/Icons/nav_audio.png", "Audio");
-        NavImagesButton.Content = ButtonIconContentService.CreateNavigationItem("Assets/Icons/nav_images.png", "Imagenes");
-        NavVideosButton.Content = ButtonIconContentService.CreateNavigationItem("Assets/Icons/nav_videos.png", "Videos");
-        NavObsButton.Content = ButtonIconContentService.CreateNavigationItem("Assets/Icons/nav_obs.png", "OBS");
-        NavPreferencesButton.Content = ButtonIconContentService.CreateNavigationItem("Assets/Icons/nav_settings.png", "Configuracion");
-        NavActivityButton.Content = ButtonIconContentService.CreateNavigationItem("Assets/Icons/nav_activity.png", "Actividad");
+        NavSettingsButton.Content = ButtonIconContentService.CreateNavigationItem("Assets/Icons/nav_panel.png", _text.Get(UiTextKeys.NavPanel));
+        NavConnectionsButton.Content = ButtonIconContentService.CreateNavigationItem("Assets/Icons/nav_connections.png", _text.Get(UiTextKeys.NavConnections));
+        NavRulesButton.Content = ButtonIconContentService.CreateNavigationItem("Assets/Icons/nav_rules.png", _text.Get(UiTextKeys.NavAlerts));
+        NavStripsButton.Content = ButtonIconContentService.CreateNavigationItem("Assets/Icons/nav_lights.png", _text.Get(UiTextKeys.NavLights));
+        NavAlexaButton.Content = ButtonIconContentService.CreateNavigationItem("Assets/Icons/nav_alexa.png", _text.Get(UiTextKeys.NavAlexa));
+        NavAudioButton.Content = ButtonIconContentService.CreateNavigationItem("Assets/Icons/nav_audio.png", _text.Get(UiTextKeys.NavAudio));
+        NavImagesButton.Content = ButtonIconContentService.CreateNavigationItem("Assets/Icons/nav_images.png", _text.Get(UiTextKeys.NavImages));
+        NavVideosButton.Content = ButtonIconContentService.CreateNavigationItem("Assets/Icons/nav_videos.png", _text.Get(UiTextKeys.NavVideos));
+        NavObsButton.Content = ButtonIconContentService.CreateNavigationItem("Assets/Icons/nav_obs.png", _text.Get(UiTextKeys.NavObs));
+        NavPreferencesButton.Content = ButtonIconContentService.CreateNavigationItem("Assets/Icons/nav_settings.png", _text.Get(UiTextKeys.NavConfiguration));
+        NavActivityButton.Content = ButtonIconContentService.CreateNavigationItem("Assets/Icons/nav_activity.png", _text.Get(UiTextKeys.NavActivity));
     }
 
     private void ArrangeAlertActionCards()

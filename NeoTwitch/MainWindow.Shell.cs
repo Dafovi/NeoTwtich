@@ -87,18 +87,18 @@ public partial class MainWindow
             var liveBrush = FrozenBrushFrom("#FF2D55");
             TwitchLiveDot.Fill = liveBrush;
             TwitchLiveDot.Stroke = liveBrush;
-            TwitchLiveStateText.Text = "En directo";
+            TwitchLiveStateText.Text = _text.Get(UiTextKeys.TwitchLive);
             TwitchLiveStateText.Foreground = liveBrush;
-            TopProfileText.Text = "Perfil";
+            TopProfileText.Text = _text.Get(UiTextKeys.TwitchProfile);
             TopProfileText.Foreground = palette.Text;
             return;
         }
 
         TwitchLiveDot.Fill = System.Windows.Media.Brushes.Transparent;
         TwitchLiveDot.Stroke = palette.SidebarText;
-        TwitchLiveStateText.Text = "No esta en directo";
+        TwitchLiveStateText.Text = _text.Get(UiTextKeys.TwitchOffline);
         TwitchLiveStateText.Foreground = palette.SidebarText;
-        TopProfileText.Text = "Perfil";
+        TopProfileText.Text = _text.Get(UiTextKeys.TwitchProfile);
         TopProfileText.Foreground = palette.Text;
     }
 

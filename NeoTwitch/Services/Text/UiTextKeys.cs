@@ -96,6 +96,18 @@ public static class UiTextKeys
     public const string SettingsImportFailureCrash = "settings.import_failure_crash";
     public const string SettingsImportFailureLog = "settings.import_failure_log";
 
+    public const string ConnectionConnected = "connection.connected";
+    public const string ConnectionDisconnected = "connection.disconnected";
+    public const string ConnectionDisabled = "connection.disabled";
+    public const string ConnectionConnecting = "connection.connecting";
+    public const string ConnectionWarningReview = "connection.warning_review";
+    public const string ConnectionWarningNoResponse = "connection.warning_no_response";
+    public const string ConnectionWarningConfigured = "connection.warning_configured";
+    public const string ConnectionWarningIncomplete = "connection.warning_incomplete";
+    public const string AppStateOk = "app_state.ok";
+    public const string AppStateWarning = "app_state.warning";
+    public const string AppStateError = "app_state.error";
+
     public const string TrayBackgroundTitle = "tray.background_title";
     public const string TrayBackgroundText = "tray.background_text";
     public const string TrayHiddenLog = "tray.hidden_log";

@@ -4,6 +4,18 @@ namespace NeoTwitch.Services.Status;
 
 public readonly record struct ConnectionStateVisual(string Text, string Color, string IconPath);
 
+public readonly record struct ConnectionStateLabels(
+    string Connected,
+    string Disconnected,
+    string Disabled,
+    string Connecting,
+    string Warning);
+
+public readonly record struct AppStateLabels(
+    string Ok,
+    string Warning,
+    string Error);
+
 public static class ConnectionStateService
 {
     public static ConnectionVisualState ResolveTwitch(
@@ -106,31 +118,25 @@ public static class ConnectionStateService
             : ConnectionVisualState.Disconnected;
     }
 
-    public static ConnectionStateVisual GetVisual(
-        ConnectionVisualState state,
-        string connectedText = "Conectado",
-        string disconnectedText = "Desconectado",
-        string disabledText = "Desactivado",
-        string connectingText = "Conectando",
-        string warningText = "Revisar")
+    public static ConnectionStateVisual GetVisual(ConnectionVisualState state, ConnectionStateLabels labels)
     {
         return state switch
         {
-            ConnectionVisualState.Connected => new ConnectionStateVisual(connectedText, "#22C55E", "Assets/Icons/status_ok.png"),
-            ConnectionVisualState.Connecting => new ConnectionStateVisual(connectingText, "#FFB020", "Assets/Icons/status_warning.png"),
-            ConnectionVisualState.Warning => new ConnectionStateVisual(warningText, "#FFB020", "Assets/Icons/status_warning.png"),
-            ConnectionVisualState.Disabled => new ConnectionStateVisual(disabledText, "#94A3B8", "Assets/Icons/status_empty.png"),
-            _ => new ConnectionStateVisual(disconnectedText, "#F43F5E", "Assets/Icons/status_error.png")
+            ConnectionVisualState.Connected => new ConnectionStateVisual(labels.Connected, "#22C55E", "Assets/Icons/status_ok.png"),
+            ConnectionVisualState.Connecting => new ConnectionStateVisual(labels.Connecting, "#FFB020", "Assets/Icons/status_warning.png"),
+            ConnectionVisualState.Warning => new ConnectionStateVisual(labels.Warning, "#FFB020", "Assets/Icons/status_warning.png"),
+            ConnectionVisualState.Disabled => new ConnectionStateVisual(labels.Disabled, "#94A3B8", "Assets/Icons/status_empty.png"),
+            _ => new ConnectionStateVisual(labels.Disconnected, "#F43F5E", "Assets/Icons/status_error.png")
         };
     }
 
-    public static ConnectionStateVisual GetAppStateVisual(ConnectionVisualState state)
+    public static ConnectionStateVisual GetAppStateVisual(ConnectionVisualState state, AppStateLabels labels)
     {
         return state switch
         {
-            ConnectionVisualState.Connected => new ConnectionStateVisual("Estado: Todo en orden", "#22C55E", "Assets/Icons/appstate_ok.png"),
-            ConnectionVisualState.Warning => new ConnectionStateVisual("Estado: Hay puntos por revisar", "#FFB020", "Assets/Icons/appstate_warning.png"),
-            _ => new ConnectionStateVisual("Estado: Revisa el diagnostico", "#F43F5E", "Assets/Icons/appstate_error.png")
+            ConnectionVisualState.Connected => new ConnectionStateVisual(labels.Ok, "#22C55E", "Assets/Icons/appstate_ok.png"),
+            ConnectionVisualState.Warning => new ConnectionStateVisual(labels.Warning, "#FFB020", "Assets/Icons/appstate_warning.png"),
+            _ => new ConnectionStateVisual(labels.Error, "#F43F5E", "Assets/Icons/appstate_error.png")
         };
     }
 }

@@ -2,6 +2,7 @@ using System.Windows;
 using NeoTwitch.Services;
 using NeoTwitch.Services.Diagnostics;
 using NeoTwitch.Services.Status;
+using NeoTwitch.Services.Text;
 using NeoTwitch.Services.Ui;
 using NeoTwitch.Views;
 using NeoTwitch.ViewModels.Activity;
@@ -43,7 +44,11 @@ public partial class MainWindow
 
     private void UpdateSettingsAppState(ConnectionVisualState state)
     {
-        var (text, color, imagePath) = ConnectionStateService.GetAppStateVisual(state);
+        var labels = new AppStateLabels(
+            _text.Get(UiTextKeys.AppStateOk),
+            _text.Get(UiTextKeys.AppStateWarning),
+            _text.Get(UiTextKeys.AppStateError));
+        var (text, color, imagePath) = ConnectionStateService.GetAppStateVisual(state, labels);
 
         SettingsAppStateIcon.Source = PackImageLoader.Load(imagePath);
         SettingsDiagnosticStatusText.Text = text;

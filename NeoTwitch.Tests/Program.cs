@@ -1347,17 +1347,19 @@ static class ConnectionStateTests
 
     public static void MapsVisualMetadata()
     {
-        var connected = ConnectionStateService.GetVisual(ConnectionVisualState.Connected, connectedText: "Listo");
-        var disabled = ConnectionStateService.GetVisual(ConnectionVisualState.Disabled);
+        var labels = new ConnectionStateLabels("Listo", "Fuera", "Apagado", "Entrando", "Revisar");
+        var appLabels = new AppStateLabels("Todo listo", "Hay puntos por revisar", "Hay errores");
+        var connected = ConnectionStateService.GetVisual(ConnectionVisualState.Connected, labels);
+        var disabled = ConnectionStateService.GetVisual(ConnectionVisualState.Disabled, labels);
 
         TestAssert.Equal("Listo", connected.Text);
         TestAssert.Equal("#22C55E", connected.Color);
         TestAssert.Contains("status_ok.png", connected.IconPath);
-        TestAssert.Equal("Desactivado", disabled.Text);
+        TestAssert.Equal("Apagado", disabled.Text);
         TestAssert.Contains("status_empty.png", disabled.IconPath);
 
-        var appWarning = ConnectionStateService.GetAppStateVisual(ConnectionVisualState.Warning);
-        TestAssert.Equal("Estado: Hay puntos por revisar", appWarning.Text);
+        var appWarning = ConnectionStateService.GetAppStateVisual(ConnectionVisualState.Warning, appLabels);
+        TestAssert.Equal("Hay puntos por revisar", appWarning.Text);
         TestAssert.Contains("appstate_warning.png", appWarning.IconPath);
     }
 }

@@ -100,6 +100,18 @@ public static class SpanishUiTextCatalog
             [UiTextKeys.SettingsImportFailureCrash] = "No se pudo importar la configuracion.",
             [UiTextKeys.SettingsImportFailureLog] = "Configuracion: no pude importar ({0}).",
 
+            [UiTextKeys.ConnectionConnected] = "Conectado",
+            [UiTextKeys.ConnectionDisconnected] = "Desconectado",
+            [UiTextKeys.ConnectionDisabled] = "Desactivado",
+            [UiTextKeys.ConnectionConnecting] = "Conectando",
+            [UiTextKeys.ConnectionWarningReview] = "Revisar",
+            [UiTextKeys.ConnectionWarningNoResponse] = "Sin respuesta",
+            [UiTextKeys.ConnectionWarningConfigured] = "Configurado",
+            [UiTextKeys.ConnectionWarningIncomplete] = "Incompleta",
+            [UiTextKeys.AppStateOk] = "Estado: Todo en orden",
+            [UiTextKeys.AppStateWarning] = "Estado: Hay puntos por revisar",
+            [UiTextKeys.AppStateError] = "Estado: Revisa el diagnostico",
+
             [UiTextKeys.TrayBackgroundTitle] = "{0} sigue activo",
             [UiTextKeys.TrayBackgroundText] = "La app quedo en segundo plano. Abrela desde el icono de la bandeja cuando la necesites.",
             [UiTextKeys.TrayHiddenLog] = "Ventana oculta en segundo plano.",

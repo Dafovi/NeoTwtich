@@ -1,5 +1,6 @@
 using NeoTwitch.Services.Dashboard;
 using NeoTwitch.Services.Status;
+using NeoTwitch.Services.Text;
 using NeoTwitch.Services.Ui;
 
 namespace NeoTwitch;
@@ -27,38 +28,59 @@ public partial class MainWindow
             _obsService.IsConnected,
             !string.IsNullOrWhiteSpace(_obsConnectionError)));
 
+        var reviewLabels = GetConnectionStateLabels(UiTextKeys.ConnectionWarningReview);
+        var arduinoLabels = GetConnectionStateLabels(UiTextKeys.ConnectionWarningNoResponse);
+        var alexaLabels = GetConnectionStateLabels(_config.Alexa.IsConfigured
+            ? UiTextKeys.ConnectionWarningConfigured
+            : UiTextKeys.ConnectionWarningIncomplete);
+
+        var twitchVisual = ConnectionStateService.GetVisual(states.Twitch, reviewLabels);
+        var arduinoVisual = ConnectionStateService.GetVisual(states.Arduino, arduinoLabels);
+        var alexaVisual = ConnectionStateService.GetVisual(states.Alexa, alexaLabels);
+        var obsVisual = ConnectionStateService.GetVisual(states.Obs, reviewLabels);
+
         ConnectionVisualThemeService.ApplyDashboardState(
             DashboardTwitchStateText,
             DashboardTwitchStatusIcon,
-            ConnectionStateService.GetVisual(states.Twitch, warningText: "Revisar"));
+            twitchVisual);
         ConnectionVisualThemeService.ApplyDashboardState(
             DashboardArduinoStateText,
             DashboardArduinoStatusIcon,
-            ConnectionStateService.GetVisual(states.Arduino, warningText: "Sin respuesta"));
+            arduinoVisual);
         ConnectionVisualThemeService.ApplyDashboardState(
             DashboardAlexaStateText,
             DashboardAlexaStatusIcon,
-            ConnectionStateService.GetVisual(states.Alexa, warningText: _config.Alexa.IsConfigured ? "Configurado" : "Incompleta"));
+            alexaVisual);
         ConnectionVisualThemeService.ApplyDashboardState(
             DashboardObsStateText,
             DashboardObsStatusIcon,
-            ConnectionStateService.GetVisual(states.Obs, warningText: "Revisar"));
+            obsVisual);
 
         ConnectionVisualThemeService.ApplyConnectionBadge(
             ConnectionsTwitchBadge,
             ConnectionsTwitchBadgeText,
-            ConnectionStateService.GetVisual(states.Twitch, warningText: "Revisar"));
+            twitchVisual);
         ConnectionVisualThemeService.ApplyConnectionBadge(
             ConnectionsArduinoBadge,
             ConnectionsArduinoBadgeText,
-            ConnectionStateService.GetVisual(states.Arduino, warningText: "Sin respuesta"));
+            arduinoVisual);
         ConnectionVisualThemeService.ApplyConnectionBadge(
             ConnectionsAlexaBadge,
             ConnectionsAlexaBadgeText,
-            ConnectionStateService.GetVisual(states.Alexa, warningText: _config.Alexa.IsConfigured ? "Configurado" : "Incompleta"));
+            alexaVisual);
         ConnectionVisualThemeService.ApplyConnectionBadge(
             ConnectionsObsBadge,
             ConnectionsObsBadgeText,
-            ConnectionStateService.GetVisual(states.Obs, warningText: "Revisar"));
+            obsVisual);
+    }
+
+    private ConnectionStateLabels GetConnectionStateLabels(string warningKey)
+    {
+        return new ConnectionStateLabels(
+            _text.Get(UiTextKeys.ConnectionConnected),
+            _text.Get(UiTextKeys.ConnectionDisconnected),
+            _text.Get(UiTextKeys.ConnectionDisabled),
+            _text.Get(UiTextKeys.ConnectionConnecting),
+            _text.Get(warningKey));
     }
 }

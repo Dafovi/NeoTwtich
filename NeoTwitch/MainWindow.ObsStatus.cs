@@ -2,6 +2,7 @@ using NeoTwitch.Models;
 using NeoTwitch.Services.Library;
 using NeoTwitch.Services.Obs;
 using NeoTwitch.Services.Status;
+using NeoTwitch.Services.Text;
 using NeoTwitch.ViewModels.Library;
 
 namespace NeoTwitch;
@@ -31,7 +32,8 @@ public partial class MainWindow
             _config.Obs.Port,
             _obsService.Version,
             _obsService.Scenes.Count,
-            _obsService.StudioMode);
+            _obsService.StudioMode,
+            GetObsStatusTextLabels());
 
         ObsStatusText.Text = status.StatusText;
         ObsConnectionHelpText.Text = status.StatusText;
@@ -54,6 +56,24 @@ public partial class MainWindow
         RefreshMediaLibraryView(MediaLibraryKind.Video);
         UpdateConnectionButtons();
         RefreshDashboardConnectionStates();
+    }
+
+    private ObsStatusTextLabels GetObsStatusTextLabels()
+    {
+        return new ObsStatusTextLabels(
+            _text.Get(UiTextKeys.ConnectionDisabled),
+            _text.Get(UiTextKeys.ConnectionConnecting),
+            _text.Get(UiTextKeys.ConnectionConnected),
+            _text.Get(UiTextKeys.ConnectionDisconnected),
+            _text.Get(UiTextKeys.ObsReviewConnection),
+            _text.Get(UiTextKeys.ObsDisabledStatusText),
+            _text.Get(UiTextKeys.ObsConnectedStatusText),
+            _text.Get(UiTextKeys.ObsConnectPromptStatusText),
+            _text.Get(UiTextKeys.ObsNoScene),
+            _text.Get(UiTextKeys.ObsDefaultHost),
+            _text.Get(UiTextKeys.ObsNoVersion),
+            _text.Get(UiTextKeys.ObsStudioModeEnabled),
+            _text.Get(UiTextKeys.ObsStudioModeDisabled));
     }
 
     private void ApplyObsResult(ObsConnectionResult result)

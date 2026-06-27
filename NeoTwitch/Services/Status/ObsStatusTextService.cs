@@ -10,6 +10,21 @@ public readonly record struct ObsStatusText(
     string SceneCount,
     string StudioMode);
 
+public readonly record struct ObsStatusTextLabels(
+    string Disabled,
+    string Connecting,
+    string Connected,
+    string Disconnected,
+    string ReviewConnection,
+    string DisabledStatusText,
+    string ConnectedStatusTextFormat,
+    string ConnectPromptStatusText,
+    string NoScene,
+    string DefaultHost,
+    string NoVersion,
+    string StudioModeEnabled,
+    string StudioModeDisabled);
+
 public static class ObsStatusTextService
 {
     public static ObsStatusText Build(
@@ -22,36 +37,37 @@ public static class ObsStatusTextService
         int port,
         string? version,
         int sceneCount,
-        bool studioMode)
+        bool studioMode,
+        ObsStatusTextLabels labels)
     {
         var hasError = !string.IsNullOrWhiteSpace(connectionError);
         var state = !enabled
-            ? "Desactivado"
+            ? labels.Disabled
             : isConnecting
-                ? "Conectando"
+                ? labels.Connecting
                 : isConnected
-                    ? "Conectado"
+                    ? labels.Connected
                     : hasError
-                        ? "Revisar conexion"
-                        : "Desconectado";
+                        ? labels.ReviewConnection
+                        : labels.Disconnected;
 
         var statusText = !enabled
-            ? "OBS desactivado. Las acciones OBS no se mostraran ni ejecutaran."
+            ? labels.DisabledStatusText
             : isConnected
-                ? $"OBS conectado en {FirstNonEmpty(host, "127.0.0.1")}:{port}."
+                ? string.Format(labels.ConnectedStatusTextFormat, FirstNonEmpty(host, labels.DefaultHost), port)
                 : hasError
                     ? connectionError!.Trim()
-                    : "Conecta OBS Studio para leer escenas y preparar automatizaciones.";
+                    : labels.ConnectPromptStatusText;
 
         return new ObsStatusText(
             state,
             statusText,
-            FirstNonEmpty(currentScene, "Sin escena"),
-            FirstNonEmpty(host, "127.0.0.1"),
+            FirstNonEmpty(currentScene, labels.NoScene),
+            FirstNonEmpty(host, labels.DefaultHost),
             port.ToString(),
-            FirstNonEmpty(version, "Sin version"),
+            FirstNonEmpty(version, labels.NoVersion),
             Math.Max(0, sceneCount).ToString(),
-            studioMode ? "Activado" : "Desactivado");
+            studioMode ? labels.StudioModeEnabled : labels.StudioModeDisabled);
     }
 
     private static string FirstNonEmpty(string? value, string fallback)

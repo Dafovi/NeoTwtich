@@ -132,6 +132,15 @@ public static class UiTextKeys
     public const string TwitchLive = "twitch.live";
     public const string TwitchOffline = "twitch.offline";
     public const string TwitchProfile = "twitch.profile";
+    public const string ObsReviewConnection = "obs.review_connection";
+    public const string ObsDisabledStatusText = "obs.disabled_status_text";
+    public const string ObsConnectedStatusText = "obs.connected_status_text";
+    public const string ObsConnectPromptStatusText = "obs.connect_prompt_status_text";
+    public const string ObsNoScene = "obs.no_scene";
+    public const string ObsDefaultHost = "obs.default_host";
+    public const string ObsNoVersion = "obs.no_version";
+    public const string ObsStudioModeEnabled = "obs.studio_mode_enabled";
+    public const string ObsStudioModeDisabled = "obs.studio_mode_disabled";
 
     public const string TrayBackgroundTitle = "tray.background_title";
     public const string TrayBackgroundText = "tray.background_text";

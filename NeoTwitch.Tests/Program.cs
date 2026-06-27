@@ -1417,6 +1417,21 @@ static class ConnectionButtonStateTests
 
 static class ObsStatusTextTests
 {
+    private static readonly ObsStatusTextLabels Labels = new(
+        "Desactivado",
+        "Conectando",
+        "Conectado",
+        "Desconectado",
+        "Revisar conexion",
+        "OBS desactivado. Las acciones OBS no se mostraran ni ejecutaran.",
+        "OBS conectado en {0}:{1}.",
+        "Conecta OBS Studio para leer escenas y preparar automatizaciones.",
+        "Sin escena",
+        "127.0.0.1",
+        "Sin version",
+        "Activado",
+        "Desactivado");
+
     public static void BuildsDisplayValues()
     {
         var disabled = ObsStatusTextService.Build(
@@ -1429,7 +1444,8 @@ static class ObsStatusTextTests
             port: 4455,
             version: "",
             sceneCount: -10,
-            studioMode: false);
+            studioMode: false,
+            Labels);
 
         TestAssert.Equal("Desactivado", disabled.State);
         TestAssert.Contains("OBS desactivado", disabled.StatusText);
@@ -1447,14 +1463,15 @@ static class ObsStatusTextTests
             port: 4455,
             version: "30.2",
             sceneCount: 4,
-            studioMode: true);
+            studioMode: true,
+            Labels);
 
         TestAssert.Equal("Conectado", connected.State);
         TestAssert.Contains("localhost:4455", connected.StatusText);
         TestAssert.Equal("Gameplay", connected.CurrentScene);
         TestAssert.Equal("Activado", connected.StudioMode);
 
-        var warning = ObsStatusTextService.Build(true, false, false, " fallido ", "", "127.0.0.1", 4455, "", 0, false);
+        var warning = ObsStatusTextService.Build(true, false, false, " fallido ", "", "127.0.0.1", 4455, "", 0, false, Labels);
 
         TestAssert.Equal("Revisar conexion", warning.State);
         TestAssert.Equal("fallido", warning.StatusText);

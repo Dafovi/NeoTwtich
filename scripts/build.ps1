@@ -14,6 +14,7 @@ $ErrorActionPreference = "Stop"
 
 $BuildConfig = Get-NeoTwitchBuildConfig
 $Runtime = if ([string]::IsNullOrWhiteSpace($Runtime)) { $BuildConfig.defaultRuntime } else { $Runtime }
+$Solution = Resolve-NeoTwitchPath $BuildConfig.solution
 $AppProject = Resolve-NeoTwitchPath $BuildConfig.appProject
 $InstallerProject = Resolve-NeoTwitchPath $BuildConfig.installerProject
 $TestProject = Resolve-NeoTwitchPath $BuildConfig.testProject
@@ -110,7 +111,7 @@ switch ($Mode) {
     }
     "Verify" {
         Invoke-DotNet @("run", "--project", $TestProject, "-c", $DebugConfiguration)
-        Invoke-DotNet @("build", $AppProject, "-c", $DebugConfiguration)
+        Invoke-DotNet @("build", $Solution, "-c", $DebugConfiguration)
     }
     "Portable" {
         Publish-Portable $ArtifactRoot

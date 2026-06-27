@@ -1,5 +1,6 @@
 {
   "versionProps": "Directory.Build.props",
+  "solution": "NeoTwitch.slnx",
   "artifactsDirectory": "artifacts",
   "appProject": "NeoTwitch/NeoTwitch.csproj",
   "installerProject": "NeoTwitch.Installer/NeoTwitch.Installer.csproj",

@@ -5,6 +5,16 @@ namespace NeoTwitch.Services.Diagnostics;
 internal sealed class DiagnosticReportBuilder
 {
     private readonly StringBuilder _body = new();
+    private readonly string _okLevel;
+    private readonly string _infoLevel;
+    private readonly string _warningLevel;
+
+    public DiagnosticReportBuilder(string okLevel, string infoLevel, string warningLevel)
+    {
+        _okLevel = okLevel;
+        _infoLevel = infoLevel;
+        _warningLevel = warningLevel;
+    }
 
     public int WarningCount { get; private set; }
 
@@ -20,17 +30,17 @@ internal sealed class DiagnosticReportBuilder
 
     public void Ok(string message)
     {
-        Line("[OK]", message);
+        Line(_okLevel, message);
     }
 
     public void Info(string message)
     {
-        Line("[INFO]", message);
+        Line(_infoLevel, message);
     }
 
     public void Warn(string message)
     {
-        Line("[REVISAR]", message);
+        Line(_warningLevel, message);
     }
 
     public string BuildBody()
@@ -41,7 +51,7 @@ internal sealed class DiagnosticReportBuilder
     private void Line(string level, string message)
     {
         _body.AppendLine($"{level} {message}");
-        if (string.Equals(level, "[REVISAR]", StringComparison.Ordinal))
+        if (string.Equals(level, _warningLevel, StringComparison.Ordinal))
         {
             WarningCount++;
         }

@@ -12,20 +12,32 @@ namespace NeoTwitch.Services.Diagnostics;
 public sealed class DiagnosticReportService
 {
     private readonly Func<CancellationToken, Task<VersionCheckResult>> _checkLatestAsync;
+    private readonly IUiTextService _text;
 
     public DiagnosticReportService(AppUpdateService updateService)
-        : this(updateService.CheckLatestAsync)
+        : this(updateService.CheckLatestAsync, UiTextService.CreateDefault())
     {
     }
 
     public DiagnosticReportService(Func<CancellationToken, Task<VersionCheckResult>> checkLatestAsync)
+        : this(checkLatestAsync, UiTextService.CreateDefault())
+    {
+    }
+
+    public DiagnosticReportService(
+        Func<CancellationToken, Task<VersionCheckResult>> checkLatestAsync,
+        IUiTextService text)
     {
         _checkLatestAsync = checkLatestAsync;
+        _text = text;
     }
 
     public async Task<DiagnosticResult> BuildAsync(DiagnosticReportContext context)
     {
-        var report = new DiagnosticReportBuilder();
+        var report = new DiagnosticReportBuilder(
+            _text.Get(UiTextKeys.DiagnosticsLevelOk),
+            _text.Get(UiTextKeys.DiagnosticsLevelInfo),
+            _text.Get(UiTextKeys.DiagnosticsLevelReview));
 
         await AddVersionSectionAsync(report);
         AddFilesSection(report, context);
@@ -40,8 +52,8 @@ public sealed class DiagnosticReportService
 
     private async Task AddVersionSectionAsync(DiagnosticReportBuilder report)
     {
-        report.Section("Version");
-        report.Ok($"Version local: V{NeoTwitchProduct.CurrentVersionText}.");
+        report.Section(_text.Get(UiTextKeys.DiagnosticsSectionVersion));
+        report.Ok(_text.Format(UiTextKeys.DiagnosticsReportLocalVersion, NeoTwitchProduct.CurrentVersionText));
 
         try
         {
@@ -49,54 +61,54 @@ public sealed class DiagnosticReportService
             var version = await _checkLatestAsync(versionCts.Token);
             if (version.IsUpdateAvailable)
             {
-                report.Warn($"Hay una version nueva: V{version.LatestVersion}. Releases: {version.ReleaseUrl}");
+                report.Warn(_text.Format(UiTextKeys.DiagnosticsReportUpdateAvailable, version.LatestVersion, version.ReleaseUrl));
             }
             else
             {
-                report.Ok("La app esta al dia segun el ultimo release de GitHub.");
+                report.Ok(_text.Get(UiTextKeys.DiagnosticsReportAppUpToDate));
             }
         }
         catch (Exception ex)
         {
-            report.Info($"No pude consultar GitHub ahora mismo: {ex.Message}");
+            report.Info(_text.Format(UiTextKeys.DiagnosticsReportGithubUnavailable, ex.Message));
         }
     }
 
-    private static void AddFilesSection(DiagnosticReportBuilder report, DiagnosticReportContext context)
+    private void AddFilesSection(DiagnosticReportBuilder report, DiagnosticReportContext context)
     {
-        report.Section("Archivos");
+        report.Section(_text.Get(UiTextKeys.DiagnosticsSectionFiles));
         if (File.Exists(context.SettingsPath))
         {
-            report.Ok($"Configuracion encontrada: {context.SettingsPath}");
+            report.Ok(_text.Format(UiTextKeys.DiagnosticsReportSettingsFound, context.SettingsPath));
         }
         else
         {
-            report.Warn($"No existe todavia el archivo de configuracion: {context.SettingsPath}");
+            report.Warn(_text.Format(UiTextKeys.DiagnosticsReportSettingsMissing, context.SettingsPath));
         }
 
         if (Directory.Exists(context.BackupDirectory))
         {
             var backupCount = Directory.EnumerateFiles(context.BackupDirectory, "*.json").Count();
-            report.Ok($"Backups automaticos: {backupCount} archivo(s) en {context.BackupDirectory}");
+            report.Ok(_text.Format(UiTextKeys.DiagnosticsReportBackupsFound, backupCount, context.BackupDirectory));
         }
         else
         {
-            report.Info($"La carpeta de backups se creara cuando haya cambios guardados: {context.BackupDirectory}");
+            report.Info(_text.Format(UiTextKeys.DiagnosticsReportBackupsDeferred, context.BackupDirectory));
         }
     }
 
-    private static void AddTwitchSection(DiagnosticReportBuilder report, DiagnosticReportContext context)
+    private void AddTwitchSection(DiagnosticReportBuilder report, DiagnosticReportContext context)
     {
         var config = context.Config;
 
-        report.Section("Twitch");
+        report.Section(_text.Get(UiTextKeys.DiagnosticsSectionTwitch));
         if (string.IsNullOrWhiteSpace(config.TwitchClientId))
         {
-            report.Warn("Falta el Client ID de Twitch.");
+            report.Warn(_text.Get(UiTextKeys.DiagnosticsReportMissingClientId));
         }
         else
         {
-            report.Ok("Client ID configurado.");
+            report.Ok(_text.Get(UiTextKeys.DiagnosticsReportClientIdConfigured));
         }
 
         if (config.Token.HasToken)
@@ -104,58 +116,60 @@ public sealed class DiagnosticReportService
             var missingScopes = TwitchAuthService.GetMissingScopes(config.Token);
             if (missingScopes.Count == 0)
             {
-                report.Ok($"Token guardado con permisos necesarios. Expira: {config.Token.ExpiresAt.LocalDateTime:g}.");
+                report.Ok(_text.Format(UiTextKeys.DiagnosticsReportTokenReady, config.Token.ExpiresAt.LocalDateTime));
             }
             else
             {
-                report.Warn($"Twitch necesita reautorizar permisos: {string.Join(", ", missingScopes)}.");
+                report.Warn(_text.Format(UiTextKeys.DiagnosticsReportMissingScopes, string.Join(", ", missingScopes)));
             }
         }
         else
         {
-            report.Warn("No hay sesion de Twitch autorizada.");
+            report.Warn(_text.Get(UiTextKeys.DiagnosticsReportNoTwitchSession));
         }
 
         if (config.Channel.IsReady)
         {
-            report.Ok($"Canal: {FirstNonEmpty(config.Channel.DisplayName, config.Channel.Login, "sin nombre")}.");
+            report.Ok(_text.Format(
+                UiTextKeys.DiagnosticsReportChannelReady,
+                FirstNonEmpty(config.Channel.DisplayName, config.Channel.Login, _text.Get(UiTextKeys.DiagnosticsReportUnnamed))));
         }
         else
         {
-            report.Warn("No hay canal de Twitch resuelto todavia.");
+            report.Warn(_text.Get(UiTextKeys.DiagnosticsReportChannelMissing));
         }
 
         report.Info(context.EventSubRunning
-            ? "EventSub esta escuchando eventos."
-            : "EventSub no esta activo en este momento.");
+            ? _text.Get(UiTextKeys.DiagnosticsReportEventSubRunning)
+            : _text.Get(UiTextKeys.DiagnosticsReportEventSubStopped));
 
         AddStreamStatus(report, context.StreamStatus);
     }
 
-    private static void AddStreamStatus(DiagnosticReportBuilder report, TwitchStreamStatus? streamStatus)
+    private void AddStreamStatus(DiagnosticReportBuilder report, TwitchStreamStatus? streamStatus)
     {
         if (streamStatus is { IsLive: true } live)
         {
-            report.Ok($"Canal en directo con {live.ViewerCount} espectadores.");
+            report.Ok(_text.Format(UiTextKeys.DiagnosticsReportStreamLive, live.ViewerCount));
         }
         else if (streamStatus is { IsLive: false })
         {
-            report.Info("Canal sin directo activo.");
+            report.Info(_text.Get(UiTextKeys.DiagnosticsReportStreamOffline));
         }
         else
         {
-            report.Info("Estado del directo no consultado en esta sesion.");
+            report.Info(_text.Get(UiTextKeys.DiagnosticsReportStreamUnqueried));
         }
     }
 
-    private static void AddArduinoSection(DiagnosticReportBuilder report, DiagnosticReportContext context)
+    private void AddArduinoSection(DiagnosticReportBuilder report, DiagnosticReportContext context)
     {
         var config = context.Config;
 
-        report.Section("Arduino");
+        report.Section(_text.Get(UiTextKeys.DiagnosticsSectionArduino));
         if (!config.ArduinoEnabled)
         {
-            report.Info("Arduino esta desactivado en Conexiones.");
+            report.Info(_text.Get(UiTextKeys.DiagnosticsReportArduinoDisabled));
             return;
         }
 
@@ -163,80 +177,88 @@ public sealed class DiagnosticReportService
         AddArduinoPortSummary(report, config.SerialPort, ports);
 
         report.Info(context.LightHasOpenPort
-            ? $"Arduino conectado en {context.LightCurrentPort}. {context.LightAckStatusText}."
-            : "Arduino no esta conectado desde la app.");
-        report.Ok($"{config.LedStrips.Count} salida(s) LED configurada(s), {config.LedStrips.Sum(strip => strip.LedCount)} LEDs en total.");
+            ? _text.Format(UiTextKeys.DiagnosticsReportArduinoConnected, context.LightCurrentPort, context.LightAckStatusText)
+            : _text.Get(UiTextKeys.DiagnosticsReportArduinoNotConnected));
+        report.Ok(_text.Format(
+            UiTextKeys.DiagnosticsReportLedOutputs,
+            config.LedStrips.Count,
+            config.LedStrips.Sum(strip => strip.LedCount)));
     }
 
-    private static void AddArduinoPortSummary(
+    private void AddArduinoPortSummary(
         DiagnosticReportBuilder report,
         string configuredPort,
         IReadOnlyList<SerialPortInfo> ports)
     {
         if (ports.Count == 0)
         {
-            report.Warn("No encontre puertos COM disponibles.");
+            report.Warn(_text.Get(UiTextKeys.DiagnosticsReportNoComPorts));
         }
         else
         {
-            report.Info($"Puertos detectados: {string.Join(", ", ports.Select(port => port.DisplayName))}.");
+            report.Info(_text.Format(
+                UiTextKeys.DiagnosticsReportDetectedPorts,
+                string.Join(", ", ports.Select(port => port.DisplayName))));
         }
 
         if (string.IsNullOrWhiteSpace(configuredPort))
         {
-            report.Warn("No hay puerto COM configurado para Arduino.");
+            report.Warn(_text.Get(UiTextKeys.DiagnosticsReportMissingCom));
         }
         else if (ports.Any(port => string.Equals(port.PortName, configuredPort, StringComparison.OrdinalIgnoreCase)))
         {
-            report.Ok($"Puerto configurado disponible: {configuredPort}.");
+            report.Ok(_text.Format(UiTextKeys.DiagnosticsReportPortAvailable, configuredPort));
         }
         else
         {
-            report.Warn($"El puerto configurado {configuredPort} no aparece conectado ahora.");
+            report.Warn(_text.Format(UiTextKeys.DiagnosticsReportPortUnavailable, configuredPort));
         }
     }
 
-    private static void AddAlexaSection(DiagnosticReportBuilder report, AppConfig config)
+    private void AddAlexaSection(DiagnosticReportBuilder report, AppConfig config)
     {
-        report.Section("Alexa");
+        report.Section(_text.Get(UiTextKeys.DiagnosticsSectionAlexa));
         if (!config.Alexa.Enabled)
         {
-            report.Info("Alexa esta desactivada. Esto es correcto si no la quieres usar.");
+            report.Info(_text.Get(UiTextKeys.DiagnosticsReportAlexaDisabled));
         }
         else if (config.Alexa.IsConfigured)
         {
-            report.Ok("Alexa relay configurado.");
+            report.Ok(_text.Get(UiTextKeys.DiagnosticsReportAlexaConfigured));
         }
         else
         {
-            report.Warn("Alexa esta activa, pero falta una URL valida del relay.");
+            report.Warn(_text.Get(UiTextKeys.DiagnosticsReportAlexaIncomplete));
         }
 
         if (config.BackgroundAlexaEnabled)
         {
-            report.Info($"Fondo Alexa encendido: {config.BackgroundAlexaOnEventName}. Apagado: {config.BackgroundAlexaOffEventName}.");
+            report.Info(_text.Format(
+                UiTextKeys.DiagnosticsReportAlexaBackground,
+                config.BackgroundAlexaOnEventName,
+                config.BackgroundAlexaOffEventName));
         }
     }
 
-    private static void AddRulesSection(DiagnosticReportBuilder report, DiagnosticReportContext context)
+    private void AddRulesSection(DiagnosticReportBuilder report, DiagnosticReportContext context)
     {
         var config = context.Config;
 
-        report.Section("Alertas");
+        report.Section(_text.Get(UiTextKeys.DiagnosticsSectionAlerts));
         var activeRules = config.Rules.Where(rule => rule.IsEnabled).ToArray();
         if (activeRules.Length == 0)
         {
-            report.Warn("No hay reglas activas.");
+            report.Warn(_text.Get(UiTextKeys.DiagnosticsReportNoActiveRules));
         }
         else
         {
-            report.Ok($"{activeRules.Length} regla(s) activa(s) de {config.Rules.Count} total(es).");
+            report.Ok(_text.Format(UiTextKeys.DiagnosticsReportActiveRules, activeRules.Length, config.Rules.Count));
         }
 
         AddRuleWarnings(report, context, activeRules);
     }
 
-    private static void AddRuleWarnings(
+    private void AddRuleWarnings(
         DiagnosticReportBuilder report,
         DiagnosticReportContext context,
         IReadOnlyCollection<EventRule> activeRules)
@@ -247,7 +269,7 @@ public sealed class DiagnosticReportService
             .ToArray();
         if (rulesWithoutAction.Length > 0)
         {
-            report.Warn($"Alertas activas sin acciones: {FormatNameList(rulesWithoutAction)}.");
+            report.Warn(_text.Format(UiTextKeys.DiagnosticsReportRulesWithoutAction, FormatNameList(rulesWithoutAction)));
         }
 
         var missingAudio = activeRules
@@ -256,7 +278,7 @@ public sealed class DiagnosticReportService
             .ToArray();
         if (missingAudio.Length > 0)
         {
-            report.Warn($"Alertas con audio faltante: {FormatNameList(missingAudio)}.");
+            report.Warn(_text.Format(UiTextKeys.DiagnosticsReportMissingAudio, FormatNameList(missingAudio)));
         }
 
         var chatCommandsWithoutCommand = activeRules
@@ -265,7 +287,7 @@ public sealed class DiagnosticReportService
             .ToArray();
         if (chatCommandsWithoutCommand.Length > 0)
         {
-            report.Warn($"Comandos de chat sin comando escrito: {FormatNameList(chatCommandsWithoutCommand)}.");
+            report.Warn(_text.Format(UiTextKeys.DiagnosticsReportChatCommandsMissing, FormatNameList(chatCommandsWithoutCommand)));
         }
 
         var rulesWithInvalidPins = activeRules
@@ -274,40 +296,48 @@ public sealed class DiagnosticReportService
             .ToArray();
         if (rulesWithInvalidPins.Length > 0)
         {
-            report.Warn($"Alertas con pines LED no validos: {FormatNameList(rulesWithInvalidPins)}.");
+            report.Warn(_text.Format(UiTextKeys.DiagnosticsReportInvalidPins, FormatNameList(rulesWithInvalidPins)));
         }
 
         var activeAlexaRules = activeRules.Count(rule => rule.SendAlexaEvent);
         if (activeAlexaRules > 0 && !context.Config.Alexa.IsConfigured)
         {
-            report.Warn($"{activeAlexaRules} regla(s) intentan enviar Alexa, pero el relay no esta listo.");
+            report.Warn(_text.Format(UiTextKeys.DiagnosticsReportAlexaRulesIncomplete, activeAlexaRules));
         }
     }
 
-    private static void AddBackgroundAndQueueSection(DiagnosticReportBuilder report, AppConfig config)
+    private void AddBackgroundAndQueueSection(DiagnosticReportBuilder report, AppConfig config)
     {
-        report.Section("Fondo y cola");
+        report.Section(_text.Get(UiTextKeys.DiagnosticsSectionBackgroundQueue));
         report.Info(config.BackgroundEnabled
-            ? $"Fondo LED activo: {DisplayNames.For(config.BackgroundPattern)} en pines {FirstNonEmpty(config.BackgroundTargetPins, "todos")}."
-            : "Fondo LED apagado.");
+            ? _text.Format(
+                UiTextKeys.DiagnosticsReportBackgroundLedActive,
+                DisplayNames.For(config.BackgroundPattern),
+                FirstNonEmpty(config.BackgroundTargetPins, _text.Get(UiTextKeys.DiagnosticsReportAllPins)))
+            : _text.Get(UiTextKeys.DiagnosticsReportBackgroundLedOff));
         report.Info(config.BackgroundAlexaEnabled
-            ? $"Fondo Alexa activo con evento {config.BackgroundAlexaOnEventName}."
-            : "Fondo Alexa apagado.");
-        report.Ok($"Cola: misma regla max {config.MaxQueuedSameRuleAlerts}, cooldown {config.SameRuleQueueCooldownMs} ms. Distintas max {config.MaxQueuedDifferentRuleAlerts}, cooldown {config.DifferentRuleQueueCooldownMs} ms.");
+            ? _text.Format(UiTextKeys.DiagnosticsReportBackgroundAlexaActive, config.BackgroundAlexaOnEventName)
+            : _text.Get(UiTextKeys.DiagnosticsReportBackgroundAlexaOff));
+        report.Ok(_text.Format(
+            UiTextKeys.DiagnosticsReportQueue,
+            config.MaxQueuedSameRuleAlerts,
+            config.SameRuleQueueCooldownMs,
+            config.MaxQueuedDifferentRuleAlerts,
+            config.DifferentRuleQueueCooldownMs));
     }
 
-    private static string BuildReport(DiagnosticReportBuilder report)
+    private string BuildReport(DiagnosticReportBuilder report)
     {
         var header = new StringBuilder();
-        header.AppendLine("Diagnostico Neo Twitch");
+        header.AppendLine(_text.Get(UiTextKeys.DiagnosticsReportTitle));
         header.AppendLine(report.WarningCount == 0
-            ? "Estado general: sin advertencias."
-            : $"Estado general: {report.WarningCount} punto(s) por revisar.");
-        header.AppendLine($"Fecha: {DateTime.Now:g}");
+            ? _text.Get(UiTextKeys.DiagnosticsReportStateOk)
+            : _text.Format(UiTextKeys.DiagnosticsReportStateWarnings, report.WarningCount));
+        header.AppendLine(_text.Format(UiTextKeys.DiagnosticsReportDate, DateTime.Now));
         header.AppendLine();
         header.Append(report.BuildBody());
         header.AppendLine();
-        header.AppendLine("Este diagnostico no ejecuta eventos, no prende luces, no envia chat y no dispara Alexa.");
+        header.AppendLine(_text.Get(UiTextKeys.DiagnosticsReportFooter));
         return header.ToString();
     }
 }

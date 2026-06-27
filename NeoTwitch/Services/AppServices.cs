@@ -81,6 +81,7 @@ public sealed class AppServices
     {
         var activityLog = new ActivityLogService();
         var updateService = new AppUpdateService();
+        var text = UiTextService.CreateDefault();
         return new AppServices(
             new SettingsStore(),
             new AudioPlayerService(),
@@ -92,8 +93,8 @@ public sealed class AppServices
             new ObsOverlayService(),
             new WindowsStartupService(),
             updateService,
-            new DiagnosticReportService(updateService),
-            UiTextService.CreateDefault(),
+            new DiagnosticReportService(updateService.CheckLatestAsync, text),
+            text,
             activityLog,
             new ActivityViewModel(activityLog),
             new DashboardSummaryService(),

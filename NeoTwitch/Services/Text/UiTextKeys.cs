@@ -58,4 +58,13 @@ public static class UiTextKeys
     public const string TrayBackgroundTitle = "tray.background_title";
     public const string TrayBackgroundText = "tray.background_text";
     public const string TrayHiddenLog = "tray.hidden_log";
+
+    public const string UpdateUpToDateLog = "update.up_to_date_log";
+    public const string UpdateAvailableLog = "update.available_log";
+    public const string UpdatePromptInPlace = "update.prompt_in_place";
+    public const string UpdatePromptReleasePage = "update.prompt_release_page";
+    public const string UpdateAvailableTitle = "update.available_title";
+    public const string UpdateCheckFailedLog = "update.check_failed_log";
+    public const string UpdateLaunchingInstallerLog = "update.launching_installer_log";
+    public const string UpdateLaunchFailedLog = "update.launch_failed_log";
 }

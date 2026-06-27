@@ -1,5 +1,6 @@
 using System.Windows;
 using NeoTwitch.Services;
+using NeoTwitch.Services.Text;
 using NeoTwitch.ViewModels.Activity;
 using WpfMessageBox = System.Windows.MessageBox;
 
@@ -16,20 +17,20 @@ public partial class MainWindow
 
             if (!result.IsUpdateAvailable)
             {
-                AddLog($"Version: V{result.CurrentVersion} al dia.");
+                AddLog(_text.Format(UiTextKeys.UpdateUpToDateLog, result.CurrentVersion));
                 return;
             }
 
-            AddLog($"Version: hay una nueva version V{result.LatestVersion}.", ActivityLogKind.Important);
+            AddLog(_text.Format(UiTextKeys.UpdateAvailableLog, result.LatestVersion), ActivityLogKind.Important);
             var installerPath = _updateService.FindLocalInstallerPath();
             var canUpdateInPlace = !string.IsNullOrWhiteSpace(installerPath);
             var prompt = canUpdateInPlace
-                ? $"Hay una nueva version de Neo Twitch.\n\nTu version: V{result.CurrentVersion}\nUltima version: V{result.LatestVersion}\n\nQuieres actualizar ahora? La app se cerrara un momento y el instalador hara el reemplazo."
-                : $"Hay una nueva version de Neo Twitch.\n\nTu version: V{result.CurrentVersion}\nUltima version: V{result.LatestVersion}\n\nNo encontre el instalador local. Quieres abrir la pagina de releases para descargarla?";
+                ? _text.Format(UiTextKeys.UpdatePromptInPlace, result.CurrentVersion, result.LatestVersion)
+                : _text.Format(UiTextKeys.UpdatePromptReleasePage, result.CurrentVersion, result.LatestVersion);
             var answer = WpfMessageBox.Show(
                 this,
                 prompt,
-                "Actualizacion disponible",
+                _text.Get(UiTextKeys.UpdateAvailableTitle),
                 MessageBoxButton.YesNo,
                 MessageBoxImage.Information);
 
@@ -47,7 +48,7 @@ public partial class MainWindow
         }
         catch (Exception ex)
         {
-            AddLog($"Version: no pude consultar actualizaciones ({ex.Message}).");
+            AddLog(_text.Format(UiTextKeys.UpdateCheckFailedLog, ex.Message));
         }
     }
 
@@ -56,12 +57,12 @@ public partial class MainWindow
         try
         {
             _updateService.LaunchInstallerUpdate(installerPath, result);
-            AddLog($"Version: iniciando actualizador a V{result.LatestVersion}.", ActivityLogKind.Important);
+            AddLog(_text.Format(UiTextKeys.UpdateLaunchingInstallerLog, result.LatestVersion), ActivityLogKind.Important);
             await ExitApplicationAsync();
         }
         catch (Exception ex)
         {
-            AddLog($"Version: no pude abrir el actualizador ({ex.Message}).", ActivityLogKind.Important);
+            AddLog(_text.Format(UiTextKeys.UpdateLaunchFailedLog, ex.Message), ActivityLogKind.Important);
             _updateService.OpenReleasePage(result.ReleaseUrl);
         }
     }

@@ -61,7 +61,16 @@ public static class SpanishUiTextCatalog
 
             [UiTextKeys.TrayBackgroundTitle] = "{0} sigue activo",
             [UiTextKeys.TrayBackgroundText] = "La app quedo en segundo plano. Abrela desde el icono de la bandeja cuando la necesites.",
-            [UiTextKeys.TrayHiddenLog] = "Ventana oculta en segundo plano."
+            [UiTextKeys.TrayHiddenLog] = "Ventana oculta en segundo plano.",
+
+            [UiTextKeys.UpdateUpToDateLog] = "Version: V{0} al dia.",
+            [UiTextKeys.UpdateAvailableLog] = "Version: hay una nueva version V{0}.",
+            [UiTextKeys.UpdatePromptInPlace] = "Hay una nueva version de Neo Twitch.\n\nTu version: V{0}\nUltima version: V{1}\n\nQuieres actualizar ahora? La app se cerrara un momento y el instalador hara el reemplazo.",
+            [UiTextKeys.UpdatePromptReleasePage] = "Hay una nueva version de Neo Twitch.\n\nTu version: V{0}\nUltima version: V{1}\n\nNo encontre el instalador local. Quieres abrir la pagina de releases para descargarla?",
+            [UiTextKeys.UpdateAvailableTitle] = "Actualizacion disponible",
+            [UiTextKeys.UpdateCheckFailedLog] = "Version: no pude consultar actualizaciones ({0}).",
+            [UiTextKeys.UpdateLaunchingInstallerLog] = "Version: iniciando actualizador a V{0}.",
+            [UiTextKeys.UpdateLaunchFailedLog] = "Version: no pude abrir el actualizador ({0})."
         };
     }
 }

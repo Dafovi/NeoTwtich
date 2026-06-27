@@ -1731,13 +1731,65 @@ static class DashboardSummaryDisplayTests
 
 static class DashboardStatusTextTests
 {
+    private static readonly DashboardStatusTextLabels Labels = new(
+        "Sin Twitch",
+        "Sin login",
+        "Canal Twitch",
+        "Autorizando",
+        "Conectando",
+        "Revisar conexion",
+        "Eventos conectados",
+        "Sesion autorizada",
+        "Sin conectar",
+        "Esperando autorizacion de Twitch.",
+        "Conectando EventSub y chat de Twitch.",
+        "En directo en {0}. {1} espectadores.",
+        "En directo. {0} espectadores.",
+        "Canal sin directo activo.",
+        "Escuchando eventos. Directo sin consultar.",
+        "Listo para conectar eventos.",
+        "Desactivado",
+        "Conectando",
+        "Conectado en {0}",
+        "COM",
+        "Verificando Arduino",
+        "Sin conectar",
+        "Las luces Arduino no se mostraran ni ejecutaran.",
+        "Intentando conectar con {0}.",
+        "el puerto configurado",
+        "{0} de fondo",
+        "Fondo apagado",
+        "{0} baudios. {1} tiras, {2} LEDs. {3}.",
+        "{0} baudios. Modo compatible sin ACK; las luces pueden funcionar, pero el sketch no confirmo comandos.",
+        "El puerto esta abierto; esperando confirmacion del sketch.",
+        "Puerto: {0}. {1} tiras, {2} LEDs.",
+        "sin COM",
+        "Sin pines",
+        "Pin {0}",
+        "Verificando",
+        "Conectado",
+        "Desconectado",
+        "Conectando",
+        "Alexa lista. Las reglas pueden enviar eventos a la Skill/relay.",
+        "Alexa activa, falta configurar una URL valida de Skill/relay.",
+        "Alexa desactivada. Las reglas no mostraran acciones de Alexa.",
+        "Relay conectado",
+        "Relay configurado",
+        "Configuracion incompleta",
+        "Fondo: {0}",
+        "Fondo sin mantener",
+        "Al finalizar: {0}",
+        "Al finalizar: conserva estado",
+        "{0}. {1}.");
+
     public static void FormatsLiveTwitchStatus()
     {
         var text = DashboardStatusTextService.BuildTwitchStatusText(
             isAuthorizing: false,
             isConnecting: false,
             new TwitchStreamStatus(true, 23, "Stream", "Just Chatting"),
-            eventSubRunning: true);
+            eventSubRunning: true,
+            Labels);
 
         TestAssert.Equal("En directo en Just Chatting. 23 espectadores.", text);
     }
@@ -1747,7 +1799,8 @@ static class DashboardStatusTextTests
         var channel = DashboardStatusTextService.BuildChannelDisplayText(
             channelReady: true,
             displayName: "",
-            login: "neo_streamer");
+            login: "neo_streamer",
+            Labels);
 
         TestAssert.Equal("neo_streamer", channel.Name);
         TestAssert.Equal("@neo_streamer", channel.Login);
@@ -1758,14 +1811,16 @@ static class DashboardStatusTextTests
                 isConnecting: false,
                 hasConnectionError: true,
                 eventSubRunning: true,
-                hasToken: true));
+                hasToken: true,
+                Labels));
         TestAssert.Equal(
             "Relay configurado",
             DashboardStatusTextService.BuildAlexaConnectionText(
                 enabled: true,
                 isConfigured: true,
                 isConnecting: false,
-                relayConnected: false));
+                relayConnected: false,
+                Labels));
     }
 
     public static void FormatsArduinoStatus()
@@ -1778,7 +1833,8 @@ static class DashboardStatusTextTests
                 hasConfirmedAck: true,
                 compatibleWithoutAck: false,
                 hasOpenPort: true,
-                currentPort: "COM3"));
+                currentPort: "COM3",
+                Labels));
         TestAssert.Equal(
             "115200 baudios. 1 tiras, 30 LEDs. Color fijo de fondo.",
             DashboardStatusTextService.BuildArduinoStatusText(
@@ -1792,7 +1848,8 @@ static class DashboardStatusTextTests
                 stripCount: 1,
                 totalLeds: 30,
                 backgroundEnabled: true,
-                backgroundPattern: LightPattern.Solid));
+                backgroundPattern: LightPattern.Solid,
+                Labels));
 
         var lights = DashboardStatusTextService.BuildLightsArduinoStatusText(
             arduinoEnabled: true,
@@ -1801,7 +1858,8 @@ static class DashboardStatusTextTests
             hasOpenPort: true,
             currentPort: "",
             configuredPort: "COM4",
-            [new LedStripConfig { Pin = 6, LedCount = 30 }]);
+            [new LedStripConfig { Pin = 6, LedCount = 30 }],
+            Labels);
 
         TestAssert.Equal("Verificando", lights.Device);
         TestAssert.Equal("COM4", lights.Port);
@@ -1815,7 +1873,8 @@ static class DashboardStatusTextTests
             backgroundEnabled: true,
             backgroundOnEventName: "luz_encendida",
             turnOffAfterEvent: false,
-            backgroundOffEventName: "luz_apagada");
+            backgroundOffEventName: "luz_apagada",
+            Labels);
 
         TestAssert.Equal("Fondo: luz_encendida. Al finalizar: conserva estado.", text);
     }

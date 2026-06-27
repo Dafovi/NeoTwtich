@@ -5,17 +5,21 @@ namespace NeoTwitch.Services.Dashboard;
 
 public static class DashboardStatusTextService
 {
-    public static ChannelDisplayText BuildChannelDisplayText(bool channelReady, string? displayName, string? login)
+    public static ChannelDisplayText BuildChannelDisplayText(
+        bool channelReady,
+        string? displayName,
+        string? login,
+        DashboardStatusTextLabels labels)
     {
         if (!channelReady)
         {
-            return new ChannelDisplayText("Sin Twitch", "Sin login");
+            return new ChannelDisplayText(labels.NoTwitch, labels.NoLogin);
         }
 
         var normalizedLogin = FirstNonEmpty(login, "");
-        var channelName = FirstNonEmpty(displayName, normalizedLogin, "Canal Twitch");
+        var channelName = FirstNonEmpty(displayName, normalizedLogin, labels.DefaultChannelName);
         var loginText = string.IsNullOrWhiteSpace(normalizedLogin)
-            ? "Sin login"
+            ? labels.NoLogin
             : $"@{normalizedLogin}";
 
         return new ChannelDisplayText(channelName, loginText);
@@ -26,63 +30,64 @@ public static class DashboardStatusTextService
         bool isConnecting,
         bool hasConnectionError,
         bool eventSubRunning,
-        bool hasToken)
+        bool hasToken,
+        DashboardStatusTextLabels labels)
     {
         if (isAuthorizing)
         {
-            return "Autorizando";
+            return labels.TwitchAuthorizing;
         }
 
         if (isConnecting)
         {
-            return "Conectando";
+            return labels.TwitchConnecting;
         }
 
         if (hasConnectionError)
         {
-            return "Revisar conexion";
+            return labels.TwitchReviewConnection;
         }
 
         if (eventSubRunning)
         {
-            return "Eventos conectados";
+            return labels.TwitchEventsConnected;
         }
 
-        return hasToken ? "Sesion autorizada" : "Sin conectar";
+        return hasToken ? labels.TwitchSessionAuthorized : labels.TwitchDisconnected;
     }
 
     public static string BuildTwitchStatusText(
         bool isAuthorizing,
         bool isConnecting,
         TwitchStreamStatus? streamStatus,
-        bool eventSubRunning)
+        bool eventSubRunning,
+        DashboardStatusTextLabels labels)
     {
         if (isAuthorizing)
         {
-            return "Esperando autorizacion de Twitch.";
+            return labels.TwitchWaitingAuthorization;
         }
 
         if (isConnecting)
         {
-            return "Conectando EventSub y chat de Twitch.";
+            return labels.TwitchConnectingEvents;
         }
 
         if (streamStatus is { IsLive: true } live)
         {
-            var game = string.IsNullOrWhiteSpace(live.GameName)
-                ? ""
-                : $" en {live.GameName}";
-            return $"En directo{game}. {live.ViewerCount} espectadores.";
+            return string.IsNullOrWhiteSpace(live.GameName)
+                ? string.Format(labels.TwitchLiveFormat, live.ViewerCount)
+                : string.Format(labels.TwitchLiveWithGameFormat, live.GameName, live.ViewerCount);
         }
 
         if (streamStatus is { IsLive: false })
         {
-            return "Canal sin directo activo.";
+            return labels.TwitchOffline;
         }
 
         return eventSubRunning
-            ? "Escuchando eventos. Directo sin consultar."
-            : "Listo para conectar eventos.";
+            ? labels.TwitchListeningUnqueried
+            : labels.TwitchReady;
     }
 
     public static string BuildArduinoConnectionText(
@@ -91,24 +96,25 @@ public static class DashboardStatusTextService
         bool hasConfirmedAck,
         bool compatibleWithoutAck,
         bool hasOpenPort,
-        string? currentPort)
+        string? currentPort,
+        DashboardStatusTextLabels labels)
     {
         if (!arduinoEnabled)
         {
-            return "Desactivado";
+            return labels.ArduinoDisabled;
         }
 
         if (isConnecting)
         {
-            return "Conectando";
+            return labels.ArduinoConnecting;
         }
 
         if (hasConfirmedAck || compatibleWithoutAck)
         {
-            return $"Conectado en {FirstNonEmpty(currentPort, "COM")}";
+            return string.Format(labels.ArduinoConnectedFormat, FirstNonEmpty(currentPort, labels.ArduinoDefaultPort));
         }
 
-        return hasOpenPort ? "Verificando Arduino" : "Sin conectar";
+        return hasOpenPort ? labels.ArduinoVerifying : labels.ArduinoDisconnected;
     }
 
     public static string BuildArduinoStatusText(
@@ -122,37 +128,38 @@ public static class DashboardStatusTextService
         int stripCount,
         int totalLeds,
         bool backgroundEnabled,
-        LightPattern backgroundPattern)
+        LightPattern backgroundPattern,
+        DashboardStatusTextLabels labels)
     {
         if (!arduinoEnabled)
         {
-            return "Las luces Arduino no se mostraran ni ejecutaran.";
+            return labels.ArduinoDisabledStatus;
         }
 
         if (isConnecting)
         {
-            return $"Intentando conectar con {FirstNonEmpty(serialPort, "el puerto configurado")}.";
+            return string.Format(labels.ArduinoConnectingStatusFormat, FirstNonEmpty(serialPort, labels.ArduinoConfiguredPortFallback));
         }
 
         if (hasConfirmedAck)
         {
             var activeBackground = backgroundEnabled
-                ? $"{DisplayNames.For(backgroundPattern)} de fondo"
-                : "Fondo apagado";
-            return $"{baudRate} baudios. {stripCount} tiras, {totalLeds} LEDs. {activeBackground}.";
+                ? string.Format(labels.ArduinoBackgroundFormat, DisplayNames.For(backgroundPattern))
+                : labels.ArduinoBackgroundOff;
+            return string.Format(labels.ArduinoAckStatusFormat, baudRate, stripCount, totalLeds, activeBackground);
         }
 
         if (compatibleWithoutAck)
         {
-            return $"{baudRate} baudios. Modo compatible sin ACK; las luces pueden funcionar, pero el sketch no confirmo comandos.";
+            return string.Format(labels.ArduinoCompatibleStatusFormat, baudRate);
         }
 
         if (hasOpenPort)
         {
-            return "El puerto esta abierto; esperando confirmacion del sketch.";
+            return labels.ArduinoOpenPortStatus;
         }
 
-        return $"Puerto: {FirstNonEmpty(serialPort, "sin COM")}. {stripCount} tiras, {totalLeds} LEDs.";
+        return string.Format(labels.ArduinoPortSummaryFormat, FirstNonEmpty(serialPort, labels.ArduinoNoCom), stripCount, totalLeds);
     }
 
     public static LightsArduinoStatusText BuildLightsArduinoStatusText(
@@ -162,64 +169,71 @@ public static class DashboardStatusTextService
         bool hasOpenPort,
         string? currentPort,
         string? configuredPort,
-        IEnumerable<LedStripConfig> ledStrips)
+        IEnumerable<LedStripConfig> ledStrips,
+        DashboardStatusTextLabels labels)
     {
         var strips = ledStrips.ToList();
         var totalLeds = strips.Sum(strip => strip.LedCount);
         var pins = strips.Count == 0
-            ? "Sin pines"
-            : string.Join(", ", strips.Select(strip => $"Pin {strip.Pin}"));
+            ? labels.LightsNoPins
+            : string.Join(", ", strips.Select(strip => string.Format(labels.LightsPinFormat, strip.Pin)));
         var device = !arduinoEnabled
-            ? "Desactivado"
+            ? labels.ArduinoDisabled
             : hasConfirmedAck || compatibleWithoutAck
-                ? "Conectado"
+                ? labels.ConnectionConnected
                 : hasOpenPort
-                    ? "Verificando"
-                    : "Desconectado";
+                    ? labels.LightsVerifying
+                    : labels.ConnectionDisconnected;
         var port = hasOpenPort
-            ? FirstNonEmpty(currentPort, configuredPort, "Sin COM")
-            : FirstNonEmpty(configuredPort, "Sin COM");
+            ? FirstNonEmpty(currentPort, configuredPort, labels.ArduinoNoCom)
+            : FirstNonEmpty(configuredPort, labels.ArduinoNoCom);
 
         return new LightsArduinoStatusText(device, port, totalLeds.ToString(), pins);
     }
 
-    public static string BuildAlexaStatusText(bool enabled, bool isConfigured)
+    public static string BuildAlexaStatusText(bool enabled, bool isConfigured, DashboardStatusTextLabels labels)
     {
         return isConfigured
-            ? "Alexa lista. Las reglas pueden enviar eventos a la Skill/relay."
+            ? labels.AlexaReady
             : enabled
-                ? "Alexa activa, falta configurar una URL valida de Skill/relay."
-                : "Alexa desactivada. Las reglas no mostraran acciones de Alexa.";
+                ? labels.AlexaMissingUrl
+                : labels.AlexaDisabled;
     }
 
-    public static string BuildAlexaConnectionText(bool enabled, bool isConfigured, bool isConnecting, bool relayConnected)
+    public static string BuildAlexaConnectionText(
+        bool enabled,
+        bool isConfigured,
+        bool isConnecting,
+        bool relayConnected,
+        DashboardStatusTextLabels labels)
     {
         return isConfigured
             ? isConnecting
-                ? "Conectando"
+                ? labels.ConnectionConnecting
                 : relayConnected
-                    ? "Relay conectado"
-                    : "Relay configurado"
+                    ? labels.AlexaRelayConnected
+                    : labels.AlexaRelayConfigured
             : enabled
-                ? "Configuracion incompleta"
-                : "Desactivado";
+                ? labels.AlexaIncomplete
+                : labels.ArduinoDisabled;
     }
 
     public static string BuildAlexaSidebarStatusText(
         bool backgroundEnabled,
         string backgroundOnEventName,
         bool turnOffAfterEvent,
-        string backgroundOffEventName)
+        string backgroundOffEventName,
+        DashboardStatusTextLabels labels)
     {
         var background = backgroundEnabled
-            ? $"Fondo: {backgroundOnEventName}"
-            : "Fondo sin mantener";
+            ? string.Format(labels.AlexaBackgroundFormat, backgroundOnEventName)
+            : labels.AlexaBackgroundOff;
 
         var endBehavior = turnOffAfterEvent
-            ? $"Al finalizar: {backgroundOffEventName}"
-            : "Al finalizar: conserva estado";
+            ? string.Format(labels.AlexaEndOffFormat, backgroundOffEventName)
+            : labels.AlexaEndKeep;
 
-        return $"{background}. {endBehavior}.";
+        return string.Format(labels.AlexaSidebarFormat, background, endBehavior);
     }
 
     private static string FirstNonEmpty(params string?[] values)
@@ -239,3 +253,54 @@ public static class DashboardStatusTextService
 public sealed record ChannelDisplayText(string Name, string Login);
 
 public sealed record LightsArduinoStatusText(string Device, string Port, string LedCount, string Pins);
+
+public sealed record DashboardStatusTextLabels(
+    string NoTwitch,
+    string NoLogin,
+    string DefaultChannelName,
+    string TwitchAuthorizing,
+    string TwitchConnecting,
+    string TwitchReviewConnection,
+    string TwitchEventsConnected,
+    string TwitchSessionAuthorized,
+    string TwitchDisconnected,
+    string TwitchWaitingAuthorization,
+    string TwitchConnectingEvents,
+    string TwitchLiveWithGameFormat,
+    string TwitchLiveFormat,
+    string TwitchOffline,
+    string TwitchListeningUnqueried,
+    string TwitchReady,
+    string ArduinoDisabled,
+    string ArduinoConnecting,
+    string ArduinoConnectedFormat,
+    string ArduinoDefaultPort,
+    string ArduinoVerifying,
+    string ArduinoDisconnected,
+    string ArduinoDisabledStatus,
+    string ArduinoConnectingStatusFormat,
+    string ArduinoConfiguredPortFallback,
+    string ArduinoBackgroundFormat,
+    string ArduinoBackgroundOff,
+    string ArduinoAckStatusFormat,
+    string ArduinoCompatibleStatusFormat,
+    string ArduinoOpenPortStatus,
+    string ArduinoPortSummaryFormat,
+    string ArduinoNoCom,
+    string LightsNoPins,
+    string LightsPinFormat,
+    string LightsVerifying,
+    string ConnectionConnected,
+    string ConnectionDisconnected,
+    string ConnectionConnecting,
+    string AlexaReady,
+    string AlexaMissingUrl,
+    string AlexaDisabled,
+    string AlexaRelayConnected,
+    string AlexaRelayConfigured,
+    string AlexaIncomplete,
+    string AlexaBackgroundFormat,
+    string AlexaBackgroundOff,
+    string AlexaEndOffFormat,
+    string AlexaEndKeep,
+    string AlexaSidebarFormat);

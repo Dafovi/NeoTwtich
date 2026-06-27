@@ -82,6 +82,19 @@ public static class UiTextKeys
     public const string SettingsBackupRestoreSuccessPrompt = "settings.backup_restore_success_prompt";
     public const string SettingsBackupRestoreFailureCrash = "settings.backup_restore_failure_crash";
     public const string SettingsBackupRestoreFailureLog = "settings.backup_restore_failure_log";
+    public const string SettingsExportTitle = "settings.export_title";
+    public const string SettingsImportTitle = "settings.import_title";
+    public const string SettingsTitle = "settings.title";
+    public const string SettingsConfigFileFilter = "settings.config_file_filter";
+    public const string SettingsExportedLog = "settings.exported_log";
+    public const string SettingsExportSuccessPrompt = "settings.export_success_prompt";
+    public const string SettingsExportFailureCrash = "settings.export_failure_crash";
+    public const string SettingsExportFailureLog = "settings.export_failure_log";
+    public const string SettingsImportPrompt = "settings.import_prompt";
+    public const string SettingsImportedLog = "settings.imported_log";
+    public const string SettingsImportSuccessPrompt = "settings.import_success_prompt";
+    public const string SettingsImportFailureCrash = "settings.import_failure_crash";
+    public const string SettingsImportFailureLog = "settings.import_failure_log";
 
     public const string TrayBackgroundTitle = "tray.background_title";
     public const string TrayBackgroundText = "tray.background_text";

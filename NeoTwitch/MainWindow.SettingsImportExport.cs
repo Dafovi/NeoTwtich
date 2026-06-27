@@ -1,5 +1,6 @@
 using System.Windows;
 using NeoTwitch.Services;
+using NeoTwitch.Services.Text;
 using NeoTwitch.ViewModels.Activity;
 using WpfMessageBox = System.Windows.MessageBox;
 using WpfOpenFileDialog = Microsoft.Win32.OpenFileDialog;
@@ -18,9 +19,9 @@ public partial class MainWindow
 
             var dialog = new WpfSaveFileDialog
             {
-                Title = "Exportar configuracion",
+                Title = _text.Get(UiTextKeys.SettingsExportTitle),
                 FileName = $"NeoTwitch-config-{DateTime.Now:yyyyMMdd-HHmmss}.json",
-                Filter = "Configuracion Neo Twitch (*.json)|*.json|Todos los archivos (*.*)|*.*",
+                Filter = _text.Get(UiTextKeys.SettingsConfigFileFilter),
                 AddExtension = true,
                 DefaultExt = ".json",
                 OverwritePrompt = true
@@ -32,19 +33,19 @@ public partial class MainWindow
             }
 
             _settingsStore.Export(_config, dialog.FileName);
-            AddLog($"Configuracion exportada: {dialog.FileName}");
+            AddLog(_text.Format(UiTextKeys.SettingsExportedLog, dialog.FileName));
             WpfMessageBox.Show(
                 this,
-                "Configuracion exportada correctamente.\n\nEste archivo puede incluir tokens, URLs o secretos privados. Guardalo en un lugar seguro.",
-                "Configuracion",
+                _text.Get(UiTextKeys.SettingsExportSuccessPrompt),
+                _text.Get(UiTextKeys.SettingsTitle),
                 MessageBoxButton.OK,
                 MessageBoxImage.Information);
         }
         catch (Exception ex)
         {
-            CrashReporter.Log(ex, "No se pudo exportar la configuracion.");
-            AddLog($"Configuracion: no pude exportar ({ex.Message}).", ActivityLogKind.Important);
-            WpfMessageBox.Show(this, ex.Message, "Exportar configuracion", MessageBoxButton.OK, MessageBoxImage.Warning);
+            CrashReporter.Log(ex, _text.Get(UiTextKeys.SettingsExportFailureCrash));
+            AddLog(_text.Format(UiTextKeys.SettingsExportFailureLog, ex.Message), ActivityLogKind.Important);
+            WpfMessageBox.Show(this, ex.Message, _text.Get(UiTextKeys.SettingsExportTitle), MessageBoxButton.OK, MessageBoxImage.Warning);
         }
     }
 
@@ -52,8 +53,8 @@ public partial class MainWindow
     {
         var dialog = new WpfOpenFileDialog
         {
-            Title = "Importar configuracion",
-            Filter = "Configuracion Neo Twitch (*.json)|*.json|Todos los archivos (*.*)|*.*",
+            Title = _text.Get(UiTextKeys.SettingsImportTitle),
+            Filter = _text.Get(UiTextKeys.SettingsConfigFileFilter),
             CheckFileExists = true
         };
 
@@ -63,8 +64,8 @@ public partial class MainWindow
         }
 
         if (!ConfirmSettingsReplacement(
-                "Importar configuracion",
-                "Importar esta configuracion reemplazara la configuracion actual. Se creara un backup automatico antes de guardar.\n\nQuieres continuar?"))
+                _text.Get(UiTextKeys.SettingsImportTitle),
+                _text.Get(UiTextKeys.SettingsImportPrompt)))
         {
             return;
         }
@@ -73,15 +74,15 @@ public partial class MainWindow
         {
             await ReplaceSettingsFromFileAsync(
                 dialog.FileName,
-                $"Configuracion importada: {dialog.FileName}",
-                "Importar configuracion",
-                "Configuracion importada correctamente. Revisa Twitch, Arduino y Alexa antes de salir en vivo.");
+                _text.Format(UiTextKeys.SettingsImportedLog, dialog.FileName),
+                _text.Get(UiTextKeys.SettingsImportTitle),
+                _text.Get(UiTextKeys.SettingsImportSuccessPrompt));
         }
         catch (Exception ex)
         {
-            CrashReporter.Log(ex, "No se pudo importar la configuracion.");
-            AddLog($"Configuracion: no pude importar ({ex.Message}).", ActivityLogKind.Important);
-            WpfMessageBox.Show(this, ex.Message, "Importar configuracion", MessageBoxButton.OK, MessageBoxImage.Warning);
+            CrashReporter.Log(ex, _text.Get(UiTextKeys.SettingsImportFailureCrash));
+            AddLog(_text.Format(UiTextKeys.SettingsImportFailureLog, ex.Message), ActivityLogKind.Important);
+            WpfMessageBox.Show(this, ex.Message, _text.Get(UiTextKeys.SettingsImportTitle), MessageBoxButton.OK, MessageBoxImage.Warning);
         }
     }
 }

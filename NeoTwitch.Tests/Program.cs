@@ -98,6 +98,7 @@ var tests = new (string Name, Action Body)[]
     ("VisualTreeTraversalService finds descendants", VisualTreeTraversalTests.FindsDescendants),
     ("FilterButtonThemeService applies active and inactive colors", FilterButtonThemeTests.AppliesActiveAndInactiveColors),
     ("NavigationButtonThemeService applies selected colors", NavigationButtonThemeTests.AppliesSelectedColors),
+    ("ThemeElementApplicationService applies common controls", ThemeElementApplicationTests.AppliesCommonControls),
     ("ColorConversionService converts hex and HSV values", ColorConversionTests.ConvertsHexAndHsvValues),
     ("UiVisibilityService toggles multiple elements", UiVisibilityTests.TogglesMultipleElements),
     ("OptionVisibilityService resolves rule panels", OptionVisibilityTests.ResolvesRulePanels),
@@ -1916,6 +1917,47 @@ static class NavigationButtonThemeTests
             NavigationButtonThemeService.Apply(button, palette, selected: false);
             TestAssert.Same(System.Windows.Media.Brushes.Transparent, button.Background);
             TestAssert.Same(palette.SidebarMutedText, button.Foreground);
+        });
+    }
+}
+
+static class ThemeElementApplicationTests
+{
+    public static void AppliesCommonControls()
+    {
+        TestThread.RunSta(() =>
+        {
+            var palette = ThemePalette.Dark;
+
+            var textBox = new System.Windows.Controls.TextBox();
+            var handled = ThemeElementApplicationService.TryApply(textBox, palette, out var skipChildren);
+            TestAssert.True(handled);
+            TestAssert.False(skipChildren);
+            TestAssert.Same(palette.Input, textBox.Background);
+            TestAssert.Same(palette.Text, textBox.Foreground);
+            TestAssert.Same(palette.Border, textBox.BorderBrush);
+
+            var checkBox = new System.Windows.Controls.CheckBox();
+            handled = ThemeElementApplicationService.TryApply(checkBox, palette, out skipChildren);
+            TestAssert.True(handled);
+            TestAssert.True(skipChildren);
+            TestAssert.Same(palette.Input, checkBox.Background);
+            TestAssert.Same(palette.MutedText, checkBox.BorderBrush);
+
+            var accentText = new System.Windows.Controls.TextBlock { Tag = "Accent" };
+            handled = ThemeElementApplicationService.TryApply(accentText, palette, out skipChildren);
+            TestAssert.True(handled);
+            TestAssert.False(skipChildren);
+            TestAssert.Same(palette.Accent, accentText.Foreground);
+
+            var staticBorder = new System.Windows.Controls.Border
+            {
+                Tag = "StaticBrush",
+                Background = System.Windows.Media.Brushes.Red
+            };
+            handled = ThemeElementApplicationService.TryApply(staticBorder, palette, out _);
+            TestAssert.True(handled);
+            TestAssert.Same(System.Windows.Media.Brushes.Red, staticBorder.Background);
         });
     }
 }

@@ -99,7 +99,7 @@ public partial class MainWindow
             {
                 await _authService.EnsureValidTokenAsync(_config, AddLog, CancellationToken.None);
             }
-            catch (Exception ex) when (allowInteractiveReauth && IsRecoverableTwitchRefreshError(ex))
+            catch (Exception ex) when (allowInteractiveReauth && TwitchConnectionRecoveryService.IsRecoverableRefreshError(ex))
             {
                 AddLog("Twitch necesita autorizar de nuevo porque el token guardado no se pudo refrescar.", ActivityLogKind.Twitch);
                 _config.Token = new TwitchTokenInfo();
@@ -131,12 +131,4 @@ public partial class MainWindow
         }
     }
 
-    private static bool IsRecoverableTwitchRefreshError(Exception exception)
-    {
-        var message = exception.Message;
-        return message.Contains("No pude refrescar Twitch", StringComparison.OrdinalIgnoreCase)
-            && (message.Contains("missing client secret", StringComparison.OrdinalIgnoreCase)
-                || message.Contains("invalid client", StringComparison.OrdinalIgnoreCase)
-                || message.Contains("invalid refresh token", StringComparison.OrdinalIgnoreCase));
-    }
 }

@@ -70,6 +70,7 @@ var tests = new (string Name, Action Body)[]
     ("ConnectionStateService maps visual metadata", ConnectionStateTests.MapsVisualMetadata),
     ("ConnectionButtonStateService disables Twitch while busy", ConnectionButtonStateTests.DisablesTwitchWhileBusy),
     ("ConnectionButtonStateService maps OBS buttons", ConnectionButtonStateTests.MapsObsButtons),
+    ("TwitchConnectionRecoveryService detects recoverable refresh errors", TwitchConnectionRecoveryTests.DetectsRecoverableRefreshErrors),
     ("ServiceNavigationVisibilityService hides optional service tabs", ServiceNavigationVisibilityTests.HidesOptionalServiceTabs),
     ("ObsStatusTextService builds display values", ObsStatusTextTests.BuildsDisplayValues),
     ("ObsSceneViewService builds rows and choices", ObsSceneViewTests.BuildsRowsAndChoices),
@@ -2141,6 +2142,18 @@ static class ThemeResourceTests
         TestAssert.Same(palette.Window, resources["ThemeWindowBrush"]);
         TestAssert.Same(palette.Accent, resources["ThemeSelectionBrush"]);
         TestAssert.Same(palette.Accent, resources[System.Windows.SystemColors.HighlightBrushKey]);
+    }
+}
+
+static class TwitchConnectionRecoveryTests
+{
+    public static void DetectsRecoverableRefreshErrors()
+    {
+        TestAssert.True(TwitchConnectionRecoveryService.IsRecoverableRefreshError(new InvalidOperationException("No pude refrescar Twitch: missing client secret")));
+        TestAssert.True(TwitchConnectionRecoveryService.IsRecoverableRefreshError(new InvalidOperationException("No pude refrescar Twitch: invalid client")));
+        TestAssert.True(TwitchConnectionRecoveryService.IsRecoverableRefreshError(new InvalidOperationException("No pude refrescar Twitch: invalid refresh token")));
+        TestAssert.False(TwitchConnectionRecoveryService.IsRecoverableRefreshError(new InvalidOperationException("Twitch no inicio el login")));
+        TestAssert.False(TwitchConnectionRecoveryService.IsRecoverableRefreshError(new InvalidOperationException("No pude refrescar Twitch: timeout")));
     }
 }
 

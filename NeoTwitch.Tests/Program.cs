@@ -46,6 +46,7 @@ var tests = new (string Name, Action Body)[]
     ("ObsRulePlanService resolves media plans", ObsRulePlanTests.ResolvesMediaPlans),
     ("LightControlInputService resolves presets", LightControlInputTests.ResolvesPresets),
     ("LightControlInputService parses and clamps values", LightControlInputTests.ParsesAndClampsValues),
+    ("BackgroundLightRestoreService resolves retry attempts", BackgroundLightRestoreTests.ResolvesRetryAttempts),
     ("RulePinChoiceService builds pin choices", RulePinChoiceTests.BuildsPinChoices),
     ("LedPreviewService calculates responsive dot counts", LedPreviewTests.CalculatesResponsiveDotCounts),
     ("LedPreviewService builds solid frames with brightness floor", LedPreviewTests.BuildsSolidFramesWithBrightnessFloor),
@@ -788,6 +789,32 @@ static class LightControlInputTests
         TestAssert.True(LightControlInputService.TryParseSliderText(" 250 ", 0, 200, out var sliderValue));
         TestAssert.Equal(200d, sliderValue);
         TestAssert.False(LightControlInputService.TryParseSliderText("abc", 0, 200, out _));
+    }
+}
+
+static class BackgroundLightRestoreTests
+{
+    public static void ResolvesRetryAttempts()
+    {
+        TestAssert.Equal(2, BackgroundLightRestoreService.ResolveArduinoRestoreAttempts(
+            arduinoEnabled: true,
+            backgroundEnabled: true,
+            retryArduino: true));
+
+        TestAssert.Equal(1, BackgroundLightRestoreService.ResolveArduinoRestoreAttempts(
+            arduinoEnabled: true,
+            backgroundEnabled: true,
+            retryArduino: false));
+
+        TestAssert.Equal(1, BackgroundLightRestoreService.ResolveArduinoRestoreAttempts(
+            arduinoEnabled: true,
+            backgroundEnabled: false,
+            retryArduino: true));
+
+        TestAssert.Equal(1, BackgroundLightRestoreService.ResolveArduinoRestoreAttempts(
+            arduinoEnabled: false,
+            backgroundEnabled: true,
+            retryArduino: true));
     }
 }
 

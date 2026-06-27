@@ -1,5 +1,6 @@
 using NeoTwitch.Models;
 using NeoTwitch.Services;
+using NeoTwitch.Services.Lights;
 using NeoTwitch.Services.Text;
 using NeoTwitch.Shared;
 using NeoTwitch.ViewModels.Activity;
@@ -92,7 +93,10 @@ public partial class MainWindow
 
     private async Task RestoreArduinoBackgroundStateWithRetriesAsync(bool retryArduino)
     {
-        var attempts = _config.ArduinoEnabled && _config.BackgroundEnabled && retryArduino ? 2 : 1;
+        var attempts = BackgroundLightRestoreService.ResolveArduinoRestoreAttempts(
+            _config.ArduinoEnabled,
+            _config.BackgroundEnabled,
+            retryArduino);
 
         for (var attempt = 1; attempt <= attempts; attempt++)
         {

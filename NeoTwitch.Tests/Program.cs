@@ -96,6 +96,7 @@ var tests = new (string Name, Action Body)[]
     ("ButtonIconContentService builds icon button content", ButtonIconContentTests.BuildsIconButtonContent),
     ("VisualTreeTraversalService finds descendants", VisualTreeTraversalTests.FindsDescendants),
     ("FilterButtonThemeService applies active and inactive colors", FilterButtonThemeTests.AppliesActiveAndInactiveColors),
+    ("NavigationButtonThemeService applies selected colors", NavigationButtonThemeTests.AppliesSelectedColors),
     ("ColorConversionService converts hex and HSV values", ColorConversionTests.ConvertsHexAndHsvValues),
     ("UiVisibilityService toggles multiple elements", UiVisibilityTests.TogglesMultipleElements),
     ("OptionVisibilityService resolves rule panels", OptionVisibilityTests.ResolvesRulePanels),
@@ -1877,6 +1878,26 @@ static class FilterButtonThemeTests
             TestAssert.Same(palette.Input, button.Background);
             TestAssert.Same(palette.Text, button.Foreground);
             TestAssert.Same(palette.Border, button.BorderBrush);
+        });
+    }
+}
+
+static class NavigationButtonThemeTests
+{
+    public static void AppliesSelectedColors()
+    {
+        TestThread.RunSta(() =>
+        {
+            var palette = ThemePalette.Dark;
+            var button = new System.Windows.Controls.Button();
+
+            NavigationButtonThemeService.Apply(button, palette, selected: true);
+            TestAssert.Same(palette.NavSelected, button.Background);
+            TestAssert.Same(System.Windows.Media.Brushes.White, button.Foreground);
+
+            NavigationButtonThemeService.Apply(button, palette, selected: false);
+            TestAssert.Same(System.Windows.Media.Brushes.Transparent, button.Background);
+            TestAssert.Same(palette.SidebarMutedText, button.Foreground);
         });
     }
 }

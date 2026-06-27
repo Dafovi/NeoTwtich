@@ -61,12 +61,6 @@ public partial class MainWindow
         var isSelected = int.TryParse(button.Tag?.ToString(), out var index)
             && index == MainTabs.SelectedIndex;
 
-        button.Background = isSelected
-            ? palette.NavSelected
-            : System.Windows.Media.Brushes.Transparent;
-        button.Foreground = isSelected
-            ? System.Windows.Media.Brushes.White
-            : palette.SidebarMutedText;
-        button.BorderBrush = System.Windows.Media.Brushes.Transparent;
+        NavigationButtonThemeService.Apply(button, palette, isSelected);
     }
 }

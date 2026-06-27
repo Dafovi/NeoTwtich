@@ -15,7 +15,6 @@
   </PropertyGroup>
 
   <ItemGroup>
-    <Compile Include="..\Shared\*.cs" Link="Shared\%(Filename)%(Extension)" />
     <Resource Include="Assets\AppIcon.ico" />
     <Resource Include="Assets\AppIcon.png" />
     <Resource Include="Assets\ServiceAlexa.png" />
@@ -24,6 +23,10 @@
     <Resource Include="Assets\ServiceObs.png" />
     <Resource Include="Assets\ServiceTwitch.png" />
     <Resource Include="Assets\Icons\*.png" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <ProjectReference Include="..\Shared\NeoTwitch.Shared.csproj" />
   </ItemGroup>
 
 </Project>

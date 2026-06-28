@@ -59,6 +59,11 @@ public static class UiTextKeys
     public const string ConfigurationDefaultChatCommandTemplate = "configuration.default_chat_command_template";
     public const string ConfigurationDefaultRedemptionRuleName = "configuration.default_redemption_rule_name";
     public const string ConfigurationDefaultRedemptionChatTemplate = "configuration.default_redemption_chat_template";
+    public const string ConfigurationFallbackAudioGroupName = "configuration.fallback_audio_group_name";
+    public const string ConfigurationFallbackImageGroupName = "configuration.fallback_image_group_name";
+    public const string ConfigurationFallbackVideoGroupName = "configuration.fallback_video_group_name";
+    public const string ConfigurationFallbackRuleName = "configuration.fallback_rule_name";
+    public const string ConfigurationFallbackLedStripName = "configuration.fallback_led_strip_name";
 
     public const string OptionEventFollow = "option.event.follow";
     public const string OptionEventSubscription = "option.event.subscription";

@@ -42,20 +42,20 @@ public sealed class SettingsStore
         var loadPath = ResolveSettingsPathForLoad();
         if (loadPath is null)
         {
-            return AppConfig.CreateDefault();
+            return DefaultAppConfigFactory.Create(_text);
         }
 
         try
         {
             var json = File.ReadAllText(loadPath);
-            var config = JsonSerializer.Deserialize<AppConfig>(json, _jsonOptions) ?? AppConfig.CreateDefault();
-            return AppConfigNormalizer.Normalize(config);
+            var config = JsonSerializer.Deserialize<AppConfig>(json, _jsonOptions) ?? DefaultAppConfigFactory.Create(_text);
+            return AppConfigNormalizer.Normalize(config, _text);
         }
         catch (Exception ex)
         {
             LastLoadError = ex.Message;
             CrashReporter.Log(ex, _text.Format(UiTextKeys.SettingsStoreLoadFailureCrash, loadPath));
-            return AppConfig.CreateDefault();
+            return DefaultAppConfigFactory.Create(_text);
         }
     }
 
@@ -92,7 +92,7 @@ public sealed class SettingsStore
         var json = File.ReadAllText(sourcePath);
         var config = JsonSerializer.Deserialize<AppConfig>(json, _jsonOptions)
             ?? throw new InvalidOperationException(_text.Get(UiTextKeys.SettingsStoreInvalidConfigFailure));
-        var normalized = AppConfigNormalizer.Normalize(config);
+        var normalized = AppConfigNormalizer.Normalize(config, _text);
         Save(normalized);
         return normalized;
     }

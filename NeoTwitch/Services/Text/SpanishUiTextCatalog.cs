@@ -63,6 +63,11 @@ public static class SpanishUiTextCatalog
             [UiTextKeys.ConfigurationDefaultChatCommandTemplate] = "@{user} activo {message}",
             [UiTextKeys.ConfigurationDefaultRedemptionRuleName] = "Canje personalizado",
             [UiTextKeys.ConfigurationDefaultRedemptionChatTemplate] = "Gracias por el canje @{user}!",
+            [UiTextKeys.ConfigurationFallbackAudioGroupName] = "Grupo de audio",
+            [UiTextKeys.ConfigurationFallbackImageGroupName] = "Grupo de imagenes",
+            [UiTextKeys.ConfigurationFallbackVideoGroupName] = "Grupo de videos",
+            [UiTextKeys.ConfigurationFallbackRuleName] = "Alerta sin nombre",
+            [UiTextKeys.ConfigurationFallbackLedStripName] = "Tira LED",
 
             [UiTextKeys.OptionEventFollow] = "Nuevo seguidor",
             [UiTextKeys.OptionEventSubscription] = "Nueva suscripcion",

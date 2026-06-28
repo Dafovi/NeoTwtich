@@ -32,6 +32,7 @@ var tests = new (string Name, Action Body)[]
     ("GlobalSettingsFormService applies normalized values", GlobalSettingsFormTests.AppliesNormalizedValues),
     ("EventRuleFilterService filters status and category", EventRuleFilterTests.FiltersStatusAndCategory),
     ("EventRuleFilterService searches editable text", EventRuleFilterTests.SearchesEditableText),
+    ("EventRulePresentationService builds row display metadata", EventRulePresentationTests.BuildsRowDisplayMetadata),
     ("EventRuleSnapshotService clones editable values independently", EventRuleSnapshotTests.CloneCopiesEditableValues),
     ("EventRuleSnapshotService detects editable changes", EventRuleSnapshotTests.DetectsEditableChanges),
     ("RuleEditorValueService resolves fallback names", RuleEditorValueTests.ResolvesFallbackNames),
@@ -82,6 +83,7 @@ var tests = new (string Name, Action Body)[]
     ("VersionComparisonService compares normalized tags", VersionComparisonTests.ComparesNormalizedTags),
     ("ActivityLogService trims activity and dashboard entries", ActivityLogServiceTests.TrimsActivityAndDashboardEntries),
     ("ActivityLogService filters entries and search text", ActivityLogServiceTests.FiltersEntriesAndSearchText),
+    ("ActivityLogPresentationService classifies display metadata", ActivityLogPresentationTests.ClassifiesDisplayMetadata),
     ("ActivityViewModel filters entries view", ActivityViewModelTests.FiltersEntriesView),
     ("DashboardConnectionStateService resolves all services", DashboardConnectionStateTests.ResolvesAllServices),
     ("DashboardSummaryService counts Twitch events", DashboardSummaryTests.CountsTwitchEvents),
@@ -415,6 +417,30 @@ static class EventRuleFilterTests
         TestAssert.True(EventRuleFilterService.Matches(rule, EventRuleFilterService.AllStatus, "", "!BAILE"));
         TestAssert.True(EventRuleFilterService.Matches(rule, EventRuleFilterService.AllStatus, "", "gracias"));
         TestAssert.False(EventRuleFilterService.Matches(rule, EventRuleFilterService.AllStatus, "", "inexistente"));
+    }
+}
+
+static class EventRulePresentationTests
+{
+    public static void BuildsRowDisplayMetadata()
+    {
+        var rule = new EventRule
+        {
+            Name = "Bits cien",
+            EventKind = TwitchEventKind.Cheer,
+            MinimumBits = 100,
+            IsEnabled = false,
+            UseLights = true,
+            PlayAudio = true,
+            SendObsMedia = true,
+            ObsActionAvailable = false
+        };
+
+        TestAssert.Equal("Bits cien - Bits >= 100 bits", EventRulePresentationService.BuildDisplayLabel(rule));
+        TestAssert.Equal("Inactiva", EventRulePresentationService.BuildStatusText(rule));
+        TestAssert.Equal("#37C7F3", EventRulePresentationService.BuildEventAccentColor(rule));
+        TestAssert.Equal("Luces / Audio / OBS", EventRulePresentationService.BuildActionsSummary(rule));
+        TestAssert.Equal("OBS configurado, pero esta desactivado o incompleto", EventRulePresentationService.BuildObsToolTip(rule));
     }
 }
 
@@ -1640,6 +1666,25 @@ static class ActivityLogServiceTests
         activity.Clear();
         TestAssert.Equal(0, activity.Entries.Count);
         TestAssert.Equal(0, activity.DashboardEntries.Count);
+    }
+}
+
+static class ActivityLogPresentationTests
+{
+    public static void ClassifiesDisplayMetadata()
+    {
+        var twitch = ActivityLogPresentationService.Build("Twitch: nuevo seguidor juan", ActivityLogKind.Event);
+        TestAssert.Equal("EVENTO", twitch.SourceKey);
+        TestAssert.Equal("SEGUIDOR", twitch.Category);
+        TestAssert.Equal("Nuevo seguidor", twitch.Title);
+        TestAssert.Equal("OK", twitch.StatusText);
+        TestAssert.Equal("Assets/Icons/action_follower.png", twitch.ActivityIconPath);
+
+        var arduinoError = ActivityLogPresentationService.Build("Arduino: no se pudo abrir COM3", ActivityLogKind.Arduino);
+        TestAssert.Equal("ARDUINO", arduinoError.SourceKey);
+        TestAssert.Equal("Error", arduinoError.StatusText);
+        TestAssert.True(arduinoError.IsImportant);
+        TestAssert.Equal("Assets/Icons/status_error.png", arduinoError.StatusIconPath);
     }
 }
 

@@ -143,7 +143,7 @@ public static class DashboardStatusTextService
             stripCount,
             totalLeds,
             backgroundEnabled,
-            DisplayNames.For(backgroundPattern),
+            DisplayNameService.For(backgroundPattern, UiTextService.CreateDefault()),
             labels);
     }
 

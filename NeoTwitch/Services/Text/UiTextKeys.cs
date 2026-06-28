@@ -64,6 +64,20 @@ public static class UiTextKeys
     public const string ConfigurationFallbackVideoGroupName = "configuration.fallback_video_group_name";
     public const string ConfigurationFallbackRuleName = "configuration.fallback_rule_name";
     public const string ConfigurationFallbackLedStripName = "configuration.fallback_led_strip_name";
+    public const string RuleRowStatusActive = "rule_row.status_active";
+    public const string RuleRowStatusInactive = "rule_row.status_inactive";
+    public const string RuleRowActionLights = "rule_row.action_lights";
+    public const string RuleRowActionAudio = "rule_row.action_audio";
+    public const string RuleRowActionChat = "rule_row.action_chat";
+    public const string RuleRowActionAlexa = "rule_row.action_alexa";
+    public const string RuleRowActionObs = "rule_row.action_obs";
+    public const string RuleRowNoActions = "rule_row.no_actions";
+    public const string RuleRowLightsActive = "rule_row.lights_active";
+    public const string RuleRowLightsUnavailable = "rule_row.lights_unavailable";
+    public const string RuleRowAlexaActive = "rule_row.alexa_active";
+    public const string RuleRowAlexaUnavailable = "rule_row.alexa_unavailable";
+    public const string RuleRowObsActive = "rule_row.obs_active";
+    public const string RuleRowObsUnavailable = "rule_row.obs_unavailable";
 
     public const string OptionEventFollow = "option.event.follow";
     public const string OptionEventSubscription = "option.event.subscription";

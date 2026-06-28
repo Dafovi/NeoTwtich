@@ -1,6 +1,7 @@
 using System.ComponentModel;
 using System.Runtime.CompilerServices;
 using System.Windows;
+using NeoTwitch.Services.Alerts;
 
 namespace NeoTwitch.Models;
 
@@ -372,92 +373,23 @@ public sealed class EventRule : INotifyPropertyChanged
         }
     }
 
-    public string DisplayLabel
-    {
-        get
-        {
-            var label = string.IsNullOrWhiteSpace(Name)
-                ? DisplayNames.For(EventKind)
-                : $"{Name} - {DisplayNames.For(EventKind)}";
+    public string DisplayLabel => EventRulePresentationService.BuildDisplayLabel(this);
 
-            return EventKind switch
-            {
-                TwitchEventKind.Cheer => $"{label} >= {MinimumBits} bits",
-                TwitchEventKind.ChatCommand when !string.IsNullOrWhiteSpace(ChatCommand) => $"{label} ({ChatCommand})",
-                _ => label
-            };
-        }
-    }
+    public string StatusText => EventRulePresentationService.BuildStatusText(this);
 
-    public string StatusText => IsEnabled ? "Activa" : "Inactiva";
+    public string StatusColor => EventRulePresentationService.BuildStatusColor(this);
 
-    public string StatusColor => IsEnabled ? "#22C55E" : "#94A3B8";
+    public string EventIconPath => EventRulePresentationService.BuildEventIconPath(this);
 
-    public string EventIconPath => EventKind switch
-    {
-        TwitchEventKind.Follow => "/Assets/Icons/action_follower_teal.png",
-        TwitchEventKind.Subscription => "/Assets/Icons/action_subscription_purple.png",
-        TwitchEventKind.Cheer => "/Assets/Icons/action_bits_blue.png",
-        TwitchEventKind.ChatCommand => "/Assets/Icons/action_message_green.png",
-        TwitchEventKind.ChannelPointRedemption => "/Assets/Icons/activity_notification_lime.png",
-        TwitchEventKind.Raid => "/Assets/Icons/activity_notification.png",
-        _ => "/Assets/Icons/nav_rules.png"
-    };
+    public string EventAccentColor => EventRulePresentationService.BuildEventAccentColor(this);
 
-    public string EventAccentColor => EventKind switch
-    {
-        TwitchEventKind.Follow => "#14B8A6",
-        TwitchEventKind.Subscription => "#B56CFF",
-        TwitchEventKind.Raid => "#F43F5E",
-        TwitchEventKind.Cheer => "#37C7F3",
-        TwitchEventKind.ChatCommand => "#22C55E",
-        TwitchEventKind.ChannelPointRedemption => "#FB923C",
-        _ => "#94A3B8"
-    };
-
-    public string ActionsSummary
-    {
-        get
-        {
-            var actions = new List<string>();
-            if (UseLights)
-            {
-                actions.Add("Luces");
-            }
-
-            if (PlayAudio)
-            {
-                actions.Add("Audio");
-            }
-
-            if (SendChatMessage)
-            {
-                actions.Add("Chat");
-            }
-
-            if (SendAlexaEvent)
-            {
-                actions.Add("Alexa");
-            }
-
-            if (SendObsScene || SendObsMedia)
-            {
-                actions.Add("OBS");
-            }
-
-            return actions.Count == 0
-                ? "Sin acciones"
-                : string.Join(" / ", actions);
-        }
-    }
+    public string ActionsSummary => EventRulePresentationService.BuildActionsSummary(this);
 
     public Visibility LightsActionVisibility => UseLights ? Visibility.Visible : Visibility.Collapsed;
 
     public double LightsActionOpacity => LightsActionAvailable ? 1d : 0.32d;
 
-    public string LightsActionToolTip => LightsActionAvailable
-        ? "Luces activas"
-        : "Luces configuradas, pero Arduino esta desactivado";
+    public string LightsActionToolTip => EventRulePresentationService.BuildLightsToolTip(this);
 
     public Visibility AudioActionVisibility => PlayAudio ? Visibility.Visible : Visibility.Collapsed;
 
@@ -467,17 +399,13 @@ public sealed class EventRule : INotifyPropertyChanged
 
     public double AlexaActionOpacity => AlexaActionAvailable ? 1d : 0.32d;
 
-    public string AlexaActionToolTip => AlexaActionAvailable
-        ? "Alexa activa"
-        : "Alexa configurada, pero esta desactivada o incompleta";
+    public string AlexaActionToolTip => EventRulePresentationService.BuildAlexaToolTip(this);
 
     public Visibility ObsActionVisibility => SendObsScene || SendObsMedia ? Visibility.Visible : Visibility.Collapsed;
 
     public double ObsActionOpacity => ObsActionAvailable ? 1d : 0.32d;
 
-    public string ObsActionToolTip => ObsActionAvailable
-        ? "OBS activo"
-        : "OBS configurado, pero esta desactivado o incompleto";
+    public string ObsActionToolTip => EventRulePresentationService.BuildObsToolTip(this);
 
     public event PropertyChangedEventHandler? PropertyChanged;
 

@@ -90,7 +90,7 @@ public sealed class AppServices
             new SettingsStore(text),
             new AudioPlayerService(text),
             new SerialLightController(text),
-            new TwitchAuthService(),
+            new TwitchAuthService(text),
             new TwitchChatService(text),
             new AlexaRelayService(text),
             new ObsWebSocketService(text),

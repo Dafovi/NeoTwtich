@@ -159,6 +159,36 @@ public static class UiTextKeys
     public const string TwitchChatSendFailure = "twitch.chat_send_failure";
     public const string TwitchChatAnonymousUser = "twitch.chat_anonymous_user";
 
+    public const string RuleSimulationUserName = "rule_simulation.user_name";
+    public const string RuleSimulationRewardTitle = "rule_simulation.reward_title";
+    public const string RuleSimulationChatCommandMessage = "rule_simulation.chat_command_message";
+    public const string RuleSimulationMessage = "rule_simulation.message";
+    public const string RuleSimulationTitle = "rule_simulation.title";
+    public const string RuleSimulationDescribeCheer = "rule_simulation.describe_cheer";
+    public const string RuleSimulationDescribeRaid = "rule_simulation.describe_raid";
+    public const string RuleSimulationDescribeRedemption = "rule_simulation.describe_redemption";
+    public const string RuleSimulationDescribeChatCommand = "rule_simulation.describe_chat_command";
+    public const string RuleSimulationDescribeDefault = "rule_simulation.describe_default";
+    public const string RuleSimulationNoMessage = "rule_simulation.no_message";
+    public const string RuleSimulationActionLights = "rule_simulation.action_lights";
+    public const string RuleSimulationActionAudio = "rule_simulation.action_audio";
+    public const string RuleSimulationActionChat = "rule_simulation.action_chat";
+    public const string RuleSimulationActionAlexa = "rule_simulation.action_alexa";
+    public const string RuleSimulationNoActions = "rule_simulation.no_actions";
+    public const string RuleTestFailureCrash = "rule_test.failure_crash";
+    public const string RuleTestFailureLog = "rule_test.failure_log";
+    public const string RuleTestTitle = "rule_test.title";
+    public const string RuleTestNoMatchPrompt = "rule_test.no_match_prompt";
+    public const string RuleTestSimulatorLog = "rule_test.simulator_log";
+    public const string RuleTestSimulatorTitle = "rule_test.simulator_title";
+    public const string RuleTestRunningLog = "rule_test.running_log";
+    public const string RuleTestMissingAudioPrompt = "rule_test.missing_audio_prompt";
+    public const string RuleTestArduinoMissingComLog = "rule_test.arduino_missing_com_log";
+    public const string RuleTestArduinoDisconnectedLog = "rule_test.arduino_disconnected_log";
+    public const string RuleTestInvalidPinsLog = "rule_test.invalid_pins_log";
+    public const string RuleTestAlexaNotConfiguredLog = "rule_test.alexa_not_configured_log";
+    public const string RuleTestChatCommandMismatchLog = "rule_test.chat_command_mismatch_log";
+
     public const string ObsRuleMissingMediaLog = "obs.rule_missing_media_log";
     public const string ObsRuleMissingSceneLog = "obs.rule_missing_scene_log";
     public const string ObsRuleMediaShownLog = "obs.rule_media_shown_log";

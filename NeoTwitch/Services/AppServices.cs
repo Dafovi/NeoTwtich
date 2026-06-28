@@ -25,6 +25,7 @@ public sealed class AppServices
         ActivityLogService activityLog,
         ActivityViewModel activityViewModel,
         DashboardSummaryService dashboardSummary,
+        RuleSimulationService ruleSimulation,
         AlertQueueService alertQueue)
     {
         SettingsStore = settingsStore;
@@ -42,6 +43,7 @@ public sealed class AppServices
         ActivityLog = activityLog;
         ActivityViewModel = activityViewModel;
         DashboardSummary = dashboardSummary;
+        RuleSimulation = ruleSimulation;
         AlertQueue = alertQueue;
     }
 
@@ -75,6 +77,8 @@ public sealed class AppServices
 
     public DashboardSummaryService DashboardSummary { get; }
 
+    public RuleSimulationService RuleSimulation { get; }
+
     public AlertQueueService AlertQueue { get; }
 
     public static AppServices CreateDefault()
@@ -98,6 +102,7 @@ public sealed class AppServices
             activityLog,
             new ActivityViewModel(activityLog),
             new DashboardSummaryService(),
+            new RuleSimulationService(text),
             new AlertQueueService());
     }
 }

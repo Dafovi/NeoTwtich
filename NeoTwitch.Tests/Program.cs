@@ -627,7 +627,8 @@ static class RuleSimulationTests
 
     public static void BuildsRepresentativeEvents()
     {
-        var cheer = RuleSimulationService.BuildEvent(new EventRule
+        var service = new RuleSimulationService(UiTextService.CreateDefault());
+        var cheer = service.BuildEvent(new EventRule
         {
             EventKind = TwitchEventKind.Cheer,
             MinimumBits = 250
@@ -636,7 +637,7 @@ static class RuleSimulationTests
         TestAssert.Equal(TwitchEventKind.Cheer, cheer.Kind);
         TestAssert.Equal(250, cheer.Bits);
 
-        var test = RuleSimulationService.BuildEvent(new EventRule
+        var test = service.BuildEvent(new EventRule
         {
             EventKind = TwitchEventKind.Test
         });

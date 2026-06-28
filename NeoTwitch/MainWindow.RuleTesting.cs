@@ -2,6 +2,7 @@ using System.Windows;
 using NeoTwitch.Models;
 using NeoTwitch.Services;
 using NeoTwitch.Services.Alerts;
+using NeoTwitch.Services.Text;
 using NeoTwitch.Services.Ui;
 using NeoTwitch.ViewModels.Activity;
 using WpfMessageBox = System.Windows.MessageBox;
@@ -26,9 +27,9 @@ public partial class MainWindow
         }
         catch (Exception ex)
         {
-            CrashReporter.Log(ex, "No se pudo probar la alerta.");
-            AddLog($"Prueba de alerta: {ex.Message}", ActivityLogKind.Important);
-            WpfMessageBox.Show(this, ex.Message, "Probar alerta", MessageBoxButton.OK, MessageBoxImage.Warning);
+            CrashReporter.Log(ex, _text.Get(UiTextKeys.RuleTestFailureCrash));
+            AddLog(_text.Format(UiTextKeys.RuleTestFailureLog, ex.Message), ActivityLogKind.Important);
+            WpfMessageBox.Show(this, ex.Message, _text.Get(UiTextKeys.RuleTestTitle), MessageBoxButton.OK, MessageBoxImage.Warning);
             UpdateRuleTestButtonState();
         }
     }
@@ -46,13 +47,17 @@ public partial class MainWindow
             return;
         }
 
-        var simulatedEvent = RuleSimulationService.BuildEvent(rule);
+        var simulatedEvent = _ruleSimulation.BuildEvent(rule);
 
         if (!rule.Matches(simulatedEvent))
         {
-            var message = $"La regla '{rule.Name}' no se ejecutaria con esta simulacion. Regla: {DisplayNames.For(rule.EventKind)}. Simulacion: {DisplayNames.For(simulatedEvent.Kind)}.";
-            AddLog($"Simulador: {message}", ActivityLogKind.Important);
-            WpfMessageBox.Show(this, message, "Simulador de eventos", MessageBoxButton.OK, MessageBoxImage.Warning);
+            var message = _text.Format(
+                UiTextKeys.RuleTestNoMatchPrompt,
+                rule.Name,
+                DisplayNames.For(rule.EventKind),
+                DisplayNames.For(simulatedEvent.Kind));
+            AddLog(_text.Format(UiTextKeys.RuleTestSimulatorLog, message), ActivityLogKind.Important);
+            WpfMessageBox.Show(this, message, _text.Get(UiTextKeys.RuleTestSimulatorTitle), MessageBoxButton.OK, MessageBoxImage.Warning);
             return;
         }
 
@@ -62,7 +67,11 @@ public partial class MainWindow
         }
 
         AddLog(
-            $"Simulando {RuleSimulationService.DescribeEvent(simulatedEvent)} para regla '{rule.Name}'. Acciones: {RuleSimulationService.DescribeActions(rule)}.",
+            _text.Format(
+                UiTextKeys.RuleTestRunningLog,
+                _ruleSimulation.DescribeEvent(simulatedEvent),
+                rule.Name,
+                _ruleSimulation.DescribeActions(rule)),
             ActivityLogKind.Event);
 
         await RunRuleAsync(rule, simulatedEvent);
@@ -93,9 +102,9 @@ public partial class MainWindow
     {
         if (rule.PlayAudio && !RuleHasValidAudio(rule))
         {
-            var message = $"El audio de '{rule.Name}' no existe o no esta configurado.";
-            AddLog($"Simulador: {message}", ActivityLogKind.Important);
-            WpfMessageBox.Show(this, message, "Simulador de eventos", MessageBoxButton.OK, MessageBoxImage.Warning);
+            var message = _text.Format(UiTextKeys.RuleTestMissingAudioPrompt, rule.Name);
+            AddLog(_text.Format(UiTextKeys.RuleTestSimulatorLog, message), ActivityLogKind.Important);
+            WpfMessageBox.Show(this, message, _text.Get(UiTextKeys.RuleTestSimulatorTitle), MessageBoxButton.OK, MessageBoxImage.Warning);
             return false;
         }
 
@@ -103,25 +112,25 @@ public partial class MainWindow
         {
             AddLog(
                 string.IsNullOrWhiteSpace(_config.SerialPort)
-                    ? "Simulador: la regla usa luces, pero no hay puerto COM configurado."
-                    : $"Simulador: la regla usa luces, pero Arduino no esta conectado ahora ({_config.SerialPort}).",
+                    ? _text.Get(UiTextKeys.RuleTestArduinoMissingComLog)
+                    : _text.Format(UiTextKeys.RuleTestArduinoDisconnectedLog, _config.SerialPort),
                 ActivityLogKind.Important);
         }
 
         if (_config.ArduinoEnabled && rule.UseLights && !string.IsNullOrWhiteSpace(rule.TargetPins) && LightCommand.ParsePins(rule.TargetPins).Count == 0)
         {
-            AddLog($"Simulador: los pines de la regla '{rule.Name}' no son validos.", ActivityLogKind.Important);
+            AddLog(_text.Format(UiTextKeys.RuleTestInvalidPinsLog, rule.Name), ActivityLogKind.Important);
         }
 
         if (rule.SendAlexaEvent && !_config.Alexa.IsConfigured)
         {
-            AddLog("Simulador: Alexa esta activada en la regla, pero el relay no esta configurado.", ActivityLogKind.Important);
+            AddLog(_text.Get(UiTextKeys.RuleTestAlexaNotConfiguredLog), ActivityLogKind.Important);
         }
 
         if (rule.EventKind == TwitchEventKind.ChatCommand
             && !RuleSimulationService.MatchesChatCommand(rule, twitchEvent.Message))
         {
-            AddLog("Simulador: el mensaje no empieza con el comando configurado.", ActivityLogKind.Important);
+            AddLog(_text.Get(UiTextKeys.RuleTestChatCommandMismatchLog), ActivityLogKind.Important);
         }
 
         return true;

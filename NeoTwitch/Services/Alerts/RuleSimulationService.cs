@@ -1,21 +1,29 @@
 using NeoTwitch.Models;
+using NeoTwitch.Services.Text;
 
 namespace NeoTwitch.Services.Alerts;
 
-public static class RuleSimulationService
+public sealed class RuleSimulationService
 {
-    public static TwitchEvent BuildEvent(EventRule rule)
+    private readonly IUiTextService _text;
+
+    public RuleSimulationService(IUiTextService text)
+    {
+        _text = text;
+    }
+
+    public TwitchEvent BuildEvent(EventRule rule)
     {
         var kind = rule.EventKind == TwitchEventKind.Test
             ? TwitchEventKind.Follow
             : rule.EventKind;
-        var userName = "Prueba";
+        var userName = _text.Get(UiTextKeys.RuleSimulationUserName);
         var bits = Math.Max(1, rule.MinimumBits);
         var viewers = 18;
-        var rewardTitle = FirstNonEmpty(rule.CustomRewardTitle, "Canje de prueba");
+        var rewardTitle = FirstNonEmpty(rule.CustomRewardTitle, _text.Get(UiTextKeys.RuleSimulationRewardTitle));
         var message = kind == TwitchEventKind.ChatCommand
-            ? FirstNonEmpty(rule.ChatCommand, "!baile mensaje de prueba")
-            : "Mensaje de prueba";
+            ? FirstNonEmpty(rule.ChatCommand, _text.Get(UiTextKeys.RuleSimulationChatCommandMessage))
+            : _text.Get(UiTextKeys.RuleSimulationMessage);
 
         return new TwitchEvent
         {
@@ -24,9 +32,9 @@ public static class RuleSimulationService
             RewardTitle = kind == TwitchEventKind.ChannelPointRedemption ? rewardTitle : null,
             Bits = kind == TwitchEventKind.Cheer ? bits : null,
             ViewerCount = kind == TwitchEventKind.Raid ? viewers : null,
-            Message = kind == TwitchEventKind.ChatCommand ? message : "Mensaje de prueba",
+            Message = kind == TwitchEventKind.ChatCommand ? message : _text.Get(UiTextKeys.RuleSimulationMessage),
             RawType = "simulator",
-            Title = $"Simulacion: {DisplayNames.For(kind)} de {userName}"
+            Title = _text.Format(UiTextKeys.RuleSimulationTitle, DisplayNames.For(kind), userName)
         };
     }
 
@@ -52,44 +60,50 @@ public static class RuleSimulationService
         return string.Equals(firstToken, command, StringComparison.OrdinalIgnoreCase);
     }
 
-    public static string DescribeEvent(TwitchEvent twitchEvent)
+    public string DescribeEvent(TwitchEvent twitchEvent)
     {
-        var user = FirstNonEmpty(twitchEvent.UserName ?? "", "Prueba");
+        var user = FirstNonEmpty(twitchEvent.UserName ?? "", _text.Get(UiTextKeys.RuleSimulationUserName));
         return twitchEvent.Kind switch
         {
-            TwitchEventKind.Cheer => $"{twitchEvent.Bits ?? 0} bits de {user}",
-            TwitchEventKind.Raid => $"raid de {user} con {twitchEvent.ViewerCount ?? 0} viewers",
-            TwitchEventKind.ChannelPointRedemption => $"canje '{FirstNonEmpty(twitchEvent.RewardTitle ?? "", "Canje de prueba")}' de {user}",
-            TwitchEventKind.ChatCommand => $"comando de chat de {user}: {FirstNonEmpty(twitchEvent.Message ?? "", "sin mensaje")}",
-            _ => $"{DisplayNames.For(twitchEvent.Kind)} de {user}"
+            TwitchEventKind.Cheer => _text.Format(UiTextKeys.RuleSimulationDescribeCheer, twitchEvent.Bits ?? 0, user),
+            TwitchEventKind.Raid => _text.Format(UiTextKeys.RuleSimulationDescribeRaid, user, twitchEvent.ViewerCount ?? 0),
+            TwitchEventKind.ChannelPointRedemption => _text.Format(
+                UiTextKeys.RuleSimulationDescribeRedemption,
+                FirstNonEmpty(twitchEvent.RewardTitle ?? "", _text.Get(UiTextKeys.RuleSimulationRewardTitle)),
+                user),
+            TwitchEventKind.ChatCommand => _text.Format(
+                UiTextKeys.RuleSimulationDescribeChatCommand,
+                user,
+                FirstNonEmpty(twitchEvent.Message ?? "", _text.Get(UiTextKeys.RuleSimulationNoMessage))),
+            _ => _text.Format(UiTextKeys.RuleSimulationDescribeDefault, DisplayNames.For(twitchEvent.Kind), user)
         };
     }
 
-    public static string DescribeActions(EventRule rule)
+    public string DescribeActions(EventRule rule)
     {
         List<string> actions = [];
 
         if (rule.UseLights)
         {
-            actions.Add("luces");
+            actions.Add(_text.Get(UiTextKeys.RuleSimulationActionLights));
         }
 
         if (rule.PlayAudio)
         {
-            actions.Add("audio");
+            actions.Add(_text.Get(UiTextKeys.RuleSimulationActionAudio));
         }
 
         if (rule.SendChatMessage)
         {
-            actions.Add("chat");
+            actions.Add(_text.Get(UiTextKeys.RuleSimulationActionChat));
         }
 
         if (rule.SendAlexaEvent)
         {
-            actions.Add("Alexa");
+            actions.Add(_text.Get(UiTextKeys.RuleSimulationActionAlexa));
         }
 
-        return actions.Count == 0 ? "ninguna accion activa" : string.Join(", ", actions);
+        return actions.Count == 0 ? _text.Get(UiTextKeys.RuleSimulationNoActions) : string.Join(", ", actions);
     }
 
     private static string FirstNonEmpty(params string[] values)

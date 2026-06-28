@@ -27,5 +27,6 @@ public partial class MainWindow
     private Services.Activity.ActivityLogService _activityLog => _services.ActivityLog;
     private ActivityViewModel _activityViewModel => _services.ActivityViewModel;
     private Services.Dashboard.DashboardSummaryService _dashboardSummary => _services.DashboardSummary;
+    private Services.Alerts.RuleSimulationService _ruleSimulation => _services.RuleSimulation;
     private Services.Alerts.AlertQueueService _alertQueue => _services.AlertQueue;
 }

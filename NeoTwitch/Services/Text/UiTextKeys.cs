@@ -132,6 +132,17 @@ public static class UiTextKeys
     public const string BackgroundScheduledFailureCrash = "background.scheduled_failure_crash";
     public const string BackgroundScheduledFailureLog = "background.scheduled_failure_log";
 
+    public const string AlexaRelayConfigureFirst = "alexa_relay.configure_first";
+    public const string AlexaRelaySource = "alexa_relay.source";
+    public const string AlexaRelayTestEventName = "alexa_relay.test_event_name";
+    public const string AlexaRelayTestRuleName = "alexa_relay.test_rule_name";
+    public const string AlexaRelayTestEventKind = "alexa_relay.test_event_kind";
+    public const string AlexaRelayTestUserName = "alexa_relay.test_user_name";
+    public const string AlexaRelayTestTitle = "alexa_relay.test_title";
+    public const string AlexaRelayBackgroundRuleName = "alexa_relay.background_rule_name";
+    public const string AlexaRelayBackgroundKind = "alexa_relay.background_kind";
+    public const string AlexaRelayResponseFailure = "alexa_relay.response_failure";
+
     public const string SerialAckActive = "serial.ack_active";
     public const string SerialAckCompatible = "serial.ack_compatible";
     public const string SerialAckUnconfirmed = "serial.ack_unconfirmed";
@@ -150,6 +161,9 @@ public static class UiTextKeys
     public const string SerialResponseLog = "serial.response_log";
     public const string SerialNoInitialAckLog = "serial.no_initial_ack_log";
     public const string SerialNoCommandAckLog = "serial.no_command_ack_log";
+
+    public const string WindowsStartupOpenRunKeyFailure = "windows_startup.open_run_key_failure";
+    public const string WindowsStartupExecutablePathFailure = "windows_startup.executable_path_failure";
 
     public const string SettingsAutomaticBackupsText = "settings.automatic_backups_text";
     public const string SettingsManualBackupText = "settings.manual_backup_text";

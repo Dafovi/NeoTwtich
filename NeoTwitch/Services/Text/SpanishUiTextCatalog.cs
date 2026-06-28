@@ -136,6 +136,17 @@ public static class SpanishUiTextCatalog
             [UiTextKeys.BackgroundScheduledFailureCrash] = "No se pudo aplicar el fondo programado.",
             [UiTextKeys.BackgroundScheduledFailureLog] = "Fondo: {0}",
 
+            [UiTextKeys.AlexaRelayConfigureFirst] = "Activa Alexa y configura la URL del relay primero.",
+            [UiTextKeys.AlexaRelaySource] = "neo-twitch",
+            [UiTextKeys.AlexaRelayTestEventName] = "seguidor",
+            [UiTextKeys.AlexaRelayTestRuleName] = "Prueba Alexa",
+            [UiTextKeys.AlexaRelayTestEventKind] = "Prueba manual",
+            [UiTextKeys.AlexaRelayTestUserName] = "NeoTwitch",
+            [UiTextKeys.AlexaRelayTestTitle] = "Prueba de integracion Alexa",
+            [UiTextKeys.AlexaRelayBackgroundRuleName] = "Fondo Alexa",
+            [UiTextKeys.AlexaRelayBackgroundKind] = "Fondo",
+            [UiTextKeys.AlexaRelayResponseFailure] = "Alexa relay respondio {0}: {1}",
+
             [UiTextKeys.SerialAckActive] = "ACK activo",
             [UiTextKeys.SerialAckCompatible] = "modo compatible sin ACK",
             [UiTextKeys.SerialAckUnconfirmed] = "ACK sin confirmar",
@@ -154,6 +165,9 @@ public static class SpanishUiTextCatalog
             [UiTextKeys.SerialResponseLog] = "Arduino respuesta: {0}",
             [UiTextKeys.SerialNoInitialAckLog] = "Arduino: no recibi ACK. Sigo en modo compatible; carga el sketch actualizado para confirmaciones.",
             [UiTextKeys.SerialNoCommandAckLog] = "Arduino: no recibi ACK para {0}.",
+
+            [UiTextKeys.WindowsStartupOpenRunKeyFailure] = "No pude abrir la clave de inicio de Windows.",
+            [UiTextKeys.WindowsStartupExecutablePathFailure] = "No pude detectar la ruta del ejecutable actual.",
 
             [UiTextKeys.SettingsAutomaticBackupsText] = "Backups automaticos: {0}",
             [UiTextKeys.SettingsManualBackupText] = "Ultimo backup manual: {0}",

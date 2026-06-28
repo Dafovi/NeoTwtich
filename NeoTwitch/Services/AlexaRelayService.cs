@@ -3,11 +3,13 @@ using System.Net.Http.Headers;
 using System.Text;
 using System.Text.Json;
 using NeoTwitch.Models;
+using NeoTwitch.Services.Text;
 
 namespace NeoTwitch.Services;
 
 public sealed class AlexaRelayService
 {
+    private readonly IUiTextService _text;
     private readonly HttpClient _http = new()
     {
         Timeout = TimeSpan.FromSeconds(10)
@@ -18,6 +20,16 @@ public sealed class AlexaRelayService
         WriteIndented = false
     };
 
+    public AlexaRelayService()
+        : this(UiTextService.CreateDefault())
+    {
+    }
+
+    public AlexaRelayService(IUiTextService text)
+    {
+        _text = text;
+    }
+
     public async Task SendRuleEventAsync(AppConfig config, EventRule rule, TwitchEvent twitchEvent, CancellationToken cancellationToken)
     {
         if (!config.Alexa.IsConfigured || !rule.SendAlexaEvent)
@@ -27,7 +39,7 @@ public sealed class AlexaRelayService
 
         var eventName = ResolveEventName(rule, twitchEvent);
         var payload = new AlexaRelayPayload(
-            "neo-twitch",
+            _text.Get(UiTextKeys.AlexaRelaySource),
             eventName,
             rule.Name,
             DisplayNames.For(twitchEvent.Kind),
@@ -46,20 +58,20 @@ public sealed class AlexaRelayService
     {
         if (!config.Alexa.IsConfigured)
         {
-            throw new InvalidOperationException("Activa Alexa y configura la URL del relay primero.");
+            throw new InvalidOperationException(_text.Get(UiTextKeys.AlexaRelayConfigureFirst));
         }
 
         var payload = new AlexaRelayPayload(
-            "neo-twitch",
-            "seguidor",
-            "Prueba Alexa",
-            "Prueba manual",
-            "NeoTwitch",
+            _text.Get(UiTextKeys.AlexaRelaySource),
+            _text.Get(UiTextKeys.AlexaRelayTestEventName),
+            _text.Get(UiTextKeys.AlexaRelayTestRuleName),
+            _text.Get(UiTextKeys.AlexaRelayTestEventKind),
+            _text.Get(UiTextKeys.AlexaRelayTestUserName),
             "",
             null,
             null,
             "",
-            "Prueba de integracion Alexa",
+            _text.Get(UiTextKeys.AlexaRelayTestTitle),
             DateTimeOffset.UtcNow);
 
         await SendPayloadAsync(config, payload, cancellationToken);
@@ -78,11 +90,11 @@ public sealed class AlexaRelayService
         }
 
         var payload = new AlexaRelayPayload(
-            "neo-twitch",
+            _text.Get(UiTextKeys.AlexaRelaySource),
             eventName.Trim(),
-            "Fondo Alexa",
-            "Fondo",
-            "NeoTwitch",
+            _text.Get(UiTextKeys.AlexaRelayBackgroundRuleName),
+            _text.Get(UiTextKeys.AlexaRelayBackgroundKind),
+            _text.Get(UiTextKeys.AlexaRelayTestUserName),
             "",
             null,
             null,
@@ -110,7 +122,7 @@ public sealed class AlexaRelayService
         var responseText = await response.Content.ReadAsStringAsync(cancellationToken);
         if (!response.IsSuccessStatusCode)
         {
-            throw new InvalidOperationException($"Alexa relay respondio {(int)response.StatusCode}: {responseText}");
+            throw new InvalidOperationException(_text.Format(UiTextKeys.AlexaRelayResponseFailure, (int)response.StatusCode, responseText));
         }
     }
 

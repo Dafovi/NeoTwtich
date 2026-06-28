@@ -29,7 +29,7 @@ public sealed class TwitchChatService : IDisposable
             throw new InvalidOperationException(_text.Get(UiTextKeys.TwitchChatMissingChannel));
         }
 
-        using var request = new HttpRequestMessage(HttpMethod.Post, "https://api.twitch.tv/helix/chat/messages");
+        using var request = new HttpRequestMessage(HttpMethod.Post, TwitchEventSubProtocol.ChatMessagesApiUrl);
         request.Headers.Authorization = new AuthenticationHeaderValue("Bearer", config.Token.AccessToken);
         request.Headers.Add("Client-Id", config.TwitchClientId);
         request.Content = new StringContent(
@@ -40,7 +40,7 @@ public sealed class TwitchChatService : IDisposable
                 message
             }),
             Encoding.UTF8,
-            "application/json");
+            TwitchEventSubProtocol.ContentTypeJson);
 
         using var response = await _http.SendAsync(request, cancellationToken);
         var responseText = await response.Content.ReadAsStringAsync(cancellationToken);

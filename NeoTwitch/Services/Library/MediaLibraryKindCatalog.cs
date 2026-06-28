@@ -16,8 +16,8 @@ public static class MediaLibraryKindCatalog
                 UiTextKeys.ImagesTitle,
                 "#37C7F3",
                 "Assets/Icons/media_image.png",
-                "Imagenes|*.png;*.jpg;*.jpeg;*.gif;*.bmp;*.webp|Todos los archivos|*.*",
-                "imagenes",
+                UiTextKeys.ImagesFileDialogFilter,
+                UiTextKeys.ImagesFooterNoun,
                 ObsMediaKind.Image,
                 NeoTwitchProduct.Obs.PreviewImageSourceName),
             MediaLibraryKind.Video => new MediaLibraryKindInfo(
@@ -25,11 +25,11 @@ public static class MediaLibraryKindCatalog
                 UiTextKeys.VideosTitle,
                 "#B56CFF",
                 "Assets/Icons/media_video.png",
-                "Videos|*.mp4;*.mov;*.webm;*.mkv;*.avi;*.wmv|Todos los archivos|*.*",
-                "videos",
+                UiTextKeys.VideosFileDialogFilter,
+                UiTextKeys.VideosFooterNoun,
                 ObsMediaKind.Video,
                 NeoTwitchProduct.Obs.PreviewVideoSourceName),
-            _ => throw new ArgumentOutOfRangeException(nameof(kind), kind, "Tipo de biblioteca no soportado.")
+            _ => throw new ArgumentOutOfRangeException(nameof(kind), kind, nameof(kind))
         };
     }
 }
@@ -39,7 +39,7 @@ public sealed record MediaLibraryKindInfo(
     string TitleKey,
     string AccentColor,
     string IconPath,
-    string FileDialogFilter,
-    string FooterNoun,
+    string FileDialogFilterKey,
+    string FooterNounKey,
     ObsMediaKind ObsKind,
     string PreviewSourceName);

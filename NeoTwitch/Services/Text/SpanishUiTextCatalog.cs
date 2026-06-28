@@ -24,6 +24,9 @@ public static class SpanishUiTextCatalog
             [UiTextKeys.LibraryGroupDeletedLog] = "{0}: grupo eliminado {1}.",
             [UiTextKeys.LibraryLastUnused] = "Sin uso",
             [UiTextKeys.LibraryFileCount] = "{0} archivo{1}",
+            [UiTextKeys.LibraryAudioCount] = "{0} audio{1}",
+            [UiTextKeys.LibrarySummaryFooter] = "Mostrando {0} de {1} {2}{3}",
+            [UiTextKeys.LibrarySummaryGroupFilter] = " del grupo {0}",
 
             [UiTextKeys.AudioPickValidFile] = "Selecciona un archivo de audio valido.",
             [UiTextKeys.AudioPlayingLog] = "Audio: reproduciendo {0}.",
@@ -31,6 +34,7 @@ public static class SpanishUiTextCatalog
             [UiTextKeys.AudioFileMissingLog] = "No encontre el audio: {0}",
             [UiTextKeys.AudioPlaybackFailureLog] = "No se pudo reproducir el audio: {0}",
             [UiTextKeys.AudioLoadTimeoutLog] = "El audio tardo demasiado en cargar; usare la duracion manual de la regla.",
+            [UiTextKeys.AudioFooterNoun] = "audios",
 
             [UiTextKeys.MediaPickValidFile] = "Selecciona un archivo valido para {0}.",
             [UiTextKeys.MediaObsConnectRequiredLog] = "OBS: conecta OBS antes de probar imagenes o videos.",
@@ -38,6 +42,10 @@ public static class SpanishUiTextCatalog
             [UiTextKeys.MediaObsMissingFileLog] = "OBS: el archivo seleccionado no existe.",
             [UiTextKeys.MediaObsMissingSceneLog] = "OBS: no hay una escena actual para probar el medio.",
             [UiTextKeys.MediaObsPreviewLog] = "OBS: probando {0} '{1}'.",
+            [UiTextKeys.ImagesFileDialogFilter] = "Imagenes|*.png;*.jpg;*.jpeg;*.gif;*.bmp;*.webp|Todos los archivos|*.*",
+            [UiTextKeys.ImagesFooterNoun] = "imagenes",
+            [UiTextKeys.VideosFileDialogFilter] = "Videos|*.mp4;*.mov;*.webm;*.mkv;*.avi;*.wmv|Todos los archivos|*.*",
+            [UiTextKeys.VideosFooterNoun] = "videos",
 
             [UiTextKeys.OptionEventFollow] = "Nuevo seguidor",
             [UiTextKeys.OptionEventSubscription] = "Nueva suscripcion",

@@ -1109,7 +1109,8 @@ static class LibraryGroupRowFactoryTests
                 new AudioAssetConfig { GroupId = "g1" },
                 new AudioAssetConfig { GroupId = "G1" },
                 new AudioAssetConfig { GroupId = "g2" }
-            });
+            },
+            count => $"{count} audio{(count == 1 ? "" : "s")}");
 
         TestAssert.Equal(2, audioRows.Count);
         TestAssert.Equal("2 audios", audioRows[0].CountText);
@@ -1158,8 +1159,11 @@ static class LibrarySummaryTests
             groupFilterId: "g1",
             new Dictionary<string, string> { ["g1"] = "Seguidores" },
             "audios",
-            "Sin uso",
-            "seleccionado");
+            new LibrarySummaryLabels(
+                "Mostrando {0} de {1} {2}{3}",
+                " del grupo {0}",
+                "Sin uso",
+                "seleccionado"));
 
         TestAssert.Equal("3", summary.AssetCountText);
         TestAssert.Equal("1", summary.GroupCountText);
@@ -1244,11 +1248,15 @@ static class MediaLibraryKindCatalogTests
         var video = MediaLibraryKindCatalog.Get(MediaLibraryKind.Video);
 
         TestAssert.Equal(UiTextKeys.ImagesTitle, image.TitleKey);
+        TestAssert.Equal(UiTextKeys.ImagesFileDialogFilter, image.FileDialogFilterKey);
+        TestAssert.Equal(UiTextKeys.ImagesFooterNoun, image.FooterNounKey);
         TestAssert.Equal("#37C7F3", image.AccentColor);
         TestAssert.Contains("media_image.png", image.IconPath);
         TestAssert.Equal(ObsMediaKind.Image, image.ObsKind);
 
         TestAssert.Equal(UiTextKeys.VideosTitle, video.TitleKey);
+        TestAssert.Equal(UiTextKeys.VideosFileDialogFilter, video.FileDialogFilterKey);
+        TestAssert.Equal(UiTextKeys.VideosFooterNoun, video.FooterNounKey);
         TestAssert.Equal("#B56CFF", video.AccentColor);
         TestAssert.Contains("media_video.png", video.IconPath);
         TestAssert.Equal(ObsMediaKind.Video, video.ObsKind);

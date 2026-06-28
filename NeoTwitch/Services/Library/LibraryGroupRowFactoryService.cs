@@ -8,7 +8,8 @@ public static class LibraryGroupRowFactoryService
 {
     public static IReadOnlyList<AudioGroupRow> CreateAudioGroupRows(
         IEnumerable<AudioGroupConfig> groups,
-        IEnumerable<AudioAssetConfig> library)
+        IEnumerable<AudioAssetConfig> library,
+        Func<int, string> countTextFactory)
     {
         return groups
             .Select((group, index) =>
@@ -17,7 +18,7 @@ public static class LibraryGroupRowFactoryService
                 return new AudioGroupRow(
                     group.Id,
                     group.Name,
-                    $"{count} audio{(count == 1 ? "" : "s")}",
+                    countTextFactory(count),
                     UiBrushFactory.FrozenBrushFrom(AccentForIndex(index)));
             })
             .ToArray();

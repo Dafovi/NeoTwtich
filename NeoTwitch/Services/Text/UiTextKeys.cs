@@ -20,6 +20,9 @@ public static class UiTextKeys
     public const string LibraryGroupDeletedLog = "library.group_deleted_log";
     public const string LibraryLastUnused = "library.last_unused";
     public const string LibraryFileCount = "library.file_count";
+    public const string LibraryAudioCount = "library.audio_count";
+    public const string LibrarySummaryFooter = "library.summary_footer";
+    public const string LibrarySummaryGroupFilter = "library.summary_group_filter";
 
     public const string AudioPickValidFile = "audio.pick_valid_file";
     public const string AudioPlayingLog = "audio.playing_log";
@@ -27,6 +30,7 @@ public static class UiTextKeys
     public const string AudioFileMissingLog = "audio.file_missing_log";
     public const string AudioPlaybackFailureLog = "audio.playback_failure_log";
     public const string AudioLoadTimeoutLog = "audio.load_timeout_log";
+    public const string AudioFooterNoun = "audio.footer_noun";
 
     public const string MediaPickValidFile = "media.pick_valid_file";
     public const string MediaObsConnectRequiredLog = "media.obs_connect_required_log";
@@ -34,6 +38,10 @@ public static class UiTextKeys
     public const string MediaObsMissingFileLog = "media.obs_missing_file_log";
     public const string MediaObsMissingSceneLog = "media.obs_missing_scene_log";
     public const string MediaObsPreviewLog = "media.obs_preview_log";
+    public const string ImagesFileDialogFilter = "images.file_dialog_filter";
+    public const string ImagesFooterNoun = "images.footer_noun";
+    public const string VideosFileDialogFilter = "videos.file_dialog_filter";
+    public const string VideosFooterNoun = "videos.footer_noun";
 
     public const string OptionEventFollow = "option.event.follow";
     public const string OptionEventSubscription = "option.event.subscription";

@@ -1,6 +1,7 @@
 using System.Collections.ObjectModel;
 using NeoTwitch.Models;
 using NeoTwitch.Services.Library;
+using NeoTwitch.Services.Text;
 using NeoTwitch.ViewModels.Library;
 
 namespace NeoTwitch;
@@ -57,6 +58,15 @@ public partial class MainWindow
     private string MediaLibraryTitle(MediaLibraryKind kind)
     {
         return _text.Get(MediaLibraryKindCatalog.Get(kind).TitleKey);
+    }
+
+    private LibrarySummaryLabels GetLibrarySummaryLabels()
+    {
+        return new LibrarySummaryLabels(
+            _text.Get(UiTextKeys.LibrarySummaryFooter),
+            _text.Get(UiTextKeys.LibrarySummaryGroupFilter),
+            _text.Get(UiTextKeys.LibraryLastUnused),
+            _text.Get(UiTextKeys.LibrarySelectedGroup));
     }
 
     private void UpdateVideoVolumeText()

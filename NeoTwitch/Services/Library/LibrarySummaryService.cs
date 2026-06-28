@@ -8,6 +8,12 @@ public readonly record struct LibrarySummaryDisplay(
     string LastAssetText,
     string FooterText);
 
+public readonly record struct LibrarySummaryLabels(
+    string FooterFormat,
+    string GroupFilterFormat,
+    string LastUnusedText,
+    string SelectedGroupFallbackText);
+
 public static class LibrarySummaryService
 {
     public static LibrarySummaryDisplay Create<TAsset, TGroup>(
@@ -17,8 +23,7 @@ public static class LibrarySummaryService
         string groupFilterId,
         IReadOnlyDictionary<string, string> groupsById,
         string footerNoun,
-        string lastUnusedText,
-        string selectedGroupText)
+        LibrarySummaryLabels labels)
         where TAsset : ILibraryAssetConfig
         where TGroup : ILibraryGroupConfig
     {
@@ -29,12 +34,12 @@ public static class LibrarySummaryService
 
         var groupFilterText = string.IsNullOrWhiteSpace(groupFilterId)
             ? ""
-            : $" del grupo {groupsById.GetValueOrDefault(groupFilterId, selectedGroupText)}";
+            : string.Format(labels.GroupFilterFormat, groupsById.GetValueOrDefault(groupFilterId, labels.SelectedGroupFallbackText));
 
         return new LibrarySummaryDisplay(
             assets.Count.ToString(),
             groups.Count.ToString(),
-            lastAsset?.DisplayName ?? lastUnusedText,
-            $"Mostrando {visibleCount} de {assets.Count} {footerNoun}{groupFilterText}");
+            lastAsset?.DisplayName ?? labels.LastUnusedText,
+            string.Format(labels.FooterFormat, visibleCount, assets.Count, footerNoun, groupFilterText));
     }
 }

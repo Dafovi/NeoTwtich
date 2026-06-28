@@ -26,7 +26,7 @@ public partial class MainWindow
     {
         var dialog = new WpfOpenFileDialog
         {
-            Filter = MediaLibraryKindCatalog.Get(kind).FileDialogFilter,
+            Filter = _text.Get(MediaLibraryKindCatalog.Get(kind).FileDialogFilterKey),
             CheckFileExists = true
         };
 

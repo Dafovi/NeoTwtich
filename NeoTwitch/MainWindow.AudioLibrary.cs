@@ -64,7 +64,10 @@ public partial class MainWindow
             }
 
             _audioGroupRows.Clear();
-            foreach (var row in LibraryGroupRowFactoryService.CreateAudioGroupRows(_config.AudioGroups, _config.AudioLibrary))
+            foreach (var row in LibraryGroupRowFactoryService.CreateAudioGroupRows(
+                         _config.AudioGroups,
+                         _config.AudioLibrary,
+                         count => _text.Format(UiTextKeys.LibraryAudioCount, count, count == 1 ? "" : "s")))
             {
                 _audioGroupRows.Add(row);
             }
@@ -75,9 +78,8 @@ public partial class MainWindow
                 rows.Length,
                 _audioGroupFilterId,
                 groupsById,
-                "audios",
-                _text.Get(UiTextKeys.LibraryLastUnused),
-                _text.Get(UiTextKeys.LibrarySelectedGroup));
+                _text.Get(UiTextKeys.AudioFooterNoun),
+                GetLibrarySummaryLabels());
             AudioSavedCountText.Text = summary.AssetCountText;
             AudioGroupCountText.Text = summary.GroupCountText;
             LastAudioText.Text = summary.LastAssetText;

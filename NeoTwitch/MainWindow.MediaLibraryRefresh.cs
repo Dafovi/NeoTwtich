@@ -57,9 +57,8 @@ public partial class MainWindow
                 rows.Length,
                 groupFilterId,
                 groupsById,
-                MediaLibraryKindCatalog.Get(kind).FooterNoun,
-                _text.Get(UiTextKeys.LibraryLastUnused),
-                _text.Get(UiTextKeys.LibrarySelectedGroup));
+                _text.Get(MediaLibraryKindCatalog.Get(kind).FooterNounKey),
+                GetLibrarySummaryLabels());
 
             if (kind == MediaLibraryKind.Image)
             {

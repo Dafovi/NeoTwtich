@@ -4,6 +4,7 @@ using System.Windows.Controls.Primitives;
 using System.Windows.Data;
 using NeoTwitch.Models;
 using NeoTwitch.Services.Alerts;
+using NeoTwitch.Services.Text;
 using NeoTwitch.Services.Ui;
 
 namespace NeoTwitch;
@@ -67,7 +68,8 @@ public partial class MainWindow
             rule,
             _ruleStatusFilter,
             _ruleCategoryFilter,
-            _ruleSearchText);
+            _ruleSearchText,
+            _text);
     }
 
     private void RefreshRulesView()

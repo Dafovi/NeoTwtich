@@ -58,7 +58,7 @@ public partial class MainWindow
             _config.LedStrips.Count,
             totalLeds,
             _config.BackgroundEnabled,
-            _config.BackgroundPattern,
+            DisplayNameService.For(_config.BackgroundPattern, _text),
             labels);
         RefreshDashboardConnectionStates();
         UpdateDashboardSummary();

@@ -11,6 +11,11 @@ public static class EventRuleFilterService
 
     public static bool Matches(EventRule rule, string statusFilter, string categoryFilter, string searchText)
     {
+        return Matches(rule, statusFilter, categoryFilter, searchText, UiTextService.CreateDefault());
+    }
+
+    public static bool Matches(EventRule rule, string statusFilter, string categoryFilter, string searchText, IUiTextService textService)
+    {
         if (string.Equals(statusFilter, ActiveStatus, StringComparison.OrdinalIgnoreCase) && !rule.IsEnabled)
         {
             return false;
@@ -38,6 +43,6 @@ public static class EventRuleFilterService
             || TextSearchHelper.ContainsIgnoreCase(rule.ChatCommand, text)
             || TextSearchHelper.ContainsIgnoreCase(rule.CustomRewardTitle, text)
             || TextSearchHelper.ContainsIgnoreCase(rule.ChatMessageTemplate, text)
-            || TextSearchHelper.ContainsIgnoreCase(DisplayNames.For(rule.EventKind), text);
+            || TextSearchHelper.ContainsIgnoreCase(DisplayNameService.For(rule.EventKind, textService), text);
     }
 }

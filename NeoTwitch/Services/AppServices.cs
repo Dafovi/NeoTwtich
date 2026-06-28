@@ -84,8 +84,8 @@ public sealed class AppServices
     public static AppServices CreateDefault()
     {
         var activityLog = new ActivityLogService();
-        var updateService = new AppUpdateService();
         var text = UiTextService.CreateDefault();
+        var updateService = new AppUpdateService(text);
         return new AppServices(
             new SettingsStore(text),
             new AudioPlayerService(text),

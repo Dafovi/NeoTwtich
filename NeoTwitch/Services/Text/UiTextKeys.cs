@@ -429,6 +429,7 @@ public static class UiTextKeys
     public const string UpdateCheckFailedLog = "update.check_failed_log";
     public const string UpdateLaunchingInstallerLog = "update.launching_installer_log";
     public const string UpdateLaunchFailedLog = "update.launch_failed_log";
+    public const string VersionCheckEmptyReleaseResponse = "version_check.empty_release_response";
 
     public const string AppAlreadyOpenMessage = "app.already_open_message";
     public const string AppStartupFailureLog = "app.startup_failure_log";

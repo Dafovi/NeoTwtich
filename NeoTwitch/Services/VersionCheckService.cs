@@ -2,19 +2,22 @@ using System.Net.Http;
 using System.Net.Http.Headers;
 using System.Text.Json;
 using System.Text.Json.Serialization;
+using NeoTwitch.Services.Text;
 using NeoTwitch.Shared;
 
 namespace NeoTwitch.Services;
 
 public sealed class VersionCheckService
 {
+    private readonly IUiTextService _text;
     private readonly HttpClient _http = new()
     {
         Timeout = TimeSpan.FromSeconds(8)
     };
 
-    public VersionCheckService()
+    public VersionCheckService(IUiTextService text)
     {
+        _text = text;
         _http.DefaultRequestHeaders.UserAgent.Add(new ProductInfoHeaderValue(NeoTwitchProduct.GitHubAppUserAgent, NeoTwitchProduct.CurrentVersionText));
     }
 
@@ -25,7 +28,7 @@ public sealed class VersionCheckService
 
         await using var stream = await response.Content.ReadAsStreamAsync(cancellationToken);
         var release = await JsonSerializer.DeserializeAsync<GitHubRelease>(stream, cancellationToken: cancellationToken)
-            ?? throw new InvalidOperationException("GitHub no devolvio informacion de release.");
+            ?? throw new InvalidOperationException(_text.Get(UiTextKeys.VersionCheckEmptyReleaseResponse));
 
         var latestVersionText = NeoTwitchProduct.NormalizeVersionText(release.TagName);
         var currentVersionText = NeoTwitchProduct.CurrentVersionText;

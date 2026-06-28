@@ -1,12 +1,18 @@
 using System.Diagnostics;
 using System.IO;
+using NeoTwitch.Services.Text;
 using NeoTwitch.Shared;
 
 namespace NeoTwitch.Services;
 
 public sealed class AppUpdateService
 {
-    private readonly VersionCheckService _versionCheckService = new();
+    private readonly VersionCheckService _versionCheckService;
+
+    public AppUpdateService(IUiTextService text)
+    {
+        _versionCheckService = new VersionCheckService(text);
+    }
 
     public Task<VersionCheckResult> CheckLatestAsync(CancellationToken cancellationToken)
     {

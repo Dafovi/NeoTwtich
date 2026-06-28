@@ -432,6 +432,7 @@ public static class SpanishUiTextCatalog
             [UiTextKeys.UpdateCheckFailedLog] = "Version: no pude consultar actualizaciones ({0}).",
             [UiTextKeys.UpdateLaunchingInstallerLog] = "Version: iniciando actualizador a V{0}.",
             [UiTextKeys.UpdateLaunchFailedLog] = "Version: no pude abrir el actualizador ({0}).",
+            [UiTextKeys.VersionCheckEmptyReleaseResponse] = "GitHub no devolvio informacion de release.",
 
             [UiTextKeys.AppAlreadyOpenMessage] = "{0} ya esta abierta. Revisa el icono en la bandeja del sistema.",
             [UiTextKeys.AppStartupFailureLog] = "Fallo al iniciar la aplicacion.",

@@ -85,7 +85,7 @@ public sealed class AppServices
         return new AppServices(
             new SettingsStore(),
             new AudioPlayerService(),
-            new SerialLightController(),
+            new SerialLightController(text),
             new TwitchAuthService(),
             new TwitchChatService(),
             new AlexaRelayService(),

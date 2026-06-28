@@ -132,6 +132,25 @@ public static class UiTextKeys
     public const string BackgroundScheduledFailureCrash = "background.scheduled_failure_crash";
     public const string BackgroundScheduledFailureLog = "background.scheduled_failure_log";
 
+    public const string SerialAckActive = "serial.ack_active";
+    public const string SerialAckCompatible = "serial.ack_compatible";
+    public const string SerialAckUnconfirmed = "serial.ack_unconfirmed";
+    public const string SerialConnectedLog = "serial.connected_log";
+    public const string SerialRestartWaitLog = "serial.restart_wait_log";
+    public const string SerialNoArduinoLog = "serial.no_arduino_log";
+    public const string SerialWriteFailureLog = "serial.write_failure_log";
+    public const string SerialPortDisconnectedLog = "serial.port_disconnected_log";
+    public const string SerialOpenFailure = "serial.open_failure";
+    public const string SerialPrepareFailure = "serial.prepare_failure";
+    public const string SerialApplyFailure = "serial.apply_failure";
+    public const string SerialTimeoutFailure = "serial.timeout_failure";
+    public const string SerialCommandLog = "serial.command_log";
+    public const string SerialAckConfirmedLog = "serial.ack_confirmed_log";
+    public const string SerialReportedErrorLog = "serial.reported_error_log";
+    public const string SerialResponseLog = "serial.response_log";
+    public const string SerialNoInitialAckLog = "serial.no_initial_ack_log";
+    public const string SerialNoCommandAckLog = "serial.no_command_ack_log";
+
     public const string SettingsAutomaticBackupsText = "settings.automatic_backups_text";
     public const string SettingsManualBackupText = "settings.manual_backup_text";
     public const string SettingsSavedLog = "settings.saved_log";

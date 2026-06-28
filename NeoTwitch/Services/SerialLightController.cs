@@ -2,6 +2,7 @@ using System.ComponentModel;
 using System.Runtime.InteropServices;
 using System.Text;
 using NeoTwitch.Models;
+using NeoTwitch.Services.Text;
 using Microsoft.Win32;
 using Microsoft.Win32.SafeHandles;
 
@@ -20,8 +21,19 @@ public sealed class SerialLightController : IDisposable
     private SafeFileHandle? _handle;
     private string _port = "";
     private readonly SemaphoreSlim _gate = new(1, 1);
+    private readonly IUiTextService _text;
     private int _baudRate = 115200;
     private bool? _ackSupported;
+
+    public SerialLightController()
+        : this(UiTextService.CreateDefault())
+    {
+    }
+
+    public SerialLightController(IUiTextService text)
+    {
+        _text = text;
+    }
 
     public bool HasOpenPort => _handle is { IsInvalid: false, IsClosed: false };
 
@@ -35,9 +47,9 @@ public sealed class SerialLightController : IDisposable
 
     public string AckStatusText => _ackSupported switch
     {
-        true => "ACK activo",
-        false => "modo compatible sin ACK",
-        _ => "ACK sin confirmar"
+        true => _text.Get(UiTextKeys.SerialAckActive),
+        false => _text.Get(UiTextKeys.SerialAckCompatible),
+        _ => _text.Get(UiTextKeys.SerialAckUnconfirmed)
     };
 
     public static IReadOnlyList<SerialPortInfo> GetAvailablePortInfos()
@@ -208,7 +220,7 @@ public sealed class SerialLightController : IDisposable
             _port = normalizedPort;
             _ackSupported = null;
             openedNewPort = true;
-            log($"Arduino conectado en {_port} a {_baudRate} baudios.");
+            log(_text.Format(UiTextKeys.SerialConnectedLog, _port, _baudRate));
         }
         finally
         {
@@ -217,7 +229,7 @@ public sealed class SerialLightController : IDisposable
 
         if (openedNewPort)
         {
-            log("Esperando a que Arduino termine de reiniciar el puerto serial...");
+            log(_text.Get(UiTextKeys.SerialRestartWaitLog));
             await Task.Delay(2200, cancellationToken);
         }
     }
@@ -240,7 +252,7 @@ public sealed class SerialLightController : IDisposable
         {
             if (!HasOpenPort || _handle is null)
             {
-                log("No hay Arduino conectado.");
+                log(_text.Get(UiTextKeys.SerialNoArduinoLog));
                 return;
             }
 
@@ -254,11 +266,11 @@ public sealed class SerialLightController : IDisposable
             if (!WriteFile(_handle, bytes, (uint)bytes.Length, out var written, IntPtr.Zero) || written != bytes.Length)
             {
                 var error = Marshal.GetLastWin32Error();
-                log($"No se pudo escribir en {_port}: {new Win32Exception(error).Message}");
+                log(_text.Format(UiTextKeys.SerialWriteFailureLog, _port, new Win32Exception(error).Message));
             }
             else
             {
-                log($"Serial {_port}: {line.Trim()}");
+                log(_text.Format(UiTextKeys.SerialCommandLog, _port, line.Trim()));
                 if (commandName is not null && _ackSupported != false)
                 {
                     WaitForAck(commandName, log, cancellationToken);
@@ -295,11 +307,11 @@ public sealed class SerialLightController : IDisposable
 
         if (!string.IsNullOrWhiteSpace(oldPort))
         {
-            log($"Puerto {oldPort} desconectado.");
+            log(_text.Format(UiTextKeys.SerialPortDisconnectedLog, oldPort));
         }
     }
 
-    private static SafeFileHandle OpenAndConfigure(string port, int baudRate)
+    private SafeFileHandle OpenAndConfigure(string port, int baudRate)
     {
         var handle = CreateFile(
             $@"\\.\{port}",
@@ -312,14 +324,14 @@ public sealed class SerialLightController : IDisposable
 
         if (handle.IsInvalid)
         {
-            throw new Win32Exception(Marshal.GetLastWin32Error(), $"No pude abrir {port}");
+            throw new Win32Exception(Marshal.GetLastWin32Error(), _text.Format(UiTextKeys.SerialOpenFailure, port));
         }
 
         Configure(handle, baudRate);
         return handle;
     }
 
-    private static void Configure(SafeFileHandle handle, int baudRate)
+    private void Configure(SafeFileHandle handle, int baudRate)
     {
         var dcb = new Dcb
         {
@@ -328,12 +340,12 @@ public sealed class SerialLightController : IDisposable
 
         if (!BuildCommDCB($"baud={baudRate} parity=N data=8 stop=1", ref dcb))
         {
-            throw new Win32Exception(Marshal.GetLastWin32Error(), "No pude preparar la configuracion serial.");
+            throw new Win32Exception(Marshal.GetLastWin32Error(), _text.Get(UiTextKeys.SerialPrepareFailure));
         }
 
         if (!SetCommState(handle, ref dcb))
         {
-            throw new Win32Exception(Marshal.GetLastWin32Error(), "No pude aplicar la configuracion serial.");
+            throw new Win32Exception(Marshal.GetLastWin32Error(), _text.Get(UiTextKeys.SerialApplyFailure));
         }
 
         var timeouts = new CommTimeouts
@@ -346,7 +358,7 @@ public sealed class SerialLightController : IDisposable
 
         if (!SetCommTimeouts(handle, ref timeouts))
         {
-            throw new Win32Exception(Marshal.GetLastWin32Error(), "No pude configurar los tiempos de espera serial.");
+            throw new Win32Exception(Marshal.GetLastWin32Error(), _text.Get(UiTextKeys.SerialTimeoutFailure));
         }
     }
 
@@ -376,28 +388,28 @@ public sealed class SerialLightController : IDisposable
             if (string.Equals(line, $"ACK|{commandName}", StringComparison.OrdinalIgnoreCase))
             {
                 _ackSupported = true;
-                log($"Arduino ACK: {commandName} confirmado.");
+                log(_text.Format(UiTextKeys.SerialAckConfirmedLog, commandName));
                 return;
             }
 
             if (line.StartsWith("ERR|", StringComparison.OrdinalIgnoreCase))
             {
                 _ackSupported = true;
-                log($"Arduino reporto error: {line}.");
+                log(_text.Format(UiTextKeys.SerialReportedErrorLog, line));
                 return;
             }
 
-            log($"Arduino respuesta: {line}");
+            log(_text.Format(UiTextKeys.SerialResponseLog, line));
         }
 
         if (_ackSupported is null)
         {
             _ackSupported = false;
-            log("Arduino: no recibi ACK. Sigo en modo compatible; carga el sketch actualizado para confirmaciones.");
+            log(_text.Get(UiTextKeys.SerialNoInitialAckLog));
             return;
         }
 
-        log($"Arduino: no recibi ACK para {commandName}.");
+        log(_text.Format(UiTextKeys.SerialNoCommandAckLog, commandName));
     }
 
     private static string? ReadLine(SafeFileHandle handle, DateTimeOffset deadline, CancellationToken cancellationToken)

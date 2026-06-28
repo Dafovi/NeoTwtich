@@ -1,5 +1,6 @@
 using NeoTwitch.Models;
 using NeoTwitch.Services.Lights;
+using NeoTwitch.Services.Text;
 using static NeoTwitch.Services.InputValueParser;
 
 namespace NeoTwitch.Services.Alerts;
@@ -11,8 +12,17 @@ public static class RuleEditorFormService
         RuleEditorFormValues values,
         IEnumerable<AudioAssetConfig> audioLibrary)
     {
+        Apply(rule, values, audioLibrary, UiTextService.CreateDefault());
+    }
+
+    public static void Apply(
+        EventRule rule,
+        RuleEditorFormValues values,
+        IEnumerable<AudioAssetConfig> audioLibrary,
+        IUiTextService text)
+    {
         rule.IsEnabled = values.IsEnabled;
-        rule.Name = RuleEditorValueService.ResolveRuleName(values.RuleNameText, rule.Name, values.EventKind);
+        rule.Name = RuleEditorValueService.ResolveRuleName(values.RuleNameText, rule.Name, values.EventKind, text);
         rule.EventKind = values.EventKind;
         rule.CustomRewardTitle = values.CustomRewardTitle.Trim();
         rule.ChatCommand = values.ChatCommand.Trim();

@@ -67,7 +67,8 @@ public partial class MainWindow
                 DurationSlider.Value,
                 CycleSlider.Value,
                 StepSlider.Value),
-            _config.AudioLibrary);
+            _config.AudioLibrary,
+            _text);
 
         UpdateColorButtons();
         UpdateSliderLabels();

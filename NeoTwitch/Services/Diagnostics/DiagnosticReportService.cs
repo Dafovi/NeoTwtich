@@ -310,10 +310,10 @@ public sealed class DiagnosticReportService
     {
         report.Section(_text.Get(UiTextKeys.DiagnosticsSectionBackgroundQueue));
         report.Info(config.BackgroundEnabled
-            ? _text.Format(
-                UiTextKeys.DiagnosticsReportBackgroundLedActive,
-                DisplayNames.For(config.BackgroundPattern),
-                FirstNonEmpty(config.BackgroundTargetPins, _text.Get(UiTextKeys.DiagnosticsReportAllPins)))
+                ? _text.Format(
+                    UiTextKeys.DiagnosticsReportBackgroundLedActive,
+                    DisplayNameService.For(config.BackgroundPattern, _text),
+                    FirstNonEmpty(config.BackgroundTargetPins, _text.Get(UiTextKeys.DiagnosticsReportAllPins)))
             : _text.Get(UiTextKeys.DiagnosticsReportBackgroundLedOff));
         report.Info(config.BackgroundAlexaEnabled
             ? _text.Format(UiTextKeys.DiagnosticsReportBackgroundAlexaActive, config.BackgroundAlexaOnEventName)

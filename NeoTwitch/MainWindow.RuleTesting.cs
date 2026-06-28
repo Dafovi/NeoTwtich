@@ -54,8 +54,8 @@ public partial class MainWindow
             var message = _text.Format(
                 UiTextKeys.RuleTestNoMatchPrompt,
                 rule.Name,
-                DisplayNames.For(rule.EventKind),
-                DisplayNames.For(simulatedEvent.Kind));
+                DisplayNameService.For(rule.EventKind, _text),
+                DisplayNameService.For(simulatedEvent.Kind, _text));
             AddLog(_text.Format(UiTextKeys.RuleTestSimulatorLog, message), ActivityLogKind.Important);
             WpfMessageBox.Show(this, message, _text.Get(UiTextKeys.RuleTestSimulatorTitle), MessageBoxButton.OK, MessageBoxImage.Warning);
             return;

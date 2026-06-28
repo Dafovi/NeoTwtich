@@ -42,7 +42,7 @@ public sealed class AlexaRelayService
             _text.Get(UiTextKeys.AlexaRelaySource),
             eventName,
             rule.Name,
-            DisplayNames.For(twitchEvent.Kind),
+            DisplayNameService.For(twitchEvent.Kind, _text),
             twitchEvent.UserName ?? "",
             twitchEvent.RewardTitle ?? "",
             twitchEvent.Bits,
@@ -126,10 +126,10 @@ public sealed class AlexaRelayService
         }
     }
 
-    private static string ResolveEventName(EventRule rule, TwitchEvent twitchEvent)
+    private string ResolveEventName(EventRule rule, TwitchEvent twitchEvent)
     {
         return string.IsNullOrWhiteSpace(rule.Name)
-            ? DisplayNames.For(twitchEvent.Kind)
+            ? DisplayNameService.For(twitchEvent.Kind, _text)
             : rule.Name.Trim();
     }
 

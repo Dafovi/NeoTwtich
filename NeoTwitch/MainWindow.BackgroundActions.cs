@@ -63,7 +63,7 @@ public partial class MainWindow
             var command = LightCommand.FromBackground(_config);
             await _lightController.SendAsync(command, AddLog, CancellationToken.None);
             UpdateStatusText();
-            AddLog(_text.Format(UiTextKeys.BackgroundAppliedLog, DisplayNames.For(command.Pattern)));
+            AddLog(_text.Format(UiTextKeys.BackgroundAppliedLog, DisplayNameService.For(command.Pattern, _text)));
         }
     }
 

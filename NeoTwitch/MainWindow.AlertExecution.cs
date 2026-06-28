@@ -1,6 +1,7 @@
 using NeoTwitch.Models;
 using NeoTwitch.Services;
 using NeoTwitch.Services.Alerts;
+using NeoTwitch.Services.Text;
 using NeoTwitch.ViewModels.Obs;
 
 namespace NeoTwitch;
@@ -108,7 +109,7 @@ public partial class MainWindow
             if (command is not null)
             {
                 await StopLightsAsync(targets);
-                AddLog($"Luces: {DisplayNames.For(rule.Pattern)} por {command.DurationMs} ms para {DisplayNames.For(twitchEvent.Kind)}.");
+                AddLog($"Luces: {DisplayNameService.For(rule.Pattern, _text)} por {command.DurationMs} ms para {DisplayNameService.For(twitchEvent.Kind, _text)}.");
             }
         }
         catch (OperationCanceledException)

@@ -34,7 +34,7 @@ public sealed class RuleSimulationService
             ViewerCount = kind == TwitchEventKind.Raid ? viewers : null,
             Message = kind == TwitchEventKind.ChatCommand ? message : _text.Get(UiTextKeys.RuleSimulationMessage),
             RawType = "simulator",
-            Title = _text.Format(UiTextKeys.RuleSimulationTitle, DisplayNames.For(kind), userName)
+            Title = _text.Format(UiTextKeys.RuleSimulationTitle, DisplayNameService.For(kind, _text), userName)
         };
     }
 
@@ -75,7 +75,7 @@ public sealed class RuleSimulationService
                 UiTextKeys.RuleSimulationDescribeChatCommand,
                 user,
                 FirstNonEmpty(twitchEvent.Message ?? "", _text.Get(UiTextKeys.RuleSimulationNoMessage))),
-            _ => _text.Format(UiTextKeys.RuleSimulationDescribeDefault, DisplayNames.For(twitchEvent.Kind), user)
+            _ => _text.Format(UiTextKeys.RuleSimulationDescribeDefault, DisplayNameService.For(twitchEvent.Kind, _text), user)
         };
     }
 

@@ -1,4 +1,5 @@
 using NeoTwitch.Models;
+using NeoTwitch.Services.Text;
 
 namespace NeoTwitch.Services.Alerts;
 
@@ -6,15 +7,20 @@ public static class RuleEditorValueService
 {
     public static string ResolveRuleName(string? editorText, string? existingName, TwitchEventKind kind)
     {
-        var text = (editorText ?? "").Trim();
-        if (!string.IsNullOrWhiteSpace(text))
+        return ResolveRuleName(editorText, existingName, kind, UiTextService.CreateDefault());
+    }
+
+    public static string ResolveRuleName(string? editorText, string? existingName, TwitchEventKind kind, IUiTextService text)
+    {
+        var editorValue = (editorText ?? "").Trim();
+        if (!string.IsNullOrWhiteSpace(editorValue))
         {
-            return text;
+            return editorValue;
         }
 
         var currentName = (existingName ?? "").Trim();
         return string.IsNullOrWhiteSpace(currentName)
-            ? DisplayNames.For(kind)
+            ? DisplayNameService.For(kind, text)
             : currentName;
     }
 

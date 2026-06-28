@@ -68,7 +68,7 @@ public sealed class TwitchChatService : IDisposable
             ["reward"] = twitchEvent.RewardTitle ?? "",
             ["viewers"] = (twitchEvent.ViewerCount ?? 0).ToString(),
             ["message"] = twitchEvent.Message ?? "",
-            ["event"] = DisplayNames.For(twitchEvent.Kind)
+            ["event"] = DisplayNameService.For(twitchEvent.Kind, _text)
         };
 
         var result = template;

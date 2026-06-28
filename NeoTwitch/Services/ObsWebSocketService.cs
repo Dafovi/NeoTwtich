@@ -4,6 +4,7 @@ using System.Security.Cryptography;
 using System.Text;
 using System.Text.Json;
 using NeoTwitch.Models;
+using NeoTwitch.Services.Text;
 using ObsProtocol = NeoTwitch.Services.Obs.ObsWebSocketProtocol;
 
 namespace NeoTwitch.Services;
@@ -14,7 +15,18 @@ public sealed class ObsWebSocketService : IAsyncDisposable
     private static readonly TimeSpan RequestTimeout = TimeSpan.FromSeconds(6);
 
     private readonly SemaphoreSlim _gate = new(1, 1);
+    private readonly IUiTextService _text;
     private ClientWebSocket? _socket;
+
+    public ObsWebSocketService()
+        : this(UiTextService.CreateDefault())
+    {
+    }
+
+    public ObsWebSocketService(IUiTextService text)
+    {
+        _text = text;
+    }
 
     public bool IsConnected => _socket?.State == WebSocketState.Open;
 
@@ -30,7 +42,7 @@ public sealed class ObsWebSocketService : IAsyncDisposable
     {
         if (!config.IsConfigured)
         {
-            throw new InvalidOperationException("Activa OBS y configura host/puerto antes de conectar.");
+            throw new InvalidOperationException(_text.Get(UiTextKeys.ObsConnectNotConfigured));
         }
 
         using var timeout = CreateTimeoutToken(cancellationToken, ConnectTimeout);
@@ -47,7 +59,7 @@ public sealed class ObsWebSocketService : IAsyncDisposable
             using var hello = await ReceiveJsonAsync(token);
             if (ReadInt(hello.RootElement, ObsProtocol.Op) != ObsProtocol.OpHello)
             {
-                throw new InvalidOperationException("OBS no envio el saludo esperado de WebSocket.");
+                throw new InvalidOperationException(_text.Get(UiTextKeys.ObsUnexpectedHello));
             }
 
             var helloData = hello.RootElement.GetProperty(ObsProtocol.Data);
@@ -61,7 +73,7 @@ public sealed class ObsWebSocketService : IAsyncDisposable
             {
                 if (string.IsNullOrWhiteSpace(config.Password))
                 {
-                    throw new InvalidOperationException("OBS solicita contraseña WebSocket. Escribela en Conexiones > OBS.");
+                    throw new InvalidOperationException(_text.Get(UiTextKeys.ObsPasswordRequired));
                 }
 
                 identify[ObsProtocol.Authentication] = BuildAuthentication(
@@ -74,7 +86,7 @@ public sealed class ObsWebSocketService : IAsyncDisposable
             using var identified = await ReceiveJsonAsync(token);
             if (ReadInt(identified.RootElement, ObsProtocol.Op) != ObsProtocol.OpIdentified)
             {
-                throw new InvalidOperationException("OBS no confirmo la identificacion. Revisa la contraseña WebSocket.");
+                throw new InvalidOperationException(_text.Get(UiTextKeys.ObsIdentificationFailure));
             }
 
             Version = await GetVersionAsync(token);
@@ -84,7 +96,7 @@ public sealed class ObsWebSocketService : IAsyncDisposable
         catch (OperationCanceledException) when (!cancellationToken.IsCancellationRequested)
         {
             await DisposeSocketAsync();
-            throw new TimeoutException("OBS no respondio a tiempo. Revisa que OBS Studio este abierto y que WebSocket este activo.");
+            throw new TimeoutException(_text.Get(UiTextKeys.ObsConnectTimeout));
         }
         catch
         {
@@ -112,7 +124,7 @@ public sealed class ObsWebSocketService : IAsyncDisposable
         catch (OperationCanceledException) when (!cancellationToken.IsCancellationRequested)
         {
             await DisposeSocketAsync();
-            throw new TimeoutException("OBS no respondio al actualizar escenas. Intenta reconectar OBS.");
+            throw new TimeoutException(_text.Get(UiTextKeys.ObsRefreshScenesTimeout));
         }
         finally
         {
@@ -124,7 +136,7 @@ public sealed class ObsWebSocketService : IAsyncDisposable
     {
         if (string.IsNullOrWhiteSpace(sceneName))
         {
-            throw new InvalidOperationException("Selecciona una escena de OBS primero.");
+            throw new InvalidOperationException(_text.Get(UiTextKeys.ObsSelectSceneFirst));
         }
 
         using var timeout = CreateTimeoutToken(cancellationToken, RequestTimeout);
@@ -144,7 +156,7 @@ public sealed class ObsWebSocketService : IAsyncDisposable
         catch (OperationCanceledException) when (!cancellationToken.IsCancellationRequested)
         {
             await DisposeSocketAsync();
-            throw new TimeoutException("OBS no respondio al cambiar escena. Intenta reconectar OBS.");
+            throw new TimeoutException(_text.Get(UiTextKeys.ObsChangeSceneTimeout));
         }
         finally
         {
@@ -163,17 +175,17 @@ public sealed class ObsWebSocketService : IAsyncDisposable
     {
         if (string.IsNullOrWhiteSpace(sceneName))
         {
-            throw new InvalidOperationException("Selecciona una escena OBS para mostrar el medio.");
+            throw new InvalidOperationException(_text.Get(UiTextKeys.ObsSelectMediaScene));
         }
 
         if (string.IsNullOrWhiteSpace(sourceName))
         {
-            throw new InvalidOperationException("El source OBS de Neo Twitch no tiene nombre.");
+            throw new InvalidOperationException(_text.Get(UiTextKeys.ObsMissingSourceName));
         }
 
         if (string.IsNullOrWhiteSpace(filePath) || !File.Exists(filePath))
         {
-            throw new InvalidOperationException("El archivo que se enviara a OBS no existe.");
+            throw new InvalidOperationException(_text.Get(UiTextKeys.ObsMissingMediaFile));
         }
 
         using var timeout = CreateTimeoutToken(cancellationToken, RequestTimeout);
@@ -230,7 +242,7 @@ public sealed class ObsWebSocketService : IAsyncDisposable
         catch (OperationCanceledException) when (!cancellationToken.IsCancellationRequested)
         {
             await DisposeSocketAsync();
-            throw new TimeoutException("OBS no respondio al mostrar el medio. Intenta reconectar OBS.");
+            throw new TimeoutException(_text.Get(UiTextKeys.ObsShowMediaTimeout));
         }
         finally
         {
@@ -266,7 +278,7 @@ public sealed class ObsWebSocketService : IAsyncDisposable
         catch (OperationCanceledException) when (!cancellationToken.IsCancellationRequested)
         {
             await DisposeSocketAsync();
-            throw new TimeoutException("OBS no respondio al ocultar el medio. Intenta reconectar OBS.");
+            throw new TimeoutException(_text.Get(UiTextKeys.ObsHideMediaTimeout));
         }
         finally
         {
@@ -473,7 +485,7 @@ public sealed class ObsWebSocketService : IAsyncDisposable
                 var code = status.TryGetProperty(ObsProtocol.RequestCode, out var codeElement) ? codeElement.GetInt32() : 0;
                 var comment = ReadString(status, ObsProtocol.RequestComment);
                 response.Dispose();
-                throw new InvalidOperationException($"OBS rechazo {requestType} ({code}): {comment}");
+                throw new InvalidOperationException(_text.Format(UiTextKeys.ObsRequestRejected, requestType, code, comment));
             }
 
             return response;
@@ -500,7 +512,7 @@ public sealed class ObsWebSocketService : IAsyncDisposable
             result = await _socket!.ReceiveAsync(buffer, cancellationToken);
             if (result.MessageType == WebSocketMessageType.Close)
             {
-                throw new InvalidOperationException("OBS cerro la conexion WebSocket.");
+                throw new InvalidOperationException(_text.Get(UiTextKeys.ObsSocketClosed));
             }
 
             stream.Write(buffer, 0, result.Count);
@@ -515,7 +527,7 @@ public sealed class ObsWebSocketService : IAsyncDisposable
     {
         if (_socket?.State != WebSocketState.Open)
         {
-            throw new InvalidOperationException("OBS no esta conectado.");
+            throw new InvalidOperationException(_text.Get(UiTextKeys.ObsNotConnected));
         }
     }
 

@@ -119,6 +119,22 @@ public static class UiTextKeys
     public const string ObsRuleMissingSceneLog = "obs.rule_missing_scene_log";
     public const string ObsRuleMediaShownLog = "obs.rule_media_shown_log";
     public const string ObsRuleMediaHiddenLog = "obs.rule_media_hidden_log";
+    public const string ObsConnectNotConfigured = "obs.connect_not_configured";
+    public const string ObsUnexpectedHello = "obs.unexpected_hello";
+    public const string ObsPasswordRequired = "obs.password_required";
+    public const string ObsIdentificationFailure = "obs.identification_failure";
+    public const string ObsConnectTimeout = "obs.connect_timeout";
+    public const string ObsRefreshScenesTimeout = "obs.refresh_scenes_timeout";
+    public const string ObsSelectSceneFirst = "obs.select_scene_first";
+    public const string ObsChangeSceneTimeout = "obs.change_scene_timeout";
+    public const string ObsSelectMediaScene = "obs.select_media_scene";
+    public const string ObsMissingSourceName = "obs.missing_source_name";
+    public const string ObsMissingMediaFile = "obs.missing_media_file";
+    public const string ObsShowMediaTimeout = "obs.show_media_timeout";
+    public const string ObsHideMediaTimeout = "obs.hide_media_timeout";
+    public const string ObsRequestRejected = "obs.request_rejected";
+    public const string ObsSocketClosed = "obs.socket_closed";
+    public const string ObsNotConnected = "obs.not_connected";
 
     public const string BackgroundAlexaOnTitle = "background.alexa_on_title";
     public const string BackgroundAlexaOffTitle = "background.alexa_off_title";

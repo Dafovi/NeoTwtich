@@ -89,7 +89,7 @@ public sealed class AppServices
             new TwitchAuthService(),
             new TwitchChatService(),
             new AlexaRelayService(text),
-            new ObsWebSocketService(),
+            new ObsWebSocketService(text),
             new ObsOverlayService(),
             new WindowsStartupService(text),
             updateService,

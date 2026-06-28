@@ -2305,6 +2305,7 @@ static class TwitchConnectionRecoveryTests
         TestAssert.True(TwitchConnectionRecoveryService.IsRecoverableRefreshError(new InvalidOperationException("No pude refrescar Twitch: missing client secret")));
         TestAssert.True(TwitchConnectionRecoveryService.IsRecoverableRefreshError(new InvalidOperationException("No pude refrescar Twitch: invalid client")));
         TestAssert.True(TwitchConnectionRecoveryService.IsRecoverableRefreshError(new InvalidOperationException("No pude refrescar Twitch: invalid refresh token")));
+        TestAssert.True(TwitchConnectionRecoveryService.IsRecoverableRefreshError(new InvalidOperationException("invalid refresh token")));
         TestAssert.False(TwitchConnectionRecoveryService.IsRecoverableRefreshError(new InvalidOperationException("Twitch no inicio el login")));
         TestAssert.False(TwitchConnectionRecoveryService.IsRecoverableRefreshError(new InvalidOperationException("No pude refrescar Twitch: timeout")));
     }

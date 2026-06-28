@@ -1,4 +1,5 @@
 using System.Windows.Threading;
+using NeoTwitch.Services.Text;
 
 namespace NeoTwitch;
 
@@ -31,7 +32,7 @@ public partial class MainWindow
         }
         catch (Exception ex)
         {
-            AddLog($"No pude guardar la configuracion: {ex.Message}");
+            AddLog(_text.Format(UiTextKeys.SettingsSaveFailureLog, ex.Message));
         }
     }
 }

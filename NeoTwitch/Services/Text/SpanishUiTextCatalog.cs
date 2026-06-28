@@ -312,6 +312,10 @@ public static class SpanishUiTextCatalog
             [UiTextKeys.SerialResponseLog] = "Arduino respuesta: {0}",
             [UiTextKeys.SerialNoInitialAckLog] = "Arduino: no recibi ACK. Sigo en modo compatible; carga el sketch actualizado para confirmaciones.",
             [UiTextKeys.SerialNoCommandAckLog] = "Arduino: no recibi ACK para {0}.",
+            [UiTextKeys.ArduinoPortsRefreshFailureCrash] = "No se pudo refrescar la lista de puertos COM.",
+            [UiTextKeys.ArduinoPortsRefreshFailureLog] = "No pude refrescar los puertos COM: {0}",
+            [UiTextKeys.ArduinoPortsNoneDetectedLog] = "No encontre puertos COM disponibles.",
+            [UiTextKeys.ArduinoPortsDetectedLog] = "Puertos detectados: {0}",
 
             [UiTextKeys.WindowsStartupOpenRunKeyFailure] = "No pude abrir la clave de inicio de Windows.",
             [UiTextKeys.WindowsStartupExecutablePathFailure] = "No pude detectar la ruta del ejecutable actual.",
@@ -319,6 +323,7 @@ public static class SpanishUiTextCatalog
             [UiTextKeys.SettingsAutomaticBackupsText] = "Backups automaticos: {0}",
             [UiTextKeys.SettingsManualBackupText] = "Ultimo backup manual: {0}",
             [UiTextKeys.SettingsSavedLog] = "Configuracion guardada.",
+            [UiTextKeys.SettingsSaveFailureLog] = "No pude guardar la configuracion: {0}",
             [UiTextKeys.SettingsBackupTitle] = "Backups",
             [UiTextKeys.SettingsBackupCreatedLog] = "Backup creado: {0}",
             [UiTextKeys.SettingsBackupSuccessPrompt] = "Backup creado correctamente.",

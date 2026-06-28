@@ -1,5 +1,6 @@
 using System.Windows;
 using NeoTwitch.Services;
+using NeoTwitch.Services.Text;
 using static NeoTwitch.Services.InputValueParser;
 
 namespace NeoTwitch;
@@ -19,8 +20,8 @@ public partial class MainWindow
         {
             _availablePorts = [];
             PortComboBox.ItemsSource = _availablePorts;
-            CrashReporter.Log(ex, "No se pudo refrescar la lista de puertos COM.");
-            AddLog($"No pude refrescar los puertos COM: {ex.Message}");
+            CrashReporter.Log(ex, _text.Get(UiTextKeys.ArduinoPortsRefreshFailureCrash));
+            AddLog(_text.Format(UiTextKeys.ArduinoPortsRefreshFailureLog, ex.Message));
         }
 
         var selectedPort = choosePreferred
@@ -44,11 +45,11 @@ public partial class MainWindow
         RefreshPortList(choosePreferred: true);
         if (_availablePorts.Count == 0)
         {
-            AddLog("No encontre puertos COM disponibles.");
+            AddLog(_text.Get(UiTextKeys.ArduinoPortsNoneDetectedLog));
             return;
         }
 
-        AddLog($"Puertos detectados: {string.Join(", ", _availablePorts.Select(port => port.DisplayName))}");
+        AddLog(_text.Format(UiTextKeys.ArduinoPortsDetectedLog, string.Join(", ", _availablePorts.Select(port => port.DisplayName))));
     }
 
     internal void PortComboBox_DropDownOpened(object sender, EventArgs e)

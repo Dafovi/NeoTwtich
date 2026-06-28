@@ -308,6 +308,10 @@ public static class UiTextKeys
     public const string SerialResponseLog = "serial.response_log";
     public const string SerialNoInitialAckLog = "serial.no_initial_ack_log";
     public const string SerialNoCommandAckLog = "serial.no_command_ack_log";
+    public const string ArduinoPortsRefreshFailureCrash = "arduino_ports.refresh_failure_crash";
+    public const string ArduinoPortsRefreshFailureLog = "arduino_ports.refresh_failure_log";
+    public const string ArduinoPortsNoneDetectedLog = "arduino_ports.none_detected_log";
+    public const string ArduinoPortsDetectedLog = "arduino_ports.detected_log";
 
     public const string WindowsStartupOpenRunKeyFailure = "windows_startup.open_run_key_failure";
     public const string WindowsStartupExecutablePathFailure = "windows_startup.executable_path_failure";
@@ -315,6 +319,7 @@ public static class UiTextKeys
     public const string SettingsAutomaticBackupsText = "settings.automatic_backups_text";
     public const string SettingsManualBackupText = "settings.manual_backup_text";
     public const string SettingsSavedLog = "settings.saved_log";
+    public const string SettingsSaveFailureLog = "settings.save_failure_log";
     public const string SettingsBackupTitle = "settings.backup_title";
     public const string SettingsBackupCreatedLog = "settings.backup_created_log";
     public const string SettingsBackupSuccessPrompt = "settings.backup_success_prompt";

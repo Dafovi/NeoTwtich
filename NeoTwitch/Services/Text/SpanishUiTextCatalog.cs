@@ -27,6 +27,10 @@ public static class SpanishUiTextCatalog
 
             [UiTextKeys.AudioPickValidFile] = "Selecciona un archivo de audio valido.",
             [UiTextKeys.AudioPlayingLog] = "Audio: reproduciendo {0}.",
+            [UiTextKeys.AudioRuleMissingAudioLog] = "La regla no tiene audio configurado.",
+            [UiTextKeys.AudioFileMissingLog] = "No encontre el audio: {0}",
+            [UiTextKeys.AudioPlaybackFailureLog] = "No se pudo reproducir el audio: {0}",
+            [UiTextKeys.AudioLoadTimeoutLog] = "El audio tardo demasiado en cargar; usare la duracion manual de la regla.",
 
             [UiTextKeys.MediaPickValidFile] = "Selecciona un archivo valido para {0}.",
             [UiTextKeys.MediaObsConnectRequiredLog] = "OBS: conecta OBS antes de probar imagenes o videos.",
@@ -147,6 +151,9 @@ public static class SpanishUiTextCatalog
             [UiTextKeys.TwitchMissingScopes] = "Twitch necesita autorizar permisos nuevos: {0}. Presiona Conectar Twitch para iniciar sesion otra vez.",
             [UiTextKeys.TwitchReauthRequiredLog] = "Twitch necesita autorizar de nuevo porque el token guardado no se pudo refrescar.",
             [UiTextKeys.TwitchListeningLog] = "Twitch escuchando eventos.",
+            [UiTextKeys.TwitchChatMissingChannel] = "Twitch no tiene canal configurado.",
+            [UiTextKeys.TwitchChatSendFailure] = "Twitch no envio el mensaje al chat: {0}",
+            [UiTextKeys.TwitchChatAnonymousUser] = "Anonimo",
 
             [UiTextKeys.ObsRuleMissingMediaLog] = "OBS: la regla '{0}' no tiene un archivo valido para mostrar.",
             [UiTextKeys.ObsRuleMissingSceneLog] = "OBS: no hay una escena actual para mostrar el medio.",

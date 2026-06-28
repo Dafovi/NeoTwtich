@@ -3,12 +3,19 @@ using System.Net.Http.Headers;
 using System.Text;
 using System.Text.Json;
 using NeoTwitch.Models;
+using NeoTwitch.Services.Text;
 
 namespace NeoTwitch.Services;
 
 public sealed class TwitchChatService : IDisposable
 {
     private readonly HttpClient _http = new();
+    private readonly IUiTextService _text;
+
+    public TwitchChatService(IUiTextService text)
+    {
+        _text = text;
+    }
 
     public async Task SendMessageAsync(AppConfig config, string message, CancellationToken cancellationToken)
     {
@@ -19,7 +26,7 @@ public sealed class TwitchChatService : IDisposable
 
         if (!config.Channel.IsReady)
         {
-            throw new InvalidOperationException("Twitch no tiene canal configurado.");
+            throw new InvalidOperationException(_text.Get(UiTextKeys.TwitchChatMissingChannel));
         }
 
         using var request = new HttpRequestMessage(HttpMethod.Post, "https://api.twitch.tv/helix/chat/messages");
@@ -40,11 +47,11 @@ public sealed class TwitchChatService : IDisposable
 
         if (!response.IsSuccessStatusCode)
         {
-            throw new InvalidOperationException($"Twitch no envio el mensaje al chat: {responseText}");
+            throw new InvalidOperationException(_text.Format(UiTextKeys.TwitchChatSendFailure, responseText));
         }
     }
 
-    public static string FormatMessage(string template, TwitchEvent twitchEvent)
+    public string FormatMessage(string template, TwitchEvent twitchEvent)
     {
         if (string.IsNullOrWhiteSpace(template))
         {
@@ -52,7 +59,7 @@ public sealed class TwitchChatService : IDisposable
         }
 
         var userName = string.IsNullOrWhiteSpace(twitchEvent.UserName)
-            ? "Anonimo"
+            ? _text.Get(UiTextKeys.TwitchChatAnonymousUser)
             : twitchEvent.UserName;
         var values = new Dictionary<string, string>(StringComparer.OrdinalIgnoreCase)
         {

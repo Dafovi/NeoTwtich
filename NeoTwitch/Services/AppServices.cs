@@ -84,10 +84,10 @@ public sealed class AppServices
         var text = UiTextService.CreateDefault();
         return new AppServices(
             new SettingsStore(text),
-            new AudioPlayerService(),
+            new AudioPlayerService(text),
             new SerialLightController(text),
             new TwitchAuthService(),
-            new TwitchChatService(),
+            new TwitchChatService(text),
             new AlexaRelayService(text),
             new ObsWebSocketService(text),
             new ObsOverlayService(),

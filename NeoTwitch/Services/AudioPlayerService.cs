@@ -2,12 +2,19 @@ using System.IO;
 using System.Windows;
 using System.Windows.Media;
 using NeoTwitch.Models;
+using NeoTwitch.Services.Text;
 
 namespace NeoTwitch.Services;
 
 public sealed class AudioPlayerService
 {
     private readonly List<MediaPlayer> _players = [];
+    private readonly IUiTextService _text;
+
+    public AudioPlayerService(IUiTextService text)
+    {
+        _text = text;
+    }
 
     public async Task<TimeSpan?> ProbeDurationAsync(string? audioPath)
     {
@@ -64,13 +71,13 @@ public sealed class AudioPlayerService
     {
         if (string.IsNullOrWhiteSpace(audioPath))
         {
-            log("La regla no tiene audio configurado.");
+            log(_text.Get(UiTextKeys.AudioRuleMissingAudioLog));
             return null;
         }
 
         if (!File.Exists(audioPath))
         {
-            log($"No encontre el audio: {audioPath}");
+            log(_text.Format(UiTextKeys.AudioFileMissingLog, audioPath));
             return null;
         }
 
@@ -106,7 +113,7 @@ public sealed class AudioPlayerService
 
             void Failed(object? sender, ExceptionEventArgs args)
             {
-                log($"No se pudo reproducir el audio: {args.ErrorException.Message}");
+                log(_text.Format(UiTextKeys.AudioPlaybackFailureLog, args.ErrorException.Message));
                 completion.TrySetResult(null);
                 Cleanup();
             }
@@ -124,7 +131,7 @@ public sealed class AudioPlayerService
         }
         catch (TimeoutException)
         {
-            log("El audio tardo demasiado en cargar; usare la duracion manual de la regla.");
+            log(_text.Get(UiTextKeys.AudioLoadTimeoutLog));
             return null;
         }
     }

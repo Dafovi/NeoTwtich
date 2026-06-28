@@ -23,6 +23,10 @@ public static class UiTextKeys
 
     public const string AudioPickValidFile = "audio.pick_valid_file";
     public const string AudioPlayingLog = "audio.playing_log";
+    public const string AudioRuleMissingAudioLog = "audio.rule_missing_audio_log";
+    public const string AudioFileMissingLog = "audio.file_missing_log";
+    public const string AudioPlaybackFailureLog = "audio.playback_failure_log";
+    public const string AudioLoadTimeoutLog = "audio.load_timeout_log";
 
     public const string MediaPickValidFile = "media.pick_valid_file";
     public const string MediaObsConnectRequiredLog = "media.obs_connect_required_log";
@@ -143,6 +147,9 @@ public static class UiTextKeys
     public const string TwitchMissingScopes = "twitch.missing_scopes";
     public const string TwitchReauthRequiredLog = "twitch.reauth_required_log";
     public const string TwitchListeningLog = "twitch.listening_log";
+    public const string TwitchChatMissingChannel = "twitch.chat_missing_channel";
+    public const string TwitchChatSendFailure = "twitch.chat_send_failure";
+    public const string TwitchChatAnonymousUser = "twitch.chat_anonymous_user";
 
     public const string ObsRuleMissingMediaLog = "obs.rule_missing_media_log";
     public const string ObsRuleMissingSceneLog = "obs.rule_missing_scene_log";

@@ -13,7 +13,7 @@ public partial class MainWindow
             return;
         }
 
-        var message = TwitchChatService.FormatMessage(rule.ChatMessageTemplate, twitchEvent);
+        var message = _chatService.FormatMessage(rule.ChatMessageTemplate, twitchEvent);
         if (string.IsNullOrWhiteSpace(message))
         {
             return;

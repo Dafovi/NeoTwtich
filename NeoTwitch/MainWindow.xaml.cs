@@ -28,7 +28,7 @@ public partial class MainWindow : Window
             _initializingComponent = false;
         }
 
-        _eventSubClient = new TwitchEventSubClient(_authService, () => _config, SaveConfig, AddLog);
+        _eventSubClient = new TwitchEventSubClient(_authService, () => _config, SaveConfig, AddLog, _text);
         _eventSubClient.EventReceived += EventSubClient_EventReceived;
 
         InitializeRuntimeUi();

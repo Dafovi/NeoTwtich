@@ -5,6 +5,7 @@ using System.IO;
 using System.Text;
 using System.Text.Json;
 using NeoTwitch.Models;
+using NeoTwitch.Services.Text;
 using Protocol = NeoTwitch.Services.TwitchEventSubProtocol;
 
 namespace NeoTwitch.Services;
@@ -15,6 +16,7 @@ public sealed class TwitchEventSubClient : IDisposable
     private readonly Func<AppConfig> _getConfig;
     private readonly Action _saveConfig;
     private readonly Action<string> _log;
+    private readonly IUiTextService _text;
     private readonly HttpClient _http = new();
     private CancellationTokenSource? _cts;
     private Task? _runner;
@@ -23,12 +25,14 @@ public sealed class TwitchEventSubClient : IDisposable
         TwitchAuthService authService,
         Func<AppConfig> getConfig,
         Action saveConfig,
-        Action<string> log)
+        Action<string> log,
+        IUiTextService text)
     {
         _authService = authService;
         _getConfig = getConfig;
         _saveConfig = saveConfig;
         _log = log;
+        _text = text;
     }
 
     public event Action<TwitchEvent>? EventReceived;
@@ -96,17 +100,17 @@ public sealed class TwitchEventSubClient : IDisposable
                 _saveConfig();
 
                 using var socket = new ClientWebSocket();
-                _log("Conectando a EventSub WebSocket...");
+                _log(_text.Get(UiTextKeys.TwitchEventSubConnectingLog));
                 await socket.ConnectAsync(new Uri(url), cancellationToken);
 
                 var welcome = await ReceiveTextAsync(socket, cancellationToken);
                 if (welcome is null)
                 {
-                    throw new InvalidOperationException("Twitch cerro el WebSocket antes del mensaje de bienvenida.");
+                    throw new InvalidOperationException(_text.Get(UiTextKeys.TwitchEventSubClosedBeforeWelcome));
                 }
 
                 var sessionId = ReadSessionId(welcome);
-                _log($"EventSub conectado. Sesion {sessionId}.");
+                _log(_text.Format(UiTextKeys.TwitchEventSubConnectedLog, sessionId));
 
                 if (createSubscriptions)
                 {
@@ -130,7 +134,7 @@ public sealed class TwitchEventSubClient : IDisposable
             }
             catch (Exception ex)
             {
-                _log($"Twitch desconectado: {ex.Message}");
+                _log(_text.Format(UiTextKeys.TwitchEventSubDisconnectedLog, ex.Message));
                 url = Protocol.WebSocketUrl;
                 createSubscriptions = true;
                 await Task.Delay(TimeSpan.FromSeconds(8), cancellationToken);
@@ -138,21 +142,21 @@ public sealed class TwitchEventSubClient : IDisposable
         }
     }
 
-    private static void ValidateConfig(AppConfig config)
+    private void ValidateConfig(AppConfig config)
     {
         if (string.IsNullOrWhiteSpace(config.TwitchClientId))
         {
-            throw new InvalidOperationException("Falta el Client ID de Twitch.");
+            throw new InvalidOperationException(_text.Get(UiTextKeys.TwitchEventSubMissingClientId));
         }
 
         if (!config.Token.HasToken)
         {
-            throw new InvalidOperationException("Falta iniciar sesion en Twitch.");
+            throw new InvalidOperationException(_text.Get(UiTextKeys.TwitchEventSubMissingLogin));
         }
 
         if (!config.Channel.IsReady)
         {
-            throw new InvalidOperationException("Falta leer el usuario de Twitch.");
+            throw new InvalidOperationException(_text.Get(UiTextKeys.TwitchEventSubMissingUser));
         }
     }
 
@@ -181,7 +185,7 @@ public sealed class TwitchEventSubClient : IDisposable
                         .GetProperty(Protocol.Json.ReconnectUrl)
                         .GetString();
 
-                    _log("Twitch pidio reconectar el WebSocket.");
+                    _log(_text.Get(UiTextKeys.TwitchEventSubReconnectRequestedLog));
                     return reconnectUrl;
                 case Protocol.MessageTypes.Notification:
                     var twitchEvent = ParseEvent(root.GetProperty(Protocol.Json.Payload));
@@ -192,10 +196,10 @@ public sealed class TwitchEventSubClient : IDisposable
 
                     break;
                 case Protocol.MessageTypes.Revocation:
-                    _log($"Twitch revoco una suscripcion: {message}");
+                    _log(_text.Format(UiTextKeys.TwitchEventSubRevokedLog, message));
                     break;
                 default:
-                    _log($"Mensaje EventSub no reconocido: {messageType}");
+                    _log(_text.Format(UiTextKeys.TwitchEventSubUnknownMessageLog, messageType ?? string.Empty));
                     break;
             }
         }
@@ -211,7 +215,7 @@ public sealed class TwitchEventSubClient : IDisposable
 
         if (definitions.Length == 0)
         {
-            _log("No hay reglas activas para suscribir en Twitch.");
+            _log(_text.Get(UiTextKeys.TwitchEventSubNoActiveRulesLog));
             return;
         }
 
@@ -239,16 +243,16 @@ public sealed class TwitchEventSubClient : IDisposable
 
             if (response.IsSuccessStatusCode)
             {
-                _log($"Suscripcion lista: {definition.Type}");
+                _log(_text.Format(UiTextKeys.TwitchEventSubSubscriptionReadyLog, definition.Type));
             }
             else
             {
-                _log($"No pude crear {definition.Type}: {responseText}");
+                _log(_text.Format(UiTextKeys.TwitchEventSubSubscriptionCreateFailureLog, definition.Type, responseText));
             }
         }
     }
 
-    private static IEnumerable<EventSubDefinition> BuildSubscriptionDefinitions(AppConfig config)
+    private IEnumerable<EventSubDefinition> BuildSubscriptionDefinitions(AppConfig config)
     {
         var broadcasterId = config.Channel.UserId;
         var activeKinds = config.Rules
@@ -267,7 +271,7 @@ public sealed class TwitchEventSubClient : IDisposable
         }
     }
 
-    private static IEnumerable<EventSubDefinition> BuildSubscriptionDefinitionsForKind(
+    private IEnumerable<EventSubDefinition> BuildSubscriptionDefinitionsForKind(
         TwitchEventKind kind,
         string broadcasterId)
     {
@@ -344,11 +348,11 @@ public sealed class TwitchEventSubClient : IDisposable
                     });
                 yield break;
             default:
-                throw new InvalidOperationException($"Evento no soportado: {kind}");
+                throw new InvalidOperationException(_text.Format(UiTextKeys.TwitchEventSubUnsupportedEventKind, kind));
         }
     }
 
-    private static string ReadSessionId(string message)
+    private string ReadSessionId(string message)
     {
         using var doc = JsonDocument.Parse(message);
         var root = doc.RootElement;
@@ -356,17 +360,17 @@ public sealed class TwitchEventSubClient : IDisposable
 
         if (messageType != Protocol.MessageTypes.Welcome)
         {
-            throw new InvalidOperationException($"Twitch esperaba session_welcome y envio {messageType}.");
+            throw new InvalidOperationException(_text.Format(UiTextKeys.TwitchEventSubExpectedWelcomeFailure, Protocol.MessageTypes.Welcome, messageType ?? string.Empty));
         }
 
         return root
             .GetProperty(Protocol.Json.Payload)
             .GetProperty(Protocol.Json.Session)
             .GetProperty(Protocol.Json.Id)
-            .GetString() ?? throw new InvalidOperationException("Twitch no envio session_id.");
+            .GetString() ?? throw new InvalidOperationException(_text.Get(UiTextKeys.TwitchEventSubMissingSessionId));
     }
 
-    private static TwitchEvent? ParseEvent(JsonElement payload)
+    private TwitchEvent? ParseEvent(JsonElement payload)
     {
         var type = payload.GetProperty(Protocol.Json.Subscription).GetProperty(Protocol.Json.Type).GetString();
         var eventPayload = payload.GetProperty(Protocol.Json.Event);
@@ -378,14 +382,14 @@ public sealed class TwitchEventSubClient : IDisposable
                 Kind = TwitchEventKind.Follow,
                 RawType = type,
                 UserName = ReadString(eventPayload, Protocol.EventFields.UserName),
-                Title = $"{ReadString(eventPayload, Protocol.EventFields.UserName)} siguio el canal"
+                Title = _text.Format(UiTextKeys.TwitchEventSubTitleFollow, ReadStringOrEmpty(eventPayload, Protocol.EventFields.UserName))
             },
             Protocol.Events.Subscribe => new TwitchEvent
             {
                 Kind = TwitchEventKind.Subscription,
                 RawType = type,
                 UserName = ReadString(eventPayload, Protocol.EventFields.UserName),
-                Title = $"{ReadString(eventPayload, Protocol.EventFields.UserName)} se suscribio"
+                Title = _text.Format(UiTextKeys.TwitchEventSubTitleSubscribe, ReadStringOrEmpty(eventPayload, Protocol.EventFields.UserName))
             },
             Protocol.Events.SubscriptionMessage => new TwitchEvent
             {
@@ -393,7 +397,7 @@ public sealed class TwitchEventSubClient : IDisposable
                 RawType = type,
                 UserName = ReadString(eventPayload, Protocol.EventFields.UserName),
                 Message = ReadSubscriptionMessage(eventPayload),
-                Title = $"{ReadString(eventPayload, Protocol.EventFields.UserName)} renovo la suscripcion"
+                Title = _text.Format(UiTextKeys.TwitchEventSubTitleSubscriptionRenew, ReadStringOrEmpty(eventPayload, Protocol.EventFields.UserName))
             },
             Protocol.Events.SubscriptionGift => new TwitchEvent
             {
@@ -401,7 +405,7 @@ public sealed class TwitchEventSubClient : IDisposable
                 RawType = type,
                 UserName = ReadSubscriptionGiftUserName(eventPayload),
                 ViewerCount = ReadInt(eventPayload, Protocol.EventFields.Total),
-                Title = $"{ReadSubscriptionGiftUserName(eventPayload)} regalo {ReadInt(eventPayload, Protocol.EventFields.Total) ?? 1} suscripcion(es)"
+                Title = _text.Format(UiTextKeys.TwitchEventSubTitleSubscriptionGift, ReadSubscriptionGiftUserName(eventPayload), ReadInt(eventPayload, Protocol.EventFields.Total) ?? 1)
             },
             Protocol.Events.Raid => new TwitchEvent
             {
@@ -409,7 +413,7 @@ public sealed class TwitchEventSubClient : IDisposable
                 RawType = type,
                 UserName = ReadString(eventPayload, Protocol.EventFields.FromBroadcasterUserName),
                 ViewerCount = ReadInt(eventPayload, Protocol.EventFields.Viewers),
-                Title = $"{ReadString(eventPayload, Protocol.EventFields.FromBroadcasterUserName)} hizo raid con {ReadInt(eventPayload, Protocol.EventFields.Viewers) ?? 0} viewers"
+                Title = _text.Format(UiTextKeys.TwitchEventSubTitleRaid, ReadStringOrEmpty(eventPayload, Protocol.EventFields.FromBroadcasterUserName), ReadInt(eventPayload, Protocol.EventFields.Viewers) ?? 0)
             },
             Protocol.Events.Cheer => new TwitchEvent
             {
@@ -418,7 +422,7 @@ public sealed class TwitchEventSubClient : IDisposable
                 UserName = ReadString(eventPayload, Protocol.EventFields.UserName),
                 Bits = ReadInt(eventPayload, Protocol.EventFields.Bits),
                 Message = ReadString(eventPayload, Protocol.Json.Message),
-                Title = $"{ReadCheerUserName(eventPayload)} mando {ReadInt(eventPayload, Protocol.EventFields.Bits) ?? 0} bits"
+                Title = _text.Format(UiTextKeys.TwitchEventSubTitleCheer, ReadCheerUserName(eventPayload), ReadInt(eventPayload, Protocol.EventFields.Bits) ?? 0)
             },
             Protocol.Events.ChatMessage => new TwitchEvent
             {
@@ -426,7 +430,7 @@ public sealed class TwitchEventSubClient : IDisposable
                 RawType = type,
                 UserName = ReadString(eventPayload, Protocol.EventFields.ChatterUserName),
                 Message = ReadChatMessageText(eventPayload),
-                Title = $"{ReadString(eventPayload, Protocol.EventFields.ChatterUserName)} escribio {ReadChatMessageText(eventPayload)}"
+                Title = _text.Format(UiTextKeys.TwitchEventSubTitleChatMessage, ReadStringOrEmpty(eventPayload, Protocol.EventFields.ChatterUserName), ReadChatMessageText(eventPayload) ?? string.Empty)
             },
             Protocol.Events.ChannelPointRedemption => new TwitchEvent
             {
@@ -434,7 +438,7 @@ public sealed class TwitchEventSubClient : IDisposable
                 RawType = type,
                 UserName = ReadString(eventPayload, Protocol.EventFields.UserName),
                 RewardTitle = ReadRewardTitle(eventPayload),
-                Title = $"{ReadString(eventPayload, Protocol.EventFields.UserName)} canjeo {ReadRewardTitle(eventPayload)}"
+                Title = _text.Format(UiTextKeys.TwitchEventSubTitleRedemption, ReadStringOrEmpty(eventPayload, Protocol.EventFields.UserName), ReadRewardTitle(eventPayload) ?? string.Empty)
             },
             _ => null
         };
@@ -458,10 +462,10 @@ public sealed class TwitchEventSubClient : IDisposable
             : null;
     }
 
-    private static string ReadSubscriptionGiftUserName(JsonElement eventPayload)
+    private string ReadSubscriptionGiftUserName(JsonElement eventPayload)
     {
         var userName = ReadString(eventPayload, Protocol.EventFields.UserName);
-        return string.IsNullOrWhiteSpace(userName) ? "Alguien" : userName;
+        return string.IsNullOrWhiteSpace(userName) ? _text.Get(UiTextKeys.TwitchEventSubAnonymousGiftUser) : userName;
     }
 
     private static string? ReadRewardTitle(JsonElement eventPayload)
@@ -474,15 +478,20 @@ public sealed class TwitchEventSubClient : IDisposable
         return ReadString(reward, Protocol.Json.Title);
     }
 
-    private static string ReadCheerUserName(JsonElement eventPayload)
+    private string ReadCheerUserName(JsonElement eventPayload)
     {
         var userName = ReadString(eventPayload, Protocol.EventFields.UserName);
-        return string.IsNullOrWhiteSpace(userName) ? "Anonimo" : userName;
+        return string.IsNullOrWhiteSpace(userName) ? _text.Get(UiTextKeys.TwitchEventSubAnonymousCheerUser) : userName;
     }
 
     private static string? ReadString(JsonElement element, string propertyName)
     {
         return element.TryGetProperty(propertyName, out var value) ? value.GetString() : null;
+    }
+
+    private static string ReadStringOrEmpty(JsonElement element, string propertyName)
+    {
+        return ReadString(element, propertyName) ?? string.Empty;
     }
 
     private static int? ReadInt(JsonElement element, string propertyName)

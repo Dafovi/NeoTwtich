@@ -3,6 +3,7 @@ using System.Text.Json;
 using System.Text.Json.Serialization;
 using NeoTwitch.Models;
 using NeoTwitch.Services.Configuration;
+using NeoTwitch.Services.Text;
 
 namespace NeoTwitch.Services;
 
@@ -12,10 +13,17 @@ public sealed class SettingsStore
     {
         WriteIndented = true
     };
+    private readonly IUiTextService _text;
     private bool _createdSessionBackup;
 
     public SettingsStore()
+        : this(UiTextService.CreateDefault())
     {
+    }
+
+    public SettingsStore(IUiTextService text)
+    {
+        _text = text;
         _jsonOptions.Converters.Add(new JsonStringEnumConverter());
     }
 
@@ -46,7 +54,7 @@ public sealed class SettingsStore
         catch (Exception ex)
         {
             LastLoadError = ex.Message;
-            CrashReporter.Log(ex, $"No se pudo leer la configuracion: {loadPath}");
+            CrashReporter.Log(ex, _text.Format(UiTextKeys.SettingsStoreLoadFailureCrash, loadPath));
             return AppConfig.CreateDefault();
         }
     }
@@ -83,7 +91,7 @@ public sealed class SettingsStore
     {
         var json = File.ReadAllText(sourcePath);
         var config = JsonSerializer.Deserialize<AppConfig>(json, _jsonOptions)
-            ?? throw new InvalidOperationException("El archivo no contiene una configuracion valida.");
+            ?? throw new InvalidOperationException(_text.Get(UiTextKeys.SettingsStoreInvalidConfigFailure));
         var normalized = AppConfigNormalizer.Normalize(config);
         Save(normalized);
         return normalized;
@@ -128,7 +136,7 @@ public sealed class SettingsStore
             }
             catch (Exception ex)
             {
-                CrashReporter.Log(ex, $"No se pudo borrar backup antiguo: {backup}");
+                CrashReporter.Log(ex, _text.Format(UiTextKeys.SettingsStorePruneBackupFailureCrash, backup));
             }
         }
     }

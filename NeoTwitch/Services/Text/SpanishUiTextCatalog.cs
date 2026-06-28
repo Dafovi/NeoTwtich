@@ -197,6 +197,9 @@ public static class SpanishUiTextCatalog
             [UiTextKeys.SettingsImportSuccessPrompt] = "Configuracion importada correctamente. Revisa Twitch, Arduino y Alexa antes de salir en vivo.",
             [UiTextKeys.SettingsImportFailureCrash] = "No se pudo importar la configuracion.",
             [UiTextKeys.SettingsImportFailureLog] = "Configuracion: no pude importar ({0}).",
+            [UiTextKeys.SettingsStoreLoadFailureCrash] = "No se pudo leer la configuracion: {0}",
+            [UiTextKeys.SettingsStoreInvalidConfigFailure] = "El archivo no contiene una configuracion valida.",
+            [UiTextKeys.SettingsStorePruneBackupFailureCrash] = "No se pudo borrar backup antiguo: {0}",
 
             [UiTextKeys.ConnectionConnected] = "Conectado",
             [UiTextKeys.ConnectionDisconnected] = "Desconectado",

@@ -83,7 +83,7 @@ public sealed class AppServices
         var updateService = new AppUpdateService();
         var text = UiTextService.CreateDefault();
         return new AppServices(
-            new SettingsStore(),
+            new SettingsStore(text),
             new AudioPlayerService(),
             new SerialLightController(text),
             new TwitchAuthService(),

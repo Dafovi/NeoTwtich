@@ -31,6 +31,35 @@ public static class UiTextKeys
     public const string MediaObsMissingSceneLog = "media.obs_missing_scene_log";
     public const string MediaObsPreviewLog = "media.obs_preview_log";
 
+    public const string OptionEventFollow = "option.event.follow";
+    public const string OptionEventSubscription = "option.event.subscription";
+    public const string OptionEventRaid = "option.event.raid";
+    public const string OptionEventCheer = "option.event.cheer";
+    public const string OptionEventChatCommand = "option.event.chat_command";
+    public const string OptionEventChannelPointRedemption = "option.event.channel_point_redemption";
+    public const string OptionEventTest = "option.event.test";
+    public const string OptionCategoryAll = "option.category.all";
+    public const string OptionCategoryFollowers = "option.category.followers";
+    public const string OptionCategorySubscriptions = "option.category.subscriptions";
+    public const string OptionCategoryRaids = "option.category.raids";
+    public const string OptionCategoryCheers = "option.category.cheers";
+    public const string OptionCategoryChatCommands = "option.category.chat_commands";
+    public const string OptionCategoryRedemptions = "option.category.redemptions";
+    public const string OptionPatternSolid = "option.pattern.solid";
+    public const string OptionPatternPulse = "option.pattern.pulse";
+    public const string OptionPatternRainbow = "option.pattern.rainbow";
+    public const string OptionPatternChase = "option.pattern.chase";
+    public const string OptionPatternTheater = "option.pattern.theater";
+    public const string OptionPatternSparkle = "option.pattern.sparkle";
+    public const string OptionPatternRave = "option.pattern.rave";
+    public const string OptionThemeSystem = "option.theme.system";
+    public const string OptionThemeLight = "option.theme.light";
+    public const string OptionThemeDark = "option.theme.dark";
+    public const string OptionObsMediaImage = "option.obs_media.image";
+    public const string OptionObsMediaVideo = "option.obs_media.video";
+    public const string OptionMediaSourceSingle = "option.media_source.single";
+    public const string OptionMediaSourceGroup = "option.media_source.group";
+
     public const string DiagnosticsWindowTitle = "diagnostics.window_title";
     public const string DiagnosticsNoWarningsTitle = "diagnostics.no_warnings_title";
     public const string DiagnosticsWarningsTitle = "diagnostics.warnings_title";

@@ -1,4 +1,5 @@
 using NeoTwitch.Models;
+using NeoTwitch.Services.Text;
 using NeoTwitch.ViewModels.Ui;
 
 namespace NeoTwitch.Services.Ui;
@@ -6,54 +7,72 @@ namespace NeoTwitch.Services.Ui;
 public static class UiOptionCatalog
 {
     public static IReadOnlyList<UiOption<TwitchEventKind>> EventOptions { get; } =
-    [
-        new("Nuevo seguidor", TwitchEventKind.Follow),
-        new("Nueva suscripcion", TwitchEventKind.Subscription),
-        new("Raid recibida", TwitchEventKind.Raid),
-        new("Bits", TwitchEventKind.Cheer),
-        new("Comando de chat", TwitchEventKind.ChatCommand),
-        new("Canje de puntos", TwitchEventKind.ChannelPointRedemption),
-        new("Prueba manual", TwitchEventKind.Test)
-    ];
+        CreateEventOptions(UiTextService.CreateDefault());
 
     public static IReadOnlyList<UiOption<string>> RuleCategoryOptions { get; } =
-    [
-        new("Todas las categorias", ""),
-        new("Seguidores", nameof(TwitchEventKind.Follow)),
-        new("Suscripciones", nameof(TwitchEventKind.Subscription)),
-        new("Raids", nameof(TwitchEventKind.Raid)),
-        new("Bits", nameof(TwitchEventKind.Cheer)),
-        new("Comandos de chat", nameof(TwitchEventKind.ChatCommand)),
-        new("Canjes de puntos", nameof(TwitchEventKind.ChannelPointRedemption))
-    ];
+        CreateRuleCategoryOptions(UiTextService.CreateDefault());
 
     public static IReadOnlyList<UiOption<LightPattern>> PatternOptions { get; } =
-    [
-        new("Color fijo", LightPattern.Solid),
-        new("Pulso", LightPattern.Pulse),
-        new("Arcoiris", LightPattern.Rainbow),
-        new("Carrera", LightPattern.Chase),
-        new("Teatro", LightPattern.Theater),
-        new("Destellos", LightPattern.Sparkle),
-        new("Rave", LightPattern.Rave)
-    ];
+        CreatePatternOptions(UiTextService.CreateDefault());
 
     public static IReadOnlyList<UiOption<string>> ThemeModeOptions { get; } =
-    [
-        new("Seguir Windows", "System"),
-        new("Claro", "Light"),
-        new("Oscuro", "Dark")
-    ];
+        CreateThemeModeOptions(UiTextService.CreateDefault());
 
     public static IReadOnlyList<UiOption<ObsMediaKind>> ObsMediaKindOptions { get; } =
-    [
-        new("Imagen", ObsMediaKind.Image),
-        new("Video", ObsMediaKind.Video)
-    ];
+        CreateObsMediaKindOptions(UiTextService.CreateDefault());
 
     public static IReadOnlyList<UiOption<MediaSourceMode>> MediaSourceModeOptions { get; } =
+        CreateMediaSourceModeOptions(UiTextService.CreateDefault());
+
+    public static IReadOnlyList<UiOption<TwitchEventKind>> CreateEventOptions(IUiTextService text) =>
     [
-        new("Un archivo", MediaSourceMode.Single),
-        new("Grupo aleatorio", MediaSourceMode.Group)
+        new(text.Get(UiTextKeys.OptionEventFollow), TwitchEventKind.Follow),
+        new(text.Get(UiTextKeys.OptionEventSubscription), TwitchEventKind.Subscription),
+        new(text.Get(UiTextKeys.OptionEventRaid), TwitchEventKind.Raid),
+        new(text.Get(UiTextKeys.OptionEventCheer), TwitchEventKind.Cheer),
+        new(text.Get(UiTextKeys.OptionEventChatCommand), TwitchEventKind.ChatCommand),
+        new(text.Get(UiTextKeys.OptionEventChannelPointRedemption), TwitchEventKind.ChannelPointRedemption),
+        new(text.Get(UiTextKeys.OptionEventTest), TwitchEventKind.Test)
+    ];
+
+    public static IReadOnlyList<UiOption<string>> CreateRuleCategoryOptions(IUiTextService text) =>
+    [
+        new(text.Get(UiTextKeys.OptionCategoryAll), ""),
+        new(text.Get(UiTextKeys.OptionCategoryFollowers), nameof(TwitchEventKind.Follow)),
+        new(text.Get(UiTextKeys.OptionCategorySubscriptions), nameof(TwitchEventKind.Subscription)),
+        new(text.Get(UiTextKeys.OptionCategoryRaids), nameof(TwitchEventKind.Raid)),
+        new(text.Get(UiTextKeys.OptionCategoryCheers), nameof(TwitchEventKind.Cheer)),
+        new(text.Get(UiTextKeys.OptionCategoryChatCommands), nameof(TwitchEventKind.ChatCommand)),
+        new(text.Get(UiTextKeys.OptionCategoryRedemptions), nameof(TwitchEventKind.ChannelPointRedemption))
+    ];
+
+    public static IReadOnlyList<UiOption<LightPattern>> CreatePatternOptions(IUiTextService text) =>
+    [
+        new(text.Get(UiTextKeys.OptionPatternSolid), LightPattern.Solid),
+        new(text.Get(UiTextKeys.OptionPatternPulse), LightPattern.Pulse),
+        new(text.Get(UiTextKeys.OptionPatternRainbow), LightPattern.Rainbow),
+        new(text.Get(UiTextKeys.OptionPatternChase), LightPattern.Chase),
+        new(text.Get(UiTextKeys.OptionPatternTheater), LightPattern.Theater),
+        new(text.Get(UiTextKeys.OptionPatternSparkle), LightPattern.Sparkle),
+        new(text.Get(UiTextKeys.OptionPatternRave), LightPattern.Rave)
+    ];
+
+    public static IReadOnlyList<UiOption<string>> CreateThemeModeOptions(IUiTextService text) =>
+    [
+        new(text.Get(UiTextKeys.OptionThemeSystem), "System"),
+        new(text.Get(UiTextKeys.OptionThemeLight), "Light"),
+        new(text.Get(UiTextKeys.OptionThemeDark), "Dark")
+    ];
+
+    public static IReadOnlyList<UiOption<ObsMediaKind>> CreateObsMediaKindOptions(IUiTextService text) =>
+    [
+        new(text.Get(UiTextKeys.OptionObsMediaImage), ObsMediaKind.Image),
+        new(text.Get(UiTextKeys.OptionObsMediaVideo), ObsMediaKind.Video)
+    ];
+
+    public static IReadOnlyList<UiOption<MediaSourceMode>> CreateMediaSourceModeOptions(IUiTextService text) =>
+    [
+        new(text.Get(UiTextKeys.OptionMediaSourceSingle), MediaSourceMode.Single),
+        new(text.Get(UiTextKeys.OptionMediaSourceGroup), MediaSourceMode.Group)
     ];
 }

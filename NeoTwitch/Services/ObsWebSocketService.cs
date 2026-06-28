@@ -4,6 +4,7 @@ using System.Security.Cryptography;
 using System.Text;
 using System.Text.Json;
 using NeoTwitch.Models;
+using ObsProtocol = NeoTwitch.Services.Obs.ObsWebSocketProtocol;
 
 namespace NeoTwitch.Services;
 
@@ -44,34 +45,34 @@ public sealed class ObsWebSocketService : IAsyncDisposable
             await _socket.ConnectAsync(BuildUri(config), token);
 
             using var hello = await ReceiveJsonAsync(token);
-            if (ReadInt(hello.RootElement, "op") != 0)
+            if (ReadInt(hello.RootElement, ObsProtocol.Op) != ObsProtocol.OpHello)
             {
                 throw new InvalidOperationException("OBS no envio el saludo esperado de WebSocket.");
             }
 
-            var helloData = hello.RootElement.GetProperty("d");
-            var rpcVersion = ReadInt(helloData, "rpcVersion", 1);
+            var helloData = hello.RootElement.GetProperty(ObsProtocol.Data);
+            var rpcVersion = ReadInt(helloData, ObsProtocol.RpcVersion, 1);
             var identify = new Dictionary<string, object?>
             {
-                ["rpcVersion"] = rpcVersion
+                [ObsProtocol.RpcVersion] = rpcVersion
             };
 
-            if (helloData.TryGetProperty("authentication", out var auth))
+            if (helloData.TryGetProperty(ObsProtocol.Authentication, out var auth))
             {
                 if (string.IsNullOrWhiteSpace(config.Password))
                 {
                     throw new InvalidOperationException("OBS solicita contraseña WebSocket. Escribela en Conexiones > OBS.");
                 }
 
-                identify["authentication"] = BuildAuthentication(
+                identify[ObsProtocol.Authentication] = BuildAuthentication(
                     config.Password,
-                    ReadString(auth, "salt"),
-                    ReadString(auth, "challenge"));
+                    ReadString(auth, ObsProtocol.Salt),
+                    ReadString(auth, ObsProtocol.Challenge));
             }
 
-            await SendAsync(new { op = 1, d = identify }, token);
+            await SendAsync(new { op = ObsProtocol.OpIdentify, d = identify }, token);
             using var identified = await ReceiveJsonAsync(token);
-            if (ReadInt(identified.RootElement, "op") != 2)
+            if (ReadInt(identified.RootElement, ObsProtocol.Op) != ObsProtocol.OpIdentified)
             {
                 throw new InvalidOperationException("OBS no confirmo la identificacion. Revisa la contraseña WebSocket.");
             }
@@ -134,8 +135,8 @@ public sealed class ObsWebSocketService : IAsyncDisposable
         {
             EnsureConnected();
             await SendRequestAsync(
-                "SetCurrentProgramScene",
-                new Dictionary<string, object?> { ["sceneName"] = sceneName.Trim() },
+                ObsProtocol.SetCurrentProgramScene,
+                new Dictionary<string, object?> { [ObsProtocol.SceneName] = sceneName.Trim() },
                 token);
             await RefreshScenesCoreAsync(token);
             return Snapshot();
@@ -182,31 +183,31 @@ public sealed class ObsWebSocketService : IAsyncDisposable
         try
         {
             EnsureConnected();
-            var inputKind = kind == ObsMediaKind.Image ? "image_source" : "ffmpeg_source";
+            var inputKind = kind == ObsMediaKind.Image ? ObsProtocol.ImageSourceKind : ObsProtocol.FfmpegSourceKind;
             var settings = BuildMediaInputSettings(kind, filePath);
             try
             {
                 await SendRequestAsync(
-                    "CreateInput",
+                    ObsProtocol.CreateInput,
                     new Dictionary<string, object?>
                     {
-                        ["sceneName"] = sceneName.Trim(),
-                        ["inputName"] = sourceName.Trim(),
-                        ["inputKind"] = inputKind,
-                        ["inputSettings"] = settings,
-                        ["sceneItemEnabled"] = true
+                        [ObsProtocol.SceneName] = sceneName.Trim(),
+                        [ObsProtocol.InputName] = sourceName.Trim(),
+                        [ObsProtocol.InputKind] = inputKind,
+                        [ObsProtocol.InputSettings] = settings,
+                        [ObsProtocol.SceneItemEnabled] = true
                     },
                     token);
             }
             catch (InvalidOperationException)
             {
                 await SendRequestAsync(
-                    "SetInputSettings",
+                    ObsProtocol.SetInputSettings,
                     new Dictionary<string, object?>
                     {
-                        ["inputName"] = sourceName.Trim(),
-                        ["inputSettings"] = settings,
-                        ["overlay"] = true
+                        [ObsProtocol.InputName] = sourceName.Trim(),
+                        [ObsProtocol.InputSettings] = settings,
+                        [ObsProtocol.Overlay] = true
                     },
                     token);
                 await EnsureSceneItemAsync(sceneName, sourceName, token);
@@ -298,25 +299,25 @@ public sealed class ObsWebSocketService : IAsyncDisposable
 
     private async Task<string> GetVersionAsync(CancellationToken cancellationToken)
     {
-        using var response = await SendRequestAsync("GetVersion", null, cancellationToken);
-        var data = response.RootElement.GetProperty("d").GetProperty("responseData");
-        return ReadString(data, "obsVersion");
+        using var response = await SendRequestAsync(ObsProtocol.GetVersion, null, cancellationToken);
+        var data = response.RootElement.GetProperty(ObsProtocol.Data).GetProperty(ObsProtocol.ResponseData);
+        return ReadString(data, ObsProtocol.ObsVersion);
     }
 
     private async Task RefreshScenesCoreAsync(CancellationToken cancellationToken)
     {
-        using var sceneResponse = await SendRequestAsync("GetSceneList", null, cancellationToken);
-        var sceneData = sceneResponse.RootElement.GetProperty("d").GetProperty("responseData");
-        CurrentScene = ReadString(sceneData, "currentProgramSceneName");
-        Scenes = sceneData.GetProperty("scenes")
+        using var sceneResponse = await SendRequestAsync(ObsProtocol.GetSceneList, null, cancellationToken);
+        var sceneData = sceneResponse.RootElement.GetProperty(ObsProtocol.Data).GetProperty(ObsProtocol.ResponseData);
+        CurrentScene = ReadString(sceneData, ObsProtocol.CurrentProgramSceneName);
+        Scenes = sceneData.GetProperty(ObsProtocol.Scenes)
             .EnumerateArray()
-            .Select(scene => new ObsSceneInfo(ReadString(scene, "sceneName")))
+            .Select(scene => new ObsSceneInfo(ReadString(scene, ObsProtocol.SceneName)))
             .Where(scene => !string.IsNullOrWhiteSpace(scene.Name))
             .ToArray();
 
-        using var studioResponse = await SendRequestAsync("GetStudioModeEnabled", null, cancellationToken);
-        var studioData = studioResponse.RootElement.GetProperty("d").GetProperty("responseData");
-        StudioMode = studioData.TryGetProperty("studioModeEnabled", out var enabled)
+        using var studioResponse = await SendRequestAsync(ObsProtocol.GetStudioModeEnabled, null, cancellationToken);
+        var studioData = studioResponse.RootElement.GetProperty(ObsProtocol.Data).GetProperty(ObsProtocol.ResponseData);
+        StudioMode = studioData.TryGetProperty(ObsProtocol.StudioModeEnabled, out var enabled)
             && enabled.ValueKind == JsonValueKind.True;
     }
 
@@ -333,12 +334,12 @@ public sealed class ObsWebSocketService : IAsyncDisposable
         }
 
         await SendRequestAsync(
-            "CreateSceneItem",
+            ObsProtocol.CreateSceneItem,
             new Dictionary<string, object?>
             {
-                ["sceneName"] = sceneName.Trim(),
-                ["sourceName"] = sourceName.Trim(),
-                ["sceneItemEnabled"] = true
+                [ObsProtocol.SceneName] = sceneName.Trim(),
+                [ObsProtocol.SourceName] = sourceName.Trim(),
+                [ObsProtocol.SceneItemEnabled] = true
             },
             cancellationToken);
     }
@@ -351,12 +352,12 @@ public sealed class ObsWebSocketService : IAsyncDisposable
     {
         var sceneItemId = await GetSceneItemIdAsync(sceneName, sourceName, cancellationToken);
         await SendRequestAsync(
-            "SetSceneItemEnabled",
+            ObsProtocol.SetSceneItemEnabled,
             new Dictionary<string, object?>
             {
-                ["sceneName"] = sceneName.Trim(),
-                ["sceneItemId"] = sceneItemId,
-                ["sceneItemEnabled"] = enabled
+                [ObsProtocol.SceneName] = sceneName.Trim(),
+                [ObsProtocol.SceneItemId] = sceneItemId,
+                [ObsProtocol.SceneItemEnabled] = enabled
             },
             cancellationToken);
     }
@@ -379,18 +380,18 @@ public sealed class ObsWebSocketService : IAsyncDisposable
         var (positionX, positionY) = ResolveOverlayPosition(config, mediaWidth, mediaHeight);
 
         await SendRequestAsync(
-            "SetSceneItemTransform",
+            ObsProtocol.SetSceneItemTransform,
             new Dictionary<string, object?>
             {
-                ["sceneName"] = sceneName.Trim(),
-                ["sceneItemId"] = sceneItemId,
-                ["sceneItemTransform"] = new Dictionary<string, object?>
+                [ObsProtocol.SceneName] = sceneName.Trim(),
+                [ObsProtocol.SceneItemId] = sceneItemId,
+                [ObsProtocol.SceneItemTransform] = new Dictionary<string, object?>
                 {
-                    ["positionX"] = positionX,
-                    ["positionY"] = positionY,
-                    ["boundsType"] = "OBS_BOUNDS_SCALE_INNER",
-                    ["boundsWidth"] = mediaWidth,
-                    ["boundsHeight"] = mediaHeight
+                    [ObsProtocol.PositionX] = positionX,
+                    [ObsProtocol.PositionY] = positionY,
+                    [ObsProtocol.BoundsType] = ObsProtocol.BoundsScaleInner,
+                    [ObsProtocol.BoundsWidth] = mediaWidth,
+                    [ObsProtocol.BoundsHeight] = mediaHeight
                 }
             },
             cancellationToken);
@@ -403,11 +404,11 @@ public sealed class ObsWebSocketService : IAsyncDisposable
     {
         var inputVolumeMul = Math.Clamp(volumePercent, ApplicationLimits.MinVolumePercent, ApplicationLimits.MaxVolumePercent) / 100d;
         await SendRequestAsync(
-            "SetInputVolume",
+            ObsProtocol.SetInputVolume,
             new Dictionary<string, object?>
             {
-                ["inputName"] = sourceName.Trim(),
-                ["inputVolumeMul"] = inputVolumeMul
+                [ObsProtocol.InputName] = sourceName.Trim(),
+                [ObsProtocol.InputVolumeMul] = inputVolumeMul
             },
             cancellationToken);
     }
@@ -418,15 +419,15 @@ public sealed class ObsWebSocketService : IAsyncDisposable
         CancellationToken cancellationToken)
     {
         using var response = await SendRequestAsync(
-            "GetSceneItemId",
+            ObsProtocol.GetSceneItemId,
             new Dictionary<string, object?>
             {
-                ["sceneName"] = sceneName.Trim(),
-                ["sourceName"] = sourceName.Trim()
+                [ObsProtocol.SceneName] = sceneName.Trim(),
+                [ObsProtocol.SourceName] = sourceName.Trim()
             },
             cancellationToken);
-        var data = response.RootElement.GetProperty("d").GetProperty("responseData");
-        return ReadInt(data, "sceneItemId");
+        var data = response.RootElement.GetProperty(ObsProtocol.Data).GetProperty(ObsProtocol.ResponseData);
+        return ReadInt(data, ObsProtocol.SceneItemId);
     }
 
     private async Task<JsonDocument> SendRequestAsync(
@@ -439,38 +440,38 @@ public sealed class ObsWebSocketService : IAsyncDisposable
         var requestId = Guid.NewGuid().ToString("N");
         var payload = new Dictionary<string, object?>
         {
-            ["requestType"] = requestType,
-            ["requestId"] = requestId
+            [ObsProtocol.RequestType] = requestType,
+            [ObsProtocol.RequestId] = requestId
         };
 
         if (requestData is not null)
         {
-            payload["requestData"] = requestData;
+            payload[ObsProtocol.RequestData] = requestData;
         }
 
-        await SendAsync(new { op = 6, d = payload }, cancellationToken);
+        await SendAsync(new { op = ObsProtocol.OpRequest, d = payload }, cancellationToken);
 
         while (true)
         {
             var response = await ReceiveJsonAsync(cancellationToken);
-            if (ReadInt(response.RootElement, "op") != 7)
+            if (ReadInt(response.RootElement, ObsProtocol.Op) != ObsProtocol.OpRequestResponse)
             {
                 response.Dispose();
                 continue;
             }
 
-            var data = response.RootElement.GetProperty("d");
-            if (!string.Equals(ReadString(data, "requestId"), requestId, StringComparison.Ordinal))
+            var data = response.RootElement.GetProperty(ObsProtocol.Data);
+            if (!string.Equals(ReadString(data, ObsProtocol.RequestId), requestId, StringComparison.Ordinal))
             {
                 response.Dispose();
                 continue;
             }
 
-            var status = data.GetProperty("requestStatus");
-            if (!status.TryGetProperty("result", out var result) || result.ValueKind != JsonValueKind.True)
+            var status = data.GetProperty(ObsProtocol.RequestStatus);
+            if (!status.TryGetProperty(ObsProtocol.RequestResult, out var result) || result.ValueKind != JsonValueKind.True)
             {
-                var code = status.TryGetProperty("code", out var codeElement) ? codeElement.GetInt32() : 0;
-                var comment = ReadString(status, "comment");
+                var code = status.TryGetProperty(ObsProtocol.RequestCode, out var codeElement) ? codeElement.GetInt32() : 0;
+                var comment = ReadString(status, ObsProtocol.RequestComment);
                 response.Dispose();
                 throw new InvalidOperationException($"OBS rechazo {requestType} ({code}): {comment}");
             }
@@ -568,14 +569,14 @@ public sealed class ObsWebSocketService : IAsyncDisposable
     private static Dictionary<string, object?> BuildMediaInputSettings(ObsMediaKind kind, string filePath)
     {
         return kind == ObsMediaKind.Image
-            ? new Dictionary<string, object?> { ["file"] = filePath }
+            ? new Dictionary<string, object?> { [ObsProtocol.ImageFile] = filePath }
             : new Dictionary<string, object?>
             {
-                ["is_local_file"] = true,
-                ["local_file"] = filePath,
-                ["looping"] = false,
-                ["restart_on_activate"] = true,
-                ["close_when_inactive"] = true
+                [ObsProtocol.IsLocalFile] = true,
+                [ObsProtocol.LocalFile] = filePath,
+                [ObsProtocol.Looping] = false,
+                [ObsProtocol.RestartOnActivate] = true,
+                [ObsProtocol.CloseWhenInactive] = true
             };
     }
 
@@ -585,8 +586,8 @@ public sealed class ObsWebSocketService : IAsyncDisposable
         var maxY = Math.Max(0, config.OverlayHeight - mediaHeight);
         return config.OverlayPositionMode switch
         {
-            "Custom" => (Math.Clamp(config.OverlayX, 0, maxX), Math.Clamp(config.OverlayY, 0, maxY)),
-            "Random" => (Random.Shared.Next(0, maxX + 1), Random.Shared.Next(0, maxY + 1)),
+            ObsProtocol.CustomPositionMode => (Math.Clamp(config.OverlayX, 0, maxX), Math.Clamp(config.OverlayY, 0, maxY)),
+            ObsProtocol.RandomPositionMode => (Random.Shared.Next(0, maxX + 1), Random.Shared.Next(0, maxY + 1)),
             _ => (maxX / 2, maxY / 2)
         };
     }
@@ -594,13 +595,13 @@ public sealed class ObsWebSocketService : IAsyncDisposable
     private static Uri BuildUri(ObsIntegrationConfig config)
     {
         var host = config.Host.Trim();
-        if (host.StartsWith("ws://", StringComparison.OrdinalIgnoreCase)
-            || host.StartsWith("wss://", StringComparison.OrdinalIgnoreCase))
+        if (host.StartsWith(ObsProtocol.WebSocketScheme, StringComparison.OrdinalIgnoreCase)
+            || host.StartsWith(ObsProtocol.SecureWebSocketScheme, StringComparison.OrdinalIgnoreCase))
         {
             return new Uri(host);
         }
 
-        return new Uri($"ws://{host}:{config.Port}");
+        return new Uri($"{ObsProtocol.WebSocketScheme}{host}:{config.Port}");
     }
 
     private static string BuildAuthentication(string password, string salt, string challenge)

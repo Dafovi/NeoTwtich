@@ -48,6 +48,8 @@ var tests = new (string Name, Action Body)[]
     ("LightControlInputService parses and clamps values", LightControlInputTests.ParsesAndClampsValues),
     ("BackgroundLightRestoreService resolves retry attempts", BackgroundLightRestoreTests.ResolvesRetryAttempts),
     ("RulePinChoiceService builds pin choices", RulePinChoiceTests.BuildsPinChoices),
+    ("SerialLightProtocol resolves commands", SerialLightProtocolTests.ResolvesCommands),
+    ("SerialLightProtocol detects responses", SerialLightProtocolTests.DetectsResponses),
     ("LedPreviewService calculates responsive dot counts", LedPreviewTests.CalculatesResponsiveDotCounts),
     ("LedPreviewService builds solid frames with brightness floor", LedPreviewTests.BuildsSolidFramesWithBrightnessFloor),
     ("LedPreviewService builds rainbow frames", LedPreviewTests.BuildsRainbowFrames),
@@ -834,6 +836,24 @@ static class RulePinChoiceTests
         TestAssert.Equal("Pin 3", choices.Options[1].Label);
         TestAssert.Equal("Derecha - Pin 7", choices.Options[2].Label);
         TestAssert.Equal("Personalizado (7, 9)", choices.Options[3].Label);
+    }
+}
+
+static class SerialLightProtocolTests
+{
+    public static void ResolvesCommands()
+    {
+        TestAssert.Equal(SerialLightProtocol.FxCommand, SerialLightProtocol.ResolveCommandName("FX|6:30|SOLID"));
+        TestAssert.Equal(SerialLightProtocol.StopCommand, SerialLightProtocol.ResolveCommandName("STOP|6:30"));
+        TestAssert.Equal<string?>(null, SerialLightProtocol.ResolveCommandName("PING"));
+    }
+
+    public static void DetectsResponses()
+    {
+        TestAssert.True(SerialLightProtocol.IsAckFor("ACK|FX", SerialLightProtocol.FxCommand));
+        TestAssert.True(SerialLightProtocol.IsAckFor("ack|stop", SerialLightProtocol.StopCommand));
+        TestAssert.False(SerialLightProtocol.IsAckFor("ACK|STOP", SerialLightProtocol.FxCommand));
+        TestAssert.True(SerialLightProtocol.IsError("ERR|PIN"));
     }
 }
 

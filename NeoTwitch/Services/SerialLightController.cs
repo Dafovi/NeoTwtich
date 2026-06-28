@@ -2,6 +2,7 @@ using System.ComponentModel;
 using System.Runtime.InteropServices;
 using System.Text;
 using NeoTwitch.Models;
+using NeoTwitch.Services.Lights;
 using NeoTwitch.Services.Text;
 using Microsoft.Win32;
 using Microsoft.Win32.SafeHandles;
@@ -256,7 +257,7 @@ public sealed class SerialLightController : IDisposable
                 return;
             }
 
-            var commandName = ResolveCommandName(line);
+            var commandName = SerialLightProtocol.ResolveCommandName(line);
             if (commandName is not null && _ackSupported != false)
             {
                 ClearReadBuffer(_handle);
@@ -385,14 +386,14 @@ public sealed class SerialLightController : IDisposable
                 continue;
             }
 
-            if (string.Equals(line, $"ACK|{commandName}", StringComparison.OrdinalIgnoreCase))
+            if (SerialLightProtocol.IsAckFor(line, commandName))
             {
                 _ackSupported = true;
                 log(_text.Format(UiTextKeys.SerialAckConfirmedLog, commandName));
                 return;
             }
 
-            if (line.StartsWith("ERR|", StringComparison.OrdinalIgnoreCase))
+            if (SerialLightProtocol.IsError(line))
             {
                 _ackSupported = true;
                 log(_text.Format(UiTextKeys.SerialReportedErrorLog, line));
@@ -448,21 +449,6 @@ public sealed class SerialLightController : IDisposable
     private static void ClearReadBuffer(SafeFileHandle handle)
     {
         _ = PurgeComm(handle, PurgeRxAbort | PurgeRxClear);
-    }
-
-    private static string? ResolveCommandName(string line)
-    {
-        if (line.StartsWith("FX|", StringComparison.OrdinalIgnoreCase))
-        {
-            return "FX";
-        }
-
-        if (line.StartsWith("STOP|", StringComparison.OrdinalIgnoreCase))
-        {
-            return "STOP";
-        }
-
-        return null;
     }
 
     [DllImport("kernel32.dll", CharSet = CharSet.Unicode, SetLastError = true)]

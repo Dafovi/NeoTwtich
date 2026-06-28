@@ -43,6 +43,23 @@ public static class UiTextKeys
     public const string VideosFileDialogFilter = "videos.file_dialog_filter";
     public const string VideosFooterNoun = "videos.footer_noun";
 
+    public const string ConfigurationNewRuleName = "configuration.new_rule_name";
+    public const string ConfigurationNewRuleChatTemplate = "configuration.new_rule_chat_template";
+    public const string ConfigurationNewLedStripName = "configuration.new_led_strip_name";
+    public const string ConfigurationDefaultLedStripName = "configuration.default_led_strip_name";
+    public const string ConfigurationDefaultFollowRuleName = "configuration.default_follow_rule_name";
+    public const string ConfigurationDefaultFollowChatTemplate = "configuration.default_follow_chat_template";
+    public const string ConfigurationDefaultSubscriptionRuleName = "configuration.default_subscription_rule_name";
+    public const string ConfigurationDefaultSubscriptionChatTemplate = "configuration.default_subscription_chat_template";
+    public const string ConfigurationDefaultRaidRuleName = "configuration.default_raid_rule_name";
+    public const string ConfigurationDefaultRaidChatTemplate = "configuration.default_raid_chat_template";
+    public const string ConfigurationDefaultBitsRuleName = "configuration.default_bits_rule_name";
+    public const string ConfigurationDefaultBitsChatTemplate = "configuration.default_bits_chat_template";
+    public const string ConfigurationDefaultChatCommandRuleName = "configuration.default_chat_command_rule_name";
+    public const string ConfigurationDefaultChatCommandTemplate = "configuration.default_chat_command_template";
+    public const string ConfigurationDefaultRedemptionRuleName = "configuration.default_redemption_rule_name";
+    public const string ConfigurationDefaultRedemptionChatTemplate = "configuration.default_redemption_chat_template";
+
     public const string OptionEventFollow = "option.event.follow";
     public const string OptionEventSubscription = "option.event.subscription";
     public const string OptionEventRaid = "option.event.raid";

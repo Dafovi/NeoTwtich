@@ -9,7 +9,7 @@ public partial class MainWindow
 {
     internal void AddStripButton_Click(object sender, RoutedEventArgs e)
     {
-        var strip = ConfigurationItemFactory.CreateLedStrip(_config.LedStrips);
+        var strip = ConfigurationItemFactory.CreateLedStrip(_config.LedStrips, _text);
         _config.LedStrips.Add(strip);
         StripsList.SelectedItem = strip;
         SaveConfig();

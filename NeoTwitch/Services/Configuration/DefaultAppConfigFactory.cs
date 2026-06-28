@@ -1,5 +1,6 @@
 using System.Collections.ObjectModel;
 using NeoTwitch.Models;
+using NeoTwitch.Services.Text;
 
 namespace NeoTwitch.Services.Configuration;
 
@@ -7,13 +8,18 @@ public static class DefaultAppConfigFactory
 {
     public static AppConfig Create()
     {
+        return Create(UiTextService.CreateDefault());
+    }
+
+    public static AppConfig Create(IUiTextService text)
+    {
         return new AppConfig
         {
             LedStrips =
             [
                 new LedStripConfig
                 {
-                    Name = "Arduino Tira led ws2812b",
+                    Name = text.Get(UiTextKeys.ConfigurationDefaultLedStripName),
                     Pin = 6,
                     LedCount = 30
                 }
@@ -21,9 +27,9 @@ public static class DefaultAppConfigFactory
             Rules =
             [
                 CreateRule(
-                    name: "Seguidor",
+                    name: text.Get(UiTextKeys.ConfigurationDefaultFollowRuleName),
                     eventKind: TwitchEventKind.Follow,
-                    chatMessageTemplate: "Gracias @{user}!",
+                    chatMessageTemplate: text.Get(UiTextKeys.ConfigurationDefaultFollowChatTemplate),
                     pattern: LightPattern.Pulse,
                     primaryColor: "#FF2D55",
                     secondaryColor: "#00D1FF",
@@ -33,9 +39,9 @@ public static class DefaultAppConfigFactory
                     cycleMs: 70,
                     stepMs: 120),
                 CreateRule(
-                    name: "Suscripcion",
+                    name: text.Get(UiTextKeys.ConfigurationDefaultSubscriptionRuleName),
                     eventKind: TwitchEventKind.Subscription,
-                    chatMessageTemplate: "Gracias por la suscripcion @{user}!",
+                    chatMessageTemplate: text.Get(UiTextKeys.ConfigurationDefaultSubscriptionChatTemplate),
                     pattern: LightPattern.Rainbow,
                     primaryColor: "#7C3AED",
                     secondaryColor: "#22C55E",
@@ -45,9 +51,9 @@ public static class DefaultAppConfigFactory
                     cycleMs: 45,
                     stepMs: 120),
                 CreateRule(
-                    name: "Raid",
+                    name: text.Get(UiTextKeys.ConfigurationDefaultRaidRuleName),
                     eventKind: TwitchEventKind.Raid,
-                    chatMessageTemplate: "Gracias por la raid @{user}!",
+                    chatMessageTemplate: text.Get(UiTextKeys.ConfigurationDefaultRaidChatTemplate),
                     pattern: LightPattern.Chase,
                     primaryColor: "#F97316",
                     secondaryColor: "#14B8A6",
@@ -57,9 +63,9 @@ public static class DefaultAppConfigFactory
                     cycleMs: 55,
                     stepMs: 120),
                 CreateRule(
-                    name: "Bits",
+                    name: text.Get(UiTextKeys.ConfigurationDefaultBitsRuleName),
                     eventKind: TwitchEventKind.Cheer,
-                    chatMessageTemplate: "Gracias por esos {bits} bits @{user}!",
+                    chatMessageTemplate: text.Get(UiTextKeys.ConfigurationDefaultBitsChatTemplate),
                     pattern: LightPattern.Rave,
                     primaryColor: "#FACC15",
                     secondaryColor: "#EC4899",
@@ -70,9 +76,9 @@ public static class DefaultAppConfigFactory
                     stepMs: 80,
                     minimumBits: 1),
                 CreateRule(
-                    name: "Comando chat",
+                    name: text.Get(UiTextKeys.ConfigurationDefaultChatCommandRuleName),
                     eventKind: TwitchEventKind.ChatCommand,
-                    chatMessageTemplate: "@{user} activo {message}",
+                    chatMessageTemplate: text.Get(UiTextKeys.ConfigurationDefaultChatCommandTemplate),
                     pattern: LightPattern.Rave,
                     primaryColor: "#FF2D55",
                     secondaryColor: "#00D1FF",
@@ -83,9 +89,9 @@ public static class DefaultAppConfigFactory
                     stepMs: 80,
                     chatCommand: "!baile"),
                 CreateRule(
-                    name: "Canje personalizado",
+                    name: text.Get(UiTextKeys.ConfigurationDefaultRedemptionRuleName),
                     eventKind: TwitchEventKind.ChannelPointRedemption,
-                    chatMessageTemplate: "Gracias por el canje @{user}!",
+                    chatMessageTemplate: text.Get(UiTextKeys.ConfigurationDefaultRedemptionChatTemplate),
                     pattern: LightPattern.Sparkle,
                     primaryColor: "#FACC15",
                     secondaryColor: "#EC4899",

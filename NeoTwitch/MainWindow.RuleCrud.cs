@@ -22,7 +22,7 @@ public partial class MainWindow
             return;
         }
 
-        var rule = ConfigurationItemFactory.CreateRule();
+        var rule = ConfigurationItemFactory.CreateRule(_text);
         _config.Rules.Add(rule);
         ShowAllRuleFilters();
         RefreshRulesView();

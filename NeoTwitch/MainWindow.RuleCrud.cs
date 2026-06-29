@@ -9,6 +9,11 @@ public partial class MainWindow
 {
     internal void AddRuleButton_Click(object sender, RoutedEventArgs e)
     {
+        AddRule();
+    }
+
+    private void AddRule()
+    {
         if (!ResolvePendingRuleChanges())
         {
             return;
@@ -24,6 +29,11 @@ public partial class MainWindow
     }
 
     internal void DuplicateRuleButton_Click(object sender, RoutedEventArgs e)
+    {
+        DuplicateSelectedRule();
+    }
+
+    private void DuplicateSelectedRule()
     {
         if (!ResolvePendingRuleChanges())
         {
@@ -45,6 +55,11 @@ public partial class MainWindow
     }
 
     internal void RemoveRuleButton_Click(object sender, RoutedEventArgs e)
+    {
+        RemoveSelectedRule();
+    }
+
+    private void RemoveSelectedRule()
     {
         if (!ResolvePendingRuleChanges())
         {

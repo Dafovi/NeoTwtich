@@ -14,6 +14,16 @@ public partial class MainWindow
 {
     internal async void RuleTestButton_Click(object sender, RoutedEventArgs e)
     {
+        await ToggleRuleTestAsync();
+    }
+
+    private async void ToggleRuleTest()
+    {
+        await ToggleRuleTestAsync();
+    }
+
+    private async Task ToggleRuleTestAsync()
+    {
         try
         {
             if (_currentEffectCts is not null)

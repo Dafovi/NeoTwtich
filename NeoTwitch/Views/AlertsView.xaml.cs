@@ -14,15 +14,7 @@ public partial class AlertsView : NeoTwitchView
         AddHandler(ToggleButton.UncheckedEvent, new RoutedEventHandler(RuleFilterButtonStateChanged));
     }
 
-    private void AddRuleButton_Click(object sender, RoutedEventArgs e) => Host?.AddRuleButton_Click(sender, e);
-
     private void RulesList_SelectionChanged(object sender, SelectionChangedEventArgs e) => Host?.RulesList_SelectionChanged(sender, e);
-
-    private void DuplicateRuleButton_Click(object sender, RoutedEventArgs e) => Host?.DuplicateRuleButton_Click(sender, e);
-
-    private void RuleTestButton_Click(object sender, RoutedEventArgs e) => Host?.RuleTestButton_Click(sender, e);
-
-    private void SaveRuleButton_Click(object sender, RoutedEventArgs e) => Host?.SaveRuleButton_Click(sender, e);
 
     private void RuleFieldChanged(object sender, RoutedEventArgs e) => Host?.RuleFieldChanged(sender, e);
 
@@ -57,8 +49,6 @@ public partial class AlertsView : NeoTwitchView
     private void RuleObsMediaKindButton_Click(object sender, RoutedEventArgs e) => Host?.RuleObsMediaKindButton_Click(sender, e);
 
     private void RuleObsMediaSourceModeButton_Click(object sender, RoutedEventArgs e) => Host?.RuleObsMediaSourceModeButton_Click(sender, e);
-
-    private void RemoveRuleButton_Click(object sender, RoutedEventArgs e) => Host?.RemoveRuleButton_Click(sender, e);
 
     private void RuleFilterButtonStateChanged(object sender, RoutedEventArgs e)
     {

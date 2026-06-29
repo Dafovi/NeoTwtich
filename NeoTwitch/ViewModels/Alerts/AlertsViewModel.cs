@@ -33,6 +33,7 @@ public sealed class AlertsViewModel : ObservableObject
         _text = text;
         _rulesViewSource.Filter += RulesViewSource_Filter;
         SelectStatusFilterCommand = new RelayCommand(parameter => SelectStatusFilter(parameter?.ToString()));
+        ConfigureActions(NoOp, NoOp, NoOp, NoOp, NoOp);
     }
 
     public event EventHandler? FiltersChanged;
@@ -42,6 +43,16 @@ public sealed class AlertsViewModel : ObservableObject
     public IReadOnlyList<UiOption<string>> CategoryOptions { get; }
 
     public ICommand SelectStatusFilterCommand { get; }
+
+    public ICommand AddRuleCommand { get; private set; } = new RelayCommand(NoOp);
+
+    public ICommand DuplicateRuleCommand { get; private set; } = new RelayCommand(NoOp);
+
+    public ICommand TestRuleCommand { get; private set; } = new RelayCommand(NoOp);
+
+    public ICommand SaveRuleCommand { get; private set; } = new RelayCommand(NoOp);
+
+    public ICommand RemoveRuleCommand { get; private set; } = new RelayCommand(NoOp);
 
     public string SearchText
     {
@@ -118,6 +129,26 @@ public sealed class AlertsViewModel : ObservableObject
     public bool IsActiveStatusSelected => StatusFilter == EventRuleFilterService.ActiveStatus;
 
     public bool IsInactiveStatusSelected => StatusFilter == EventRuleFilterService.InactiveStatus;
+
+    public void ConfigureActions(
+        Action addRule,
+        Action duplicateRule,
+        Action testRule,
+        Action saveRule,
+        Action removeRule)
+    {
+        AddRuleCommand = new RelayCommand(addRule);
+        DuplicateRuleCommand = new RelayCommand(duplicateRule);
+        TestRuleCommand = new RelayCommand(testRule);
+        SaveRuleCommand = new RelayCommand(saveRule);
+        RemoveRuleCommand = new RelayCommand(removeRule);
+
+        OnPropertyChanged(nameof(AddRuleCommand));
+        OnPropertyChanged(nameof(DuplicateRuleCommand));
+        OnPropertyChanged(nameof(TestRuleCommand));
+        OnPropertyChanged(nameof(SaveRuleCommand));
+        OnPropertyChanged(nameof(RemoveRuleCommand));
+    }
 
     public void SelectStatusFilter(string? status)
     {
@@ -211,5 +242,9 @@ public sealed class AlertsViewModel : ObservableObject
             CategoryFilter,
             SearchText,
             _text);
+    }
+
+    private static void NoOp()
+    {
     }
 }

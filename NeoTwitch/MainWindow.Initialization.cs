@@ -18,6 +18,12 @@ public partial class MainWindow
         {
             _dashboardViewModel = new DashboardViewModel(GoToActivity);
             _alertsViewModel = new AlertsViewModel(_ruleCategoryOptions, _text);
+            _alertsViewModel.ConfigureActions(
+                AddRule,
+                DuplicateSelectedRule,
+                ToggleRuleTest,
+                SavePendingRuleChanges,
+                RemoveSelectedRule);
             _alertsViewModel.FiltersChanged += AlertsFiltersChanged;
             _connectionsViewModel = new ConnectionsViewModel();
             _obsViewModel = new ObsViewModel();

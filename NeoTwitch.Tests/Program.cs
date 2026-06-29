@@ -487,6 +487,22 @@ static class AlertsViewModelTests
         TestAssert.Equal(EventRuleFilterService.AllStatus, viewModel.StatusFilter);
         TestAssert.True(viewModel.IsAllStatusSelected);
         TestAssert.Equal(0.68d, viewModel.SaveButtonOpacity);
+
+        var actions = new List<string>();
+        viewModel.ConfigureActions(
+            () => actions.Add("add"),
+            () => actions.Add("duplicate"),
+            () => actions.Add("test"),
+            () => actions.Add("save"),
+            () => actions.Add("remove"));
+
+        viewModel.AddRuleCommand.Execute(null);
+        viewModel.DuplicateRuleCommand.Execute(null);
+        viewModel.TestRuleCommand.Execute(null);
+        viewModel.SaveRuleCommand.Execute(null);
+        viewModel.RemoveRuleCommand.Execute(null);
+
+        TestAssert.Equal("add,duplicate,test,save,remove", string.Join(",", actions));
     }
 }
 

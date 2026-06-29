@@ -43,7 +43,7 @@
                                                 Style="{StaticResource PrimaryButton}"
                                                 HorizontalAlignment="Right"
                                                 VerticalAlignment="Center"
-                                                Click="AddRuleButton_Click" />
+                                                Command="{Binding AddRuleCommand}" />
                                     </Grid>
 
                                     <TextBox MinHeight="38"
@@ -247,16 +247,16 @@
                                     <WrapPanel Grid.Column="1"
                                                HorizontalAlignment="Right"
                                                VerticalAlignment="Top">
-                                        <Button Content="Duplicar" Click="DuplicateRuleButton_Click" />
+                                        <Button Content="Duplicar" Command="{Binding DuplicateRuleCommand}" />
                                         <Button x:Name="RuleTestButton"
                                                 Content="Probar alerta"
                                                 Style="{StaticResource PrimaryButton}"
-                                                Click="RuleTestButton_Click" />
+                                                Command="{Binding TestRuleCommand}" />
                                         <Button Content="Guardar cambios"
                                                 Style="{StaticResource PrimaryButton}"
                                                 Opacity="{Binding SaveButtonOpacity}"
                                                 ToolTip="{Binding SaveButtonToolTip}"
-                                                Click="SaveRuleButton_Click" />
+                                                Command="{Binding SaveRuleCommand}" />
                                     </WrapPanel>
                                 </Grid>
 
@@ -1383,7 +1383,7 @@
                                                     Style="{StaticResource DangerButton}"
                                                     HorizontalContentAlignment="Center"
                                                     Margin="0"
-                                                    Click="RemoveRuleButton_Click" />
+                                                    Command="{Binding RemoveRuleCommand}" />
                                         </StackPanel>
                                     </StackPanel>
                                 </ScrollViewer>

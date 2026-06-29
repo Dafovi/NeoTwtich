@@ -18,6 +18,7 @@ using NeoTwitch.ViewModels.Alerts;
 using NeoTwitch.ViewModels.Connections;
 using NeoTwitch.ViewModels.Dashboard;
 using NeoTwitch.ViewModels.Library;
+using NeoTwitch.ViewModels.Lights;
 using NeoTwitch.ViewModels.Obs;
 using NeoTwitch.ViewModels.Settings;
 using NeoTwitch.ViewModels.Shell;
@@ -101,6 +102,7 @@ var tests = new (string Name, Action Body)[]
     ("ConnectionsViewModel maps badges and helper text", ConnectionsViewModelTests.MapsBadgesAndHelperText),
     ("ConnectionsViewModel maps button states", ConnectionsViewModelTests.MapsButtonStates),
     ("ConnectionsViewModel executes configured actions", ConnectionsViewModelTests.ExecutesConfiguredActions),
+    ("LightsViewModel executes configured actions", LightsViewModelTests.ExecutesConfiguredActions),
     ("DashboardConnectionStateService resolves all services", DashboardConnectionStateTests.ResolvesAllServices),
     ("DashboardSummaryService counts Twitch events", DashboardSummaryTests.CountsTwitchEvents),
     ("DashboardSummaryService counts matched rules safely", DashboardSummaryTests.CountsMatchedRulesSafely),
@@ -2172,6 +2174,34 @@ static class ConnectionsViewModelTests
         TestAssert.Equal(
             "save,twitch,open-twitch,client-id,client-secret,ports,arduino,open-alexa,test-alexa,alexa-url,alexa-token,open-obs,connect-obs,test-obs,obs-password",
             string.Join(",", actions));
+    }
+}
+
+static class LightsViewModelTests
+{
+    public static void ExecutesConfiguredActions()
+    {
+        var viewModel = new LightsViewModel();
+        var actions = new List<string>();
+
+        viewModel.ConfigureActions(
+            () => actions.Add("add"),
+            () => actions.Add("duplicate"),
+            () => actions.Add("remove"),
+            () => actions.Add("apply"),
+            () => actions.Add("stop"),
+            () => actions.Add("sketch"),
+            () => actions.Add("guide"));
+
+        viewModel.AddStripCommand.Execute(null);
+        viewModel.DuplicateStripCommand.Execute(null);
+        viewModel.RemoveStripCommand.Execute(null);
+        viewModel.ApplyBackgroundCommand.Execute(null);
+        viewModel.StopBackgroundCommand.Execute(null);
+        viewModel.OpenSketchCommand.Execute(null);
+        viewModel.OpenGuideCommand.Execute(null);
+
+        TestAssert.Equal("add,duplicate,remove,apply,stop,sketch,guide", string.Join(",", actions));
     }
 }
 

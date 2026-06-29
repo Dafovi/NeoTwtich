@@ -5,6 +5,7 @@ using NeoTwitch.ViewModels.Alerts;
 using NeoTwitch.ViewModels.Connections;
 using NeoTwitch.ViewModels.Dashboard;
 using NeoTwitch.ViewModels.Library;
+using NeoTwitch.ViewModels.Lights;
 using NeoTwitch.ViewModels.Obs;
 using NeoTwitch.ViewModels.Settings;
 
@@ -50,6 +51,15 @@ public partial class MainWindow
                 TestObsConnection,
                 PreviewObsScene,
                 ChangeObsScene);
+            _lightsViewModel = new LightsViewModel();
+            _lightsViewModel.ConfigureActions(
+                AddStrip,
+                DuplicateStrip,
+                RemoveStrip,
+                ApplyArduinoBackground,
+                StopArduinoBackground,
+                OpenArduinoSketch,
+                OpenArduinoGuide);
             _settingsViewModel = new SettingsViewModel();
             _audioLibraryViewModel = new LibraryScreenViewModel<AudioLibraryRow, AudioGroupRow>();
             _imageLibraryViewModel = new LibraryScreenViewModel<MediaLibraryRow, MediaGroupRow>();
@@ -84,6 +94,7 @@ public partial class MainWindow
             DashboardView.DataContext = _dashboardViewModel;
             AlertsView.DataContext = _alertsViewModel;
             ConnectionsView.DataContext = _connectionsViewModel;
+            LightsView.DataContext = _lightsViewModel;
             ObsView.DataContext = _obsViewModel;
             SettingsView.DataContext = _settingsViewModel;
             ActivityView.DataContext = _activityViewModel;

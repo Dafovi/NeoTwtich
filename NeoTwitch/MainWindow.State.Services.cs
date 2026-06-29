@@ -6,6 +6,7 @@ using NeoTwitch.ViewModels.Activity;
 using NeoTwitch.ViewModels.Alerts;
 using NeoTwitch.ViewModels.Connections;
 using NeoTwitch.ViewModels.Dashboard;
+using NeoTwitch.ViewModels.Lights;
 using NeoTwitch.ViewModels.Obs;
 using NeoTwitch.ViewModels.Settings;
 using NeoTwitch.ViewModels.Shell;
@@ -21,6 +22,7 @@ public partial class MainWindow
     private AlertsViewModel _alertsViewModel = null!;
     private DashboardViewModel _dashboardViewModel = null!;
     private ConnectionsViewModel _connectionsViewModel = null!;
+    private LightsViewModel _lightsViewModel = null!;
     private ObsViewModel _obsViewModel = null!;
     private SettingsViewModel _settingsViewModel = null!;
 

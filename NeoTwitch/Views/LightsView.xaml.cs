@@ -10,12 +10,6 @@ public partial class LightsView : NeoTwitchView
         InitializeComponent();
     }
 
-    private void AddStripButton_Click(object sender, RoutedEventArgs e) => Host?.AddStripButton_Click(sender, e);
-
-    private void DuplicateStripButton_Click(object sender, RoutedEventArgs e) => Host?.DuplicateStripButton_Click(sender, e);
-
-    private void RemoveStripButton_Click(object sender, RoutedEventArgs e) => Host?.RemoveStripButton_Click(sender, e);
-
     private void StripsList_SelectionChanged(object sender, SelectionChangedEventArgs e) => Host?.StripsList_SelectionChanged(sender, e);
 
     private void StripFieldChanged(object sender, TextChangedEventArgs e) => Host?.StripFieldChanged(sender, e);
@@ -44,11 +38,4 @@ public partial class LightsView : NeoTwitchView
 
     private void BackgroundLedPreviewPanel_IsVisibleChanged(object sender, DependencyPropertyChangedEventArgs e) => Host?.BackgroundLedPreviewPanel_IsVisibleChanged(sender, e);
 
-    private void ApplyArduinoBackgroundButton_Click(object sender, RoutedEventArgs e) => Host?.ApplyArduinoBackgroundButton_Click(sender, e);
-
-    private void StopArduinoBackgroundButton_Click(object sender, RoutedEventArgs e) => Host?.StopArduinoBackgroundButton_Click(sender, e);
-
-    private void OpenArduinoSketchButton_Click(object sender, RoutedEventArgs e) => Host?.OpenArduinoSketchButton_Click(sender, e);
-
-    private void OpenArduinoGuideButton_Click(object sender, RoutedEventArgs e) => Host?.OpenArduinoGuideButton_Click(sender, e);
 }

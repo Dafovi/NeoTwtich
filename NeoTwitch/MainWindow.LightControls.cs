@@ -7,7 +7,7 @@ namespace NeoTwitch;
 
 public partial class MainWindow
 {
-    internal void AddStripButton_Click(object sender, RoutedEventArgs e)
+    private void AddStrip()
     {
         var strip = ConfigurationItemFactory.CreateLedStrip(_config.LedStrips, _text);
         _config.LedStrips.Add(strip);
@@ -15,7 +15,7 @@ public partial class MainWindow
         SaveConfig();
     }
 
-    internal void DuplicateStripButton_Click(object sender, RoutedEventArgs e)
+    private void DuplicateStrip()
     {
         if (StripsList.SelectedItem is not LedStripConfig strip)
         {
@@ -28,7 +28,7 @@ public partial class MainWindow
         SaveConfig();
     }
 
-    internal void RemoveStripButton_Click(object sender, RoutedEventArgs e)
+    private void RemoveStrip()
     {
         if (StripsList.SelectedItem is not LedStripConfig strip)
         {
@@ -47,7 +47,7 @@ public partial class MainWindow
         SaveConfig();
     }
 
-    internal async void ApplyArduinoBackgroundButton_Click(object sender, RoutedEventArgs e)
+    private async void ApplyArduinoBackground()
     {
         SaveGlobalSettingsFromFields();
         SaveCurrentStripFromFields();
@@ -56,7 +56,7 @@ public partial class MainWindow
         await ApplyArduinoBackgroundAsync();
     }
 
-    internal async void StopArduinoBackgroundButton_Click(object sender, RoutedEventArgs e)
+    private async void StopArduinoBackground()
     {
         SaveGlobalSettingsFromFields();
         SaveBackgroundFromFields();

@@ -34,11 +34,11 @@
                                             DockPanel.Dock="Bottom"
                                             Margin="0,12,0,0">
                                     <WrapPanel>
-                                        <Button Content="Nueva" Click="AddStripButton_Click" />
-                                        <Button Content="Duplicar" Click="DuplicateStripButton_Click" />
+                                        <Button Content="Nueva" Command="{Binding AddStripCommand}" />
+                                        <Button Content="Duplicar" Command="{Binding DuplicateStripCommand}" />
                                         <Button Content="Eliminar"
                                                 Style="{StaticResource DangerButton}"
-                                                Click="RemoveStripButton_Click" />
+                                                Command="{Binding RemoveStripCommand}" />
                                     </WrapPanel>
                                 </StackPanel>
 
@@ -658,13 +658,13 @@
                                             Content="Aplicar cambios a Arduino"
                                             Style="{StaticResource PrimaryButton}"
                                             MinWidth="210"
-                                            Click="ApplyArduinoBackgroundButton_Click" />
+                                            Command="{Binding ApplyBackgroundCommand}" />
                                     <Button Content="Apagar tiras"
                                             Style="{StaticResource DangerButton}"
-                                            Click="StopArduinoBackgroundButton_Click" />
+                                            Command="{Binding StopBackgroundCommand}" />
                                     <Button Content="Borrar salida"
                                             Style="{StaticResource DangerButton}"
-                                            Click="RemoveStripButton_Click" />
+                                            Command="{Binding RemoveStripCommand}" />
                                 </WrapPanel>
 
                                 <Border BorderBrush="{DynamicResource ThemeBorderBrush}"
@@ -691,7 +691,7 @@
                                                 Content="Agregar pin"
                                                 Style="{StaticResource PrimaryButton}"
                                                 VerticalAlignment="Center"
-                                                Click="AddStripButton_Click" />
+                                                Command="{Binding AddStripCommand}" />
                                     </Grid>
                                 </Border>
 
@@ -729,9 +729,9 @@
                                                 <WrapPanel>
                                                     <Button Content="Descargar ultimo sketch"
                                                             Style="{StaticResource PrimaryButton}"
-                                                            Click="OpenArduinoSketchButton_Click" />
+                                                            Command="{Binding OpenSketchCommand}" />
                                                     <Button Content="Ver guia"
-                                                            Click="OpenArduinoGuideButton_Click" />
+                                                            Command="{Binding OpenGuideCommand}" />
                                                 </WrapPanel>
                                             </StackPanel>
                                         </Grid>

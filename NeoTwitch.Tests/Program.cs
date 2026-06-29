@@ -14,6 +14,7 @@ using NeoTwitch.Services.Text;
 using NeoTwitch.Services.Ui;
 using NeoTwitch.Shared;
 using NeoTwitch.ViewModels.Activity;
+using NeoTwitch.ViewModels.Alexa;
 using NeoTwitch.ViewModels.Alerts;
 using NeoTwitch.ViewModels.Connections;
 using NeoTwitch.ViewModels.Dashboard;
@@ -102,6 +103,7 @@ var tests = new (string Name, Action Body)[]
     ("ConnectionsViewModel maps badges and helper text", ConnectionsViewModelTests.MapsBadgesAndHelperText),
     ("ConnectionsViewModel maps button states", ConnectionsViewModelTests.MapsButtonStates),
     ("ConnectionsViewModel executes configured actions", ConnectionsViewModelTests.ExecutesConfiguredActions),
+    ("AlexaViewModel executes configured actions", AlexaViewModelTests.ExecutesConfiguredActions),
     ("LightsViewModel executes configured actions", LightsViewModelTests.ExecutesConfiguredActions),
     ("DashboardConnectionStateService resolves all services", DashboardConnectionStateTests.ResolvesAllServices),
     ("DashboardSummaryService counts Twitch events", DashboardSummaryTests.CountsTwitchEvents),
@@ -2174,6 +2176,24 @@ static class ConnectionsViewModelTests
         TestAssert.Equal(
             "save,twitch,open-twitch,client-id,client-secret,ports,arduino,open-alexa,test-alexa,alexa-url,alexa-token,open-obs,connect-obs,test-obs,obs-password",
             string.Join(",", actions));
+    }
+}
+
+static class AlexaViewModelTests
+{
+    public static void ExecutesConfiguredActions()
+    {
+        var viewModel = new AlexaViewModel();
+        var actions = new List<string>();
+
+        viewModel.ConfigureActions(
+            () => actions.Add("apply"),
+            () => actions.Add("stop"));
+
+        viewModel.ApplyBackgroundCommand.Execute(null);
+        viewModel.StopBackgroundCommand.Execute(null);
+
+        TestAssert.Equal("apply,stop", string.Join(",", actions));
     }
 }
 

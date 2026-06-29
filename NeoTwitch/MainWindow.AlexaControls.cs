@@ -70,7 +70,7 @@ public partial class MainWindow
         }
     }
 
-    internal async void ApplyAlexaBackgroundButton_Click(object sender, RoutedEventArgs e)
+    private async void ApplyAlexaBackground()
     {
         SaveGlobalSettingsFromFields();
         SaveBackgroundFromFields();
@@ -82,7 +82,7 @@ public partial class MainWindow
         }
     }
 
-    internal async void StopAlexaBackgroundButton_Click(object sender, RoutedEventArgs e)
+    private async void StopAlexaBackground()
     {
         SaveGlobalSettingsFromFields();
         SaveBackgroundFromFields();

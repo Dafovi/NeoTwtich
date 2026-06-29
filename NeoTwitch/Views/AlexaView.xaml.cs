@@ -13,8 +13,4 @@ public partial class AlexaView : NeoTwitchView
     private void BackgroundFieldChanged(object sender, RoutedEventArgs e) => Host?.BackgroundFieldChanged(sender, e);
 
     private void BackgroundFieldChanged(object sender, TextChangedEventArgs e) => Host?.BackgroundFieldChanged(sender, e);
-
-    private void ApplyAlexaBackgroundButton_Click(object sender, RoutedEventArgs e) => Host?.ApplyAlexaBackgroundButton_Click(sender, e);
-
-    private void StopAlexaBackgroundButton_Click(object sender, RoutedEventArgs e) => Host?.StopAlexaBackgroundButton_Click(sender, e);
 }

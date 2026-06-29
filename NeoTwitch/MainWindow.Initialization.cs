@@ -1,6 +1,7 @@
 using NeoTwitch.Services;
 using NeoTwitch.Shared;
 using NeoTwitch.Models;
+using NeoTwitch.ViewModels.Alexa;
 using NeoTwitch.ViewModels.Alerts;
 using NeoTwitch.ViewModels.Connections;
 using NeoTwitch.ViewModels.Dashboard;
@@ -29,6 +30,8 @@ public partial class MainWindow
             _alertsViewModel.FiltersChanged += AlertsFiltersChanged;
             _alertsViewModel.SelectedRuleChanged += AlertsSelectedRuleChanged;
             _connectionsViewModel = new ConnectionsViewModel();
+            _alexaViewModel = new AlexaViewModel();
+            _alexaViewModel.ConfigureActions(ApplyAlexaBackground, StopAlexaBackground);
             _connectionsViewModel.ConfigureActions(
                 SaveSettingsFromUi,
                 ToggleTwitchConnection,
@@ -93,6 +96,7 @@ public partial class MainWindow
             _videoLibraryViewModel.FiltersChanged += VideoLibraryFiltersChanged;
             DashboardView.DataContext = _dashboardViewModel;
             AlertsView.DataContext = _alertsViewModel;
+            AlexaView.DataContext = _alexaViewModel;
             ConnectionsView.DataContext = _connectionsViewModel;
             LightsView.DataContext = _lightsViewModel;
             ObsView.DataContext = _obsViewModel;

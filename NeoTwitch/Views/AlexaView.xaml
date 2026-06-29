@@ -59,11 +59,11 @@
                                         <Button x:Name="ApplyAlexaBackgroundButton"
                                                 Content="Aplicar fondo Alexa"
                                                 Style="{StaticResource PrimaryButton}"
-                                                Click="ApplyAlexaBackgroundButton_Click" />
+                                                Command="{Binding ApplyBackgroundCommand}" />
                                         <Button Content="Apagar fondo Alexa"
                                                 x:Name="StopAlexaBackgroundButton"
                                                 Style="{StaticResource DangerButton}"
-                                                Click="StopAlexaBackgroundButton_Click" />
+                                                Command="{Binding StopBackgroundCommand}" />
                                     </WrapPanel>
                                 </StackPanel>
                         </Border>

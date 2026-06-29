@@ -12,11 +12,6 @@ namespace NeoTwitch;
 
 public partial class MainWindow
 {
-    internal async void RuleTestButton_Click(object sender, RoutedEventArgs e)
-    {
-        await ToggleRuleTestAsync();
-    }
-
     private async void ToggleRuleTest()
     {
         await ToggleRuleTestAsync();

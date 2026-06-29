@@ -8,11 +8,6 @@ namespace NeoTwitch;
 
 public partial class MainWindow
 {
-    internal void SaveRuleButton_Click(object sender, RoutedEventArgs e)
-    {
-        SavePendingRuleChanges();
-    }
-
     private void SavePendingRuleChanges()
     {
         if (!SaveCurrentRuleFromFields())

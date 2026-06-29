@@ -7,11 +7,6 @@ namespace NeoTwitch;
 
 public partial class MainWindow
 {
-    internal void AddRuleButton_Click(object sender, RoutedEventArgs e)
-    {
-        AddRule();
-    }
-
     private void AddRule()
     {
         if (!ResolvePendingRuleChanges())
@@ -26,11 +21,6 @@ public partial class MainWindow
         _alertsViewModel.SelectedRule = rule;
         SaveConfig();
         ScheduleTwitchSubscriptionRefreshIfNeeded();
-    }
-
-    internal void DuplicateRuleButton_Click(object sender, RoutedEventArgs e)
-    {
-        DuplicateSelectedRule();
     }
 
     private void DuplicateSelectedRule()
@@ -52,11 +42,6 @@ public partial class MainWindow
         _alertsViewModel.SelectedRule = copy;
         SaveConfig();
         ScheduleTwitchSubscriptionRefreshIfNeeded();
-    }
-
-    internal void RemoveRuleButton_Click(object sender, RoutedEventArgs e)
-    {
-        RemoveSelectedRule();
     }
 
     private void RemoveSelectedRule()

@@ -85,6 +85,7 @@
                                            Margin="0,8,0,0" />
 
                                 <ListBox x:Name="RulesList"
+                                         ItemsSource="{Binding RulesView}"
                                          BorderBrush="{DynamicResource ThemeBorderBrush}"
                                          Background="Transparent"
                                          BorderThickness="0"

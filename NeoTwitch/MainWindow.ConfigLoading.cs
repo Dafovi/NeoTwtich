@@ -72,8 +72,7 @@ public partial class MainWindow
 
     private void BindConfigCollectionsIntoUi()
     {
-        _rulesViewSource.Source = _config.Rules;
-        RulesList.ItemsSource = _rulesViewSource.View;
+        _alertsViewModel.SetRulesSource(_config.Rules);
         RuleAudioAssetBox.ItemsSource = _config.AudioLibrary;
         RuleAudioGroupBox.ItemsSource = _config.AudioGroups;
         NewAudioAlertBox.ItemsSource = AudioAlertChoices;

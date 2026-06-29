@@ -1,5 +1,9 @@
+using System.ComponentModel;
 using System.Windows.Input;
+using System.Windows.Data;
+using NeoTwitch.Models;
 using NeoTwitch.Services.Alerts;
+using NeoTwitch.Services.Text;
 using NeoTwitch.ViewModels.Core;
 using NeoTwitch.ViewModels.Ui;
 
@@ -14,14 +18,26 @@ public sealed class AlertsViewModel : ObservableObject
     private bool _isEditorEnabled;
     private bool _hasUnsavedChanges;
     private bool _suppressFilterEvents;
+    private readonly CollectionViewSource _rulesViewSource = new();
+    private readonly IUiTextService _text;
+    private IList<EventRule>? _rules;
 
     public AlertsViewModel(IReadOnlyList<UiOption<string>> categoryOptions)
+        : this(categoryOptions, UiTextService.CreateDefault())
+    {
+    }
+
+    public AlertsViewModel(IReadOnlyList<UiOption<string>> categoryOptions, IUiTextService text)
     {
         CategoryOptions = categoryOptions;
+        _text = text;
+        _rulesViewSource.Filter += RulesViewSource_Filter;
         SelectStatusFilterCommand = new RelayCommand(parameter => SelectStatusFilter(parameter?.ToString()));
     }
 
     public event EventHandler? FiltersChanged;
+
+    public ICollectionView RulesView => _rulesViewSource.View;
 
     public IReadOnlyList<UiOption<string>> CategoryOptions { get; }
 
@@ -130,6 +146,29 @@ public sealed class AlertsViewModel : ObservableObject
         RulesCountText = $"Mostrando {Math.Max(0, visibleCount)} de {Math.Max(0, totalCount)} alertas";
     }
 
+    public void SetRulesSource(IList<EventRule> rules)
+    {
+        _rules = rules;
+        _rulesViewSource.Source = rules;
+        RefreshRules();
+    }
+
+    public void RefreshRules()
+    {
+        _rulesViewSource.View?.Refresh();
+        UpdateRulesCount(_rulesViewSource.View?.Cast<EventRule>().Count() ?? 0, _rules?.Count ?? 0);
+    }
+
+    public bool ContainsRule(EventRule rule)
+    {
+        return _rulesViewSource.View?.Contains(rule) == true;
+    }
+
+    public EventRule? FirstVisibleRule()
+    {
+        return _rulesViewSource.View?.Cast<EventRule>().FirstOrDefault();
+    }
+
     public void SetEditorEnabled(bool isEnabled)
     {
         IsEditorEnabled = isEnabled;
@@ -156,5 +195,21 @@ public sealed class AlertsViewModel : ObservableObject
             EventRuleFilterService.InactiveStatus => EventRuleFilterService.InactiveStatus,
             _ => EventRuleFilterService.AllStatus
         };
+    }
+
+    private void RulesViewSource_Filter(object sender, FilterEventArgs e)
+    {
+        if (e.Item is not EventRule rule)
+        {
+            e.Accepted = false;
+            return;
+        }
+
+        e.Accepted = EventRuleFilterService.Matches(
+            rule,
+            StatusFilter,
+            CategoryFilter,
+            SearchText,
+            _text);
     }
 }

@@ -10,9 +10,7 @@ public partial class MainWindow
 {
     private void InitializeRulesBinding()
     {
-        _rulesViewSource.Source = _config.Rules;
-        _rulesViewSource.Filter += RulesViewSource_Filter;
-        RulesList.ItemsSource = _rulesViewSource.View;
+        _alertsViewModel.SetRulesSource(_config.Rules);
     }
 
     private void InitializeRuleOptionSources()

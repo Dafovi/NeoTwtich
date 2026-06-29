@@ -17,7 +17,7 @@ public partial class MainWindow
         try
         {
             _dashboardViewModel = new DashboardViewModel(GoToActivity);
-            _alertsViewModel = new AlertsViewModel(_ruleCategoryOptions);
+            _alertsViewModel = new AlertsViewModel(_ruleCategoryOptions, _text);
             _alertsViewModel.FiltersChanged += AlertsFiltersChanged;
             _connectionsViewModel = new ConnectionsViewModel();
             _obsViewModel = new ObsViewModel();

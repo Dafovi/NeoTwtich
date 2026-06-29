@@ -446,13 +446,29 @@ static class AlertsViewModelTests
         viewModel.CategoryFilter = nameof(TwitchEventKind.Raid);
         viewModel.SelectStatusFilter(EventRuleFilterService.ActiveStatus);
         viewModel.UpdateRulesCount(2, 5);
+        var activeRaid = new EventRule
+        {
+            Name = "Raid grande",
+            EventKind = TwitchEventKind.Raid,
+            IsEnabled = true
+        };
+        var inactiveRaid = new EventRule
+        {
+            Name = "Raid apagada",
+            EventKind = TwitchEventKind.Raid,
+            IsEnabled = false
+        };
+        viewModel.SetRulesSource([activeRaid, inactiveRaid]);
 
         TestAssert.Equal("raid", viewModel.SearchText);
         TestAssert.Equal(nameof(TwitchEventKind.Raid), viewModel.CategoryFilter);
         TestAssert.Equal(EventRuleFilterService.ActiveStatus, viewModel.StatusFilter);
         TestAssert.False(viewModel.IsAllStatusSelected);
         TestAssert.True(viewModel.IsActiveStatusSelected);
-        TestAssert.Equal("Mostrando 2 de 5 alertas", viewModel.RulesCountText);
+        TestAssert.Equal("Mostrando 1 de 2 alertas", viewModel.RulesCountText);
+        TestAssert.True(viewModel.ContainsRule(activeRaid));
+        TestAssert.False(viewModel.ContainsRule(inactiveRaid));
+        TestAssert.Same(activeRaid, viewModel.FirstVisibleRule());
         TestAssert.True(changes >= 3);
 
         viewModel.SetEditorEnabled(true);

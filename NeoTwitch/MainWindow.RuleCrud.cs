@@ -1,15 +1,7 @@
 using System.Windows;
-using System.Windows.Controls;
-using System.Windows.Controls.Primitives;
-using System.Windows.Data;
 using NeoTwitch.Models;
 using NeoTwitch.Services;
-using NeoTwitch.Services.Alerts;
-using NeoTwitch.Services.Lights;
-using NeoTwitch.Services.Ui;
-using NeoTwitch.ViewModels.Activity;
 using WpfMessageBox = System.Windows.MessageBox;
-using static NeoTwitch.Services.Text.UiTextFormatter;
 
 namespace NeoTwitch;
 
@@ -82,7 +74,7 @@ public partial class MainWindow
         {
             if (wasSelected || RulesList.SelectedItem is not EventRule)
             {
-                RulesList.SelectedItem = _rulesViewSource.View?.Cast<EventRule>().FirstOrDefault();
+                RulesList.SelectedItem = _alertsViewModel.FirstVisibleRule();
             }
         }
         else

@@ -20,8 +20,7 @@ public partial class MainWindow
             _config.Channel.Login,
             labels);
 
-        ChannelNameText.Text = channel.Name;
-        ChannelLoginText.Text = channel.Login;
+        _shellViewModel.UpdateChannel(channel.Name, channel.Login);
         TwitchConnectionText.Text = DashboardStatusTextService.BuildTwitchConnectionText(
             _isTwitchAuthorizing,
             _isTwitchConnecting,

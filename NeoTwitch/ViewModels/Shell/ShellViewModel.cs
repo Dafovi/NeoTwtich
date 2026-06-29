@@ -1,8 +1,10 @@
 using System.Collections.ObjectModel;
 using System.Windows.Input;
+using System.Windows.Media;
 using NeoTwitch.Models;
 using NeoTwitch.Services.Navigation;
 using NeoTwitch.Services.Text;
+using NeoTwitch.Services.Ui;
 using NeoTwitch.Shared;
 using NeoTwitch.ViewModels.Core;
 
@@ -24,6 +26,14 @@ public sealed class ShellViewModel : ObservableObject
 
     private readonly Func<int, bool> _navigate;
     private int _selectedTabIndex;
+    private string _channelName = "";
+    private string _channelLogin = "";
+    private string _liveStateText = "";
+    private string _topProfileText = "";
+    private SolidColorBrush _liveDotFill = UiBrushFactory.FrozenBrushFrom("#00000000");
+    private SolidColorBrush _liveDotStroke = UiBrushFactory.FrozenBrushFrom("#94A3B8");
+    private SolidColorBrush _liveStateBrush = UiBrushFactory.FrozenBrushFrom("#94A3B8");
+    private SolidColorBrush _topProfileBrush = UiBrushFactory.FrozenBrushFrom("#F8FAFC");
 
     public ShellViewModel(IUiTextService text, Func<int, bool> navigate)
     {
@@ -52,6 +62,8 @@ public sealed class ShellViewModel : ObservableObject
         ];
 
         VersionText = $"V{NeoTwitchProduct.CurrentVersionText}";
+        UpdateChannel(text.Get(UiTextKeys.DashboardNoTwitch), text.Get(UiTextKeys.DashboardNoLogin));
+        UpdateLiveIndicator(false, ThemePalette.Dark, text.Get(UiTextKeys.TwitchLive), text.Get(UiTextKeys.TwitchOffline), text.Get(UiTextKeys.TwitchProfile));
         UpdateSelectedItem();
     }
 
@@ -71,6 +83,54 @@ public sealed class ShellViewModel : ObservableObject
                 UpdateSelectedItem();
             }
         }
+    }
+
+    public string ChannelName
+    {
+        get => _channelName;
+        private set => SetProperty(ref _channelName, value);
+    }
+
+    public string ChannelLogin
+    {
+        get => _channelLogin;
+        private set => SetProperty(ref _channelLogin, value);
+    }
+
+    public string LiveStateText
+    {
+        get => _liveStateText;
+        private set => SetProperty(ref _liveStateText, value);
+    }
+
+    public SolidColorBrush LiveDotFill
+    {
+        get => _liveDotFill;
+        private set => SetProperty(ref _liveDotFill, value);
+    }
+
+    public SolidColorBrush LiveDotStroke
+    {
+        get => _liveDotStroke;
+        private set => SetProperty(ref _liveDotStroke, value);
+    }
+
+    public SolidColorBrush LiveStateBrush
+    {
+        get => _liveStateBrush;
+        private set => SetProperty(ref _liveStateBrush, value);
+    }
+
+    public string TopProfileText
+    {
+        get => _topProfileText;
+        private set => SetProperty(ref _topProfileText, value);
+    }
+
+    public SolidColorBrush TopProfileBrush
+    {
+        get => _topProfileBrush;
+        private set => SetProperty(ref _topProfileBrush, value);
     }
 
     public NavigationItemViewModel? FindByIndex(int tabIndex)
@@ -109,6 +169,33 @@ public sealed class ShellViewModel : ObservableObject
         {
             NavigateTo(ConnectionsTabIndex);
         }
+    }
+
+    public void UpdateChannel(string name, string login)
+    {
+        ChannelName = name;
+        ChannelLogin = login;
+    }
+
+    public void UpdateLiveIndicator(bool isLive, ThemePalette palette, string liveText, string offlineText, string profileText)
+    {
+        TopProfileText = profileText;
+        TopProfileBrush = palette.Text;
+
+        if (isLive)
+        {
+            var liveBrush = UiBrushFactory.FrozenBrushFrom("#FF2D55");
+            LiveDotFill = liveBrush;
+            LiveDotStroke = liveBrush;
+            LiveStateText = liveText;
+            LiveStateBrush = liveBrush;
+            return;
+        }
+
+        LiveDotFill = UiBrushFactory.FrozenBrushFrom("#00000000");
+        LiveDotStroke = palette.SidebarText;
+        LiveStateText = offlineText;
+        LiveStateBrush = palette.SidebarText;
     }
 
     private void SetVisible(int tabIndex, bool isVisible)

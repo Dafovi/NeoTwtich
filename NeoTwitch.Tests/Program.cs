@@ -81,6 +81,7 @@ var tests = new (string Name, Action Body)[]
     ("TwitchConnectionRecoveryService detects recoverable refresh errors", TwitchConnectionRecoveryTests.DetectsRecoverableRefreshErrors),
     ("ServiceNavigationVisibilityService hides optional service tabs", ServiceNavigationVisibilityTests.HidesOptionalServiceTabs),
     ("ShellViewModel maps navigation visibility", ShellViewModelTests.MapsNavigationVisibility),
+    ("ShellViewModel maps profile and live state", ShellViewModelTests.MapsProfileAndLiveState),
     ("ObsStatusTextService builds display values", ObsStatusTextTests.BuildsDisplayValues),
     ("ObsSceneViewService builds rows and choices", ObsSceneViewTests.BuildsRowsAndChoices),
     ("DiagnosticReportService builds report without network", DiagnosticReportServiceTests.BuildsReportWithoutNetwork),
@@ -2514,6 +2515,25 @@ static class ShellViewModelTests
         TestAssert.True(shell.FindByIndex(ShellViewModel.ObsTabIndex)!.IsVisible);
         TestAssert.Equal(ShellViewModel.ObsTabIndex, navigatedTo);
         TestAssert.True(shell.FindByIndex(ShellViewModel.ObsTabIndex)!.IsSelected);
+    }
+
+    public static void MapsProfileAndLiveState()
+    {
+        var shell = new ShellViewModel(UiTextService.CreateDefault(), _ => true);
+
+        shell.UpdateChannel("Dafovii", "@dafovii");
+        shell.UpdateLiveIndicator(true, ThemePalette.Dark, "En directo", "Offline", "Perfil");
+
+        TestAssert.Equal("Dafovii", shell.ChannelName);
+        TestAssert.Equal("@dafovii", shell.ChannelLogin);
+        TestAssert.Equal("En directo", shell.LiveStateText);
+        TestAssert.Equal("Perfil", shell.TopProfileText);
+        TestAssert.Equal((byte)0xFF, shell.LiveDotFill.Color.R);
+
+        shell.UpdateLiveIndicator(false, ThemePalette.Light, "En directo", "Offline", "Perfil");
+
+        TestAssert.Equal("Offline", shell.LiveStateText);
+        TestAssert.Equal((byte)0x00, shell.LiveDotFill.Color.A);
     }
 }
 

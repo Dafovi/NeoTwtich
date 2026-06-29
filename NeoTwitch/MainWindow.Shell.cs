@@ -82,24 +82,12 @@ public partial class MainWindow
             ? ThemePalette.Dark
             : ThemePalette.Light;
 
-        if (_streamStatus is { IsLive: true })
-        {
-            var liveBrush = FrozenBrushFrom("#FF2D55");
-            TwitchLiveDot.Fill = liveBrush;
-            TwitchLiveDot.Stroke = liveBrush;
-            TwitchLiveStateText.Text = _text.Get(UiTextKeys.TwitchLive);
-            TwitchLiveStateText.Foreground = liveBrush;
-            TopProfileText.Text = _text.Get(UiTextKeys.TwitchProfile);
-            TopProfileText.Foreground = palette.Text;
-            return;
-        }
-
-        TwitchLiveDot.Fill = System.Windows.Media.Brushes.Transparent;
-        TwitchLiveDot.Stroke = palette.SidebarText;
-        TwitchLiveStateText.Text = _text.Get(UiTextKeys.TwitchOffline);
-        TwitchLiveStateText.Foreground = palette.SidebarText;
-        TopProfileText.Text = _text.Get(UiTextKeys.TwitchProfile);
-        TopProfileText.Foreground = palette.Text;
+        _shellViewModel.UpdateLiveIndicator(
+            _streamStatus is { IsLive: true },
+            palette,
+            _text.Get(UiTextKeys.TwitchLive),
+            _text.Get(UiTextKeys.TwitchOffline),
+            _text.Get(UiTextKeys.TwitchProfile));
     }
 
     private void UpdateChannelAvatar()

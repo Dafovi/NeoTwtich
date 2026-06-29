@@ -9,11 +9,6 @@ namespace NeoTwitch;
 
 public partial class MainWindow
 {
-    internal void OpenObsGuideButton_Click(object sender, RoutedEventArgs e)
-    {
-        OpenObsGuide();
-    }
-
     private void OpenObsGuide()
     {
         Process.Start(new ProcessStartInfo
@@ -50,11 +45,6 @@ public partial class MainWindow
         UpdateSensitiveFieldVisibility();
     }
 
-    internal void ConnectObsButton_Click(object sender, RoutedEventArgs e)
-    {
-        ToggleObsConnection();
-    }
-
     private async void ToggleObsConnection()
     {
         if (_isObsConnecting)
@@ -86,11 +76,6 @@ public partial class MainWindow
             WpfMessageBox.Show(this, ex.Message, "OBS", MessageBoxButton.OK, MessageBoxImage.Warning);
             UpdateObsStatusText();
         }
-    }
-
-    internal void TestObsButton_Click(object sender, RoutedEventArgs e)
-    {
-        TestObsConnection();
     }
 
     private async void TestObsConnection()

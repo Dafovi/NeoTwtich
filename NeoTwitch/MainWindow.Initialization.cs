@@ -45,6 +45,11 @@ public partial class MainWindow
                 TestObsConnection,
                 ToggleObsPasswordVisibility);
             _obsViewModel = new ObsViewModel();
+            _obsViewModel.ConfigureActions(
+                CopyObsOverlayUrl,
+                TestObsConnection,
+                PreviewObsScene,
+                ChangeObsScene);
             _settingsViewModel = new SettingsViewModel();
             _audioLibraryViewModel = new LibraryScreenViewModel<AudioLibraryRow, AudioGroupRow>();
             _imageLibraryViewModel = new LibraryScreenViewModel<MediaLibraryRow, MediaGroupRow>();

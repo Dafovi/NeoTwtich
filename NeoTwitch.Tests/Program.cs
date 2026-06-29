@@ -89,6 +89,7 @@ var tests = new (string Name, Action Body)[]
     ("ObsStatusTextService builds display values", ObsStatusTextTests.BuildsDisplayValues),
     ("ObsSceneViewService builds rows and choices", ObsSceneViewTests.BuildsRowsAndChoices),
     ("ObsViewModel updates status and scenes", ObsViewModelTests.UpdatesStatusAndScenes),
+    ("ObsViewModel executes configured actions", ObsViewModelTests.ExecutesConfiguredActions),
     ("DiagnosticReportService builds report without network", DiagnosticReportServiceTests.BuildsReportWithoutNetwork),
     ("DiagnosticReportService reports missing audio", DiagnosticReportServiceTests.ReportsMissingAudio),
     ("VersionComparisonService compares normalized tags", VersionComparisonTests.ComparesNormalizedTags),
@@ -1766,6 +1767,25 @@ static class ObsViewModelTests
 
         TestAssert.False(viewModel.IsScenesEnabled);
         TestAssert.Equal(0.58d, viewModel.ScenesOpacity);
+    }
+
+    public static void ExecutesConfiguredActions()
+    {
+        var viewModel = new ObsViewModel();
+        var actions = new List<string>();
+
+        viewModel.ConfigureActions(
+            () => actions.Add("copy"),
+            () => actions.Add("refresh"),
+            parameter => actions.Add($"preview:{parameter}"),
+            parameter => actions.Add($"change:{parameter}"));
+
+        viewModel.CopyOverlayUrlCommand.Execute(null);
+        viewModel.RefreshScenesCommand.Execute(null);
+        viewModel.PreviewSceneCommand.Execute("BRB");
+        viewModel.ChangeSceneCommand.Execute("Gameplay");
+
+        TestAssert.Equal("copy,refresh,preview:BRB,change:Gameplay", string.Join(",", actions));
     }
 }
 

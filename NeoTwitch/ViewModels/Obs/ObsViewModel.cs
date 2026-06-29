@@ -6,6 +6,10 @@ namespace NeoTwitch.ViewModels.Obs;
 
 public sealed class ObsViewModel : ObservableObject
 {
+    private Action _copyOverlayUrl = Noop;
+    private Action _refreshScenes = Noop;
+    private Action<object?> _previewScene = Noop;
+    private Action<object?> _changeScene = Noop;
     private string _connectionState = "Desconectado";
     private string _statusText = "";
     private string _currentScene = "Sin escena";
@@ -17,7 +21,23 @@ public sealed class ObsViewModel : ObservableObject
     private bool _isScenesEnabled;
     private double _scenesOpacity = 0.58d;
 
+    public ObsViewModel()
+    {
+        CopyOverlayUrlCommand = new RelayCommand(() => _copyOverlayUrl());
+        RefreshScenesCommand = new RelayCommand(() => _refreshScenes());
+        PreviewSceneCommand = new RelayCommand(parameter => _previewScene(parameter));
+        ChangeSceneCommand = new RelayCommand(parameter => _changeScene(parameter));
+    }
+
     public ObservableCollection<ObsSceneRow> SceneRows { get; } = [];
+
+    public RelayCommand CopyOverlayUrlCommand { get; }
+
+    public RelayCommand RefreshScenesCommand { get; }
+
+    public RelayCommand PreviewSceneCommand { get; }
+
+    public RelayCommand ChangeSceneCommand { get; }
 
     public string ConnectionState
     {
@@ -105,5 +125,25 @@ public sealed class ObsViewModel : ObservableObject
     public void ClearScenes()
     {
         SceneRows.Clear();
+    }
+
+    public void ConfigureActions(
+        Action copyOverlayUrl,
+        Action refreshScenes,
+        Action<object?> previewScene,
+        Action<object?> changeScene)
+    {
+        _copyOverlayUrl = copyOverlayUrl;
+        _refreshScenes = refreshScenes;
+        _previewScene = previewScene;
+        _changeScene = changeScene;
+    }
+
+    private static void Noop()
+    {
+    }
+
+    private static void Noop(object? _)
+    {
     }
 }

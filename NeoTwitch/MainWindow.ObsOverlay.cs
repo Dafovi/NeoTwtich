@@ -23,7 +23,7 @@ public partial class MainWindow
         SaveObsOverlaySettings();
     }
 
-    internal void CopyObsOverlayUrlButton_Click(object sender, RoutedEventArgs e)
+    private void CopyObsOverlayUrl()
     {
         try
         {

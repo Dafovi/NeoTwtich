@@ -177,7 +177,7 @@
                                     <Button Grid.Column="2"
                                             Content="Copiar"
                                             Margin="0"
-                                            Click="CopyObsOverlayUrlButton_Click" />
+                                            Command="{Binding CopyOverlayUrlCommand}" />
                                 </Grid>
                                 <Grid>
                                     <Grid.ColumnDefinitions>
@@ -300,7 +300,7 @@
                                             Content="Actualizar escenas"
                                             HorizontalAlignment="Stretch"
                                             VerticalAlignment="Top"
-                                            Click="TestObsButton_Click" />
+                                            Command="{Binding RefreshScenesCommand}" />
                                 </Grid>
                                 <ListBox x:Name="ObsScenesList"
                                          ItemsSource="{Binding SceneRows}"
@@ -355,11 +355,13 @@
                                                                VerticalAlignment="Center">
                                                         <Button Content="Probar 5s"
                                                                 Visibility="{Binding ChangeButtonVisibility}"
-                                                                Click="ObsScenePreviewButton_Click" />
+                                                                Command="{Binding DataContext.PreviewSceneCommand, RelativeSource={RelativeSource AncestorType=views:NeoTwitchView}}"
+                                                                CommandParameter="{Binding Name}" />
                                                         <Button Content="Cambiar"
                                                                 Visibility="{Binding ChangeButtonVisibility}"
                                                                 Style="{StaticResource PrimaryButton}"
-                                                                Click="ObsSceneChangeButton_Click" />
+                                                                Command="{Binding DataContext.ChangeSceneCommand, RelativeSource={RelativeSource AncestorType=views:NeoTwitchView}}"
+                                                                CommandParameter="{Binding Name}" />
                                                     </WrapPanel>
                                                 </Grid>
                                             </Border>

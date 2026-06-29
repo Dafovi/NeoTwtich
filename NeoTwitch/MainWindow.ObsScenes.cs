@@ -7,9 +7,10 @@ namespace NeoTwitch;
 
 public partial class MainWindow
 {
-    internal async void ObsSceneChangeButton_Click(object sender, RoutedEventArgs e)
+    private async void ChangeObsScene(object? parameter)
     {
-        if (sender is not FrameworkElement { DataContext: ObsSceneRow row })
+        var sceneName = ResolveObsSceneName(parameter);
+        if (string.IsNullOrWhiteSpace(sceneName))
         {
             return;
         }
@@ -21,9 +22,9 @@ public partial class MainWindow
                 await ConnectObsAsync();
             }
 
-            var result = await _obsService.SetCurrentProgramSceneAsync(row.Name, CancellationToken.None);
+            var result = await _obsService.SetCurrentProgramSceneAsync(sceneName, CancellationToken.None);
             ApplyObsResult(result);
-            AddLog($"OBS: escena cambiada a {row.Name}.", ActivityLogKind.Obs);
+            AddLog($"OBS: escena cambiada a {sceneName}.", ActivityLogKind.Obs);
         }
         catch (Exception ex)
         {
@@ -34,9 +35,10 @@ public partial class MainWindow
         }
     }
 
-    internal async void ObsScenePreviewButton_Click(object sender, RoutedEventArgs e)
+    private async void PreviewObsScene(object? parameter)
     {
-        if (sender is not FrameworkElement { DataContext: ObsSceneRow row })
+        var sceneName = ResolveObsSceneName(parameter);
+        if (string.IsNullOrWhiteSpace(sceneName))
         {
             return;
         }
@@ -63,14 +65,14 @@ public partial class MainWindow
             }
 
             previousScene = _obsService.CurrentScene;
-            var result = await _obsService.SetCurrentProgramSceneAsync(row.Name, CancellationToken.None);
+            var result = await _obsService.SetCurrentProgramSceneAsync(sceneName, CancellationToken.None);
             ApplyObsResult(result);
-            AddLog($"OBS: probando escena '{row.Name}' por 5 segundos.", ActivityLogKind.Obs);
+            AddLog($"OBS: probando escena '{sceneName}' por 5 segundos.", ActivityLogKind.Obs);
 
             await Task.Delay(TimeSpan.FromSeconds(5));
 
             if (!string.IsNullOrWhiteSpace(previousScene)
-                && !string.Equals(previousScene, row.Name, StringComparison.OrdinalIgnoreCase)
+                && !string.Equals(previousScene, sceneName, StringComparison.OrdinalIgnoreCase)
                 && _obsService.IsConnected)
             {
                 result = await _obsService.SetCurrentProgramSceneAsync(previousScene, CancellationToken.None);
@@ -89,5 +91,15 @@ public partial class MainWindow
             _isObsSceneActionRunning = false;
             UpdateObsStatusText();
         }
+    }
+
+    private static string ResolveObsSceneName(object? parameter)
+    {
+        return parameter switch
+        {
+            ObsSceneRow row => row.Name,
+            string sceneName => sceneName,
+            _ => ""
+        };
     }
 }

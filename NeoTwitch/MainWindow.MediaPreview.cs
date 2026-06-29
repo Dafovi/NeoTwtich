@@ -13,29 +13,14 @@ namespace NeoTwitch;
 
 public partial class MainWindow
 {
-    internal void DeleteImageButton_Click(object sender, RoutedEventArgs e)
+    private async void PreviewMediaAsset(MediaLibraryKind kind, object? parameter)
     {
-        DeleteMediaAsset(MediaLibraryKind.Image, sender);
+        await PreviewMediaAssetAsync(kind, parameter);
     }
 
-    internal void DeleteVideoButton_Click(object sender, RoutedEventArgs e)
+    private async Task PreviewMediaAssetAsync(MediaLibraryKind kind, object? parameter)
     {
-        DeleteMediaAsset(MediaLibraryKind.Video, sender);
-    }
-
-    internal async void PreviewImageButton_Click(object sender, RoutedEventArgs e)
-    {
-        await PreviewMediaAssetAsync(MediaLibraryKind.Image, sender);
-    }
-
-    internal async void PreviewVideoButton_Click(object sender, RoutedEventArgs e)
-    {
-        await PreviewMediaAssetAsync(MediaLibraryKind.Video, sender);
-    }
-
-    private async Task PreviewMediaAssetAsync(MediaLibraryKind kind, object sender)
-    {
-        if (sender is not FrameworkElement element || element.Tag is not string assetId)
+        if (parameter is not string assetId)
         {
             return;
         }

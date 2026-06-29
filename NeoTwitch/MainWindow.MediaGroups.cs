@@ -10,16 +10,6 @@ namespace NeoTwitch;
 
 public partial class MainWindow
 {
-    internal void AddImageGroupButton_Click(object sender, RoutedEventArgs e)
-    {
-        AddMediaGroup(MediaLibraryKind.Image);
-    }
-
-    internal void AddVideoGroupButton_Click(object sender, RoutedEventArgs e)
-    {
-        AddMediaGroup(MediaLibraryKind.Video);
-    }
-
     private void AddMediaGroup(MediaLibraryKind kind)
     {
         var nameBox = kind == MediaLibraryKind.Image ? NewImageGroupNameBox : NewVideoGroupNameBox;
@@ -68,19 +58,9 @@ public partial class MainWindow
         AddLog(_text.Format(UiTextKeys.LibraryGroupCreatedLog, title, mutation.Group.Name), ActivityLogKind.Info);
     }
 
-    internal void ViewImageGroupButton_Click(object sender, RoutedEventArgs e)
+    private void ViewMediaGroup(MediaLibraryKind kind, object? parameter)
     {
-        ViewMediaGroup(MediaLibraryKind.Image, sender);
-    }
-
-    internal void ViewVideoGroupButton_Click(object sender, RoutedEventArgs e)
-    {
-        ViewMediaGroup(MediaLibraryKind.Video, sender);
-    }
-
-    private void ViewMediaGroup(MediaLibraryKind kind, object sender)
-    {
-        if (sender is not FrameworkElement element || element.Tag is not string groupId)
+        if (parameter is not string groupId)
         {
             return;
         }
@@ -110,19 +90,9 @@ public partial class MainWindow
         RefreshMediaLibraryView(kind);
     }
 
-    internal void DeleteImageGroupButton_Click(object sender, RoutedEventArgs e)
+    private void DeleteMediaGroup(MediaLibraryKind kind, object? parameter)
     {
-        DeleteMediaGroup(MediaLibraryKind.Image, sender);
-    }
-
-    internal void DeleteVideoGroupButton_Click(object sender, RoutedEventArgs e)
-    {
-        DeleteMediaGroup(MediaLibraryKind.Video, sender);
-    }
-
-    private void DeleteMediaGroup(MediaLibraryKind kind, object sender)
-    {
-        if (sender is not FrameworkElement element || element.Tag is not string groupId)
+        if (parameter is not string groupId)
         {
             return;
         }

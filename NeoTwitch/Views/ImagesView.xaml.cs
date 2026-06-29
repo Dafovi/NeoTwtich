@@ -12,18 +12,4 @@ public partial class ImagesView : NeoTwitchView
     }
 
     private void ImageLibraryGroupBox_DropDownClosed(object sender, EventArgs e) => Host?.ImageLibraryGroupBox_DropDownClosed(sender, e);
-
-    private void BrowseNewImageButton_Click(object sender, RoutedEventArgs e) => Host?.BrowseNewImageButton_Click(sender, e);
-
-    private void SaveNewImageButton_Click(object sender, RoutedEventArgs e) => Host?.SaveNewImageButton_Click(sender, e);
-
-    private void AddImageGroupButton_Click(object sender, RoutedEventArgs e) => Host?.AddImageGroupButton_Click(sender, e);
-
-    private void ViewImageGroupButton_Click(object sender, RoutedEventArgs e) => Host?.ViewImageGroupButton_Click(sender, e);
-
-    private void DeleteImageGroupButton_Click(object sender, RoutedEventArgs e) => Host?.DeleteImageGroupButton_Click(sender, e);
-
-    private void PreviewImageButton_Click(object sender, RoutedEventArgs e) => Host?.PreviewImageButton_Click(sender, e);
-
-    private void DeleteImageButton_Click(object sender, RoutedEventArgs e) => Host?.DeleteImageButton_Click(sender, e);
 }

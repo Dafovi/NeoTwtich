@@ -7,9 +7,9 @@ namespace NeoTwitch;
 
 public partial class MainWindow
 {
-    private void DeleteMediaAsset(MediaLibraryKind kind, object sender)
+    private void DeleteMediaAsset(MediaLibraryKind kind, object? parameter)
     {
-        if (sender is not FrameworkElement element || element.Tag is not string assetId)
+        if (parameter is not string assetId)
         {
             return;
         }

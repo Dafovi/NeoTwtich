@@ -343,7 +343,8 @@
                                                                     Tag="{Binding Id}"
                                                                     ToolTipService.ShowDuration="6000"
                                                                     ToolTip="{Binding PlayToolTip}"
-                                                                    Click="PreviewAudioButton_Click">
+                                                                    Command="{Binding DataContext.PreviewAssetCommand, RelativeSource={RelativeSource AncestorType=views:NeoTwitchView}}"
+                                                                    CommandParameter="{Binding Id}">
                                                                 <Grid Width="18"
                                                                       Height="18">
                                                                     <Border Background="#14B8A6"
@@ -372,7 +373,8 @@
                                                                     BorderBrush="#F43F5E"
                                                                     Tag="{Binding Id}"
                                                                     ToolTip="Eliminar audio"
-                                                                    Click="DeleteAudioButton_Click">
+                                                                    Command="{Binding DataContext.DeleteAssetCommand, RelativeSource={RelativeSource AncestorType=views:NeoTwitchView}}"
+                                                                    CommandParameter="{Binding Id}">
                                                                 <Border Width="18"
                                                                         Height="18"
                                                                         Background="#F43F5E"
@@ -423,7 +425,7 @@
                                             Background="{DynamicResource ThemeInputBrush}"
                                             BorderBrush="{DynamicResource ThemeBorderBrush}"
                                             BorderThickness="1"
-                                            Click="BrowseNewAudioButton_Click">
+                                            Command="{Binding BrowseAssetCommand}">
                                         <StackPanel HorizontalAlignment="Center">
                                             <Border Width="38"
                                                     Height="38"
@@ -473,7 +475,7 @@
                                             </Grid>
                                             <Button Style="{StaticResource PrimaryButton}"
                                                     Margin="0,8,0,0"
-                                                    Click="SaveNewAudioButton_Click">
+                                                    Command="{Binding SaveAssetCommand}">
                                                 <StackPanel Orientation="Horizontal"
                                                             HorizontalAlignment="Center">
                                                     <Border Width="18"
@@ -534,7 +536,7 @@
                                                 Style="{StaticResource PrimaryButton}"
                                                 MinWidth="92"
                                                 Margin="0"
-                                                Click="AddAudioGroupButton_Click" />
+                                                Command="{Binding AddGroupCommand}" />
                                     </Grid>
 
                                     <ScrollViewer Grid.Row="2"
@@ -591,7 +593,8 @@
                                                                         Margin="0,0,6,0"
                                                                         Tag="{Binding Id}"
                                                                         ToolTip="Ver audios del grupo"
-                                                                        Click="ViewAudioGroupButton_Click">
+                                                                        Command="{Binding DataContext.ViewGroupCommand, RelativeSource={RelativeSource AncestorType=views:NeoTwitchView}}"
+                                                                        CommandParameter="{Binding Id}">
                                                                     <Path Width="15"
                                                                           Height="15"
                                                                           Stretch="Uniform"
@@ -609,7 +612,8 @@
                                                                         BorderBrush="#F43F5E"
                                                                         Tag="{Binding Id}"
                                                                         ToolTip="Eliminar grupo"
-                                                                        Click="DeleteAudioGroupButton_Click">
+                                                                        Command="{Binding DataContext.DeleteGroupCommand, RelativeSource={RelativeSource AncestorType=views:NeoTwitchView}}"
+                                                                        CommandParameter="{Binding Id}">
                                                                     <Border Width="16"
                                                                             Height="16"
                                                                             Background="#F43F5E"

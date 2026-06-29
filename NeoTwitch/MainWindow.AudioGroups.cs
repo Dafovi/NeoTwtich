@@ -9,7 +9,7 @@ namespace NeoTwitch;
 
 public partial class MainWindow
 {
-    internal void AddAudioGroupButton_Click(object sender, RoutedEventArgs e)
+    private void AddAudioGroup()
     {
         var name = NewAudioGroupNameBox.Text.Trim();
         if (string.IsNullOrWhiteSpace(name))
@@ -40,9 +40,9 @@ public partial class MainWindow
         AddLog(_text.Format(UiTextKeys.LibraryGroupCreatedLog, _text.Get(UiTextKeys.AudioTitle), mutation.Group.Name), ActivityLogKind.Audio);
     }
 
-    internal void ViewAudioGroupButton_Click(object sender, RoutedEventArgs e)
+    private void ViewAudioGroup(object? parameter)
     {
-        if (sender is not FrameworkElement element || element.Tag is not string groupId)
+        if (parameter is not string groupId)
         {
             return;
         }
@@ -62,9 +62,9 @@ public partial class MainWindow
         AddLog(_text.Format(UiTextKeys.LibraryShowingGroupLog, _text.Get(UiTextKeys.AudioTitle), group.Name), ActivityLogKind.Audio);
     }
 
-    internal void DeleteAudioGroupButton_Click(object sender, RoutedEventArgs e)
+    private void DeleteAudioGroup(object? parameter)
     {
-        if (sender is not FrameworkElement element || element.Tag is not string groupId)
+        if (parameter is not string groupId)
         {
             return;
         }

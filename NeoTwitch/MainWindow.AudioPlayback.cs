@@ -10,9 +10,9 @@ namespace NeoTwitch;
 
 public partial class MainWindow
 {
-    internal async void PreviewAudioButton_Click(object sender, RoutedEventArgs e)
+    private async void PreviewAudio(object? parameter)
     {
-        if (sender is not FrameworkElement element || element.Tag is not string audioId)
+        if (parameter is not string audioId)
         {
             return;
         }
@@ -45,9 +45,9 @@ public partial class MainWindow
         _ = WatchAudioPreviewCompletionAsync(playback, audio.Id);
     }
 
-    internal void DeleteAudioButton_Click(object sender, RoutedEventArgs e)
+    private void DeleteAudio(object? parameter)
     {
-        if (sender is not FrameworkElement element || element.Tag is not string audioId)
+        if (parameter is not string audioId)
         {
             return;
         }

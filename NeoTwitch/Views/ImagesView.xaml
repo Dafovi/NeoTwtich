@@ -273,7 +273,8 @@
                                                                     IsEnabled="{Binding CanPreview}"
                                                                     Opacity="{Binding PreviewOpacity}"
                                                                     ToolTip="{Binding PlayToolTip}"
-                                                                    Click="PreviewImageButton_Click">
+                                                                    Command="{Binding DataContext.PreviewAssetCommand, RelativeSource={RelativeSource AncestorType=views:NeoTwitchView}}"
+                                                                    CommandParameter="{Binding Id}">
                                                                 <Grid>
                                                                     <Border Width="16"
                                                                             Height="16"
@@ -304,7 +305,8 @@
                                                                     BorderBrush="#F43F5E"
                                                                     Tag="{Binding Id}"
                                                                     ToolTip="Eliminar imagen"
-                                                                    Click="DeleteImageButton_Click">
+                                                                    Command="{Binding DataContext.DeleteAssetCommand, RelativeSource={RelativeSource AncestorType=views:NeoTwitchView}}"
+                                                                    CommandParameter="{Binding Id}">
                                                                 <Border Width="16"
                                                                         Height="16"
                                                                         Background="#F43F5E"
@@ -348,7 +350,7 @@
                                                 MinHeight="92"
                                                 BorderBrush="#5537C7F3"
                                                 Background="{DynamicResource ThemeInputBrush}"
-                                                Click="BrowseNewImageButton_Click">
+                                                Command="{Binding BrowseAssetCommand}">
                                             <StackPanel HorizontalAlignment="Center">
                                                 <Border Width="34"
                                                         Height="34"
@@ -379,7 +381,7 @@
                                         <Button Style="{StaticResource PrimaryButton}"
                                                 Margin="0,10,0,0"
                                                 Content="Guardar imagen"
-                                                Click="SaveNewImageButton_Click" />
+                                                Command="{Binding SaveAssetCommand}" />
                                     </StackPanel>
                                 </ScrollViewer>
                             </Border>
@@ -411,7 +413,7 @@
                                                 Style="{StaticResource PrimaryButton}"
                                                 MinWidth="92"
                                                 Margin="0"
-                                                Click="AddImageGroupButton_Click" />
+                                                Command="{Binding AddGroupCommand}" />
                                     </Grid>
                                     <ScrollViewer Grid.Row="2"
                                                   VerticalScrollBarVisibility="Auto"
@@ -467,7 +469,8 @@
                                                                         Margin="0,0,6,0"
                                                                         Tag="{Binding Id}"
                                                                         ToolTip="Ver imagenes del grupo"
-                                                                        Click="ViewImageGroupButton_Click">
+                                                                        Command="{Binding DataContext.ViewGroupCommand, RelativeSource={RelativeSource AncestorType=views:NeoTwitchView}}"
+                                                                        CommandParameter="{Binding Id}">
                                                                     <TextBlock Text="⌕" FontSize="16" />
                                                                 </Button>
                                                                 <Button Width="34"
@@ -477,7 +480,8 @@
                                                                         BorderBrush="#F43F5E"
                                                                         Tag="{Binding Id}"
                                                                         ToolTip="Eliminar grupo"
-                                                                        Click="DeleteImageGroupButton_Click">
+                                                                        Command="{Binding DataContext.DeleteGroupCommand, RelativeSource={RelativeSource AncestorType=views:NeoTwitchView}}"
+                                                                        CommandParameter="{Binding Id}">
                                                                     <Border Width="16"
                                                                             Height="16"
                                                                             Background="#F43F5E"

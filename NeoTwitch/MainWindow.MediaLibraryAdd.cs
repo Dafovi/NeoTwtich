@@ -12,16 +12,6 @@ namespace NeoTwitch;
 
 public partial class MainWindow
 {
-    internal void BrowseNewImageButton_Click(object sender, RoutedEventArgs e)
-    {
-        BrowseNewMedia(MediaLibraryKind.Image);
-    }
-
-    internal void BrowseNewVideoButton_Click(object sender, RoutedEventArgs e)
-    {
-        BrowseNewMedia(MediaLibraryKind.Video);
-    }
-
     private void BrowseNewMedia(MediaLibraryKind kind)
     {
         var dialog = new WpfOpenFileDialog
@@ -53,16 +43,6 @@ public partial class MainWindow
                 NewVideoNameBox.Text = Path.GetFileNameWithoutExtension(dialog.FileName);
             }
         }
-    }
-
-    internal void SaveNewImageButton_Click(object sender, RoutedEventArgs e)
-    {
-        SaveNewMedia(MediaLibraryKind.Image);
-    }
-
-    internal void SaveNewVideoButton_Click(object sender, RoutedEventArgs e)
-    {
-        SaveNewMedia(MediaLibraryKind.Video);
     }
 
     private void SaveNewMedia(MediaLibraryKind kind)

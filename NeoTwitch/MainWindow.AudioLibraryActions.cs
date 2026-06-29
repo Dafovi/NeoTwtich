@@ -43,7 +43,7 @@ public partial class MainWindow
         }, DispatcherPriority.Background);
     }
 
-    internal void BrowseNewAudioButton_Click(object sender, RoutedEventArgs e)
+    private void BrowseNewAudio()
     {
         var dialog = new WpfOpenFileDialog
         {
@@ -64,7 +64,7 @@ public partial class MainWindow
         }
     }
 
-    internal async void SaveNewAudioButton_Click(object sender, RoutedEventArgs e)
+    private async void SaveNewAudio()
     {
         if (string.IsNullOrWhiteSpace(_newAudioPath) || !File.Exists(_newAudioPath))
         {

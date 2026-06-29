@@ -19,6 +19,7 @@ public sealed class LibraryScreenViewModel<TAssetRow, TGroupRow> : ObservableObj
     public LibraryScreenViewModel()
     {
         SelectFilterCommand = new RelayCommand(parameter => SetFilters(SearchText, parameter?.ToString() ?? AllFilter));
+        ConfigureActions(NoOp, NoOp, NoOp, NoOp, NoOp, NoOp, NoOp);
     }
 
     public event EventHandler? FiltersChanged;
@@ -28,6 +29,20 @@ public sealed class LibraryScreenViewModel<TAssetRow, TGroupRow> : ObservableObj
     public ObservableCollection<TGroupRow> GroupRows { get; } = [];
 
     public RelayCommand SelectFilterCommand { get; }
+
+    public RelayCommand BrowseAssetCommand { get; private set; } = new(NoOp);
+
+    public RelayCommand SaveAssetCommand { get; private set; } = new(NoOp);
+
+    public RelayCommand AddGroupCommand { get; private set; } = new(NoOp);
+
+    public RelayCommand ViewGroupCommand { get; private set; } = new(NoOp);
+
+    public RelayCommand DeleteGroupCommand { get; private set; } = new(NoOp);
+
+    public RelayCommand PreviewAssetCommand { get; private set; } = new(NoOp);
+
+    public RelayCommand DeleteAssetCommand { get; private set; } = new(NoOp);
 
     public string SearchText
     {
@@ -63,6 +78,32 @@ public sealed class LibraryScreenViewModel<TAssetRow, TGroupRow> : ObservableObj
     {
         get => _footerText;
         private set => SetProperty(ref _footerText, value);
+    }
+
+    public void ConfigureActions(
+        Action browseAsset,
+        Action saveAsset,
+        Action addGroup,
+        Action<object?> viewGroup,
+        Action<object?> deleteGroup,
+        Action<object?> previewAsset,
+        Action<object?> deleteAsset)
+    {
+        BrowseAssetCommand = new RelayCommand(browseAsset);
+        SaveAssetCommand = new RelayCommand(saveAsset);
+        AddGroupCommand = new RelayCommand(addGroup);
+        ViewGroupCommand = new RelayCommand(viewGroup);
+        DeleteGroupCommand = new RelayCommand(deleteGroup);
+        PreviewAssetCommand = new RelayCommand(previewAsset);
+        DeleteAssetCommand = new RelayCommand(deleteAsset);
+
+        OnPropertyChanged(nameof(BrowseAssetCommand));
+        OnPropertyChanged(nameof(SaveAssetCommand));
+        OnPropertyChanged(nameof(AddGroupCommand));
+        OnPropertyChanged(nameof(ViewGroupCommand));
+        OnPropertyChanged(nameof(DeleteGroupCommand));
+        OnPropertyChanged(nameof(PreviewAssetCommand));
+        OnPropertyChanged(nameof(DeleteAssetCommand));
     }
 
     public void SetFilters(string searchText, string filter, bool notify = true)
@@ -121,5 +162,13 @@ public sealed class LibraryScreenViewModel<TAssetRow, TGroupRow> : ObservableObj
     private static string NormalizeFilter(string? filter)
     {
         return string.IsNullOrWhiteSpace(filter) ? AllFilter : filter.Trim().ToUpperInvariant();
+    }
+
+    private static void NoOp()
+    {
+    }
+
+    private static void NoOp(object? parameter)
+    {
     }
 }

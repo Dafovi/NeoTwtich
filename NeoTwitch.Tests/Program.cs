@@ -1389,6 +1389,26 @@ static class LibraryScreenViewModelTests
         TestAssert.Equal("", viewModel.SearchText);
         TestAssert.Equal("ALL", viewModel.Filter);
         TestAssert.Equal(2, filterChanges);
+
+        var actions = new List<string>();
+        viewModel.ConfigureActions(
+            () => actions.Add("browse"),
+            () => actions.Add("save"),
+            () => actions.Add("add-group"),
+            parameter => actions.Add($"view:{parameter}"),
+            parameter => actions.Add($"delete-group:{parameter}"),
+            parameter => actions.Add($"preview:{parameter}"),
+            parameter => actions.Add($"delete:{parameter}"));
+
+        viewModel.BrowseAssetCommand.Execute(null);
+        viewModel.SaveAssetCommand.Execute(null);
+        viewModel.AddGroupCommand.Execute(null);
+        viewModel.ViewGroupCommand.Execute("g1");
+        viewModel.DeleteGroupCommand.Execute("g1");
+        viewModel.PreviewAssetCommand.Execute("a1");
+        viewModel.DeleteAssetCommand.Execute("a1");
+
+        TestAssert.Equal("browse,save,add-group,view:g1,delete-group:g1,preview:a1,delete:a1", string.Join(",", actions));
     }
 }
 

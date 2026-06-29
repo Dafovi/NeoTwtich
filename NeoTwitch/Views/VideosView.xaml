@@ -322,7 +322,8 @@
                                                                     IsEnabled="{Binding CanPreview}"
                                                                     Opacity="{Binding PreviewOpacity}"
                                                                     ToolTip="{Binding PlayToolTip}"
-                                                                    Click="PreviewVideoButton_Click">
+                                                                    Command="{Binding DataContext.PreviewAssetCommand, RelativeSource={RelativeSource AncestorType=views:NeoTwitchView}}"
+                                                                    CommandParameter="{Binding Id}">
                                                                 <Grid>
                                                                     <Border Width="16"
                                                                             Height="16"
@@ -353,7 +354,8 @@
                                                                     BorderBrush="#F43F5E"
                                                                     Tag="{Binding Id}"
                                                                     ToolTip="Eliminar video"
-                                                                    Click="DeleteVideoButton_Click">
+                                                                    Command="{Binding DataContext.DeleteAssetCommand, RelativeSource={RelativeSource AncestorType=views:NeoTwitchView}}"
+                                                                    CommandParameter="{Binding Id}">
                                                                 <Border Width="16"
                                                                         Height="16"
                                                                         Background="#F43F5E"
@@ -397,7 +399,7 @@
                                                 MinHeight="92"
                                                 BorderBrush="#55B56CFF"
                                                 Background="{DynamicResource ThemeInputBrush}"
-                                                Click="BrowseNewVideoButton_Click">
+                                                Command="{Binding BrowseAssetCommand}">
                                             <StackPanel HorizontalAlignment="Center">
                                                 <Border Width="34"
                                                         Height="34"
@@ -428,7 +430,7 @@
                                         <Button Style="{StaticResource PrimaryButton}"
                                                 Margin="0,10,0,0"
                                                 Content="Guardar video"
-                                                Click="SaveNewVideoButton_Click" />
+                                                Command="{Binding SaveAssetCommand}" />
                                     </StackPanel>
                                 </ScrollViewer>
                             </Border>
@@ -460,7 +462,7 @@
                                                 Style="{StaticResource PrimaryButton}"
                                                 MinWidth="92"
                                                 Margin="0"
-                                                Click="AddVideoGroupButton_Click" />
+                                                Command="{Binding AddGroupCommand}" />
                                     </Grid>
                                     <ScrollViewer Grid.Row="2"
                                                   VerticalScrollBarVisibility="Auto"
@@ -516,7 +518,8 @@
                                                                         Margin="0,0,6,0"
                                                                         Tag="{Binding Id}"
                                                                         ToolTip="Ver videos del grupo"
-                                                                        Click="ViewVideoGroupButton_Click">
+                                                                        Command="{Binding DataContext.ViewGroupCommand, RelativeSource={RelativeSource AncestorType=views:NeoTwitchView}}"
+                                                                        CommandParameter="{Binding Id}">
                                                                     <TextBlock Text="⌕" FontSize="16" />
                                                                 </Button>
                                                                 <Button Width="34"
@@ -526,7 +529,8 @@
                                                                         BorderBrush="#F43F5E"
                                                                         Tag="{Binding Id}"
                                                                         ToolTip="Eliminar grupo"
-                                                                        Click="DeleteVideoGroupButton_Click">
+                                                                        Command="{Binding DataContext.DeleteGroupCommand, RelativeSource={RelativeSource AncestorType=views:NeoTwitchView}}"
+                                                                        CommandParameter="{Binding Id}">
                                                                     <Border Width="16"
                                                                             Height="16"
                                                                             Background="#F43F5E"

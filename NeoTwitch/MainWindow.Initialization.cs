@@ -31,6 +31,23 @@ public partial class MainWindow
             _audioLibraryViewModel = new LibraryScreenViewModel<AudioLibraryRow, AudioGroupRow>();
             _imageLibraryViewModel = new LibraryScreenViewModel<MediaLibraryRow, MediaGroupRow>();
             _videoLibraryViewModel = new LibraryScreenViewModel<MediaLibraryRow, MediaGroupRow>();
+            _audioLibraryViewModel.ConfigureActions(BrowseNewAudio, SaveNewAudio, AddAudioGroup, ViewAudioGroup, DeleteAudioGroup, PreviewAudio, DeleteAudio);
+            _imageLibraryViewModel.ConfigureActions(
+                () => BrowseNewMedia(MediaLibraryKind.Image),
+                () => SaveNewMedia(MediaLibraryKind.Image),
+                () => AddMediaGroup(MediaLibraryKind.Image),
+                parameter => ViewMediaGroup(MediaLibraryKind.Image, parameter),
+                parameter => DeleteMediaGroup(MediaLibraryKind.Image, parameter),
+                parameter => PreviewMediaAsset(MediaLibraryKind.Image, parameter),
+                parameter => DeleteMediaAsset(MediaLibraryKind.Image, parameter));
+            _videoLibraryViewModel.ConfigureActions(
+                () => BrowseNewMedia(MediaLibraryKind.Video),
+                () => SaveNewMedia(MediaLibraryKind.Video),
+                () => AddMediaGroup(MediaLibraryKind.Video),
+                parameter => ViewMediaGroup(MediaLibraryKind.Video, parameter),
+                parameter => DeleteMediaGroup(MediaLibraryKind.Video, parameter),
+                parameter => PreviewMediaAsset(MediaLibraryKind.Video, parameter),
+                parameter => DeleteMediaAsset(MediaLibraryKind.Video, parameter));
             _audioLibraryViewModel.FiltersChanged += AudioLibraryFiltersChanged;
             _imageLibraryViewModel.FiltersChanged += ImageLibraryFiltersChanged;
             _videoLibraryViewModel.FiltersChanged += VideoLibraryFiltersChanged;

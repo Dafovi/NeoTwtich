@@ -11,10 +11,6 @@ public partial class ImagesView : NeoTwitchView
         InitializeComponent();
     }
 
-    private void ImageSearchBox_TextChanged(object sender, TextChangedEventArgs e) => Host?.ImageSearchBox_TextChanged(sender, e);
-
-    private void ImageFilterButton_Click(object sender, RoutedEventArgs e) => Host?.ImageFilterButton_Click(sender, e);
-
     private void ImageLibraryGroupBox_DropDownClosed(object sender, EventArgs e) => Host?.ImageLibraryGroupBox_DropDownClosed(sender, e);
 
     private void BrowseNewImageButton_Click(object sender, RoutedEventArgs e) => Host?.BrowseNewImageButton_Click(sender, e);

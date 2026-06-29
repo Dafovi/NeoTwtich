@@ -55,8 +55,8 @@ public partial class MainWindow
 
         _audioGroupFilterId = group.Id;
         _audioFilter = "ALL";
-        AudioSearchBox.Text = "";
         _audioSearchText = "";
+        _audioLibraryViewModel.SetFilters("", _audioFilter, notify: false);
         UpdateAudioFilterButtons();
         RefreshAudioLibraryView();
         AddLog(_text.Format(UiTextKeys.LibraryShowingGroupLog, _text.Get(UiTextKeys.AudioTitle), group.Name), ActivityLogKind.Audio);

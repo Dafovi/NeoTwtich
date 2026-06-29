@@ -19,26 +19,39 @@ namespace NeoTwitch;
 
 public partial class MainWindow
 {
-    internal void ImageSearchBox_TextChanged(object sender, TextChangedEventArgs e)
+    private void ImageLibraryFiltersChanged(object? sender, EventArgs e)
     {
-        if (_loadingUi || sender is not System.Windows.Controls.TextBox textBox)
-        {
-            return;
-        }
-
-        _imageSearchText = textBox.Text.Trim();
-        RefreshMediaLibraryView(MediaLibraryKind.Image);
+        SyncMediaLibraryFilters(MediaLibraryKind.Image);
     }
 
-    internal void VideoSearchBox_TextChanged(object sender, TextChangedEventArgs e)
+    private void VideoLibraryFiltersChanged(object? sender, EventArgs e)
     {
-        if (_loadingUi || sender is not System.Windows.Controls.TextBox textBox)
+        SyncMediaLibraryFilters(MediaLibraryKind.Video);
+    }
+
+    private void SyncMediaLibraryFilters(MediaLibraryKind kind)
+    {
+        if (_loadingUi)
         {
             return;
         }
 
-        _videoSearchText = textBox.Text.Trim();
-        RefreshMediaLibraryView(MediaLibraryKind.Video);
+        var viewModel = GetMediaLibraryViewModel(kind);
+        if (kind == MediaLibraryKind.Image)
+        {
+            _imageSearchText = viewModel.SearchText.Trim();
+            _imageFilter = viewModel.Filter;
+            _imageGroupFilterId = "";
+        }
+        else
+        {
+            _videoSearchText = viewModel.SearchText.Trim();
+            _videoFilter = viewModel.Filter;
+            _videoGroupFilterId = "";
+        }
+
+        UpdateMediaFilterButtons(kind);
+        RefreshMediaLibraryView(kind);
     }
 
     internal void VideoVolumeSlider_ValueChanged(object sender, RoutedPropertyChangedEventArgs<double> e)
@@ -51,38 +64,6 @@ public partial class MainWindow
         _config.VideoVolumePercent = (int)Math.Round(VideoVolumeSlider.Value);
         UpdateVideoVolumeText();
         SaveConfig();
-    }
-
-    internal void ImageFilterButton_Click(object sender, RoutedEventArgs e)
-    {
-        SetMediaFilter(MediaLibraryKind.Image, sender);
-    }
-
-    internal void VideoFilterButton_Click(object sender, RoutedEventArgs e)
-    {
-        SetMediaFilter(MediaLibraryKind.Video, sender);
-    }
-
-    private void SetMediaFilter(MediaLibraryKind kind, object sender)
-    {
-        if (sender is not System.Windows.Controls.Button button)
-        {
-            return;
-        }
-
-        if (kind == MediaLibraryKind.Image)
-        {
-            _imageFilter = button.Tag?.ToString() ?? "ALL";
-            _imageGroupFilterId = "";
-        }
-        else
-        {
-            _videoFilter = button.Tag?.ToString() ?? "ALL";
-            _videoGroupFilterId = "";
-        }
-
-        UpdateMediaFilterButtons(kind);
-        RefreshMediaLibraryView(kind);
     }
 
     internal void ImageLibraryGroupBox_DropDownClosed(object sender, EventArgs e)

@@ -7,25 +7,15 @@ namespace NeoTwitch;
 
 public partial class MainWindow
 {
-    internal void AudioSearchBox_TextChanged(object sender, TextChangedEventArgs e)
+    private void AudioLibraryFiltersChanged(object? sender, EventArgs e)
     {
-        if (_loadingUi || sender is not System.Windows.Controls.TextBox textBox)
+        if (_loadingUi)
         {
             return;
         }
 
-        _audioSearchText = textBox.Text.Trim();
-        RefreshAudioLibraryView();
-    }
-
-    internal void AudioFilterButton_Click(object sender, RoutedEventArgs e)
-    {
-        if (sender is not System.Windows.Controls.Button button)
-        {
-            return;
-        }
-
-        _audioFilter = button.Tag?.ToString() ?? "ALL";
+        _audioSearchText = _audioLibraryViewModel.SearchText.Trim();
+        _audioFilter = _audioLibraryViewModel.Filter;
         _audioGroupFilterId = "";
         UpdateAudioFilterButtons();
         RefreshAudioLibraryView();

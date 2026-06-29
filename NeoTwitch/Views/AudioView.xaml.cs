@@ -13,10 +13,6 @@ public partial class AudioView : NeoTwitchView
 
     private void GlobalSettingsChanged(object sender, RoutedPropertyChangedEventArgs<double> e) => Host?.GlobalSettingsChanged(sender, e);
 
-    private void AudioSearchBox_TextChanged(object sender, TextChangedEventArgs e) => Host?.AudioSearchBox_TextChanged(sender, e);
-
-    private void AudioFilterButton_Click(object sender, RoutedEventArgs e) => Host?.AudioFilterButton_Click(sender, e);
-
     private void AudioLibraryGroupBox_DropDownClosed(object sender, EventArgs e) => Host?.AudioLibraryGroupBox_DropDownClosed(sender, e);
 
     private void BrowseNewAudioButton_Click(object sender, RoutedEventArgs e) => Host?.BrowseNewAudioButton_Click(sender, e);

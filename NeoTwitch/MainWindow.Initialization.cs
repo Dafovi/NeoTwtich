@@ -31,6 +31,9 @@ public partial class MainWindow
             _audioLibraryViewModel = new LibraryScreenViewModel<AudioLibraryRow, AudioGroupRow>();
             _imageLibraryViewModel = new LibraryScreenViewModel<MediaLibraryRow, MediaGroupRow>();
             _videoLibraryViewModel = new LibraryScreenViewModel<MediaLibraryRow, MediaGroupRow>();
+            _audioLibraryViewModel.FiltersChanged += AudioLibraryFiltersChanged;
+            _imageLibraryViewModel.FiltersChanged += ImageLibraryFiltersChanged;
+            _videoLibraryViewModel.FiltersChanged += VideoLibraryFiltersChanged;
             DashboardView.DataContext = _dashboardViewModel;
             AlertsView.DataContext = _alertsViewModel;
             ConnectionsView.DataContext = _connectionsViewModel;

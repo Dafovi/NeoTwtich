@@ -218,22 +218,25 @@
                                         <ColumnDefinition Width="Auto" />
                                     </Grid.ColumnDefinitions>
                                     <TextBox x:Name="VideoSearchBox"
-                                             TextChanged="VideoSearchBox_TextChanged"
+                                             Text="{Binding SearchText, UpdateSourceTrigger=PropertyChanged}"
                                              Margin="0"
                                              ToolTip="Buscar video por nombre, grupo o ruta" />
                                     <WrapPanel Grid.Column="2">
                                         <Button x:Name="VideoFilterAllButton"
                                                 Content="Todos"
                                                 Tag="ALL"
-                                                Click="VideoFilterButton_Click" />
+                                                Command="{Binding SelectFilterCommand}"
+                                                CommandParameter="ALL" />
                                         <Button x:Name="VideoFilterWithGroupButton"
                                                 Content="Con grupo"
                                                 Tag="WITH_GROUP"
-                                                Click="VideoFilterButton_Click" />
+                                                Command="{Binding SelectFilterCommand}"
+                                                CommandParameter="WITH_GROUP" />
                                         <Button x:Name="VideoFilterNoGroupButton"
                                                 Content="Sin grupo"
                                                 Tag="NO_GROUP"
-                                                Click="VideoFilterButton_Click" />
+                                                Command="{Binding SelectFilterCommand}"
+                                                CommandParameter="NO_GROUP" />
                                     </WrapPanel>
                                 </Grid>
 

@@ -6,14 +6,40 @@ namespace NeoTwitch.ViewModels.Library;
 
 public sealed class LibraryScreenViewModel<TAssetRow, TGroupRow> : ObservableObject
 {
+    public const string AllFilter = "ALL";
+
     private string _assetCountText = "0";
     private string _groupCountText = "0";
     private string _lastAssetText = "Sin uso";
     private string _footerText = "";
+    private string _searchText = "";
+    private string _filter = AllFilter;
+    private bool _suppressFilterEvents;
+
+    public LibraryScreenViewModel()
+    {
+        SelectFilterCommand = new RelayCommand(parameter => SetFilters(SearchText, parameter?.ToString() ?? AllFilter));
+    }
+
+    public event EventHandler? FiltersChanged;
 
     public ObservableCollection<TAssetRow> AssetRows { get; } = [];
 
     public ObservableCollection<TGroupRow> GroupRows { get; } = [];
+
+    public RelayCommand SelectFilterCommand { get; }
+
+    public string SearchText
+    {
+        get => _searchText;
+        set => SetFilters(value ?? "", Filter);
+    }
+
+    public string Filter
+    {
+        get => _filter;
+        private set => SetProperty(ref _filter, NormalizeFilter(value));
+    }
 
     public string AssetCountText
     {
@@ -37,6 +63,25 @@ public sealed class LibraryScreenViewModel<TAssetRow, TGroupRow> : ObservableObj
     {
         get => _footerText;
         private set => SetProperty(ref _footerText, value);
+    }
+
+    public void SetFilters(string searchText, string filter, bool notify = true)
+    {
+        _suppressFilterEvents = !notify;
+        try
+        {
+            var changed = SetProperty(ref _searchText, searchText ?? "", nameof(SearchText));
+            changed |= SetProperty(ref _filter, NormalizeFilter(filter), nameof(Filter));
+
+            if (changed && notify)
+            {
+                NotifyFiltersChanged();
+            }
+        }
+        finally
+        {
+            _suppressFilterEvents = false;
+        }
     }
 
     public void ReplaceAssetRows(IEnumerable<TAssetRow> rows)
@@ -63,5 +108,18 @@ public sealed class LibraryScreenViewModel<TAssetRow, TGroupRow> : ObservableObj
         GroupCountText = summary.GroupCountText;
         LastAssetText = summary.LastAssetText;
         FooterText = summary.FooterText;
+    }
+
+    private void NotifyFiltersChanged()
+    {
+        if (!_suppressFilterEvents)
+        {
+            FiltersChanged?.Invoke(this, EventArgs.Empty);
+        }
+    }
+
+    private static string NormalizeFilter(string? filter)
+    {
+        return string.IsNullOrWhiteSpace(filter) ? AllFilter : filter.Trim().ToUpperInvariant();
     }
 }

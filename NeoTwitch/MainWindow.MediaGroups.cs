@@ -95,15 +95,15 @@ public partial class MainWindow
         {
             _imageGroupFilterId = group.Id;
             _imageFilter = "ALL";
-            ImageSearchBox.Text = "";
             _imageSearchText = "";
+            _imageLibraryViewModel.SetFilters("", _imageFilter, notify: false);
         }
         else
         {
             _videoGroupFilterId = group.Id;
             _videoFilter = "ALL";
-            VideoSearchBox.Text = "";
             _videoSearchText = "";
+            _videoLibraryViewModel.SetFilters("", _videoFilter, notify: false);
         }
 
         UpdateMediaFilterButtons(kind);

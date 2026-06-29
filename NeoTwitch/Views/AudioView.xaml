@@ -221,22 +221,25 @@
                                         <ColumnDefinition Width="Auto" />
                                     </Grid.ColumnDefinitions>
                                     <TextBox x:Name="AudioSearchBox"
-                                             TextChanged="AudioSearchBox_TextChanged"
+                                             Text="{Binding SearchText, UpdateSourceTrigger=PropertyChanged}"
                                              Margin="0"
                                              ToolTip="Buscar audio por nombre, grupo o alerta" />
                                     <WrapPanel Grid.Column="2">
                                         <Button x:Name="AudioFilterAllButton"
                                                 Content="Todos"
                                                 Tag="ALL"
-                                                Click="AudioFilterButton_Click" />
+                                                Command="{Binding SelectFilterCommand}"
+                                                CommandParameter="ALL" />
                                         <Button x:Name="AudioFilterWithAlertButton"
                                                 Content="Con alerta"
                                                 Tag="WITH_ALERT"
-                                                Click="AudioFilterButton_Click" />
+                                                Command="{Binding SelectFilterCommand}"
+                                                CommandParameter="WITH_ALERT" />
                                         <Button x:Name="AudioFilterNoGroupButton"
                                                 Content="Sin grupo"
                                                 Tag="NO_GROUP"
-                                                Click="AudioFilterButton_Click" />
+                                                Command="{Binding SelectFilterCommand}"
+                                                CommandParameter="NO_GROUP" />
                                     </WrapPanel>
                                 </Grid>
 

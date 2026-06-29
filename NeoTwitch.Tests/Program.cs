@@ -1374,6 +1374,21 @@ static class LibraryScreenViewModelTests
         TestAssert.Equal("1", viewModel.GroupCountText);
         TestAssert.Equal("uno", viewModel.LastAssetText);
         TestAssert.Equal("Mostrando 2", viewModel.FooterText);
+
+        var filterChanges = 0;
+        viewModel.FiltersChanged += (_, _) => filterChanges++;
+        viewModel.SearchText = "raid";
+        viewModel.SelectFilterCommand.Execute("WITH_GROUP");
+
+        TestAssert.Equal("raid", viewModel.SearchText);
+        TestAssert.Equal("WITH_GROUP", viewModel.Filter);
+        TestAssert.Equal(2, filterChanges);
+
+        viewModel.SetFilters("", "ALL", notify: false);
+
+        TestAssert.Equal("", viewModel.SearchText);
+        TestAssert.Equal("ALL", viewModel.Filter);
+        TestAssert.Equal(2, filterChanges);
     }
 }
 

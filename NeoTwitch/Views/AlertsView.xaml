@@ -251,16 +251,17 @@
                                                 Content="Probar alerta"
                                                 Style="{StaticResource PrimaryButton}"
                                                 Click="RuleTestButton_Click" />
-                                        <Button x:Name="SaveRuleButton"
-                                                Content="Guardar cambios"
+                                        <Button Content="Guardar cambios"
                                                 Style="{StaticResource PrimaryButton}"
+                                                Opacity="{Binding SaveButtonOpacity}"
+                                                ToolTip="{Binding SaveButtonToolTip}"
                                                 Click="SaveRuleButton_Click" />
                                     </WrapPanel>
                                 </Grid>
 
                                 <ScrollViewer VerticalScrollBarVisibility="Auto"
                                               HorizontalScrollBarVisibility="Disabled">
-                                    <StackPanel x:Name="RuleEditorPanel">
+                                    <StackPanel IsEnabled="{Binding IsEditorEnabled}">
                                         <Grid>
                                             <Grid.ColumnDefinitions>
                                                 <ColumnDefinition Width="*" />

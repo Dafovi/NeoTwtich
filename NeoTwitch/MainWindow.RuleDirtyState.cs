@@ -85,14 +85,7 @@ public partial class MainWindow
     private void SetRuleDirtyState(bool isDirty)
     {
         _hasUnsavedRuleChanges = isDirty;
-
-        if (SaveRuleButton is not null)
-        {
-            SaveRuleButton.Opacity = isDirty ? 1d : 0.68d;
-            SaveRuleButton.ToolTip = isDirty
-                ? "Hay cambios pendientes por guardar"
-                : "No hay cambios pendientes";
-        }
+        _alertsViewModel.SetDirtyState(isDirty);
     }
 
     private void UpdateRuleDirtyStateFromSnapshot()

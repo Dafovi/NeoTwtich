@@ -2,7 +2,6 @@ using WpfButton = System.Windows.Controls.Button;
 using WpfCheckBox = System.Windows.Controls.CheckBox;
 using WpfComboBox = System.Windows.Controls.ComboBox;
 using WpfListBox = System.Windows.Controls.ListBox;
-using WpfStackPanel = System.Windows.Controls.StackPanel;
 using WpfTextBlock = System.Windows.Controls.TextBlock;
 using WpfTextBox = System.Windows.Controls.TextBox;
 
@@ -12,8 +11,6 @@ public partial class MainWindow
 {
     private WpfListBox RulesList => AlertsView.RulesList;
     private WpfButton RuleTestButton => AlertsView.RuleTestButton;
-    private WpfButton SaveRuleButton => AlertsView.SaveRuleButton;
-    private WpfStackPanel RuleEditorPanel => AlertsView.RuleEditorPanel;
     private WpfTextBox RuleNameBox => AlertsView.RuleNameBox;
     private WpfCheckBox RuleEnabledCheck => AlertsView.RuleEnabledCheck;
     private WpfComboBox EventKindBox => AlertsView.EventKindBox;

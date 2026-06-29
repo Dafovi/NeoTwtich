@@ -11,6 +11,8 @@ public sealed class AlertsViewModel : ObservableObject
     private string _statusFilter = EventRuleFilterService.AllStatus;
     private string _categoryFilter = "";
     private string _rulesCountText = "";
+    private bool _isEditorEnabled;
+    private bool _hasUnsavedChanges;
     private bool _suppressFilterEvents;
 
     public AlertsViewModel(IReadOnlyList<UiOption<string>> categoryOptions)
@@ -70,6 +72,31 @@ public sealed class AlertsViewModel : ObservableObject
         private set => SetProperty(ref _rulesCountText, value);
     }
 
+    public bool IsEditorEnabled
+    {
+        get => _isEditorEnabled;
+        private set => SetProperty(ref _isEditorEnabled, value);
+    }
+
+    public bool HasUnsavedChanges
+    {
+        get => _hasUnsavedChanges;
+        private set
+        {
+            if (SetProperty(ref _hasUnsavedChanges, value))
+            {
+                OnPropertyChanged(nameof(SaveButtonOpacity));
+                OnPropertyChanged(nameof(SaveButtonToolTip));
+            }
+        }
+    }
+
+    public double SaveButtonOpacity => HasUnsavedChanges ? 1d : 0.68d;
+
+    public string SaveButtonToolTip => HasUnsavedChanges
+        ? "Hay cambios pendientes por guardar"
+        : "No hay cambios pendientes";
+
     public bool IsAllStatusSelected => StatusFilter == EventRuleFilterService.AllStatus;
 
     public bool IsActiveStatusSelected => StatusFilter == EventRuleFilterService.ActiveStatus;
@@ -101,6 +128,16 @@ public sealed class AlertsViewModel : ObservableObject
     public void UpdateRulesCount(int visibleCount, int totalCount)
     {
         RulesCountText = $"Mostrando {Math.Max(0, visibleCount)} de {Math.Max(0, totalCount)} alertas";
+    }
+
+    public void SetEditorEnabled(bool isEnabled)
+    {
+        IsEditorEnabled = isEnabled;
+    }
+
+    public void SetDirtyState(bool isDirty)
+    {
+        HasUnsavedChanges = isDirty;
     }
 
     private void NotifyFiltersChanged()

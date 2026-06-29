@@ -11,7 +11,7 @@ public partial class MainWindow
 
         try
         {
-            RuleEditorPanel.IsEnabled = RulesList.SelectedItem is EventRule;
+            _alertsViewModel.SetEditorEnabled(RulesList.SelectedItem is EventRule);
 
             if (RulesList.SelectedItem is not EventRule rule)
             {

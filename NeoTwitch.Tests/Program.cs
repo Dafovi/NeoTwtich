@@ -455,12 +455,22 @@ static class AlertsViewModelTests
         TestAssert.Equal("Mostrando 2 de 5 alertas", viewModel.RulesCountText);
         TestAssert.True(changes >= 3);
 
+        viewModel.SetEditorEnabled(true);
+        viewModel.SetDirtyState(true);
+
+        TestAssert.True(viewModel.IsEditorEnabled);
+        TestAssert.True(viewModel.HasUnsavedChanges);
+        TestAssert.Equal(1d, viewModel.SaveButtonOpacity);
+        TestAssert.Contains("pendientes", viewModel.SaveButtonToolTip);
+
         viewModel.ClearFilters();
+        viewModel.SetDirtyState(false);
 
         TestAssert.Equal("", viewModel.SearchText);
         TestAssert.Equal("", viewModel.CategoryFilter);
         TestAssert.Equal(EventRuleFilterService.AllStatus, viewModel.StatusFilter);
         TestAssert.True(viewModel.IsAllStatusSelected);
+        TestAssert.Equal(0.68d, viewModel.SaveButtonOpacity);
     }
 }
 

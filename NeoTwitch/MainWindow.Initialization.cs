@@ -32,7 +32,7 @@ public partial class MainWindow
             InitializeBackgroundOptionSources();
             InitializeConnectionOptionSources();
 
-            VersionText.Text = $"V{NeoTwitchProduct.CurrentVersionText}";
+            VersionText.Text = _shellViewModel.VersionText;
             ConfigureNavigationIcons();
             ConfigureActionIcons();
             ArrangeAlertActionCards();

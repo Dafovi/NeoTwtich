@@ -1,6 +1,7 @@
 using System.Windows;
 using NeoTwitch.Models;
 using NeoTwitch.Services;
+using NeoTwitch.ViewModels.Shell;
 
 namespace NeoTwitch;
 
@@ -27,6 +28,9 @@ public partial class MainWindow : Window
         {
             _initializingComponent = false;
         }
+
+        _shellViewModel = new ShellViewModel(_text, TryNavigateToTab);
+        DataContext = _shellViewModel;
 
         _eventSubClient = new TwitchEventSubClient(_authService, () => _config, SaveConfig, AddLog, _text);
         _eventSubClient.EventReceived += EventSubClient_EventReceived;

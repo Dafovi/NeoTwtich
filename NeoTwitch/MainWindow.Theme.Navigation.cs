@@ -1,7 +1,7 @@
 using System.Windows;
 using System.Windows.Controls;
-using NeoTwitch.Services.Navigation;
 using NeoTwitch.Services.Ui;
+using NeoTwitch.ViewModels.Shell;
 
 namespace NeoTwitch;
 
@@ -33,24 +33,25 @@ public partial class MainWindow
             return;
         }
 
-        var visibility = ServiceNavigationVisibilityService.Resolve(_config);
-        SetNavigationTargetVisible(NavStripsButton, LightsTab, visibility.Lights);
-        SetNavigationTargetVisible(NavAlexaButton, AlexaTab, visibility.Alexa);
-        SetNavigationTargetVisible(NavObsButton, ObsTab, visibility.Obs);
-        SetNavigationTargetVisible(NavImagesButton, ImagesTab, visibility.Images);
-        SetNavigationTargetVisible(NavVideosButton, VideosTab, visibility.Videos);
+        _shellViewModel.ApplyServiceVisibility(_config);
+        SetNavigationTargetVisible(NavStripsButton, LightsTab, ShellViewModel.LightsTabIndex);
+        SetNavigationTargetVisible(NavAlexaButton, AlexaTab, ShellViewModel.AlexaTabIndex);
+        SetNavigationTargetVisible(NavObsButton, ObsTab, ShellViewModel.ObsTabIndex);
+        SetNavigationTargetVisible(NavImagesButton, ImagesTab, ShellViewModel.ImagesTabIndex);
+        SetNavigationTargetVisible(NavVideosButton, VideosTab, ShellViewModel.VideosTabIndex);
 
         if (MainTabs.SelectedItem is TabItem { Visibility: not Visibility.Visible })
         {
-            MainTabs.SelectedItem = ConnectionsTab;
+            _shellViewModel.NavigateTo(ShellViewModel.ConnectionsTabIndex);
         }
     }
 
-    private static void SetNavigationTargetVisible(
+    private void SetNavigationTargetVisible(
         System.Windows.Controls.Button button,
         TabItem tab,
-        bool isVisible)
+        int tabIndex)
     {
+        var isVisible = _shellViewModel.FindByIndex(tabIndex)?.IsVisible == true;
         var visibility = isVisible ? Visibility.Visible : Visibility.Collapsed;
         button.Visibility = visibility;
         tab.Visibility = visibility;
@@ -59,7 +60,7 @@ public partial class MainWindow
     private void ApplyNavigationButtonTheme(System.Windows.Controls.Button button, ThemePalette palette)
     {
         var isSelected = int.TryParse(button.Tag?.ToString(), out var index)
-            && index == MainTabs.SelectedIndex;
+            && _shellViewModel.FindByIndex(index)?.IsSelected == true;
 
         NavigationButtonThemeService.Apply(button, palette, isSelected);
     }

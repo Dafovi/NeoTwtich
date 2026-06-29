@@ -16,6 +16,7 @@ using NeoTwitch.Shared;
 using NeoTwitch.ViewModels.Activity;
 using NeoTwitch.ViewModels.Library;
 using NeoTwitch.ViewModels.Obs;
+using NeoTwitch.ViewModels.Shell;
 using NeoTwitch.ViewModels.Status;
 
 var tests = new (string Name, Action Body)[]
@@ -76,6 +77,7 @@ var tests = new (string Name, Action Body)[]
     ("ConnectionButtonStateService maps OBS buttons", ConnectionButtonStateTests.MapsObsButtons),
     ("TwitchConnectionRecoveryService detects recoverable refresh errors", TwitchConnectionRecoveryTests.DetectsRecoverableRefreshErrors),
     ("ServiceNavigationVisibilityService hides optional service tabs", ServiceNavigationVisibilityTests.HidesOptionalServiceTabs),
+    ("ShellViewModel maps navigation visibility", ShellViewModelTests.MapsNavigationVisibility),
     ("ObsStatusTextService builds display values", ObsStatusTextTests.BuildsDisplayValues),
     ("ObsSceneViewService builds rows and choices", ObsSceneViewTests.BuildsRowsAndChoices),
     ("DiagnosticReportService builds report without network", DiagnosticReportServiceTests.BuildsReportWithoutNetwork),
@@ -2379,6 +2381,35 @@ static class ServiceNavigationVisibilityTests
         TestAssert.True(enabled.Obs);
         TestAssert.True(enabled.Images);
         TestAssert.True(enabled.Videos);
+    }
+}
+
+static class ShellViewModelTests
+{
+    public static void MapsNavigationVisibility()
+    {
+        var navigatedTo = -1;
+        var shell = new ShellViewModel(UiTextService.CreateDefault(), tab =>
+        {
+            navigatedTo = tab;
+            return true;
+        });
+        var config = AppConfig.CreateDefault();
+
+        shell.ApplyServiceVisibility(config);
+
+        TestAssert.False(shell.FindByIndex(ShellViewModel.LightsTabIndex)!.IsVisible);
+        TestAssert.False(shell.FindByIndex(ShellViewModel.ObsTabIndex)!.IsVisible);
+
+        config.ArduinoEnabled = true;
+        config.Obs.Enabled = true;
+        shell.ApplyServiceVisibility(config);
+        shell.NavigateTo(ShellViewModel.ObsTabIndex);
+
+        TestAssert.True(shell.FindByIndex(ShellViewModel.LightsTabIndex)!.IsVisible);
+        TestAssert.True(shell.FindByIndex(ShellViewModel.ObsTabIndex)!.IsVisible);
+        TestAssert.Equal(ShellViewModel.ObsTabIndex, navigatedTo);
+        TestAssert.True(shell.FindByIndex(ShellViewModel.ObsTabIndex)!.IsSelected);
     }
 }
 

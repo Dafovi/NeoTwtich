@@ -13,6 +13,7 @@ public partial class MainWindow
             return;
         }
 
+        _shellViewModel.SyncSelectedTab(MainTabs.SelectedIndex);
         UpdateNavigationButtons();
         if (int.TryParse(NavAudioButton.Tag?.ToString(), out var audioTabIndex)
             && MainTabs.SelectedIndex != audioTabIndex)
@@ -45,28 +46,29 @@ public partial class MainWindow
             return;
         }
 
-        if (selectedIndex != MainTabs.SelectedIndex && !ResolvePendingRuleChanges())
-        {
-            return;
-        }
-
-        MainTabs.SelectedIndex = selectedIndex;
-        UpdateNavigationButtons();
+        _shellViewModel.NavigateTo(selectedIndex);
     }
 
     private void GoToActivity()
     {
-        if (int.TryParse(NavActivityButton.Tag?.ToString(), out var activityTabIndex))
-        {
-            if (activityTabIndex != MainTabs.SelectedIndex && !ResolvePendingRuleChanges())
-            {
-                return;
-            }
+        _shellViewModel.NavigateTo(ViewModels.Shell.ShellViewModel.ActivityTabIndex);
+    }
 
-            MainTabs.SelectedIndex = activityTabIndex;
+    private bool TryNavigateToTab(int selectedIndex)
+    {
+        if (selectedIndex < 0 || selectedIndex >= MainTabs.Items.Count)
+        {
+            return false;
         }
 
+        if (selectedIndex != MainTabs.SelectedIndex && !ResolvePendingRuleChanges())
+        {
+            return false;
+        }
+
+        MainTabs.SelectedIndex = selectedIndex;
         UpdateNavigationButtons();
+        return true;
     }
 
     private async void ExitButton_Click(object sender, RoutedEventArgs e)

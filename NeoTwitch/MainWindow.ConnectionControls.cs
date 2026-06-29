@@ -14,12 +14,10 @@ public partial class MainWindow
     private WpfTextBox ClientSecretBox => ConnectionsView.ClientSecretBox;
     private WpfTextBlock ClientSecretMaskText => ConnectionsView.ClientSecretMaskText;
     private WpfButton ClientSecretRevealButton => ConnectionsView.ClientSecretRevealButton;
-    private WpfButton TwitchButton => ConnectionsView.TwitchButton;
 
     private WpfCheckBox ArduinoEnabledCheck => ConnectionsView.ArduinoEnabledCheck;
     private WpfComboBox PortComboBox => ConnectionsView.PortComboBox;
     private WpfTextBox BaudRateBox => ConnectionsView.BaudRateBox;
-    private WpfButton ConnectArduinoButton => ConnectionsView.ConnectArduinoButton;
 
     private WpfCheckBox AlexaEnabledCheck => ConnectionsView.AlexaEnabledCheck;
     private WpfTextBox AlexaRelayUrlBox => ConnectionsView.AlexaRelayUrlBox;
@@ -28,7 +26,6 @@ public partial class MainWindow
     private WpfTextBox AlexaAuthTokenBox => ConnectionsView.AlexaAuthTokenBox;
     private WpfTextBlock AlexaAuthTokenMaskText => ConnectionsView.AlexaAuthTokenMaskText;
     private WpfButton AlexaAuthTokenRevealButton => ConnectionsView.AlexaAuthTokenRevealButton;
-    private WpfButton TestAlexaButton => ConnectionsView.TestAlexaButton;
 
     private WpfCheckBox ObsEnabledCheck => ConnectionsView.ObsEnabledCheck;
     private WpfTextBox ObsHostBox => ConnectionsView.ObsHostBox;
@@ -36,6 +33,4 @@ public partial class MainWindow
     private WpfTextBox ObsPasswordBox => ConnectionsView.ObsPasswordBox;
     private WpfTextBlock ObsPasswordMaskText => ConnectionsView.ObsPasswordMaskText;
     private WpfButton ObsPasswordRevealButton => ConnectionsView.ObsPasswordRevealButton;
-    private WpfButton TestObsButton => ConnectionsView.TestObsButton;
-    private WpfButton ConnectObsButton => ConnectionsView.ConnectObsButton;
 }

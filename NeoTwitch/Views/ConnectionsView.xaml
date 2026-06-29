@@ -3,8 +3,30 @@
                      xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
                      xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
                      xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
+                     xmlns:connections="clr-namespace:NeoTwitch.ViewModels.Connections"
                      xmlns:views="clr-namespace:NeoTwitch.Views"
                      mc:Ignorable="d">
+                <views:NeoTwitchView.Resources>
+                    <DataTemplate DataType="{x:Type connections:ConnectionButtonViewModel}">
+                        <StackPanel Orientation="Horizontal"
+                                    HorizontalAlignment="Center"
+                                    VerticalAlignment="Center">
+                            <Path Width="15"
+                                  Height="15"
+                                  Stretch="Uniform"
+                                  Stroke="{Binding Foreground, RelativeSource={RelativeSource AncestorType=Button}}"
+                                  StrokeThickness="1.9"
+                                  StrokeStartLineCap="Round"
+                                  StrokeEndLineCap="Round"
+                                  StrokeLineJoin="Round"
+                                  Data="{Binding IconGeometry}" />
+                            <TextBlock Text="{Binding Text}"
+                                       Margin="7,0,0,0"
+                                       VerticalAlignment="Center"
+                                       Foreground="{Binding Foreground, RelativeSource={RelativeSource AncestorType=Button}}" />
+                        </StackPanel>
+                    </DataTemplate>
+                </views:NeoTwitchView.Resources>
                 <Grid Margin="24">
                     <Grid.RowDefinitions>
                         <RowDefinition Height="Auto" />
@@ -170,7 +192,8 @@
                                             Click="OpenTwitchConsoleButton_Click" />
                                     <Button x:Name="TwitchButton"
                                             Style="{StaticResource PrimaryButton}"
-                                            Content="Conectar Twitch"
+                                            Content="{Binding TwitchButton}"
+                                            IsEnabled="{Binding TwitchButton.IsEnabled}"
                                             Click="TwitchButton_Click" />
                                 </WrapPanel>
                             </Grid>
@@ -266,7 +289,8 @@
                                     <Button Content="Detectar puertos"
                                             Click="DetectPortsButton_Click" />
                                     <Button x:Name="ConnectArduinoButton"
-                                            Content="Conectar Arduino"
+                                            Content="{Binding ArduinoButton}"
+                                            IsEnabled="{Binding ArduinoButton.IsEnabled}"
                                             Style="{StaticResource PrimaryButton}"
                                             Click="ConnectArduinoButton_Click" />
                                 </WrapPanel>
@@ -411,7 +435,8 @@
                                         <Button Content="Abrir Alexa Console"
                                                 Click="OpenAlexaConsoleButton_Click" />
                                         <Button x:Name="TestAlexaButton"
-                                                Content="Probar Alexa"
+                                                Content="{Binding AlexaTestButton}"
+                                                IsEnabled="{Binding AlexaTestButton.IsEnabled}"
                                                 Style="{StaticResource PrimaryButton}"
                                                 Click="TestAlexaButton_Click" />
                                     </WrapPanel>
@@ -545,10 +570,12 @@
                                         <Button Content="Ver guia OBS"
                                                 Click="OpenObsGuideButton_Click" />
                                         <Button x:Name="TestObsButton"
-                                                Content="Actualizar escenas"
+                                                Content="{Binding ObsTestButton}"
+                                                IsEnabled="{Binding ObsTestButton.IsEnabled}"
                                                 Click="TestObsButton_Click" />
                                         <Button x:Name="ConnectObsButton"
-                                                Content="Conectar OBS"
+                                                Content="{Binding ObsButton}"
+                                                IsEnabled="{Binding ObsButton.IsEnabled}"
                                                 Style="{StaticResource PrimaryButton}"
                                                 Click="ConnectObsButton_Click" />
                                     </WrapPanel>

@@ -28,30 +28,31 @@ public partial class MainWindow
     private void UpdateConnectionButtons()
     {
         var labels = GetConnectionButtonLabels();
-        ApplyButtonState(TwitchButton, ConnectionButtonStateService.ResolveTwitch(
-            _isTwitchAuthorizing,
-            _isTwitchConnecting,
-            _eventSubClient.IsRunning,
-            labels));
-        ApplyButtonState(ConnectArduinoButton, ConnectionButtonStateService.ResolveArduino(
-            _config.ArduinoEnabled,
-            _isArduinoConnecting,
-            labels));
-        ApplyButtonState(TestAlexaButton, ConnectionButtonStateService.ResolveAlexa(
-            _config.Alexa.Enabled,
-            _isAlexaConnecting,
-            labels));
-        ApplyButtonState(ConnectObsButton, ConnectionButtonStateService.ResolveObs(
-            _config.Obs.Enabled,
-            _isObsConnecting,
-            _isObsSceneActionRunning,
-            _obsService.IsConnected,
-            labels));
-        ApplyButtonState(TestObsButton, ConnectionButtonStateService.ResolveObsTest(
-            _config.Obs.Enabled,
-            _isObsConnecting,
-            _isObsSceneActionRunning,
-            labels));
+        _connectionsViewModel.UpdateButtonStates(
+            ConnectionButtonStateService.ResolveTwitch(
+                _isTwitchAuthorizing,
+                _isTwitchConnecting,
+                _eventSubClient.IsRunning,
+                labels),
+            ConnectionButtonStateService.ResolveArduino(
+                _config.ArduinoEnabled,
+                _isArduinoConnecting,
+                labels),
+            ConnectionButtonStateService.ResolveAlexa(
+                _config.Alexa.Enabled,
+                _isAlexaConnecting,
+                labels),
+            ConnectionButtonStateService.ResolveObs(
+                _config.Obs.Enabled,
+                _isObsConnecting,
+                _isObsSceneActionRunning,
+                _obsService.IsConnected,
+                labels),
+            ConnectionButtonStateService.ResolveObsTest(
+                _config.Obs.Enabled,
+                _isObsConnecting,
+                _isObsSceneActionRunning,
+                labels));
     }
 
     private ConnectionButtonLabels GetConnectionButtonLabels()
@@ -68,12 +69,6 @@ public partial class MainWindow
             _text.Get(UiTextKeys.ConnectionButtonObsConnect),
             _text.Get(UiTextKeys.ConnectionButtonObsScenesUpdating),
             _text.Get(UiTextKeys.ConnectionButtonObsScenesRefresh));
-    }
-
-    private static void ApplyButtonState(System.Windows.Controls.Button button, ConnectionButtonState state)
-    {
-        button.IsEnabled = state.IsEnabled;
-        ButtonIconContentService.SetButtonIcon(button, state.Content, state.IconKey);
     }
 
     private void UpdateTwitchLiveIndicator()

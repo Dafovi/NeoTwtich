@@ -93,6 +93,7 @@ var tests = new (string Name, Action Body)[]
     ("ActivityViewModel filters entries view", ActivityViewModelTests.FiltersEntriesView),
     ("ActivityViewModel maps filter properties", ActivityViewModelTests.MapsFilterProperties),
     ("ConnectionsViewModel maps badges and helper text", ConnectionsViewModelTests.MapsBadgesAndHelperText),
+    ("ConnectionsViewModel maps button states", ConnectionsViewModelTests.MapsButtonStates),
     ("DashboardConnectionStateService resolves all services", DashboardConnectionStateTests.ResolvesAllServices),
     ("DashboardSummaryService counts Twitch events", DashboardSummaryTests.CountsTwitchEvents),
     ("DashboardSummaryService counts matched rules safely", DashboardSummaryTests.CountsMatchedRulesSafely),
@@ -1907,6 +1908,25 @@ static class ConnectionsViewModelTests
         TestAssert.Equal("OBS desconectado", viewModel.ObsConnectionHelpText);
         TestAssert.Equal((byte)0x22, viewModel.TwitchBadge.ForegroundBrush.Color.R);
         TestAssert.Equal((byte)0x22, viewModel.TwitchBadge.BackgroundBrush.Color.A);
+    }
+
+    public static void MapsButtonStates()
+    {
+        var viewModel = new ConnectionsViewModel();
+
+        viewModel.UpdateButtonStates(
+            new ConnectionButtonState(false, "Conectando...", "Plug"),
+            new ConnectionButtonState(true, "Conectar Arduino", "Plug"),
+            new ConnectionButtonState(false, "Probando Alexa", "Play"),
+            new ConnectionButtonState(true, "Desconectar OBS", "Plug"),
+            new ConnectionButtonState(true, "Actualizar escenas", "Refresh"));
+
+        TestAssert.False(viewModel.TwitchButton.IsEnabled);
+        TestAssert.Equal("Conectando...", viewModel.TwitchButton.Text);
+        TestAssert.True(viewModel.ArduinoButton.IsEnabled);
+        TestAssert.False(viewModel.AlexaTestButton.IsEnabled);
+        TestAssert.Equal("Desconectar OBS", viewModel.ObsButton.Text);
+        TestAssert.Equal("Actualizar escenas", viewModel.ObsTestButton.Text);
     }
 }
 

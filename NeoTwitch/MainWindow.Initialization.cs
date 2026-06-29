@@ -27,6 +27,12 @@ public partial class MainWindow
                 ToggleRuleTest,
                 SavePendingRuleChanges,
                 RemoveSelectedRule);
+            _alertsViewModel.ConfigureEditorActions(
+                SelectRuleEventKind,
+                SelectRuleLightPattern,
+                SelectRuleAudioMode,
+                SelectRuleObsMediaKind,
+                SelectRuleObsMediaSourceMode);
             _alertsViewModel.FiltersChanged += AlertsFiltersChanged;
             _alertsViewModel.SelectedRuleChanged += AlertsSelectedRuleChanged;
             _connectionsViewModel = new ConnectionsViewModel();

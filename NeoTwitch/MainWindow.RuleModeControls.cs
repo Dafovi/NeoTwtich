@@ -1,15 +1,12 @@
-using System.Windows;
 using NeoTwitch.Models;
 
 namespace NeoTwitch;
 
 public partial class MainWindow
 {
-    internal void RuleAudioModeButton_Click(object sender, RoutedEventArgs e)
+    private void SelectRuleAudioMode(object? parameter)
     {
-        if (sender is not System.Windows.Controls.Button button
-            || button.Tag is not string value
-            || !Enum.TryParse<AudioSourceMode>(value, out var mode))
+        if (!TryParseEnumParameter<AudioSourceMode>(parameter, out var mode))
         {
             return;
         }
@@ -23,11 +20,9 @@ public partial class MainWindow
         }
     }
 
-    internal void RuleObsMediaKindButton_Click(object sender, RoutedEventArgs e)
+    private void SelectRuleObsMediaKind(object? parameter)
     {
-        if (sender is not System.Windows.Controls.Button button
-            || button.Tag is not string value
-            || !Enum.TryParse<ObsMediaKind>(value, out var kind))
+        if (!TryParseEnumParameter<ObsMediaKind>(parameter, out var kind))
         {
             return;
         }
@@ -42,11 +37,9 @@ public partial class MainWindow
         }
     }
 
-    internal void RuleObsMediaSourceModeButton_Click(object sender, RoutedEventArgs e)
+    private void SelectRuleObsMediaSourceMode(object? parameter)
     {
-        if (sender is not System.Windows.Controls.Button button
-            || button.Tag is not string value
-            || !Enum.TryParse<MediaSourceMode>(value, out var mode))
+        if (!TryParseEnumParameter<MediaSourceMode>(parameter, out var mode))
         {
             return;
         }
@@ -60,16 +53,26 @@ public partial class MainWindow
         }
     }
 
-    internal void EventKindTile_Click(object sender, RoutedEventArgs e)
+    private void SelectRuleEventKind(object? parameter)
     {
-        if (sender is not System.Windows.Controls.Button button
-            || button.Tag is not string value
-            || !Enum.TryParse<TwitchEventKind>(value, out var kind))
+        if (!TryParseEnumParameter<TwitchEventKind>(parameter, out var kind))
         {
             return;
         }
 
         EventKindBox.SelectedValue = kind;
         UpdateEventKindTileSelection();
+    }
+
+    private static bool TryParseEnumParameter<T>(object? parameter, out T value)
+        where T : struct, Enum
+    {
+        if (parameter is T typed)
+        {
+            value = typed;
+            return true;
+        }
+
+        return Enum.TryParse(parameter?.ToString(), out value);
     }
 }

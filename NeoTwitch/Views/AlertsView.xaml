@@ -312,7 +312,8 @@
 
                                             <Button x:Name="EventFollowTileButton"
                                                     Tag="Follow"
-                                                    Click="EventKindTile_Click">
+                                                    Command="{Binding SelectEventKindCommand}"
+                                                    CommandParameter="{Binding Tag, RelativeSource={RelativeSource Self}}">
                                                 <StackPanel HorizontalAlignment="Center">
                                                     <Image Source="/Assets/Icons/action_follower_teal.png"
                                                            Width="26"
@@ -327,7 +328,8 @@
                                             <Button x:Name="EventSubscriptionTileButton"
                                                     Grid.Column="2"
                                                     Tag="Subscription"
-                                                    Click="EventKindTile_Click">
+                                                    Command="{Binding SelectEventKindCommand}"
+                                                    CommandParameter="{Binding Tag, RelativeSource={RelativeSource Self}}">
                                                 <StackPanel HorizontalAlignment="Center">
                                                     <Image Source="/Assets/Icons/action_subscription_purple.png"
                                                            Width="26"
@@ -342,7 +344,8 @@
                                             <Button x:Name="EventRaidTileButton"
                                                     Grid.Column="4"
                                                     Tag="Raid"
-                                                    Click="EventKindTile_Click">
+                                                    Command="{Binding SelectEventKindCommand}"
+                                                    CommandParameter="{Binding Tag, RelativeSource={RelativeSource Self}}">
                                                 <StackPanel HorizontalAlignment="Center">
                                                     <Image Source="/Assets/Icons/activity_notification.png"
                                                            Width="26"
@@ -357,7 +360,8 @@
                                             <Button x:Name="EventCheerTileButton"
                                                     Grid.Row="2"
                                                     Tag="Cheer"
-                                                    Click="EventKindTile_Click">
+                                                    Command="{Binding SelectEventKindCommand}"
+                                                    CommandParameter="{Binding Tag, RelativeSource={RelativeSource Self}}">
                                                 <StackPanel HorizontalAlignment="Center">
                                                     <Image Source="/Assets/Icons/action_bits_blue.png"
                                                            Width="26"
@@ -373,7 +377,8 @@
                                                     Grid.Row="2"
                                                     Grid.Column="2"
                                                     Tag="ChatCommand"
-                                                    Click="EventKindTile_Click">
+                                                    Command="{Binding SelectEventKindCommand}"
+                                                    CommandParameter="{Binding Tag, RelativeSource={RelativeSource Self}}">
                                                 <StackPanel HorizontalAlignment="Center">
                                                     <Image Source="/Assets/Icons/action_message_green.png"
                                                            Width="26"
@@ -389,7 +394,8 @@
                                                     Grid.Row="2"
                                                     Grid.Column="4"
                                                     Tag="ChannelPointRedemption"
-                                                    Click="EventKindTile_Click">
+                                                    Command="{Binding SelectEventKindCommand}"
+                                                    CommandParameter="{Binding Tag, RelativeSource={RelativeSource Self}}">
                                                 <StackPanel HorizontalAlignment="Center">
                                                     <Image Source="/Assets/Icons/activity_notification_lime.png"
                                                            Width="26"
@@ -520,7 +526,8 @@
 
                                                                     <Button x:Name="PatternSolidTileButton"
                                                                             Tag="Solid"
-                                                                            Click="PatternTile_Click">
+                                                                            Command="{Binding SelectLightPatternCommand}"
+                                                                            CommandParameter="{Binding Tag, RelativeSource={RelativeSource Self}}">
                                                                         <StackPanel HorizontalAlignment="Center">
                                                                             <Rectangle Width="22"
                                                                                        Height="22"
@@ -540,7 +547,8 @@
                                                                     <Button x:Name="PatternPulseTileButton"
                                                                             Grid.Column="2"
                                                                             Tag="Pulse"
-                                                                            Click="PatternTile_Click">
+                                                                            Command="{Binding SelectLightPatternCommand}"
+                                                                            CommandParameter="{Binding Tag, RelativeSource={RelativeSource Self}}">
                                                                         <StackPanel HorizontalAlignment="Center">
                                                                             <Rectangle Width="22"
                                                                                        Height="22"
@@ -560,7 +568,8 @@
                                                                     <Button x:Name="PatternRainbowTileButton"
                                                                             Grid.Column="4"
                                                                             Tag="Rainbow"
-                                                                            Click="PatternTile_Click">
+                                                                            Command="{Binding SelectLightPatternCommand}"
+                                                                            CommandParameter="{Binding Tag, RelativeSource={RelativeSource Self}}">
                                                                         <StackPanel HorizontalAlignment="Center">
                                                                             <Rectangle Width="22"
                                                                                        Height="22"
@@ -580,7 +589,8 @@
                                                                     <Button x:Name="PatternChaseTileButton"
                                                                             Grid.Column="6"
                                                                             Tag="Chase"
-                                                                            Click="PatternTile_Click">
+                                                                            Command="{Binding SelectLightPatternCommand}"
+                                                                            CommandParameter="{Binding Tag, RelativeSource={RelativeSource Self}}">
                                                                         <StackPanel HorizontalAlignment="Center">
                                                                             <Rectangle Width="22"
                                                                                        Height="22"
@@ -600,7 +610,8 @@
                                                                     <Button x:Name="PatternTheaterTileButton"
                                                                             Grid.Row="2"
                                                                             Tag="Theater"
-                                                                            Click="PatternTile_Click">
+                                                                            Command="{Binding SelectLightPatternCommand}"
+                                                                            CommandParameter="{Binding Tag, RelativeSource={RelativeSource Self}}">
                                                                         <StackPanel HorizontalAlignment="Center">
                                                                             <Rectangle Width="22"
                                                                                        Height="22"
@@ -621,7 +632,8 @@
                                                                             Grid.Row="2"
                                                                             Grid.Column="2"
                                                                             Tag="Sparkle"
-                                                                            Click="PatternTile_Click">
+                                                                            Command="{Binding SelectLightPatternCommand}"
+                                                                            CommandParameter="{Binding Tag, RelativeSource={RelativeSource Self}}">
                                                                         <StackPanel HorizontalAlignment="Center">
                                                                             <Rectangle Width="22"
                                                                                        Height="22"
@@ -643,7 +655,8 @@
                                                                             Grid.Column="4"
                                                                             Grid.ColumnSpan="3"
                                                                             Tag="Rave"
-                                                                            Click="PatternTile_Click">
+                                                                            Command="{Binding SelectLightPatternCommand}"
+                                                                            CommandParameter="{Binding Tag, RelativeSource={RelativeSource Self}}">
                                                                         <StackPanel HorizontalAlignment="Center">
                                                                             <Rectangle Width="22"
                                                                                        Height="22"
@@ -1088,12 +1101,14 @@
                                                             <Button x:Name="RuleSingleAudioModeButton"
                                                                     Content="Audio unico"
                                                                     Tag="Single"
-                                                                    Click="RuleAudioModeButton_Click" />
+                                                                    Command="{Binding SelectAudioModeCommand}"
+                                                                    CommandParameter="{Binding Tag, RelativeSource={RelativeSource Self}}" />
                                                             <Button x:Name="RuleGroupAudioModeButton"
                                                                     Grid.Column="2"
                                                                     Content="Grupo aleatorio"
                                                                     Tag="Group"
-                                                                    Click="RuleAudioModeButton_Click" />
+                                                                    Command="{Binding SelectAudioModeCommand}"
+                                                                    CommandParameter="{Binding Tag, RelativeSource={RelativeSource Self}}" />
 
                                                             <StackPanel x:Name="RuleAudioSinglePanel"
                                                                         Grid.Row="1"
@@ -1312,12 +1327,14 @@
                                                                 <Button x:Name="RuleObsImageModeButton"
                                                                         Content="Imagen"
                                                                         Tag="Image"
-                                                                        Click="RuleObsMediaKindButton_Click" />
+                                                                        Command="{Binding SelectObsMediaKindCommand}"
+                                                                        CommandParameter="{Binding Tag, RelativeSource={RelativeSource Self}}" />
                                                                 <Button x:Name="RuleObsVideoModeButton"
                                                                         Grid.Column="2"
                                                                         Content="Video"
                                                                         Tag="Video"
-                                                                        Click="RuleObsMediaKindButton_Click" />
+                                                                        Command="{Binding SelectObsMediaKindCommand}"
+                                                                        CommandParameter="{Binding Tag, RelativeSource={RelativeSource Self}}" />
                                                             </Grid>
                                                             <ComboBox x:Name="RuleObsMediaKindBox"
                                                                       Visibility="Collapsed"
@@ -1334,12 +1351,14 @@
                                                                 <Button x:Name="RuleObsSingleMediaModeButton"
                                                                         Content="Individual"
                                                                         Tag="Single"
-                                                                        Click="RuleObsMediaSourceModeButton_Click" />
+                                                                        Command="{Binding SelectObsMediaSourceModeCommand}"
+                                                                        CommandParameter="{Binding Tag, RelativeSource={RelativeSource Self}}" />
                                                                 <Button x:Name="RuleObsGroupMediaModeButton"
                                                                         Grid.Column="2"
                                                                         Content="Grupo aleatorio"
                                                                         Tag="Group"
-                                                                        Click="RuleObsMediaSourceModeButton_Click" />
+                                                                        Command="{Binding SelectObsMediaSourceModeCommand}"
+                                                                        CommandParameter="{Binding Tag, RelativeSource={RelativeSource Self}}" />
                                                             </Grid>
                                                             <ComboBox x:Name="RuleObsMediaSourceModeBox"
                                                                       Visibility="Collapsed"

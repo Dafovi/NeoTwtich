@@ -133,11 +133,9 @@ public partial class MainWindow
         }
     }
 
-    internal void PatternTile_Click(object sender, RoutedEventArgs e)
+    private void SelectRuleLightPattern(object? parameter)
     {
-        if (sender is not System.Windows.Controls.Button button
-            || button.Tag is not string value
-            || !Enum.TryParse<LightPattern>(value, out var pattern))
+        if (!TryParseEnumParameter<LightPattern>(parameter, out var pattern))
         {
             return;
         }

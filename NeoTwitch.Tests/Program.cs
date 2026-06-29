@@ -40,6 +40,7 @@ var tests = new (string Name, Action Body)[]
     ("EventRuleFilterService filters status and category", EventRuleFilterTests.FiltersStatusAndCategory),
     ("EventRuleFilterService searches editable text", EventRuleFilterTests.SearchesEditableText),
     ("AlertsViewModel maps filters and count", AlertsViewModelTests.MapsFiltersAndCount),
+    ("AlertsViewModel executes editor selector commands", AlertsViewModelTests.ExecutesEditorSelectorCommands),
     ("EventRulePresentationService builds row display metadata", EventRulePresentationTests.BuildsRowDisplayMetadata),
     ("EventRuleSnapshotService clones editable values independently", EventRuleSnapshotTests.CloneCopiesEditableValues),
     ("EventRuleSnapshotService detects editable changes", EventRuleSnapshotTests.DetectsEditableChanges),
@@ -516,6 +517,29 @@ static class AlertsViewModelTests
         viewModel.RemoveRuleCommand.Execute(null);
 
         TestAssert.Equal("add,duplicate,test,save,remove", string.Join(",", actions));
+    }
+
+    public static void ExecutesEditorSelectorCommands()
+    {
+        var actions = new List<string>();
+        var viewModel = new AlertsViewModel(UiOptionCatalog.RuleCategoryOptions);
+
+        viewModel.ConfigureEditorActions(
+            parameter => actions.Add($"event:{parameter}"),
+            parameter => actions.Add($"pattern:{parameter}"),
+            parameter => actions.Add($"audio:{parameter}"),
+            parameter => actions.Add($"obs-kind:{parameter}"),
+            parameter => actions.Add($"obs-mode:{parameter}"));
+
+        viewModel.SelectEventKindCommand.Execute(TwitchEventKind.Follow);
+        viewModel.SelectLightPatternCommand.Execute(LightPattern.Rave);
+        viewModel.SelectAudioModeCommand.Execute(AudioSourceMode.Group);
+        viewModel.SelectObsMediaKindCommand.Execute(ObsMediaKind.Video);
+        viewModel.SelectObsMediaSourceModeCommand.Execute(MediaSourceMode.Single);
+
+        TestAssert.Equal(
+            "event:Follow,pattern:Rave,audio:Group,obs-kind:Video,obs-mode:Single",
+            string.Join(",", actions));
     }
 }
 

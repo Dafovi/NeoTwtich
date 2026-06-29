@@ -35,6 +35,7 @@ public sealed class AlertsViewModel : ObservableObject
         _rulesViewSource.Filter += RulesViewSource_Filter;
         SelectStatusFilterCommand = new RelayCommand(parameter => SelectStatusFilter(parameter?.ToString()));
         ConfigureActions(NoOp, NoOp, NoOp, NoOp, NoOp);
+        ConfigureEditorActions(NoOp, NoOp, NoOp, NoOp, NoOp);
     }
 
     public event EventHandler? FiltersChanged;
@@ -56,6 +57,16 @@ public sealed class AlertsViewModel : ObservableObject
     public ICommand SaveRuleCommand { get; private set; } = new RelayCommand(NoOp);
 
     public ICommand RemoveRuleCommand { get; private set; } = new RelayCommand(NoOp);
+
+    public ICommand SelectEventKindCommand { get; private set; } = new RelayCommand(NoOp);
+
+    public ICommand SelectLightPatternCommand { get; private set; } = new RelayCommand(NoOp);
+
+    public ICommand SelectAudioModeCommand { get; private set; } = new RelayCommand(NoOp);
+
+    public ICommand SelectObsMediaKindCommand { get; private set; } = new RelayCommand(NoOp);
+
+    public ICommand SelectObsMediaSourceModeCommand { get; private set; } = new RelayCommand(NoOp);
 
     public EventRule? SelectedRule
     {
@@ -165,6 +176,26 @@ public sealed class AlertsViewModel : ObservableObject
         OnPropertyChanged(nameof(RemoveRuleCommand));
     }
 
+    public void ConfigureEditorActions(
+        Action<object?> selectEventKind,
+        Action<object?> selectLightPattern,
+        Action<object?> selectAudioMode,
+        Action<object?> selectObsMediaKind,
+        Action<object?> selectObsMediaSourceMode)
+    {
+        SelectEventKindCommand = new RelayCommand(selectEventKind);
+        SelectLightPatternCommand = new RelayCommand(selectLightPattern);
+        SelectAudioModeCommand = new RelayCommand(selectAudioMode);
+        SelectObsMediaKindCommand = new RelayCommand(selectObsMediaKind);
+        SelectObsMediaSourceModeCommand = new RelayCommand(selectObsMediaSourceMode);
+
+        OnPropertyChanged(nameof(SelectEventKindCommand));
+        OnPropertyChanged(nameof(SelectLightPatternCommand));
+        OnPropertyChanged(nameof(SelectAudioModeCommand));
+        OnPropertyChanged(nameof(SelectObsMediaKindCommand));
+        OnPropertyChanged(nameof(SelectObsMediaSourceModeCommand));
+    }
+
     public void SelectStatusFilter(string? status)
     {
         StatusFilter = NormalizeStatusFilter(status);
@@ -260,6 +291,10 @@ public sealed class AlertsViewModel : ObservableObject
     }
 
     private static void NoOp()
+    {
+    }
+
+    private static void NoOp(object? _)
     {
     }
 }

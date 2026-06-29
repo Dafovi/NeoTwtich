@@ -12,10 +12,5 @@ public partial class MainWindow
     private Border DashboardAlexaStatusIcon => DashboardView.DashboardAlexaStatusIcon;
     private TextBlock DashboardObsStateText => DashboardView.DashboardObsStateText;
     private Border DashboardObsStatusIcon => DashboardView.DashboardObsStatusIcon;
-    private TextBlock DashboardFollowersSummaryText => DashboardView.DashboardFollowersSummaryText;
-    private TextBlock DashboardSubsSummaryText => DashboardView.DashboardSubsSummaryText;
-    private TextBlock DashboardBitsSummaryText => DashboardView.DashboardBitsSummaryText;
-    private TextBlock DashboardChatSummaryText => DashboardView.DashboardChatSummaryText;
-    private TextBlock DashboardEventsSummaryText => DashboardView.DashboardEventsSummaryText;
     private System.Windows.Controls.ListBox DashboardActivityList => DashboardView.DashboardActivityList;
 }

@@ -14,6 +14,7 @@ using NeoTwitch.Services.Text;
 using NeoTwitch.Services.Ui;
 using NeoTwitch.Shared;
 using NeoTwitch.ViewModels.Activity;
+using NeoTwitch.ViewModels.Dashboard;
 using NeoTwitch.ViewModels.Library;
 using NeoTwitch.ViewModels.Obs;
 using NeoTwitch.ViewModels.Shell;
@@ -92,6 +93,7 @@ var tests = new (string Name, Action Body)[]
     ("DashboardSummaryService counts Twitch events", DashboardSummaryTests.CountsTwitchEvents),
     ("DashboardSummaryService counts matched rules safely", DashboardSummaryTests.CountsMatchedRulesSafely),
     ("DashboardSummaryDisplayService formats summary metrics", DashboardSummaryDisplayTests.FormatsSummaryMetrics),
+    ("DashboardViewModel updates summary metrics", DashboardViewModelTests.UpdatesSummaryMetrics),
     ("DashboardStatusTextService formats live Twitch status", DashboardStatusTextTests.FormatsLiveTwitchStatus),
     ("DashboardStatusTextService formats connection labels", DashboardStatusTextTests.FormatsConnectionLabels),
     ("DashboardStatusTextService formats Arduino status", DashboardStatusTextTests.FormatsArduinoStatus),
@@ -1821,6 +1823,26 @@ static class DashboardSummaryDisplayTests
         TestAssert.Equal("+300", display.Bits.Text);
         TestAssert.Equal("4", display.ChatMessages.Text);
         TestAssert.Equal("5", display.Events.Text);
+    }
+}
+
+static class DashboardViewModelTests
+{
+    public static void UpdatesSummaryMetrics()
+    {
+        var viewModel = new DashboardViewModel(() => { });
+        var display = DashboardSummaryDisplayService.Build(new DashboardSummarySnapshot(
+            Followers: 7,
+            Subscriptions: 2,
+            Bits: 900,
+            ChatMessages: 3,
+            Events: 4));
+
+        viewModel.UpdateSummary(display);
+
+        TestAssert.Equal("+7", viewModel.Followers.Text);
+        TestAssert.Equal("+900", viewModel.Bits.Text);
+        TestAssert.Equal("4", viewModel.Events.Text);
     }
 }
 

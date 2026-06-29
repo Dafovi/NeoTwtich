@@ -7,6 +7,21 @@ namespace NeoTwitch.ViewModels.Connections;
 
 public sealed class ConnectionsViewModel : ObservableObject
 {
+    private Action _save = Noop;
+    private Action _toggleTwitch = Noop;
+    private Action _openTwitchConsole = Noop;
+    private Action _toggleClientIdVisibility = Noop;
+    private Action _toggleClientSecretVisibility = Noop;
+    private Action _detectPorts = Noop;
+    private Action _connectArduino = Noop;
+    private Action _openAlexaConsole = Noop;
+    private Action _testAlexa = Noop;
+    private Action _toggleAlexaRelayUrlVisibility = Noop;
+    private Action _toggleAlexaAuthTokenVisibility = Noop;
+    private Action _openObsGuide = Noop;
+    private Action _connectObs = Noop;
+    private Action _testObs = Noop;
+    private Action _toggleObsPasswordVisibility = Noop;
     private ConnectionBadgeViewModel _twitchBadge = ConnectionBadgeViewModel.From("Desconectado", "#F43F5E");
     private ConnectionBadgeViewModel _arduinoBadge = ConnectionBadgeViewModel.From("Desconectado", "#F43F5E");
     private ConnectionBadgeViewModel _alexaBadge = ConnectionBadgeViewModel.From("Desconectado", "#F43F5E");
@@ -18,6 +33,55 @@ public sealed class ConnectionsViewModel : ObservableObject
     private ConnectionButtonViewModel _obsTestButton = ConnectionButtonViewModel.From("Actualizar escenas", "Refresh", isEnabled: false);
     private string _alexaStatusText = "";
     private string _obsConnectionHelpText = "";
+
+    public ConnectionsViewModel()
+    {
+        SaveCommand = new RelayCommand(() => _save());
+        ToggleTwitchCommand = new RelayCommand(() => _toggleTwitch());
+        OpenTwitchConsoleCommand = new RelayCommand(() => _openTwitchConsole());
+        ToggleClientIdVisibilityCommand = new RelayCommand(() => _toggleClientIdVisibility());
+        ToggleClientSecretVisibilityCommand = new RelayCommand(() => _toggleClientSecretVisibility());
+        DetectPortsCommand = new RelayCommand(() => _detectPorts());
+        ConnectArduinoCommand = new RelayCommand(() => _connectArduino());
+        OpenAlexaConsoleCommand = new RelayCommand(() => _openAlexaConsole());
+        TestAlexaCommand = new RelayCommand(() => _testAlexa());
+        ToggleAlexaRelayUrlVisibilityCommand = new RelayCommand(() => _toggleAlexaRelayUrlVisibility());
+        ToggleAlexaAuthTokenVisibilityCommand = new RelayCommand(() => _toggleAlexaAuthTokenVisibility());
+        OpenObsGuideCommand = new RelayCommand(() => _openObsGuide());
+        ConnectObsCommand = new RelayCommand(() => _connectObs());
+        TestObsCommand = new RelayCommand(() => _testObs());
+        ToggleObsPasswordVisibilityCommand = new RelayCommand(() => _toggleObsPasswordVisibility());
+    }
+
+    public RelayCommand SaveCommand { get; }
+
+    public RelayCommand ToggleTwitchCommand { get; }
+
+    public RelayCommand OpenTwitchConsoleCommand { get; }
+
+    public RelayCommand ToggleClientIdVisibilityCommand { get; }
+
+    public RelayCommand ToggleClientSecretVisibilityCommand { get; }
+
+    public RelayCommand DetectPortsCommand { get; }
+
+    public RelayCommand ConnectArduinoCommand { get; }
+
+    public RelayCommand OpenAlexaConsoleCommand { get; }
+
+    public RelayCommand TestAlexaCommand { get; }
+
+    public RelayCommand ToggleAlexaRelayUrlVisibilityCommand { get; }
+
+    public RelayCommand ToggleAlexaAuthTokenVisibilityCommand { get; }
+
+    public RelayCommand OpenObsGuideCommand { get; }
+
+    public RelayCommand ConnectObsCommand { get; }
+
+    public RelayCommand TestObsCommand { get; }
+
+    public RelayCommand ToggleObsPasswordVisibilityCommand { get; }
 
     public ConnectionBadgeViewModel TwitchBadge
     {
@@ -119,6 +183,44 @@ public sealed class ConnectionsViewModel : ObservableObject
     public void UpdateObsConnectionHelpText(string statusText)
     {
         ObsConnectionHelpText = statusText;
+    }
+
+    public void ConfigureActions(
+        Action save,
+        Action toggleTwitch,
+        Action openTwitchConsole,
+        Action toggleClientIdVisibility,
+        Action toggleClientSecretVisibility,
+        Action detectPorts,
+        Action connectArduino,
+        Action openAlexaConsole,
+        Action testAlexa,
+        Action toggleAlexaRelayUrlVisibility,
+        Action toggleAlexaAuthTokenVisibility,
+        Action openObsGuide,
+        Action connectObs,
+        Action testObs,
+        Action toggleObsPasswordVisibility)
+    {
+        _save = save;
+        _toggleTwitch = toggleTwitch;
+        _openTwitchConsole = openTwitchConsole;
+        _toggleClientIdVisibility = toggleClientIdVisibility;
+        _toggleClientSecretVisibility = toggleClientSecretVisibility;
+        _detectPorts = detectPorts;
+        _connectArduino = connectArduino;
+        _openAlexaConsole = openAlexaConsole;
+        _testAlexa = testAlexa;
+        _toggleAlexaRelayUrlVisibility = toggleAlexaRelayUrlVisibility;
+        _toggleAlexaAuthTokenVisibility = toggleAlexaAuthTokenVisibility;
+        _openObsGuide = openObsGuide;
+        _connectObs = connectObs;
+        _testObs = testObs;
+        _toggleObsPasswordVisibility = toggleObsPasswordVisibility;
+    }
+
+    private static void Noop()
+    {
     }
 }
 

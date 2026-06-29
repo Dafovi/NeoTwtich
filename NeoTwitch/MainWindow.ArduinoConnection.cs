@@ -6,7 +6,7 @@ namespace NeoTwitch;
 
 public partial class MainWindow
 {
-    internal async void ConnectArduinoButton_Click(object sender, RoutedEventArgs e)
+    private async void ConnectArduino()
     {
         if (_isArduinoConnecting)
         {

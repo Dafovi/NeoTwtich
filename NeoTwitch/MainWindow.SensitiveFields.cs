@@ -6,31 +6,31 @@ namespace NeoTwitch;
 
 public partial class MainWindow
 {
-    internal void ToggleClientIdVisibility_Click(object sender, RoutedEventArgs e)
+    private void ToggleClientIdVisibility()
     {
         _showClientId = !_showClientId;
         UpdateSensitiveFieldVisibility();
     }
 
-    internal void ToggleClientSecretVisibility_Click(object sender, RoutedEventArgs e)
+    private void ToggleClientSecretVisibility()
     {
         _showClientSecret = !_showClientSecret;
         UpdateSensitiveFieldVisibility();
     }
 
-    internal void ToggleAlexaRelayUrlVisibility_Click(object sender, RoutedEventArgs e)
+    private void ToggleAlexaRelayUrlVisibility()
     {
         _showAlexaRelayUrl = !_showAlexaRelayUrl;
         UpdateSensitiveFieldVisibility();
     }
 
-    internal void ToggleAlexaAuthTokenVisibility_Click(object sender, RoutedEventArgs e)
+    private void ToggleAlexaAuthTokenVisibility()
     {
         _showAlexaAuthToken = !_showAlexaAuthToken;
         UpdateSensitiveFieldVisibility();
     }
 
-    internal void ToggleObsPasswordVisibility_Click(object sender, RoutedEventArgs e)
+    private void ToggleObsPasswordVisibility()
     {
         _showObsPassword = !_showObsPassword;
         UpdateSensitiveFieldVisibility();

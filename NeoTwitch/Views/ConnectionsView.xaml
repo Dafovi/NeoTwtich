@@ -52,7 +52,7 @@
                                 Style="{StaticResource PrimaryButton}"
                                 HorizontalAlignment="Stretch"
                                 VerticalAlignment="Top"
-                                Click="SaveButton_Click" />
+                                Command="{Binding SaveCommand}" />
                     </Grid>
 
                     <ScrollViewer Grid.Row="1"
@@ -152,7 +152,7 @@
                                                     HorizontalAlignment="Right"
                                                     VerticalAlignment="Stretch"
                                                     ToolTip="Mostrar u ocultar Client ID"
-                                                    Click="ToggleClientIdVisibility_Click" />
+                                                    Command="{Binding ToggleClientIdVisibilityCommand}" />
                                         </Grid>
                                     </StackPanel>
                                     <StackPanel Grid.Column="2">
@@ -180,7 +180,7 @@
                                                     HorizontalAlignment="Right"
                                                     VerticalAlignment="Stretch"
                                                     ToolTip="Mostrar u ocultar Client Secret"
-                                                    Click="ToggleClientSecretVisibility_Click" />
+                                                    Command="{Binding ToggleClientSecretVisibilityCommand}" />
                                         </Grid>
                                     </StackPanel>
                                 </Grid>
@@ -189,12 +189,12 @@
                                            HorizontalAlignment="Right"
                                            Margin="0,8,0,0">
                                     <Button Content="Abrir Twitch Console"
-                                            Click="OpenTwitchConsoleButton_Click" />
+                                            Command="{Binding OpenTwitchConsoleCommand}" />
                                     <Button x:Name="TwitchButton"
                                             Style="{StaticResource PrimaryButton}"
                                             Content="{Binding TwitchButton}"
                                             IsEnabled="{Binding TwitchButton.IsEnabled}"
-                                            Click="TwitchButton_Click" />
+                                            Command="{Binding ToggleTwitchCommand}" />
                                 </WrapPanel>
                             </Grid>
                     </Border>
@@ -287,12 +287,12 @@
                                            HorizontalAlignment="Right"
                                            Margin="0,8,0,0">
                                     <Button Content="Detectar puertos"
-                                            Click="DetectPortsButton_Click" />
+                                            Command="{Binding DetectPortsCommand}" />
                                     <Button x:Name="ConnectArduinoButton"
                                             Content="{Binding ArduinoButton}"
                                             IsEnabled="{Binding ArduinoButton.IsEnabled}"
                                             Style="{StaticResource PrimaryButton}"
-                                            Click="ConnectArduinoButton_Click" />
+                                            Command="{Binding ConnectArduinoCommand}" />
                                 </WrapPanel>
                             </Grid>
                     </Border>
@@ -387,7 +387,7 @@
                                                     HorizontalAlignment="Right"
                                                     VerticalAlignment="Stretch"
                                                     ToolTip="Mostrar u ocultar URL de Alexa"
-                                                    Click="ToggleAlexaRelayUrlVisibility_Click" />
+                                                    Command="{Binding ToggleAlexaRelayUrlVisibilityCommand}" />
                                         </Grid>
                                     </StackPanel>
                                     <StackPanel Grid.Column="2">
@@ -415,7 +415,7 @@
                                                     HorizontalAlignment="Right"
                                                     VerticalAlignment="Stretch"
                                                     ToolTip="Mostrar u ocultar token de Alexa"
-                                                    Click="ToggleAlexaAuthTokenVisibility_Click" />
+                                                    Command="{Binding ToggleAlexaAuthTokenVisibilityCommand}" />
                                         </Grid>
                                     </StackPanel>
                                 </Grid>
@@ -433,12 +433,12 @@
                                     <WrapPanel Grid.Column="1"
                                                HorizontalAlignment="Right">
                                         <Button Content="Abrir Alexa Console"
-                                                Click="OpenAlexaConsoleButton_Click" />
+                                                Command="{Binding OpenAlexaConsoleCommand}" />
                                         <Button x:Name="TestAlexaButton"
                                                 Content="{Binding AlexaTestButton}"
                                                 IsEnabled="{Binding AlexaTestButton.IsEnabled}"
                                                 Style="{StaticResource PrimaryButton}"
-                                                Click="TestAlexaButton_Click" />
+                                                Command="{Binding TestAlexaCommand}" />
                                     </WrapPanel>
                                 </Grid>
                             </Grid>
@@ -550,7 +550,7 @@
                                                     HorizontalAlignment="Right"
                                                     VerticalAlignment="Stretch"
                                                     ToolTip="Mostrar u ocultar contraseña de OBS"
-                                                    Click="ToggleObsPasswordVisibility_Click" />
+                                                    Command="{Binding ToggleObsPasswordVisibilityCommand}" />
                                         </Grid>
                                     </StackPanel>
                                 </Grid>
@@ -568,16 +568,16 @@
                                     <WrapPanel Grid.Column="1"
                                                HorizontalAlignment="Right">
                                         <Button Content="Ver guia OBS"
-                                                Click="OpenObsGuideButton_Click" />
+                                                Command="{Binding OpenObsGuideCommand}" />
                                         <Button x:Name="TestObsButton"
                                                 Content="{Binding ObsTestButton}"
                                                 IsEnabled="{Binding ObsTestButton.IsEnabled}"
-                                                Click="TestObsButton_Click" />
+                                                Command="{Binding TestObsCommand}" />
                                         <Button x:Name="ConnectObsButton"
                                                 Content="{Binding ObsButton}"
                                                 IsEnabled="{Binding ObsButton.IsEnabled}"
                                                 Style="{StaticResource PrimaryButton}"
-                                                Click="ConnectObsButton_Click" />
+                                                Command="{Binding ConnectObsCommand}" />
                                     </WrapPanel>
                                 </Grid>
                             </Grid>

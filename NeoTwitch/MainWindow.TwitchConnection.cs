@@ -10,7 +10,7 @@ namespace NeoTwitch;
 
 public partial class MainWindow
 {
-    internal async void TwitchButton_Click(object sender, RoutedEventArgs e)
+    private async void ToggleTwitchConnection()
     {
         if (_isTwitchAuthorizing || _isTwitchConnecting)
         {

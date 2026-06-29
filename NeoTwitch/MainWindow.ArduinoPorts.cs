@@ -1,4 +1,3 @@
-using System.Windows;
 using NeoTwitch.Services;
 using NeoTwitch.Services.Text;
 using static NeoTwitch.Services.InputValueParser;
@@ -40,7 +39,7 @@ public partial class MainWindow
         }
     }
 
-    internal void DetectPortsButton_Click(object sender, RoutedEventArgs e)
+    private void DetectPorts()
     {
         RefreshPortList(choosePreferred: true);
         if (_availablePorts.Count == 0)

@@ -28,6 +28,22 @@ public partial class MainWindow
             _alertsViewModel.FiltersChanged += AlertsFiltersChanged;
             _alertsViewModel.SelectedRuleChanged += AlertsSelectedRuleChanged;
             _connectionsViewModel = new ConnectionsViewModel();
+            _connectionsViewModel.ConfigureActions(
+                SaveSettingsFromUi,
+                ToggleTwitchConnection,
+                OpenTwitchConsole,
+                ToggleClientIdVisibility,
+                ToggleClientSecretVisibility,
+                DetectPorts,
+                ConnectArduino,
+                OpenAlexaConsole,
+                TestAlexaConnection,
+                ToggleAlexaRelayUrlVisibility,
+                ToggleAlexaAuthTokenVisibility,
+                OpenObsGuide,
+                ToggleObsConnection,
+                TestObsConnection,
+                ToggleObsPasswordVisibility);
             _obsViewModel = new ObsViewModel();
             _settingsViewModel = new SettingsViewModel();
             _audioLibraryViewModel = new LibraryScreenViewModel<AudioLibraryRow, AudioGroupRow>();

@@ -99,6 +99,7 @@ var tests = new (string Name, Action Body)[]
     ("ActivityViewModel maps filter properties", ActivityViewModelTests.MapsFilterProperties),
     ("ConnectionsViewModel maps badges and helper text", ConnectionsViewModelTests.MapsBadgesAndHelperText),
     ("ConnectionsViewModel maps button states", ConnectionsViewModelTests.MapsButtonStates),
+    ("ConnectionsViewModel executes configured actions", ConnectionsViewModelTests.ExecutesConfiguredActions),
     ("DashboardConnectionStateService resolves all services", DashboardConnectionStateTests.ResolvesAllServices),
     ("DashboardSummaryService counts Twitch events", DashboardSummaryTests.CountsTwitchEvents),
     ("DashboardSummaryService counts matched rules safely", DashboardSummaryTests.CountsMatchedRulesSafely),
@@ -2108,6 +2109,49 @@ static class ConnectionsViewModelTests
         TestAssert.False(viewModel.AlexaTestButton.IsEnabled);
         TestAssert.Equal("Desconectar OBS", viewModel.ObsButton.Text);
         TestAssert.Equal("Actualizar escenas", viewModel.ObsTestButton.Text);
+    }
+
+    public static void ExecutesConfiguredActions()
+    {
+        var viewModel = new ConnectionsViewModel();
+        var actions = new List<string>();
+
+        viewModel.ConfigureActions(
+            () => actions.Add("save"),
+            () => actions.Add("twitch"),
+            () => actions.Add("open-twitch"),
+            () => actions.Add("client-id"),
+            () => actions.Add("client-secret"),
+            () => actions.Add("ports"),
+            () => actions.Add("arduino"),
+            () => actions.Add("open-alexa"),
+            () => actions.Add("test-alexa"),
+            () => actions.Add("alexa-url"),
+            () => actions.Add("alexa-token"),
+            () => actions.Add("open-obs"),
+            () => actions.Add("connect-obs"),
+            () => actions.Add("test-obs"),
+            () => actions.Add("obs-password"));
+
+        viewModel.SaveCommand.Execute(null);
+        viewModel.ToggleTwitchCommand.Execute(null);
+        viewModel.OpenTwitchConsoleCommand.Execute(null);
+        viewModel.ToggleClientIdVisibilityCommand.Execute(null);
+        viewModel.ToggleClientSecretVisibilityCommand.Execute(null);
+        viewModel.DetectPortsCommand.Execute(null);
+        viewModel.ConnectArduinoCommand.Execute(null);
+        viewModel.OpenAlexaConsoleCommand.Execute(null);
+        viewModel.TestAlexaCommand.Execute(null);
+        viewModel.ToggleAlexaRelayUrlVisibilityCommand.Execute(null);
+        viewModel.ToggleAlexaAuthTokenVisibilityCommand.Execute(null);
+        viewModel.OpenObsGuideCommand.Execute(null);
+        viewModel.ConnectObsCommand.Execute(null);
+        viewModel.TestObsCommand.Execute(null);
+        viewModel.ToggleObsPasswordVisibilityCommand.Execute(null);
+
+        TestAssert.Equal(
+            "save,twitch,open-twitch,client-id,client-secret,ports,arduino,open-alexa,test-alexa,alexa-url,alexa-token,open-obs,connect-obs,test-obs,obs-password",
+            string.Join(",", actions));
     }
 }
 

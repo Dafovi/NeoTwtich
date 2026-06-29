@@ -39,7 +39,7 @@ public partial class MainWindow
         UpdateNavigationButtons();
     }
 
-    internal async void TestAlexaButton_Click(object sender, RoutedEventArgs e)
+    private async void TestAlexaConnection()
     {
         if (_isAlexaConnecting)
         {

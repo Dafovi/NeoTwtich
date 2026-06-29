@@ -11,6 +11,11 @@ public partial class MainWindow
 {
     internal void OpenObsGuideButton_Click(object sender, RoutedEventArgs e)
     {
+        OpenObsGuide();
+    }
+
+    private void OpenObsGuide()
+    {
         Process.Start(new ProcessStartInfo
         {
             FileName = NeoTwitchProduct.Obs.WebSocketGuideUrl,
@@ -45,7 +50,12 @@ public partial class MainWindow
         UpdateSensitiveFieldVisibility();
     }
 
-    internal async void ConnectObsButton_Click(object sender, RoutedEventArgs e)
+    internal void ConnectObsButton_Click(object sender, RoutedEventArgs e)
+    {
+        ToggleObsConnection();
+    }
+
+    private async void ToggleObsConnection()
     {
         if (_isObsConnecting)
         {
@@ -78,7 +88,12 @@ public partial class MainWindow
         }
     }
 
-    internal async void TestObsButton_Click(object sender, RoutedEventArgs e)
+    internal void TestObsButton_Click(object sender, RoutedEventArgs e)
+    {
+        TestObsConnection();
+    }
+
+    private async void TestObsConnection()
     {
         if (_isObsConnecting)
         {

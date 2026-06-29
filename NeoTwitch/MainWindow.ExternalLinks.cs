@@ -9,7 +9,7 @@ namespace NeoTwitch;
 
 public partial class MainWindow
 {
-    internal void OpenTwitchConsoleButton_Click(object sender, RoutedEventArgs e)
+    private void OpenTwitchConsole()
     {
         Process.Start(new ProcessStartInfo
         {
@@ -44,7 +44,7 @@ public partial class MainWindow
         AddLog($"Twitch: abriendo perfil de {channel}.", ActivityLogKind.Twitch);
     }
 
-    internal void OpenAlexaConsoleButton_Click(object sender, RoutedEventArgs e)
+    private void OpenAlexaConsole()
     {
         Process.Start(new ProcessStartInfo
         {

@@ -59,8 +59,7 @@
                                             VerticalAlignment="Center">
                                     <TextBlock Text="Imagenes guardadas"
                                                Style="{StaticResource MutedText}" />
-                                    <TextBlock x:Name="ImageSavedCountText"
-                                               Text="0"
+                                    <TextBlock Text="{Binding AssetCountText}"
                                                Foreground="#37C7F3"
                                                FontSize="20"
                                                FontWeight="SemiBold" />
@@ -96,8 +95,7 @@
                                             VerticalAlignment="Center">
                                     <TextBlock Text="Grupos creados"
                                                Style="{StaticResource MutedText}" />
-                                    <TextBlock x:Name="ImageGroupCountText"
-                                               Text="0"
+                                    <TextBlock Text="{Binding GroupCountText}"
                                                Foreground="#14B8A6"
                                                FontSize="20"
                                                FontWeight="SemiBold" />
@@ -133,8 +131,7 @@
                                             VerticalAlignment="Center">
                                     <TextBlock Text="Ultima imagen"
                                                Style="{StaticResource MutedText}" />
-                                    <TextBlock x:Name="LastImageText"
-                                               Text="Sin uso"
+                                    <TextBlock Text="{Binding LastAssetText}"
                                                Foreground="#B56CFF"
                                                FontSize="16"
                                                FontWeight="SemiBold"
@@ -208,7 +205,8 @@
                                 <ScrollViewer Grid.Row="3"
                                               VerticalScrollBarVisibility="Auto"
                                               HorizontalScrollBarVisibility="Disabled">
-                                    <ItemsControl x:Name="ImageLibraryList">
+                                    <ItemsControl x:Name="ImageLibraryList"
+                                                  ItemsSource="{Binding AssetRows}">
                                         <ItemsControl.ItemTemplate>
                                             <DataTemplate>
                                                 <Border BorderBrush="{DynamicResource ThemeBorderBrush}"
@@ -321,9 +319,8 @@
                                         </ItemsControl.ItemTemplate>
                                     </ItemsControl>
                                 </ScrollViewer>
-                                <TextBlock x:Name="ImageLibraryFooterText"
-                                           Grid.Row="4"
-                                           Text="Mostrando 0 imagenes"
+                                <TextBlock Grid.Row="4"
+                                           Text="{Binding FooterText}"
                                            Style="{StaticResource MutedText}"
                                            Margin="0,12,0,0" />
                             </Grid>
@@ -416,7 +413,8 @@
                                     <ScrollViewer Grid.Row="2"
                                                   VerticalScrollBarVisibility="Auto"
                                                   HorizontalScrollBarVisibility="Disabled">
-                                        <ItemsControl x:Name="ImageGroupsList">
+                                        <ItemsControl x:Name="ImageGroupsList"
+                                                      ItemsSource="{Binding GroupRows}">
                                             <ItemsControl.ItemTemplate>
                                                 <DataTemplate>
                                                     <Border BorderBrush="{DynamicResource ThemeBorderBrush}"

@@ -9,12 +9,9 @@ namespace NeoTwitch;
 
 public partial class MainWindow
 {
-    private readonly ObservableCollection<AudioLibraryRow> _audioLibraryRows = [];
-    private readonly ObservableCollection<AudioGroupRow> _audioGroupRows = [];
-    private readonly ObservableCollection<MediaLibraryRow> _imageLibraryRows = [];
-    private readonly ObservableCollection<MediaGroupRow> _imageGroupRows = [];
-    private readonly ObservableCollection<MediaLibraryRow> _videoLibraryRows = [];
-    private readonly ObservableCollection<MediaGroupRow> _videoGroupRows = [];
+    private LibraryScreenViewModel<AudioLibraryRow, AudioGroupRow> _audioLibraryViewModel = null!;
+    private LibraryScreenViewModel<MediaLibraryRow, MediaGroupRow> _imageLibraryViewModel = null!;
+    private LibraryScreenViewModel<MediaLibraryRow, MediaGroupRow> _videoLibraryViewModel = null!;
     private readonly ObservableCollection<ObsSceneRow> _obsSceneRows = [];
     private readonly ObservableCollection<ObsSceneChoice> _obsSceneChoices = [];
     private readonly ObservableCollection<RuleLedPreviewDot> _ruleLedPreviewDots = [];

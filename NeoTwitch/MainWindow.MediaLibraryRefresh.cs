@@ -34,22 +34,13 @@ public partial class MainWindow
                 .Where(row => MediaRowMatchesFilters(kind, row))
                 .ToArray();
 
-            var rowTarget = GetMediaRows(kind);
-            rowTarget.Clear();
-            foreach (var row in rows)
-            {
-                rowTarget.Add(row);
-            }
+            var libraryViewModel = GetMediaLibraryViewModel(kind);
+            libraryViewModel.ReplaceAssetRows(rows);
 
-            var groupRows = GetMediaGroupRows(kind);
-            groupRows.Clear();
-            foreach (var row in LibraryGroupRowFactoryService.CreateMediaGroupRows(
-                         groups,
-                         library,
-                         count => _text.Format(UiTextKeys.LibraryFileCount, count, count == 1 ? "" : "s")))
-            {
-                groupRows.Add(row);
-            }
+            libraryViewModel.ReplaceGroupRows(LibraryGroupRowFactoryService.CreateMediaGroupRows(
+                groups,
+                library,
+                count => _text.Format(UiTextKeys.LibraryFileCount, count, count == 1 ? "" : "s")));
 
             var summary = LibrarySummaryService.Create(
                 library,
@@ -60,20 +51,14 @@ public partial class MainWindow
                 _text.Get(MediaLibraryKindCatalog.Get(kind).FooterNounKey),
                 GetLibrarySummaryLabels());
 
+            libraryViewModel.UpdateSummary(summary);
+
             if (kind == MediaLibraryKind.Image)
             {
-                ImageSavedCountText.Text = summary.AssetCountText;
-                ImageGroupCountText.Text = summary.GroupCountText;
-                LastImageText.Text = summary.LastAssetText;
-                ImageLibraryFooterText.Text = summary.FooterText;
                 NewImageGroupBox.Items.Refresh();
             }
             else
             {
-                VideoSavedCountText.Text = summary.AssetCountText;
-                VideoGroupCountText.Text = summary.GroupCountText;
-                LastVideoText.Text = summary.LastAssetText;
-                VideoLibraryFooterText.Text = summary.FooterText;
                 NewVideoGroupBox.Items.Refresh();
             }
 

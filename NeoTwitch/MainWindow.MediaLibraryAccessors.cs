@@ -18,14 +18,9 @@ public partial class MainWindow
         return kind == MediaLibraryKind.Image ? _config.ImageGroups : _config.VideoGroups;
     }
 
-    private ObservableCollection<MediaLibraryRow> GetMediaRows(MediaLibraryKind kind)
+    private LibraryScreenViewModel<MediaLibraryRow, MediaGroupRow> GetMediaLibraryViewModel(MediaLibraryKind kind)
     {
-        return kind == MediaLibraryKind.Image ? _imageLibraryRows : _videoLibraryRows;
-    }
-
-    private ObservableCollection<MediaGroupRow> GetMediaGroupRows(MediaLibraryKind kind)
-    {
-        return kind == MediaLibraryKind.Image ? _imageGroupRows : _videoGroupRows;
+        return kind == MediaLibraryKind.Image ? _imageLibraryViewModel : _videoLibraryViewModel;
     }
 
     private string GetMediaSearchText(MediaLibraryKind kind)

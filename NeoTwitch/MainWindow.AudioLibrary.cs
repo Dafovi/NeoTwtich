@@ -57,20 +57,12 @@ public partial class MainWindow
                 .Where(AudioRowMatchesFilters)
                 .ToArray();
 
-            _audioLibraryRows.Clear();
-            foreach (var row in rows)
-            {
-                _audioLibraryRows.Add(row);
-            }
+            _audioLibraryViewModel.ReplaceAssetRows(rows);
 
-            _audioGroupRows.Clear();
-            foreach (var row in LibraryGroupRowFactoryService.CreateAudioGroupRows(
-                         _config.AudioGroups,
-                         _config.AudioLibrary,
-                         count => _text.Format(UiTextKeys.LibraryAudioCount, count, count == 1 ? "" : "s")))
-            {
-                _audioGroupRows.Add(row);
-            }
+            _audioLibraryViewModel.ReplaceGroupRows(LibraryGroupRowFactoryService.CreateAudioGroupRows(
+                _config.AudioGroups,
+                _config.AudioLibrary,
+                count => _text.Format(UiTextKeys.LibraryAudioCount, count, count == 1 ? "" : "s")));
 
             var summary = LibrarySummaryService.Create(
                 _config.AudioLibrary,
@@ -80,10 +72,7 @@ public partial class MainWindow
                 groupsById,
                 _text.Get(UiTextKeys.AudioFooterNoun),
                 GetLibrarySummaryLabels());
-            AudioSavedCountText.Text = summary.AssetCountText;
-            AudioGroupCountText.Text = summary.GroupCountText;
-            LastAudioText.Text = summary.LastAssetText;
-            AudioLibraryFooterText.Text = summary.FooterText;
+            _audioLibraryViewModel.UpdateSummary(summary);
 
             RuleAudioAssetBox.Items.Refresh();
             RuleAudioGroupBox.Items.Refresh();

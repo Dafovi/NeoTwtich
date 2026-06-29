@@ -64,6 +64,7 @@ var tests = new (string Name, Action Body)[]
     ("LibraryGroupService clears group references", LibraryGroupServiceTests.ClearsGroupReferences),
     ("LibraryGroupRowFactoryService builds audio and media groups", LibraryGroupRowFactoryTests.BuildsAudioAndMediaGroups),
     ("LibrarySummaryService formats counts and last usage", LibrarySummaryTests.FormatsCountsAndLastUsage),
+    ("LibraryScreenViewModel updates rows and summary", LibraryScreenViewModelTests.UpdatesRowsAndSummary),
     ("MediaLibraryKindCatalog maps media metadata", MediaLibraryKindCatalogTests.MapsMediaMetadata),
     ("MediaPreviewPlanService builds OBS preview plans", MediaPreviewPlanTests.BuildsPreviewPlans),
     ("LibraryRowFactoryService builds audio rows", LibraryRowFactoryTests.BuildsAudioRows),
@@ -1272,6 +1273,25 @@ static class LibraryRowFactoryTests
         TestAssert.True(row.CanPreview);
         TestAssert.True(row.IsPreviewing);
         TestAssert.Equal(3, row.Index);
+    }
+}
+
+static class LibraryScreenViewModelTests
+{
+    public static void UpdatesRowsAndSummary()
+    {
+        var viewModel = new LibraryScreenViewModel<string, string>();
+
+        viewModel.ReplaceAssetRows(["uno", "dos"]);
+        viewModel.ReplaceGroupRows(["grupo"]);
+        viewModel.UpdateSummary(new LibrarySummaryDisplay("2", "1", "uno", "Mostrando 2"));
+
+        TestAssert.Equal(2, viewModel.AssetRows.Count);
+        TestAssert.Equal(1, viewModel.GroupRows.Count);
+        TestAssert.Equal("2", viewModel.AssetCountText);
+        TestAssert.Equal("1", viewModel.GroupCountText);
+        TestAssert.Equal("uno", viewModel.LastAssetText);
+        TestAssert.Equal("Mostrando 2", viewModel.FooterText);
     }
 }
 

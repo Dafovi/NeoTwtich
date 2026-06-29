@@ -25,6 +25,7 @@ public partial class MainWindow
                 SavePendingRuleChanges,
                 RemoveSelectedRule);
             _alertsViewModel.FiltersChanged += AlertsFiltersChanged;
+            _alertsViewModel.SelectedRuleChanged += AlertsSelectedRuleChanged;
             _connectionsViewModel = new ConnectionsViewModel();
             _obsViewModel = new ObsViewModel();
             _audioLibraryViewModel = new LibraryScreenViewModel<AudioLibraryRow, AudioGroupRow>();

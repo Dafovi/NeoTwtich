@@ -14,8 +14,6 @@ public partial class AlertsView : NeoTwitchView
         AddHandler(ToggleButton.UncheckedEvent, new RoutedEventHandler(RuleFilterButtonStateChanged));
     }
 
-    private void RulesList_SelectionChanged(object sender, SelectionChangedEventArgs e) => Host?.RulesList_SelectionChanged(sender, e);
-
     private void RuleFieldChanged(object sender, RoutedEventArgs e) => Host?.RuleFieldChanged(sender, e);
 
     private void RuleFieldChanged(object sender, TextChangedEventArgs e) => Host?.RuleFieldChanged(sender, e);

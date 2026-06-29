@@ -91,8 +91,7 @@
                                          Background="Transparent"
                                          BorderThickness="0"
                                          ScrollViewer.VerticalScrollBarVisibility="Auto"
-                                         ScrollViewer.HorizontalScrollBarVisibility="Disabled"
-                                         SelectionChanged="RulesList_SelectionChanged">
+                                         ScrollViewer.HorizontalScrollBarVisibility="Disabled">
                                     <ListBox.ItemContainerStyle>
                                         <Style TargetType="ListBoxItem">
                                             <Setter Property="Foreground" Value="{DynamicResource ThemeTextBrush}" />

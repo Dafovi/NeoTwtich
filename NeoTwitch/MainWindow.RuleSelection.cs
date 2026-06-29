@@ -6,7 +6,7 @@ namespace NeoTwitch;
 
 public partial class MainWindow
 {
-    internal void RulesList_SelectionChanged(object sender, SelectionChangedEventArgs e)
+    private void AlertsSelectedRuleChanged(object? sender, EventArgs e)
     {
         if (_initializingComponent || _loadingUi || _suppressRuleSelectionChange)
         {

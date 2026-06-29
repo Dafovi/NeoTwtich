@@ -39,6 +39,8 @@ public sealed class AlertsViewModel : ObservableObject
 
     public event EventHandler? FiltersChanged;
 
+    public event EventHandler? SelectedRuleChanged;
+
     public ICollectionView RulesView => _rulesViewSource.View;
 
     public IReadOnlyList<UiOption<string>> CategoryOptions { get; }
@@ -58,7 +60,13 @@ public sealed class AlertsViewModel : ObservableObject
     public EventRule? SelectedRule
     {
         get => _selectedRule;
-        set => SetProperty(ref _selectedRule, value);
+        set
+        {
+            if (SetProperty(ref _selectedRule, value))
+            {
+                SelectedRuleChanged?.Invoke(this, EventArgs.Empty);
+            }
+        }
     }
 
     public string SearchText

@@ -10,7 +10,7 @@ namespace NeoTwitch;
 
 public partial class MainWindow
 {
-    internal void CreateBackupButton_Click(object sender, RoutedEventArgs e)
+    private void CreateBackup()
     {
         try
         {
@@ -32,7 +32,7 @@ public partial class MainWindow
         }
     }
 
-    internal async void RestoreBackupButton_Click(object sender, RoutedEventArgs e)
+    private async void RestoreBackup()
     {
         var dialog = new WpfOpenFileDialog
         {

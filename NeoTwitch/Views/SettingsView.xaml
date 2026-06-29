@@ -188,9 +188,9 @@
                                                TextWrapping="Wrap"
                                                Margin="0,8,0,14" />
                                     <Button Content="Importar configuracion"
-                                            Click="ImportSettingsButton_Click" />
+                                            Command="{Binding ImportSettingsCommand}" />
                                     <Button Content="Exportar configuracion"
-                                            Click="ExportSettingsButton_Click" />
+                                            Command="{Binding ExportSettingsCommand}" />
                                 </StackPanel>
                             </Border>
 
@@ -207,9 +207,9 @@
                                                TextWrapping="Wrap"
                                                Margin="0,8,0,14" />
                                     <Button Content="Crear backup ahora"
-                                            Click="CreateBackupButton_Click" />
+                                            Command="{Binding CreateBackupCommand}" />
                                     <Button Content="Restaurar backup"
-                                            Click="RestoreBackupButton_Click" />
+                                            Command="{Binding RestoreBackupCommand}" />
                                 </StackPanel>
                             </Border>
 
@@ -226,7 +226,7 @@
                                                TextWrapping="Wrap"
                                                Margin="0,8,0,14" />
                                     <Button Content="Ejecutar diagnostico"
-                                            Click="RunDiagnosticsButton_Click" />
+                                            Command="{Binding RunDiagnosticsCommand}" />
                                     <StackPanel Orientation="Horizontal"
                                                 Margin="0,10,0,0">
                                         <Ellipse Width="10"
@@ -467,7 +467,7 @@
                                         Style="{StaticResource PrimaryButton}"
                                         HorizontalAlignment="Right"
                                         VerticalAlignment="Top"
-                                        Click="SaveButton_Click" />
+                                        Command="{Binding SaveCommand}" />
                             </Grid>
                         </Border>
                     </Grid>

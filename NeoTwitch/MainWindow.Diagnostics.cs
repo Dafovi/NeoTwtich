@@ -14,7 +14,7 @@ namespace NeoTwitch;
 
 public partial class MainWindow
 {
-    internal async void RunDiagnosticsButton_Click(object sender, RoutedEventArgs e)
+    private async void RunDiagnostics()
     {
         try
         {

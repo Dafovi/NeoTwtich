@@ -10,7 +10,7 @@ namespace NeoTwitch;
 
 public partial class MainWindow
 {
-    internal void ExportSettingsButton_Click(object sender, RoutedEventArgs e)
+    private void ExportSettings()
     {
         try
         {
@@ -49,7 +49,7 @@ public partial class MainWindow
         }
     }
 
-    internal async void ImportSettingsButton_Click(object sender, RoutedEventArgs e)
+    private async void ImportSettings()
     {
         var dialog = new WpfOpenFileDialog
         {

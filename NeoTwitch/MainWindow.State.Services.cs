@@ -7,6 +7,7 @@ using NeoTwitch.ViewModels.Alerts;
 using NeoTwitch.ViewModels.Connections;
 using NeoTwitch.ViewModels.Dashboard;
 using NeoTwitch.ViewModels.Obs;
+using NeoTwitch.ViewModels.Settings;
 using NeoTwitch.ViewModels.Shell;
 
 namespace NeoTwitch;
@@ -21,6 +22,7 @@ public partial class MainWindow
     private DashboardViewModel _dashboardViewModel = null!;
     private ConnectionsViewModel _connectionsViewModel = null!;
     private ObsViewModel _obsViewModel = null!;
+    private SettingsViewModel _settingsViewModel = null!;
 
     private SettingsStore _settingsStore => _services.SettingsStore;
     private AudioPlayerService _audioPlayer => _services.AudioPlayer;

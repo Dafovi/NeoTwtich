@@ -5,7 +5,12 @@ namespace NeoTwitch;
 
 public partial class MainWindow
 {
-    internal async void SaveButton_Click(object sender, RoutedEventArgs e)
+    internal void SaveButton_Click(object sender, RoutedEventArgs e)
+    {
+        SaveSettingsFromUi();
+    }
+
+    private async void SaveSettingsFromUi()
     {
         SaveEditableStateFromFields();
         SaveConfig();

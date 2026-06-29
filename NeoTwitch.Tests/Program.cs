@@ -19,6 +19,7 @@ using NeoTwitch.ViewModels.Connections;
 using NeoTwitch.ViewModels.Dashboard;
 using NeoTwitch.ViewModels.Library;
 using NeoTwitch.ViewModels.Obs;
+using NeoTwitch.ViewModels.Settings;
 using NeoTwitch.ViewModels.Shell;
 using NeoTwitch.ViewModels.Status;
 
@@ -67,6 +68,7 @@ var tests = new (string Name, Action Body)[]
     ("LibraryGroupRowFactoryService builds audio and media groups", LibraryGroupRowFactoryTests.BuildsAudioAndMediaGroups),
     ("LibrarySummaryService formats counts and last usage", LibrarySummaryTests.FormatsCountsAndLastUsage),
     ("LibraryScreenViewModel updates rows and summary", LibraryScreenViewModelTests.UpdatesRowsAndSummary),
+    ("SettingsViewModel executes configured actions", SettingsViewModelTests.ExecutesConfiguredActions),
     ("MediaLibraryKindCatalog maps media metadata", MediaLibraryKindCatalogTests.MapsMediaMetadata),
     ("MediaPreviewPlanService builds OBS preview plans", MediaPreviewPlanTests.BuildsPreviewPlans),
     ("LibraryRowFactoryService builds audio rows", LibraryRowFactoryTests.BuildsAudioRows),
@@ -1409,6 +1411,32 @@ static class LibraryScreenViewModelTests
         viewModel.DeleteAssetCommand.Execute("a1");
 
         TestAssert.Equal("browse,save,add-group,view:g1,delete-group:g1,preview:a1,delete:a1", string.Join(",", actions));
+    }
+}
+
+static class SettingsViewModelTests
+{
+    public static void ExecutesConfiguredActions()
+    {
+        var viewModel = new SettingsViewModel();
+        var actions = new List<string>();
+
+        viewModel.ConfigureActions(
+            () => actions.Add("import"),
+            () => actions.Add("export"),
+            () => actions.Add("backup"),
+            () => actions.Add("restore"),
+            () => actions.Add("diagnostics"),
+            () => actions.Add("save"));
+
+        viewModel.ImportSettingsCommand.Execute(null);
+        viewModel.ExportSettingsCommand.Execute(null);
+        viewModel.CreateBackupCommand.Execute(null);
+        viewModel.RestoreBackupCommand.Execute(null);
+        viewModel.RunDiagnosticsCommand.Execute(null);
+        viewModel.SaveCommand.Execute(null);
+
+        TestAssert.Equal("import,export,backup,restore,diagnostics,save", string.Join(",", actions));
     }
 }
 

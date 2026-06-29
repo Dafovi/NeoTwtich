@@ -6,6 +6,7 @@ using NeoTwitch.ViewModels.Connections;
 using NeoTwitch.ViewModels.Dashboard;
 using NeoTwitch.ViewModels.Library;
 using NeoTwitch.ViewModels.Obs;
+using NeoTwitch.ViewModels.Settings;
 
 namespace NeoTwitch;
 
@@ -28,9 +29,17 @@ public partial class MainWindow
             _alertsViewModel.SelectedRuleChanged += AlertsSelectedRuleChanged;
             _connectionsViewModel = new ConnectionsViewModel();
             _obsViewModel = new ObsViewModel();
+            _settingsViewModel = new SettingsViewModel();
             _audioLibraryViewModel = new LibraryScreenViewModel<AudioLibraryRow, AudioGroupRow>();
             _imageLibraryViewModel = new LibraryScreenViewModel<MediaLibraryRow, MediaGroupRow>();
             _videoLibraryViewModel = new LibraryScreenViewModel<MediaLibraryRow, MediaGroupRow>();
+            _settingsViewModel.ConfigureActions(
+                ImportSettings,
+                ExportSettings,
+                CreateBackup,
+                RestoreBackup,
+                RunDiagnostics,
+                SaveSettingsFromUi);
             _audioLibraryViewModel.ConfigureActions(BrowseNewAudio, SaveNewAudio, AddAudioGroup, ViewAudioGroup, DeleteAudioGroup, PreviewAudio, DeleteAudio);
             _imageLibraryViewModel.ConfigureActions(
                 () => BrowseNewMedia(MediaLibraryKind.Image),
@@ -55,6 +64,7 @@ public partial class MainWindow
             AlertsView.DataContext = _alertsViewModel;
             ConnectionsView.DataContext = _connectionsViewModel;
             ObsView.DataContext = _obsViewModel;
+            SettingsView.DataContext = _settingsViewModel;
             ActivityView.DataContext = _activityViewModel;
             AudioView.DataContext = _audioLibraryViewModel;
             ImagesView.DataContext = _imageLibraryViewModel;

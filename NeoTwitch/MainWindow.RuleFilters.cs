@@ -17,16 +17,16 @@ public partial class MainWindow
     private void RefreshRulesView()
     {
         UpdateRuleExternalActionAvailability();
-        var selected = RulesList.SelectedItem as EventRule;
+        var selected = _alertsViewModel.SelectedRule;
         _alertsViewModel.RefreshRules();
 
         if (selected is not null && _alertsViewModel.ContainsRule(selected))
         {
-            RulesList.SelectedItem = selected;
+            _alertsViewModel.SelectedRule = selected;
         }
-        else if (RulesList.SelectedItem is not EventRule)
+        else
         {
-            RulesList.SelectedItem = _alertsViewModel.FirstVisibleRule();
+            _alertsViewModel.SelectedRule = _alertsViewModel.FirstVisibleRule();
         }
     }
 

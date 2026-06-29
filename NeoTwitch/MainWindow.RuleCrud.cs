@@ -23,7 +23,7 @@ public partial class MainWindow
         _config.Rules.Add(rule);
         ShowAllRuleFilters();
         RefreshRulesView();
-        RulesList.SelectedItem = rule;
+        _alertsViewModel.SelectedRule = rule;
         SaveConfig();
         ScheduleTwitchSubscriptionRefreshIfNeeded();
     }
@@ -40,7 +40,7 @@ public partial class MainWindow
             return;
         }
 
-        if (RulesList.SelectedItem is not EventRule rule)
+        if (_alertsViewModel.SelectedRule is not EventRule rule)
         {
             return;
         }
@@ -49,7 +49,7 @@ public partial class MainWindow
         _config.Rules.Add(copy);
         ShowAllRuleFilters();
         RefreshRulesView();
-        RulesList.SelectedItem = copy;
+        _alertsViewModel.SelectedRule = copy;
         SaveConfig();
         ScheduleTwitchSubscriptionRefreshIfNeeded();
     }
@@ -66,7 +66,7 @@ public partial class MainWindow
             return;
         }
 
-        if (RulesList.SelectedItem is not EventRule rule)
+        if (_alertsViewModel.SelectedRule is not EventRule rule)
         {
             return;
         }
@@ -81,15 +81,15 @@ public partial class MainWindow
             return;
         }
 
-        var wasSelected = ReferenceEquals(RulesList.SelectedItem, rule);
+        var wasSelected = ReferenceEquals(_alertsViewModel.SelectedRule, rule);
         _config.Rules.Remove(rule);
         RefreshRulesView();
 
         if (_config.Rules.Count > 0)
         {
-            if (wasSelected || RulesList.SelectedItem is not EventRule)
+            if (wasSelected || _alertsViewModel.SelectedRule is null)
             {
-                RulesList.SelectedItem = _alertsViewModel.FirstVisibleRule();
+                _alertsViewModel.SelectedRule = _alertsViewModel.FirstVisibleRule();
             }
         }
         else

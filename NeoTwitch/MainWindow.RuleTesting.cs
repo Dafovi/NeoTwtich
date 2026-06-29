@@ -46,7 +46,7 @@ public partial class MainWindow
 
     private async Task StartRuleTestAsync()
     {
-        if (RulesList.SelectedItem is not EventRule rule)
+        if (_alertsViewModel.SelectedRule is not EventRule rule)
         {
             return;
         }

@@ -81,7 +81,7 @@ public partial class MainWindow
 
         RefreshObsSceneChoices();
 
-        if (RulesList.SelectedItem is EventRule rule
+        if (_alertsViewModel.SelectedRule is EventRule rule
             && !string.IsNullOrWhiteSpace(rule.ObsSceneName)
             && _obsSceneRows.Any(scene => string.Equals(scene.Name, rule.ObsSceneName, StringComparison.OrdinalIgnoreCase)))
         {

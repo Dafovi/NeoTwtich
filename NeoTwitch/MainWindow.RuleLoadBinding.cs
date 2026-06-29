@@ -11,9 +11,9 @@ public partial class MainWindow
 
         try
         {
-            _alertsViewModel.SetEditorEnabled(RulesList.SelectedItem is EventRule);
+            _alertsViewModel.SetEditorEnabled(_alertsViewModel.SelectedRule is EventRule);
 
-            if (RulesList.SelectedItem is not EventRule rule)
+            if (_alertsViewModel.SelectedRule is not EventRule rule)
             {
                 _editingRule = null;
                 _loadedRuleSnapshot = null;

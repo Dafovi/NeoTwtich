@@ -9,7 +9,7 @@ public partial class MainWindow
     {
         if (_loadingRule
             || _editingRule is not EventRule rule
-            || RulesList.SelectedItem is not EventRule selectedRule
+            || _alertsViewModel.SelectedRule is not EventRule selectedRule
             || !ReferenceEquals(selectedRule, rule)
             || !_config.Rules.Contains(rule)
             || EventKindBox.SelectedValue is not TwitchEventKind kind

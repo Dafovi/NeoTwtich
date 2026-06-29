@@ -100,7 +100,7 @@ public partial class MainWindow
             rule.AudioAssetId = audio.Id;
             rule.AudioGroupId = "";
             rule.AudioPath = audio.FilePath;
-            if (ReferenceEquals(RulesList.SelectedItem, rule))
+            if (ReferenceEquals(_alertsViewModel.SelectedRule, rule))
             {
                 LoadSelectedRuleIntoUi();
             }

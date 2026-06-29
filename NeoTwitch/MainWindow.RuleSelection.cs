@@ -15,7 +15,7 @@ public partial class MainWindow
 
         if (_hasUnsavedRuleChanges
             && _editingRule is not null
-            && RulesList.SelectedItem is EventRule selected
+            && _alertsViewModel.SelectedRule is EventRule selected
             && !ReferenceEquals(selected, _editingRule))
         {
             if (!ResolvePendingRuleChanges())
@@ -23,7 +23,7 @@ public partial class MainWindow
                 try
                 {
                     _suppressRuleSelectionChange = true;
-                    RulesList.SelectedItem = _editingRule;
+                    _alertsViewModel.SelectedRule = _editingRule;
                 }
                 finally
                 {

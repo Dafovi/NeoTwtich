@@ -18,6 +18,7 @@ public sealed class AlertsViewModel : ObservableObject
     private bool _isEditorEnabled;
     private bool _hasUnsavedChanges;
     private bool _suppressFilterEvents;
+    private EventRule? _selectedRule;
     private readonly CollectionViewSource _rulesViewSource = new();
     private readonly IUiTextService _text;
     private IList<EventRule>? _rules;
@@ -53,6 +54,12 @@ public sealed class AlertsViewModel : ObservableObject
     public ICommand SaveRuleCommand { get; private set; } = new RelayCommand(NoOp);
 
     public ICommand RemoveRuleCommand { get; private set; } = new RelayCommand(NoOp);
+
+    public EventRule? SelectedRule
+    {
+        get => _selectedRule;
+        set => SetProperty(ref _selectedRule, value);
+    }
 
     public string SearchText
     {

@@ -469,6 +469,8 @@ static class AlertsViewModelTests
         TestAssert.True(viewModel.ContainsRule(activeRaid));
         TestAssert.False(viewModel.ContainsRule(inactiveRaid));
         TestAssert.Same(activeRaid, viewModel.FirstVisibleRule());
+        viewModel.SelectedRule = activeRaid;
+        TestAssert.Same(activeRaid, viewModel.SelectedRule);
         TestAssert.True(changes >= 3);
 
         viewModel.SetEditorEnabled(true);

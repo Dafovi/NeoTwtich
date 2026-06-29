@@ -65,7 +65,7 @@ public partial class MainWindow
             EventRuleSnapshotService.CopyValues(_loadedRuleSnapshot, revertedRule);
             RefreshRulesView();
             SaveConfig();
-            if (ReferenceEquals(RulesList.SelectedItem, revertedRule))
+            if (ReferenceEquals(_alertsViewModel.SelectedRule, revertedRule))
             {
                 LoadSelectedRuleIntoUi();
                 return;

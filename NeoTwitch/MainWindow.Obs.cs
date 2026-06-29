@@ -34,7 +34,7 @@ public partial class MainWindow
             && !string.Equals(previousConnectionSignature, ObsConnectionSignature(), StringComparison.Ordinal))
         {
             await _obsService.DisconnectAsync();
-            _obsSceneRows.Clear();
+            _obsViewModel.ClearScenes();
             AddLog("OBS desconectado porque cambio la configuracion de conexion.", ActivityLogKind.Obs);
         }
 
@@ -61,7 +61,7 @@ public partial class MainWindow
             {
                 await _obsService.DisconnectAsync();
                 _obsConnectionError = "";
-                _obsSceneRows.Clear();
+                _obsViewModel.ClearScenes();
                 AddLog("OBS desconectado.", ActivityLogKind.Obs);
                 UpdateObsStatusText();
                 return;

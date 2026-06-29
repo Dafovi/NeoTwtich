@@ -52,8 +52,7 @@
                                             VerticalAlignment="Center">
                                     <TextBlock Text="Estado OBS"
                                                FontWeight="SemiBold" />
-                                    <TextBlock x:Name="ObsConnectionStateText"
-                                               Text="Desconectado"
+                                    <TextBlock Text="{Binding ConnectionState}"
                                                Foreground="#F43F5E"
                                                FontWeight="SemiBold"
                                                Margin="0,5,0,0" />
@@ -81,8 +80,7 @@
                                     <TextBlock Text="Escena actual"
                                                Style="{StaticResource MutedText}"
                                                FontSize="12" />
-                                    <TextBlock x:Name="ObsCurrentSceneText"
-                                               Text="Sin escena"
+                                    <TextBlock Text="{Binding CurrentScene}"
                                                Foreground="#14B8A6"
                                                FontSize="18"
                                                FontWeight="SemiBold"
@@ -111,8 +109,7 @@
                                     <TextBlock Text="Escenas disponibles"
                                                Style="{StaticResource MutedText}"
                                                FontSize="12" />
-                                    <TextBlock x:Name="ObsSceneCountText"
-                                               Text="0"
+                                    <TextBlock Text="{Binding SceneCount}"
                                                Foreground="#B56CFF"
                                                FontSize="20"
                                                FontWeight="SemiBold" />
@@ -140,8 +137,7 @@
                                     <TextBlock Text="Modo estudio"
                                                Style="{StaticResource MutedText}"
                                                FontSize="12" />
-                                    <TextBlock x:Name="ObsStudioModeText"
-                                               Text="Desactivado"
+                                    <TextBlock Text="{Binding StudioMode}"
                                                Foreground="#FACC15"
                                                FontSize="16"
                                                FontWeight="SemiBold" />
@@ -254,7 +250,7 @@
                                 <Separator Margin="0,16,0,14" />
                                 <TextBlock Text="Estado de conexión"
                                            FontWeight="SemiBold" />
-                                <TextBlock x:Name="ObsStatusText"
+                                <TextBlock Text="{Binding StatusText}"
                                            Style="{StaticResource MutedText}"
                                            TextWrapping="Wrap"
                                            Margin="0,6,0,10" />
@@ -266,20 +262,17 @@
                                     </Grid.ColumnDefinitions>
                                     <StackPanel Orientation="Horizontal">
                                         <TextBlock Text="Host: " />
-                                        <TextBlock x:Name="ObsHostSummaryText"
-                                                   Text="127.0.0.1" />
+                                        <TextBlock Text="{Binding Host}" />
                                     </StackPanel>
                                     <StackPanel Grid.Column="1"
                                                 Orientation="Horizontal">
                                         <TextBlock Text="Puerto: " />
-                                        <TextBlock x:Name="ObsPortSummaryText"
-                                                   Text="4455" />
+                                        <TextBlock Text="{Binding Port}" />
                                     </StackPanel>
                                     <StackPanel Grid.Column="2"
                                                 Orientation="Horizontal">
                                         <TextBlock Text="Version: " />
-                                        <TextBlock x:Name="ObsVersionText"
-                                                   Text="Sin version" />
+                                        <TextBlock Text="{Binding Version}" />
                                     </StackPanel>
                                 </Grid>
                             </StackPanel>
@@ -310,6 +303,9 @@
                                             Click="TestObsButton_Click" />
                                 </Grid>
                                 <ListBox x:Name="ObsScenesList"
+                                         ItemsSource="{Binding SceneRows}"
+                                         IsEnabled="{Binding IsScenesEnabled}"
+                                         Opacity="{Binding ScenesOpacity}"
                                          BorderThickness="0"
                                          Background="Transparent"
                                          ScrollViewer.HorizontalScrollBarVisibility="Disabled"

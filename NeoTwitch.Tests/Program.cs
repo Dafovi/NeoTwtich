@@ -84,6 +84,7 @@ var tests = new (string Name, Action Body)[]
     ("ShellViewModel maps profile and live state", ShellViewModelTests.MapsProfileAndLiveState),
     ("ObsStatusTextService builds display values", ObsStatusTextTests.BuildsDisplayValues),
     ("ObsSceneViewService builds rows and choices", ObsSceneViewTests.BuildsRowsAndChoices),
+    ("ObsViewModel updates status and scenes", ObsViewModelTests.UpdatesStatusAndScenes),
     ("DiagnosticReportService builds report without network", DiagnosticReportServiceTests.BuildsReportWithoutNetwork),
     ("DiagnosticReportService reports missing audio", DiagnosticReportServiceTests.ReportsMissingAudio),
     ("VersionComparisonService compares normalized tags", VersionComparisonTests.ComparesNormalizedTags),
@@ -1584,6 +1585,44 @@ static class ObsSceneViewTests
         TestAssert.Equal("Mantener escena actual", choices[0].Label);
         TestAssert.Equal("Gameplay", ObsSceneViewService.ResolveSelectedSceneName("Gameplay", choices));
         TestAssert.Equal("", ObsSceneViewService.ResolveSelectedSceneName("No existe", choices));
+    }
+}
+
+static class ObsViewModelTests
+{
+    public static void UpdatesStatusAndScenes()
+    {
+        var viewModel = new ObsViewModel();
+
+        viewModel.UpdateStatus(
+            new ObsStatusText(
+                "Conectado",
+                "OBS conectado",
+                "Gameplay",
+                "127.0.0.1",
+                "4455",
+                "30.2",
+                "2",
+                "Desactivado"),
+            isScenesEnabled: true);
+        viewModel.ReplaceScenes(
+        [
+            new ObsSceneRow("Gameplay", true, "Gameplay"),
+            new ObsSceneRow("BRB", false, "BRB")
+        ]);
+
+        TestAssert.Equal("Conectado", viewModel.ConnectionState);
+        TestAssert.Equal("Gameplay", viewModel.CurrentScene);
+        TestAssert.True(viewModel.IsScenesEnabled);
+        TestAssert.Equal(1d, viewModel.ScenesOpacity);
+        TestAssert.Equal(2, viewModel.SceneRows.Count);
+
+        viewModel.UpdateStatus(
+            new ObsStatusText("Desconectado", "", "Sin escena", "127.0.0.1", "4455", "", "0", "Desactivado"),
+            isScenesEnabled: false);
+
+        TestAssert.False(viewModel.IsScenesEnabled);
+        TestAssert.Equal(0.58d, viewModel.ScenesOpacity);
     }
 }
 

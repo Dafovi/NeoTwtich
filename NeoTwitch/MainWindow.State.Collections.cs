@@ -12,7 +12,7 @@ public partial class MainWindow
     private LibraryScreenViewModel<AudioLibraryRow, AudioGroupRow> _audioLibraryViewModel = null!;
     private LibraryScreenViewModel<MediaLibraryRow, MediaGroupRow> _imageLibraryViewModel = null!;
     private LibraryScreenViewModel<MediaLibraryRow, MediaGroupRow> _videoLibraryViewModel = null!;
-    private readonly ObservableCollection<ObsSceneRow> _obsSceneRows = [];
+    private ObservableCollection<ObsSceneRow> _obsSceneRows => _obsViewModel.SceneRows;
     private readonly ObservableCollection<ObsSceneChoice> _obsSceneChoices = [];
     private readonly ObservableCollection<RuleLedPreviewDot> _ruleLedPreviewDots = [];
     private readonly ObservableCollection<RuleLedPreviewDot> _backgroundLedPreviewDots = [];

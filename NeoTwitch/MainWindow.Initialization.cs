@@ -4,6 +4,7 @@ using NeoTwitch.Models;
 using NeoTwitch.ViewModels.Connections;
 using NeoTwitch.ViewModels.Dashboard;
 using NeoTwitch.ViewModels.Library;
+using NeoTwitch.ViewModels.Obs;
 
 namespace NeoTwitch;
 
@@ -16,18 +17,19 @@ public partial class MainWindow
         {
             _dashboardViewModel = new DashboardViewModel(GoToActivity);
             _connectionsViewModel = new ConnectionsViewModel();
+            _obsViewModel = new ObsViewModel();
             _audioLibraryViewModel = new LibraryScreenViewModel<AudioLibraryRow, AudioGroupRow>();
             _imageLibraryViewModel = new LibraryScreenViewModel<MediaLibraryRow, MediaGroupRow>();
             _videoLibraryViewModel = new LibraryScreenViewModel<MediaLibraryRow, MediaGroupRow>();
             DashboardView.DataContext = _dashboardViewModel;
             ConnectionsView.DataContext = _connectionsViewModel;
+            ObsView.DataContext = _obsViewModel;
             ActivityView.DataContext = _activityViewModel;
             AudioView.DataContext = _audioLibraryViewModel;
             ImagesView.DataContext = _imageLibraryViewModel;
             VideosView.DataContext = _videoLibraryViewModel;
             ActivityList.ItemsSource = _activityViewModel.EntriesView;
             DashboardActivityList.ItemsSource = _activityViewModel.DashboardEntries;
-            ObsScenesList.ItemsSource = _obsSceneRows;
 
             InitializePreviewDots();
             InitializePreviewTimers();

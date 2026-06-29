@@ -35,22 +35,14 @@ public partial class MainWindow
             _obsService.StudioMode,
             GetObsStatusTextLabels());
 
-        ObsStatusText.Text = status.StatusText;
         _connectionsViewModel.UpdateObsConnectionHelpText(status.StatusText);
         UpdateObsOverlayFields();
 
-        ObsConnectionStateText.Text = status.State;
-        ObsCurrentSceneText.Text = status.CurrentScene;
-        ObsHostSummaryText.Text = status.Host;
-        ObsPortSummaryText.Text = status.Port;
-        ObsVersionText.Text = status.Version;
-        ObsSceneCountText.Text = status.SceneCount;
-        ObsStudioModeText.Text = status.StudioMode;
-        ObsScenesList.IsEnabled = _config.Obs.Enabled
+        var scenesEnabled = _config.Obs.Enabled
             && _obsService.IsConnected
             && !_isObsConnecting
             && !_isObsSceneActionRunning;
-        ObsScenesList.Opacity = ObsScenesList.IsEnabled ? 1d : 0.58d;
+        _obsViewModel.UpdateStatus(status, scenesEnabled);
 
         RefreshMediaLibraryView(MediaLibraryKind.Image);
         RefreshMediaLibraryView(MediaLibraryKind.Video);
@@ -85,11 +77,7 @@ public partial class MainWindow
         }
 
         _obsConnectionError = "";
-        _obsSceneRows.Clear();
-        foreach (var scene in ObsSceneViewService.BuildRows(result.Scenes, result.CurrentScene))
-        {
-            _obsSceneRows.Add(scene);
-        }
+        _obsViewModel.ReplaceScenes(ObsSceneViewService.BuildRows(result.Scenes, result.CurrentScene));
 
         RefreshObsSceneChoices();
 

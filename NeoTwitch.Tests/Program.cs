@@ -14,6 +14,7 @@ using NeoTwitch.Services.Text;
 using NeoTwitch.Services.Ui;
 using NeoTwitch.Shared;
 using NeoTwitch.ViewModels.Activity;
+using NeoTwitch.ViewModels.Connections;
 using NeoTwitch.ViewModels.Dashboard;
 using NeoTwitch.ViewModels.Library;
 using NeoTwitch.ViewModels.Obs;
@@ -89,6 +90,7 @@ var tests = new (string Name, Action Body)[]
     ("ActivityLogPresentationService classifies display metadata", ActivityLogPresentationTests.ClassifiesDisplayMetadata),
     ("ActivityViewModel filters entries view", ActivityViewModelTests.FiltersEntriesView),
     ("ActivityViewModel maps filter properties", ActivityViewModelTests.MapsFilterProperties),
+    ("ConnectionsViewModel maps badges and helper text", ConnectionsViewModelTests.MapsBadgesAndHelperText),
     ("DashboardConnectionStateService resolves all services", DashboardConnectionStateTests.ResolvesAllServices),
     ("DashboardSummaryService counts Twitch events", DashboardSummaryTests.CountsTwitchEvents),
     ("DashboardSummaryService counts matched rules safely", DashboardSummaryTests.CountsMatchedRulesSafely),
@@ -1861,6 +1863,29 @@ static class DashboardViewModelTests
         TestAssert.Equal("Alexa revisar", viewModel.AlexaState.Text);
         TestAssert.Equal("OBS error", viewModel.ObsState.Text);
         TestAssert.Equal((byte)0x22, viewModel.TwitchState.Brush.Color.R);
+    }
+}
+
+static class ConnectionsViewModelTests
+{
+    public static void MapsBadgesAndHelperText()
+    {
+        var viewModel = new ConnectionsViewModel();
+
+        viewModel.UpdateBadges(
+            new ConnectionStateVisual("Twitch listo", "#22C55E", "Assets/Icons/status_ok.png"),
+            new ConnectionStateVisual("Arduino off", "#94A3B8", "Assets/Icons/status_empty.png"),
+            new ConnectionStateVisual("Alexa revisar", "#FFB020", "Assets/Icons/status_warning.png"),
+            new ConnectionStateVisual("OBS error", "#F43F5E", "Assets/Icons/status_error.png"));
+        viewModel.UpdateAlexaStatusText("Alexa configurada");
+        viewModel.UpdateObsConnectionHelpText("OBS desconectado");
+
+        TestAssert.Equal("Twitch listo", viewModel.TwitchBadge.Text);
+        TestAssert.Equal("Arduino off", viewModel.ArduinoBadge.Text);
+        TestAssert.Equal("Alexa configurada", viewModel.AlexaStatusText);
+        TestAssert.Equal("OBS desconectado", viewModel.ObsConnectionHelpText);
+        TestAssert.Equal((byte)0x22, viewModel.TwitchBadge.ForegroundBrush.Color.R);
+        TestAssert.Equal((byte)0x22, viewModel.TwitchBadge.BackgroundBrush.Color.A);
     }
 }
 

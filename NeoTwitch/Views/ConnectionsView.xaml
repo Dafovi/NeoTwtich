@@ -84,16 +84,18 @@
                                                    Style="{StaticResource MutedText}"
                                                    Margin="0,4,0,0" />
                                     </StackPanel>
-                                    <Border x:Name="ConnectionsTwitchBadge"
-                                            Grid.Column="2"
+                                    <Border Grid.Column="2"
                                             CornerRadius="14"
                                             Padding="11,5"
                                             HorizontalAlignment="Right"
-                                            VerticalAlignment="Top">
-                                        <TextBlock x:Name="ConnectionsTwitchBadgeText"
-                                                   Text="Desconectado"
+                                            VerticalAlignment="Top"
+                                            Background="{Binding TwitchBadge.BackgroundBrush}"
+                                            BorderBrush="{Binding TwitchBadge.BorderBrush}"
+                                            BorderThickness="1">
+                                        <TextBlock Text="{Binding TwitchBadge.Text}"
                                                    FontSize="12"
-                                                   FontWeight="SemiBold" />
+                                                   FontWeight="SemiBold"
+                                                   Foreground="{Binding TwitchBadge.ForegroundBrush}" />
                                     </Border>
                                 </Grid>
 
@@ -210,16 +212,18 @@
                                                    Style="{StaticResource MutedText}"
                                                    Margin="0,4,0,0" />
                                     </StackPanel>
-                                    <Border x:Name="ConnectionsArduinoBadge"
-                                            Grid.Column="2"
+                                    <Border Grid.Column="2"
                                             CornerRadius="14"
                                             Padding="11,5"
                                             HorizontalAlignment="Right"
-                                            VerticalAlignment="Top">
-                                        <TextBlock x:Name="ConnectionsArduinoBadgeText"
-                                                   Text="Desconectado"
+                                            VerticalAlignment="Top"
+                                            Background="{Binding ArduinoBadge.BackgroundBrush}"
+                                            BorderBrush="{Binding ArduinoBadge.BorderBrush}"
+                                            BorderThickness="1">
+                                        <TextBlock Text="{Binding ArduinoBadge.Text}"
                                                    FontSize="12"
-                                                   FontWeight="SemiBold" />
+                                                   FontWeight="SemiBold"
+                                                   Foreground="{Binding ArduinoBadge.ForegroundBrush}" />
                                     </Border>
                                 </Grid>
 
@@ -305,16 +309,18 @@
                                                    Style="{StaticResource MutedText}"
                                                    Margin="0,4,0,0" />
                                     </StackPanel>
-                                    <Border x:Name="ConnectionsAlexaBadge"
-                                            Grid.Column="2"
+                                    <Border Grid.Column="2"
                                             CornerRadius="14"
                                             Padding="11,5"
                                             HorizontalAlignment="Right"
-                                            VerticalAlignment="Top">
-                                        <TextBlock x:Name="ConnectionsAlexaBadgeText"
-                                                   Text="Desconectado"
+                                            VerticalAlignment="Top"
+                                            Background="{Binding AlexaBadge.BackgroundBrush}"
+                                            BorderBrush="{Binding AlexaBadge.BorderBrush}"
+                                            BorderThickness="1">
+                                        <TextBlock Text="{Binding AlexaBadge.Text}"
                                                    FontSize="12"
-                                                   FontWeight="SemiBold" />
+                                                   FontWeight="SemiBold"
+                                                   Foreground="{Binding AlexaBadge.ForegroundBrush}" />
                                     </Border>
                                 </Grid>
 
@@ -396,8 +402,8 @@
                                         <ColumnDefinition Width="*" />
                                         <ColumnDefinition Width="360" />
                                     </Grid.ColumnDefinitions>
-                                    <TextBlock x:Name="AlexaStatusText"
-                                               Style="{StaticResource MutedText}"
+                                    <TextBlock Style="{StaticResource MutedText}"
+                                               Text="{Binding AlexaStatusText}"
                                                TextWrapping="Wrap"
                                                VerticalAlignment="Center" />
                                     <WrapPanel Grid.Column="1"
@@ -449,16 +455,18 @@
                                                    Style="{StaticResource MutedText}"
                                                    Margin="0,4,0,0" />
                                     </StackPanel>
-                                    <Border x:Name="ConnectionsObsBadge"
-                                            Grid.Column="2"
+                                    <Border Grid.Column="2"
                                             CornerRadius="14"
                                             Padding="11,5"
                                             HorizontalAlignment="Right"
-                                            VerticalAlignment="Top">
-                                        <TextBlock x:Name="ConnectionsObsBadgeText"
-                                                   Text="Desconectado"
+                                            VerticalAlignment="Top"
+                                            Background="{Binding ObsBadge.BackgroundBrush}"
+                                            BorderBrush="{Binding ObsBadge.BorderBrush}"
+                                            BorderThickness="1">
+                                        <TextBlock Text="{Binding ObsBadge.Text}"
                                                    FontSize="12"
-                                                   FontWeight="SemiBold" />
+                                                   FontWeight="SemiBold"
+                                                   Foreground="{Binding ObsBadge.ForegroundBrush}" />
                                     </Border>
                                 </Grid>
 
@@ -528,8 +536,8 @@
                                         <ColumnDefinition Width="*" />
                                         <ColumnDefinition Width="360" />
                                     </Grid.ColumnDefinitions>
-                                    <TextBlock x:Name="ObsConnectionHelpText"
-                                               Style="{StaticResource MutedText}"
+                                    <TextBlock Style="{StaticResource MutedText}"
+                                               Text="{Binding ObsConnectionHelpText}"
                                                TextWrapping="Wrap"
                                                VerticalAlignment="Center" />
                                     <WrapPanel Grid.Column="1"

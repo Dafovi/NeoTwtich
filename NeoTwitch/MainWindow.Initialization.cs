@@ -1,6 +1,7 @@
 using NeoTwitch.Services;
 using NeoTwitch.Shared;
 using NeoTwitch.Models;
+using NeoTwitch.ViewModels.Connections;
 using NeoTwitch.ViewModels.Dashboard;
 
 namespace NeoTwitch;
@@ -13,7 +14,9 @@ public partial class MainWindow
         try
         {
             _dashboardViewModel = new DashboardViewModel(GoToActivity);
+            _connectionsViewModel = new ConnectionsViewModel();
             DashboardView.DataContext = _dashboardViewModel;
+            ConnectionsView.DataContext = _connectionsViewModel;
             ActivityView.DataContext = _activityViewModel;
             ActivityList.ItemsSource = _activityViewModel.EntriesView;
             DashboardActivityList.ItemsSource = _activityViewModel.DashboardEntries;

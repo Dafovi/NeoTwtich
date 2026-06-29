@@ -36,7 +36,7 @@ public partial class MainWindow
             GetObsStatusTextLabels());
 
         ObsStatusText.Text = status.StatusText;
-        ObsConnectionHelpText.Text = status.StatusText;
+        _connectionsViewModel.UpdateObsConnectionHelpText(status.StatusText);
         UpdateObsOverlayFields();
 
         ObsConnectionStateText.Text = status.State;

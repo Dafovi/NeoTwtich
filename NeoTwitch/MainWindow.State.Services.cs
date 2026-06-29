@@ -3,6 +3,7 @@ using NeoTwitch.Services;
 using NeoTwitch.Services.Diagnostics;
 using NeoTwitch.Services.Text;
 using NeoTwitch.ViewModels.Activity;
+using NeoTwitch.ViewModels.Connections;
 using NeoTwitch.ViewModels.Dashboard;
 using NeoTwitch.ViewModels.Shell;
 
@@ -15,6 +16,7 @@ public partial class MainWindow
     private readonly TwitchEventSubClient _eventSubClient;
     private ShellViewModel _shellViewModel = null!;
     private DashboardViewModel _dashboardViewModel = null!;
+    private ConnectionsViewModel _connectionsViewModel = null!;
 
     private SettingsStore _settingsStore => _services.SettingsStore;
     private AudioPlayerService _audioPlayer => _services.AudioPlayer;

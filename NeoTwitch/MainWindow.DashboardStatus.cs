@@ -107,7 +107,7 @@ public partial class MainWindow
         var labels = GetDashboardStatusTextLabels();
         var status = DashboardStatusTextService.BuildAlexaStatusText(_config.Alexa.Enabled, _config.Alexa.IsConfigured, labels);
 
-        AlexaStatusText.Text = status;
+        _connectionsViewModel.UpdateAlexaStatusText(status);
         AlexaConnectionText.Text = DashboardStatusTextService.BuildAlexaConnectionText(
             _config.Alexa.Enabled,
             _config.Alexa.IsConfigured,

@@ -1,7 +1,6 @@
 using NeoTwitch.Services.Dashboard;
 using NeoTwitch.Services.Status;
 using NeoTwitch.Services.Text;
-using NeoTwitch.Services.Ui;
 
 namespace NeoTwitch;
 
@@ -44,22 +43,10 @@ public partial class MainWindow
             arduinoVisual,
             alexaVisual,
             obsVisual);
-
-        ConnectionVisualThemeService.ApplyConnectionBadge(
-            ConnectionsTwitchBadge,
-            ConnectionsTwitchBadgeText,
-            twitchVisual);
-        ConnectionVisualThemeService.ApplyConnectionBadge(
-            ConnectionsArduinoBadge,
-            ConnectionsArduinoBadgeText,
-            arduinoVisual);
-        ConnectionVisualThemeService.ApplyConnectionBadge(
-            ConnectionsAlexaBadge,
-            ConnectionsAlexaBadgeText,
-            alexaVisual);
-        ConnectionVisualThemeService.ApplyConnectionBadge(
-            ConnectionsObsBadge,
-            ConnectionsObsBadgeText,
+        _connectionsViewModel.UpdateBadges(
+            twitchVisual,
+            arduinoVisual,
+            alexaVisual,
             obsVisual);
     }
 

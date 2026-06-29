@@ -21,11 +21,6 @@ public partial class MainWindow
         EventKindBox.DisplayMemberPath = nameof(UiOption<TwitchEventKind>.Label);
         EventKindBox.SelectedValuePath = nameof(UiOption<TwitchEventKind>.Value);
 
-        RuleCategoryFilterBox.ItemsSource = _ruleCategoryOptions;
-        RuleCategoryFilterBox.DisplayMemberPath = nameof(UiOption<string>.Label);
-        RuleCategoryFilterBox.SelectedValuePath = nameof(UiOption<string>.Value);
-        RuleCategoryFilterBox.SelectedValue = "";
-
         RuleAudioAssetBox.ItemsSource = _config.AudioLibrary;
         RuleAudioAssetBox.DisplayMemberPath = nameof(AudioAssetConfig.DisplayName);
         RuleAudioAssetBox.SelectedValuePath = nameof(AudioAssetConfig.Id);

@@ -14,6 +14,7 @@ using NeoTwitch.Services.Text;
 using NeoTwitch.Services.Ui;
 using NeoTwitch.Shared;
 using NeoTwitch.ViewModels.Activity;
+using NeoTwitch.ViewModels.Alerts;
 using NeoTwitch.ViewModels.Connections;
 using NeoTwitch.ViewModels.Dashboard;
 using NeoTwitch.ViewModels.Library;
@@ -35,6 +36,7 @@ var tests = new (string Name, Action Body)[]
     ("GlobalSettingsFormService applies normalized values", GlobalSettingsFormTests.AppliesNormalizedValues),
     ("EventRuleFilterService filters status and category", EventRuleFilterTests.FiltersStatusAndCategory),
     ("EventRuleFilterService searches editable text", EventRuleFilterTests.SearchesEditableText),
+    ("AlertsViewModel maps filters and count", AlertsViewModelTests.MapsFiltersAndCount),
     ("EventRulePresentationService builds row display metadata", EventRulePresentationTests.BuildsRowDisplayMetadata),
     ("EventRuleSnapshotService clones editable values independently", EventRuleSnapshotTests.CloneCopiesEditableValues),
     ("EventRuleSnapshotService detects editable changes", EventRuleSnapshotTests.DetectsEditableChanges),
@@ -429,6 +431,36 @@ static class EventRuleFilterTests
         TestAssert.True(EventRuleFilterService.Matches(rule, EventRuleFilterService.AllStatus, "", "!BAILE"));
         TestAssert.True(EventRuleFilterService.Matches(rule, EventRuleFilterService.AllStatus, "", "gracias"));
         TestAssert.False(EventRuleFilterService.Matches(rule, EventRuleFilterService.AllStatus, "", "inexistente"));
+    }
+}
+
+static class AlertsViewModelTests
+{
+    public static void MapsFiltersAndCount()
+    {
+        var changes = 0;
+        var viewModel = new AlertsViewModel(UiOptionCatalog.RuleCategoryOptions);
+        viewModel.FiltersChanged += (_, _) => changes++;
+
+        viewModel.SearchText = "raid";
+        viewModel.CategoryFilter = nameof(TwitchEventKind.Raid);
+        viewModel.SelectStatusFilter(EventRuleFilterService.ActiveStatus);
+        viewModel.UpdateRulesCount(2, 5);
+
+        TestAssert.Equal("raid", viewModel.SearchText);
+        TestAssert.Equal(nameof(TwitchEventKind.Raid), viewModel.CategoryFilter);
+        TestAssert.Equal(EventRuleFilterService.ActiveStatus, viewModel.StatusFilter);
+        TestAssert.False(viewModel.IsAllStatusSelected);
+        TestAssert.True(viewModel.IsActiveStatusSelected);
+        TestAssert.Equal("Mostrando 2 de 5 alertas", viewModel.RulesCountText);
+        TestAssert.True(changes >= 3);
+
+        viewModel.ClearFilters();
+
+        TestAssert.Equal("", viewModel.SearchText);
+        TestAssert.Equal("", viewModel.CategoryFilter);
+        TestAssert.Equal(EventRuleFilterService.AllStatus, viewModel.StatusFilter);
+        TestAssert.True(viewModel.IsAllStatusSelected);
     }
 }
 

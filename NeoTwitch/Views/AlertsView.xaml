@@ -46,37 +46,40 @@
                                                 Click="AddRuleButton_Click" />
                                     </Grid>
 
-                                    <TextBox x:Name="RuleSearchBox"
-                                             MinHeight="38"
+                                    <TextBox MinHeight="38"
                                              Margin="0,0,0,10"
-                                             TextChanged="RuleSearchBox_TextChanged"
+                                             Text="{Binding SearchText, UpdateSourceTrigger=PropertyChanged}"
                                              ToolTip="Buscar alertas por nombre, evento o comando." />
 
                                     <WrapPanel Margin="0,0,0,8">
-                                        <ToggleButton x:Name="RuleFilterAllButton"
-                                                      Content="Todas"
-                                                      Tag="ALL"
-                                                      IsChecked="True"
+                                        <ToggleButton Content="Todas"
+                                                      Command="{Binding SelectStatusFilterCommand}"
+                                                      CommandParameter="ALL"
+                                                      IsChecked="{Binding IsAllStatusSelected, Mode=OneWay}"
                                                       Style="{StaticResource ActivityFilterButton}"
-                                                      Click="RuleStatusFilterButton_Click" />
-                                        <ToggleButton x:Name="RuleFilterActiveButton"
-                                                      Content="Activas"
-                                                      Tag="ACTIVE"
+                                                      Tag="ALL" />
+                                        <ToggleButton Content="Activas"
+                                                      Command="{Binding SelectStatusFilterCommand}"
+                                                      CommandParameter="ACTIVE"
+                                                      IsChecked="{Binding IsActiveStatusSelected, Mode=OneWay}"
                                                       Style="{StaticResource ActivityFilterButton}"
-                                                      Click="RuleStatusFilterButton_Click" />
-                                        <ToggleButton x:Name="RuleFilterInactiveButton"
-                                                      Content="Inactivas"
-                                                      Tag="INACTIVE"
+                                                      Tag="ACTIVE" />
+                                        <ToggleButton Content="Inactivas"
+                                                      Command="{Binding SelectStatusFilterCommand}"
+                                                      CommandParameter="INACTIVE"
+                                                      IsChecked="{Binding IsInactiveStatusSelected, Mode=OneWay}"
                                                       Style="{StaticResource ActivityFilterButton}"
-                                                      Click="RuleStatusFilterButton_Click" />
+                                                      Tag="INACTIVE" />
                                     </WrapPanel>
 
-                                    <ComboBox x:Name="RuleCategoryFilterBox"
-                                              SelectionChanged="RuleCategoryFilterBox_SelectionChanged" />
+                                    <ComboBox ItemsSource="{Binding CategoryOptions}"
+                                              DisplayMemberPath="Label"
+                                              SelectedValuePath="Value"
+                                              SelectedValue="{Binding CategoryFilter, Mode=TwoWay, UpdateSourceTrigger=PropertyChanged}" />
                                 </StackPanel>
 
-                                <TextBlock x:Name="RulesCountText"
-                                           DockPanel.Dock="Bottom"
+                                <TextBlock DockPanel.Dock="Bottom"
+                                           Text="{Binding RulesCountText}"
                                            Style="{StaticResource MutedText}"
                                            FontSize="12"
                                            Margin="0,8,0,0" />

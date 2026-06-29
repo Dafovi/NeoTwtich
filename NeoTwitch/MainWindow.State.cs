@@ -1,7 +1,6 @@
 using System.Windows;
 using NeoTwitch.Models;
 using NeoTwitch.Services;
-using NeoTwitch.Services.Alerts;
 using NeoTwitch.Services.Ui;
 using NeoTwitch.ViewModels.Library;
 using NeoTwitch.ViewModels.Obs;
@@ -54,9 +53,6 @@ public partial class MainWindow
     private DateTimeOffset _lastArduinoReconnectAttempt = DateTimeOffset.MinValue;
     private string _twitchConnectionError = "";
     private string _obsConnectionError = "";
-    private string _ruleSearchText = "";
-    private string _ruleStatusFilter = EventRuleFilterService.AllStatus;
-    private string _ruleCategoryFilter = "";
     private string _audioSearchText = "";
     private string _audioFilter = "ALL";
     private string _audioGroupFilterId = "";

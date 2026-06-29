@@ -1,5 +1,7 @@
 using System.Windows;
 using System.Windows.Controls;
+using System.Windows.Controls.Primitives;
+using NeoTwitch.Services.Ui;
 
 namespace NeoTwitch.Views;
 
@@ -8,15 +10,11 @@ public partial class AlertsView : NeoTwitchView
     public AlertsView()
     {
         InitializeComponent();
+        AddHandler(ToggleButton.CheckedEvent, new RoutedEventHandler(RuleFilterButtonStateChanged));
+        AddHandler(ToggleButton.UncheckedEvent, new RoutedEventHandler(RuleFilterButtonStateChanged));
     }
 
     private void AddRuleButton_Click(object sender, RoutedEventArgs e) => Host?.AddRuleButton_Click(sender, e);
-
-    private void RuleSearchBox_TextChanged(object sender, TextChangedEventArgs e) => Host?.RuleSearchBox_TextChanged(sender, e);
-
-    private void RuleStatusFilterButton_Click(object sender, RoutedEventArgs e) => Host?.RuleStatusFilterButton_Click(sender, e);
-
-    private void RuleCategoryFilterBox_SelectionChanged(object sender, SelectionChangedEventArgs e) => Host?.RuleCategoryFilterBox_SelectionChanged(sender, e);
 
     private void RulesList_SelectionChanged(object sender, SelectionChangedEventArgs e) => Host?.RulesList_SelectionChanged(sender, e);
 
@@ -61,4 +59,30 @@ public partial class AlertsView : NeoTwitchView
     private void RuleObsMediaSourceModeButton_Click(object sender, RoutedEventArgs e) => Host?.RuleObsMediaSourceModeButton_Click(sender, e);
 
     private void RemoveRuleButton_Click(object sender, RoutedEventArgs e) => Host?.RemoveRuleButton_Click(sender, e);
+
+    private void RuleFilterButtonStateChanged(object sender, RoutedEventArgs e)
+    {
+        if (e.OriginalSource is ToggleButton button
+            && IsRuleStatusFilterButton(button))
+        {
+            FilterButtonThemeService.Apply(
+                button,
+                button.IsChecked == true,
+                "#14B8A6",
+                CurrentPalette(),
+                inactiveForeground: CurrentPalette().MutedText);
+        }
+    }
+
+    private static bool IsRuleStatusFilterButton(ToggleButton button)
+    {
+        return button.Tag?.ToString()?.ToUpperInvariant() is "ALL" or "ACTIVE" or "INACTIVE";
+    }
+
+    private ThemePalette CurrentPalette()
+    {
+        return ReferenceEquals(TryFindResource("ThemeWindowBrush"), ThemePalette.Dark.Window)
+            ? ThemePalette.Dark
+            : ThemePalette.Light;
+    }
 }

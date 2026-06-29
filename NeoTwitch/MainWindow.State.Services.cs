@@ -3,6 +3,7 @@ using NeoTwitch.Services;
 using NeoTwitch.Services.Diagnostics;
 using NeoTwitch.Services.Text;
 using NeoTwitch.ViewModels.Activity;
+using NeoTwitch.ViewModels.Alerts;
 using NeoTwitch.ViewModels.Connections;
 using NeoTwitch.ViewModels.Dashboard;
 using NeoTwitch.ViewModels.Obs;
@@ -16,6 +17,7 @@ public partial class MainWindow
     private readonly AppStartupOptions _startupOptions;
     private readonly TwitchEventSubClient _eventSubClient;
     private ShellViewModel _shellViewModel = null!;
+    private AlertsViewModel _alertsViewModel = null!;
     private DashboardViewModel _dashboardViewModel = null!;
     private ConnectionsViewModel _connectionsViewModel = null!;
     private ObsViewModel _obsViewModel = null!;

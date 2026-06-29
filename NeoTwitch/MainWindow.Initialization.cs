@@ -1,6 +1,7 @@
 using NeoTwitch.Services;
 using NeoTwitch.Shared;
 using NeoTwitch.Models;
+using NeoTwitch.ViewModels.Alerts;
 using NeoTwitch.ViewModels.Connections;
 using NeoTwitch.ViewModels.Dashboard;
 using NeoTwitch.ViewModels.Library;
@@ -16,12 +17,15 @@ public partial class MainWindow
         try
         {
             _dashboardViewModel = new DashboardViewModel(GoToActivity);
+            _alertsViewModel = new AlertsViewModel(_ruleCategoryOptions);
+            _alertsViewModel.FiltersChanged += AlertsFiltersChanged;
             _connectionsViewModel = new ConnectionsViewModel();
             _obsViewModel = new ObsViewModel();
             _audioLibraryViewModel = new LibraryScreenViewModel<AudioLibraryRow, AudioGroupRow>();
             _imageLibraryViewModel = new LibraryScreenViewModel<MediaLibraryRow, MediaGroupRow>();
             _videoLibraryViewModel = new LibraryScreenViewModel<MediaLibraryRow, MediaGroupRow>();
             DashboardView.DataContext = _dashboardViewModel;
+            AlertsView.DataContext = _alertsViewModel;
             ConnectionsView.DataContext = _connectionsViewModel;
             ObsView.DataContext = _obsViewModel;
             ActivityView.DataContext = _activityViewModel;

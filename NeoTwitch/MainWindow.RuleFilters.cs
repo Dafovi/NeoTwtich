@@ -1,58 +1,18 @@
-using System.Windows;
-using System.Windows.Controls;
-using System.Windows.Controls.Primitives;
 using System.Windows.Data;
 using NeoTwitch.Models;
 using NeoTwitch.Services.Alerts;
-using NeoTwitch.Services.Text;
-using NeoTwitch.Services.Ui;
 
 namespace NeoTwitch;
 
 public partial class MainWindow
 {
-    internal void RuleSearchBox_TextChanged(object sender, TextChangedEventArgs e)
-    {
-        if (_loadingUi || sender is not System.Windows.Controls.TextBox textBox)
-        {
-            return;
-        }
-
-        _ruleSearchText = textBox.Text.Trim();
-        RefreshRulesView();
-    }
-
-    internal void RuleStatusFilterButton_Click(object sender, RoutedEventArgs e)
-    {
-        if (_loadingUi || sender is not ToggleButton button)
-        {
-            return;
-        }
-
-        button.IsChecked = true;
-        _ruleStatusFilter = button.Tag?.ToString() ?? EventRuleFilterService.AllStatus;
-
-        foreach (var filterButton in RuleStatusFilterButtons())
-        {
-            if (!ReferenceEquals(filterButton, button))
-            {
-                filterButton.IsChecked = false;
-            }
-
-            ApplyRuleStatusFilterButtonTheme(filterButton, _config.DarkMode ? ThemePalette.Dark : ThemePalette.Light);
-        }
-
-        RefreshRulesView();
-    }
-
-    internal void RuleCategoryFilterBox_SelectionChanged(object sender, SelectionChangedEventArgs e)
+    private void AlertsFiltersChanged(object? sender, EventArgs e)
     {
         if (_loadingUi)
         {
             return;
         }
 
-        _ruleCategoryFilter = RuleCategoryFilterBox.SelectedValue?.ToString() ?? "";
         RefreshRulesView();
     }
 
@@ -66,9 +26,9 @@ public partial class MainWindow
 
         e.Accepted = EventRuleFilterService.Matches(
             rule,
-            _ruleStatusFilter,
-            _ruleCategoryFilter,
-            _ruleSearchText,
+            _alertsViewModel.StatusFilter,
+            _alertsViewModel.CategoryFilter,
+            _alertsViewModel.SearchText,
             _text);
     }
 
@@ -111,24 +71,17 @@ public partial class MainWindow
 
     private void UpdateRulesCountText()
     {
-        if (_initializingComponent || RulesCountText is null)
+        if (_initializingComponent)
         {
             return;
         }
 
         var visibleCount = _rulesViewSource.View?.Cast<EventRule>().Count() ?? 0;
-        RulesCountText.Text = $"Mostrando {visibleCount} de {_config.Rules.Count} alertas";
+        _alertsViewModel.UpdateRulesCount(visibleCount, _config.Rules.Count);
     }
 
     private void ShowAllRuleFilters()
     {
-        _ruleStatusFilter = EventRuleFilterService.AllStatus;
-        _ruleCategoryFilter = "";
-        RuleFilterAllButton.IsChecked = true;
-        RuleFilterActiveButton.IsChecked = false;
-        RuleFilterInactiveButton.IsChecked = false;
-        RuleCategoryFilterBox.SelectedValue = "";
-        RuleSearchBox.Text = "";
-        _ruleSearchText = "";
+        _alertsViewModel.ClearFilters();
     }
 }

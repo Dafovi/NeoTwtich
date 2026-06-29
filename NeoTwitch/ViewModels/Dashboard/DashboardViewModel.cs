@@ -1,6 +1,7 @@
 using System.Windows.Input;
 using System.Windows.Media;
 using NeoTwitch.Services.Dashboard;
+using NeoTwitch.Services.Status;
 using NeoTwitch.Services.Ui;
 using NeoTwitch.ViewModels.Core;
 
@@ -13,6 +14,10 @@ public sealed class DashboardViewModel : ObservableObject
     private DashboardSummaryMetricViewModel _bits = DashboardSummaryMetricViewModel.From("+0", "#37C7F3");
     private DashboardSummaryMetricViewModel _chatMessages = DashboardSummaryMetricViewModel.From("0", "#22C55E");
     private DashboardSummaryMetricViewModel _events = DashboardSummaryMetricViewModel.From("0", "#84CC16");
+    private DashboardConnectionCardViewModel _twitchState = DashboardConnectionCardViewModel.From("Desconectado", "#F43F5E", "Assets/Icons/status_error.png");
+    private DashboardConnectionCardViewModel _arduinoState = DashboardConnectionCardViewModel.From("Desconectado", "#F43F5E", "Assets/Icons/status_error.png");
+    private DashboardConnectionCardViewModel _alexaState = DashboardConnectionCardViewModel.From("Desconectado", "#F43F5E", "Assets/Icons/status_error.png");
+    private DashboardConnectionCardViewModel _obsState = DashboardConnectionCardViewModel.From("Desconectado", "#F43F5E", "Assets/Icons/status_error.png");
 
     public DashboardViewModel(Action goToActivity)
     {
@@ -51,6 +56,30 @@ public sealed class DashboardViewModel : ObservableObject
         private set => SetProperty(ref _events, value);
     }
 
+    public DashboardConnectionCardViewModel TwitchState
+    {
+        get => _twitchState;
+        private set => SetProperty(ref _twitchState, value);
+    }
+
+    public DashboardConnectionCardViewModel ArduinoState
+    {
+        get => _arduinoState;
+        private set => SetProperty(ref _arduinoState, value);
+    }
+
+    public DashboardConnectionCardViewModel AlexaState
+    {
+        get => _alexaState;
+        private set => SetProperty(ref _alexaState, value);
+    }
+
+    public DashboardConnectionCardViewModel ObsState
+    {
+        get => _obsState;
+        private set => SetProperty(ref _obsState, value);
+    }
+
     public void UpdateSummary(DashboardSummaryDisplay display)
     {
         Followers = DashboardSummaryMetricViewModel.From(display.Followers);
@@ -58,6 +87,18 @@ public sealed class DashboardViewModel : ObservableObject
         Bits = DashboardSummaryMetricViewModel.From(display.Bits);
         ChatMessages = DashboardSummaryMetricViewModel.From(display.ChatMessages);
         Events = DashboardSummaryMetricViewModel.From(display.Events);
+    }
+
+    public void UpdateConnectionStates(
+        ConnectionStateVisual twitch,
+        ConnectionStateVisual arduino,
+        ConnectionStateVisual alexa,
+        ConnectionStateVisual obs)
+    {
+        TwitchState = DashboardConnectionCardViewModel.From(twitch);
+        ArduinoState = DashboardConnectionCardViewModel.From(arduino);
+        AlexaState = DashboardConnectionCardViewModel.From(alexa);
+        ObsState = DashboardConnectionCardViewModel.From(obs);
     }
 }
 
@@ -71,5 +112,30 @@ public sealed record DashboardSummaryMetricViewModel(string Text, SolidColorBrus
     public static DashboardSummaryMetricViewModel From(string text, string color)
     {
         return new DashboardSummaryMetricViewModel(text, UiBrushFactory.FrozenBrushFrom(color));
+    }
+}
+
+public sealed record DashboardConnectionCardViewModel(
+    string Text,
+    SolidColorBrush Brush,
+    ImageBrush IconMask,
+    string ToolTip)
+{
+    public static DashboardConnectionCardViewModel From(ConnectionStateVisual visual)
+    {
+        return From(visual.Text, visual.Color, visual.IconPath);
+    }
+
+    public static DashboardConnectionCardViewModel From(string text, string color, string iconPath)
+    {
+        return new DashboardConnectionCardViewModel(
+            text,
+            UiBrushFactory.FrozenBrushFrom(color),
+            new ImageBrush
+            {
+                ImageSource = PackImageLoader.Load(iconPath),
+                Stretch = Stretch.Uniform
+            },
+            text);
     }
 }

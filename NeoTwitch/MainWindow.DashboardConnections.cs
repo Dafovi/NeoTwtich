@@ -39,21 +39,10 @@ public partial class MainWindow
         var alexaVisual = ConnectionStateService.GetVisual(states.Alexa, alexaLabels);
         var obsVisual = ConnectionStateService.GetVisual(states.Obs, reviewLabels);
 
-        ConnectionVisualThemeService.ApplyDashboardState(
-            DashboardTwitchStateText,
-            DashboardTwitchStatusIcon,
-            twitchVisual);
-        ConnectionVisualThemeService.ApplyDashboardState(
-            DashboardArduinoStateText,
-            DashboardArduinoStatusIcon,
-            arduinoVisual);
-        ConnectionVisualThemeService.ApplyDashboardState(
-            DashboardAlexaStateText,
-            DashboardAlexaStatusIcon,
-            alexaVisual);
-        ConnectionVisualThemeService.ApplyDashboardState(
-            DashboardObsStateText,
-            DashboardObsStatusIcon,
+        _dashboardViewModel.UpdateConnectionStates(
+            twitchVisual,
+            arduinoVisual,
+            alexaVisual,
             obsVisual);
 
         ConnectionVisualThemeService.ApplyConnectionBadge(

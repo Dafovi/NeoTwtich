@@ -94,6 +94,7 @@ var tests = new (string Name, Action Body)[]
     ("DashboardSummaryService counts matched rules safely", DashboardSummaryTests.CountsMatchedRulesSafely),
     ("DashboardSummaryDisplayService formats summary metrics", DashboardSummaryDisplayTests.FormatsSummaryMetrics),
     ("DashboardViewModel updates summary metrics", DashboardViewModelTests.UpdatesSummaryMetrics),
+    ("DashboardViewModel updates connection states", DashboardViewModelTests.UpdatesConnectionStates),
     ("DashboardStatusTextService formats live Twitch status", DashboardStatusTextTests.FormatsLiveTwitchStatus),
     ("DashboardStatusTextService formats connection labels", DashboardStatusTextTests.FormatsConnectionLabels),
     ("DashboardStatusTextService formats Arduino status", DashboardStatusTextTests.FormatsArduinoStatus),
@@ -1843,6 +1844,23 @@ static class DashboardViewModelTests
         TestAssert.Equal("+7", viewModel.Followers.Text);
         TestAssert.Equal("+900", viewModel.Bits.Text);
         TestAssert.Equal("4", viewModel.Events.Text);
+    }
+
+    public static void UpdatesConnectionStates()
+    {
+        var viewModel = new DashboardViewModel(() => { });
+
+        viewModel.UpdateConnectionStates(
+            new ConnectionStateVisual("Twitch listo", "#22C55E", "Assets/Icons/status_ok.png"),
+            new ConnectionStateVisual("Arduino apagado", "#94A3B8", "Assets/Icons/status_empty.png"),
+            new ConnectionStateVisual("Alexa revisar", "#FFB020", "Assets/Icons/status_warning.png"),
+            new ConnectionStateVisual("OBS error", "#F43F5E", "Assets/Icons/status_error.png"));
+
+        TestAssert.Equal("Twitch listo", viewModel.TwitchState.Text);
+        TestAssert.Equal("Arduino apagado", viewModel.ArduinoState.ToolTip);
+        TestAssert.Equal("Alexa revisar", viewModel.AlexaState.Text);
+        TestAssert.Equal("OBS error", viewModel.ObsState.Text);
+        TestAssert.Equal((byte)0x22, viewModel.TwitchState.Brush.Color.R);
     }
 }
 

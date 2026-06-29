@@ -55,16 +55,17 @@
                                                FontSize="17"
                                                Style="{StaticResource TitleText}"
                                                FontWeight="SemiBold" />
-                                    <TextBlock x:Name="DashboardTwitchStateText"
-                                               Text="Desconectado"
+                                    <TextBlock Text="{Binding TwitchState.Text}"
+                                               Foreground="{Binding TwitchState.Brush}"
                                                FontWeight="SemiBold"
                                                Margin="0,5,0,0" />
                                 </StackPanel>
-                                <Border x:Name="DashboardTwitchStatusIcon"
-                                        Grid.Column="2"
+                                <Border Grid.Column="2"
                                         Width="24"
                                         Height="24"
-                                        Background="#F43F5E"
+                                        Background="{Binding TwitchState.Brush}"
+                                        OpacityMask="{Binding TwitchState.IconMask}"
+                                        ToolTip="{Binding TwitchState.ToolTip}"
                                         VerticalAlignment="Top" />
                             </Grid>
                         </Border>
@@ -93,16 +94,17 @@
                                                FontSize="17"
                                                Style="{StaticResource TitleText}"
                                                FontWeight="SemiBold" />
-                                    <TextBlock x:Name="DashboardArduinoStateText"
-                                               Text="Desconectado"
+                                    <TextBlock Text="{Binding ArduinoState.Text}"
+                                               Foreground="{Binding ArduinoState.Brush}"
                                                FontWeight="SemiBold"
                                                Margin="0,5,0,0" />
                                 </StackPanel>
-                                <Border x:Name="DashboardArduinoStatusIcon"
-                                        Grid.Column="2"
+                                <Border Grid.Column="2"
                                         Width="24"
                                         Height="24"
-                                        Background="#F43F5E"
+                                        Background="{Binding ArduinoState.Brush}"
+                                        OpacityMask="{Binding ArduinoState.IconMask}"
+                                        ToolTip="{Binding ArduinoState.ToolTip}"
                                         VerticalAlignment="Top" />
                             </Grid>
                         </Border>
@@ -131,16 +133,17 @@
                                                FontSize="17"
                                                Style="{StaticResource TitleText}"
                                                FontWeight="SemiBold" />
-                                    <TextBlock x:Name="DashboardAlexaStateText"
-                                               Text="Desconectado"
+                                    <TextBlock Text="{Binding AlexaState.Text}"
+                                               Foreground="{Binding AlexaState.Brush}"
                                                FontWeight="SemiBold"
                                                Margin="0,5,0,0" />
                                 </StackPanel>
-                                <Border x:Name="DashboardAlexaStatusIcon"
-                                        Grid.Column="2"
+                                <Border Grid.Column="2"
                                         Width="24"
                                         Height="24"
-                                        Background="#F43F5E"
+                                        Background="{Binding AlexaState.Brush}"
+                                        OpacityMask="{Binding AlexaState.IconMask}"
+                                        ToolTip="{Binding AlexaState.ToolTip}"
                                         VerticalAlignment="Top" />
                             </Grid>
                         </Border>
@@ -169,16 +172,17 @@
                                                FontSize="17"
                                                Style="{StaticResource TitleText}"
                                                FontWeight="SemiBold" />
-                                    <TextBlock x:Name="DashboardObsStateText"
-                                               Text="Desconectado"
+                                    <TextBlock Text="{Binding ObsState.Text}"
+                                               Foreground="{Binding ObsState.Brush}"
                                                FontWeight="SemiBold"
                                                Margin="0,5,0,0" />
                                 </StackPanel>
-                                <Border x:Name="DashboardObsStatusIcon"
-                                        Grid.Column="2"
+                                <Border Grid.Column="2"
                                         Width="24"
                                         Height="24"
-                                        Background="#F43F5E"
+                                        Background="{Binding ObsState.Brush}"
+                                        OpacityMask="{Binding ObsState.IconMask}"
+                                        ToolTip="{Binding ObsState.ToolTip}"
                                         VerticalAlignment="Top" />
                             </Grid>
                         </Border>

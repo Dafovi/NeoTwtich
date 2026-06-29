@@ -68,7 +68,7 @@ public static class ThemeElementApplicationService
                 RuleStatusFilterButtonThemeService.Apply(toggleButton, palette);
                 skipChildren = true;
                 return true;
-            case ToggleButton toggleButton:
+            case ToggleButton toggleButton when ActivityFilterButtonThemeService.IsActivityFilterButton(toggleButton):
                 ActivityFilterButtonThemeService.Apply(toggleButton, palette);
                 skipChildren = true;
                 return true;

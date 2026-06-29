@@ -87,6 +87,7 @@ var tests = new (string Name, Action Body)[]
     ("ActivityLogService filters entries and search text", ActivityLogServiceTests.FiltersEntriesAndSearchText),
     ("ActivityLogPresentationService classifies display metadata", ActivityLogPresentationTests.ClassifiesDisplayMetadata),
     ("ActivityViewModel filters entries view", ActivityViewModelTests.FiltersEntriesView),
+    ("ActivityViewModel maps filter properties", ActivityViewModelTests.MapsFilterProperties),
     ("DashboardConnectionStateService resolves all services", DashboardConnectionStateTests.ResolvesAllServices),
     ("DashboardSummaryService counts Twitch events", DashboardSummaryTests.CountsTwitchEvents),
     ("DashboardSummaryService counts matched rules safely", DashboardSummaryTests.CountsMatchedRulesSafely),
@@ -1692,6 +1693,24 @@ static class ActivityLogPresentationTests
 
 static class ActivityViewModelTests
 {
+    public static void MapsFilterProperties()
+    {
+        var activity = new ActivityLogService();
+        var viewModel = new ActivityViewModel(activity);
+        var twitch = activity.Add("Twitch: conectado", ActivityLogKind.Twitch);
+
+        TestAssert.True(activity.Matches(twitch));
+        viewModel.TwitchFilterEnabled = false;
+
+        TestAssert.False(activity.Matches(twitch));
+        TestAssert.False(viewModel.IsFilterEnabled("TWITCH"));
+
+        viewModel.ClearFilters();
+
+        TestAssert.True(viewModel.TwitchFilterEnabled);
+        TestAssert.True(activity.Matches(twitch));
+    }
+
     public static void FiltersEntriesView()
     {
         TestThread.RunSta(() =>

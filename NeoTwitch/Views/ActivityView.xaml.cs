@@ -1,6 +1,6 @@
 using System.Windows;
 using System.Windows.Controls.Primitives;
-using NeoTwitch.ViewModels.Activity;
+using NeoTwitch.Services.Ui;
 
 namespace NeoTwitch.Views;
 
@@ -9,55 +9,23 @@ public partial class ActivityView : NeoTwitchView
     public ActivityView()
     {
         InitializeComponent();
+        AddHandler(ToggleButton.CheckedEvent, new RoutedEventHandler(ActivityFilterButtonStateChanged));
+        AddHandler(ToggleButton.UncheckedEvent, new RoutedEventHandler(ActivityFilterButtonStateChanged));
     }
 
-    private void ActivityFilterButton_CheckedChanged(object sender, RoutedEventArgs e)
+    private void ActivityFilterButtonStateChanged(object sender, RoutedEventArgs e)
     {
-        if (DataContext is not ActivityViewModel viewModel || sender is not ToggleButton button)
+        if (e.OriginalSource is ToggleButton button
+            && ActivityFilterButtonThemeService.IsActivityFilterButton(button))
         {
-            return;
-        }
-
-        var filter = button.Tag?.ToString() ?? "";
-        viewModel.SetFilter(filter, button.IsChecked == true);
-        Host?.RefreshActivityFilterButtonTheme(button);
-    }
-
-    private void ClearActivityFiltersButton_Click(object sender, RoutedEventArgs e)
-    {
-        if (DataContext is not ActivityViewModel viewModel)
-        {
-            return;
-        }
-
-        viewModel.ClearFilters();
-        foreach (var button in ActivityFilterButtons())
-        {
-            button.IsChecked = true;
-            Host?.RefreshActivityFilterButtonTheme(button);
+            ActivityFilterButtonThemeService.Apply(button, CurrentPalette());
         }
     }
 
-    private void ClearActivityHistoryButton_Click(object sender, RoutedEventArgs e)
+    private ThemePalette CurrentPalette()
     {
-        if (DataContext is ActivityViewModel viewModel)
-        {
-            viewModel.ClearHistory();
-        }
-    }
-
-    private IEnumerable<ToggleButton> ActivityFilterButtons()
-    {
-        return
-        [
-            ActivityFilterTwitchButton,
-            ActivityFilterArduinoButton,
-            ActivityFilterAlexaButton,
-            ActivityFilterAudioButton,
-            ActivityFilterObsButton,
-            ActivityFilterEventButton,
-            ActivityFilterSystemButton,
-            ActivityFilterImportantButton
-        ];
+        return ReferenceEquals(TryFindResource("ThemeWindowBrush"), ThemePalette.Dark.Window)
+            ? ThemePalette.Dark
+            : ThemePalette.Light;
     }
 }

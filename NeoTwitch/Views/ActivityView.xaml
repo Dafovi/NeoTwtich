@@ -40,23 +40,21 @@
                                 HorizontalAlignment="Right"
                                 VerticalAlignment="Bottom"
                                 Content="Limpiar filtros"
-                                Click="ClearActivityFiltersButton_Click" />
+                                Command="{Binding ClearFiltersCommand}" />
 
                         <Button Grid.Column="5"
                                 HorizontalAlignment="Right"
                                 VerticalAlignment="Bottom"
                                 Content="Borrar historial"
-                                Click="ClearActivityHistoryButton_Click" />
+                                Command="{Binding ClearHistoryCommand}" />
                     </Grid>
 
                     <WrapPanel Grid.Row="1"
                                Margin="0,0,0,12">
                         <ToggleButton x:Name="ActivityFilterTwitchButton"
                                       Tag="TWITCH"
-                                      IsChecked="True"
-                                      Style="{StaticResource ActivityFilterButton}"
-                                      Checked="ActivityFilterButton_CheckedChanged"
-                                      Unchecked="ActivityFilterButton_CheckedChanged">
+                                      IsChecked="{Binding TwitchFilterEnabled, Mode=TwoWay}"
+                                      Style="{StaticResource ActivityFilterButton}">
                             <StackPanel Orientation="Horizontal">
                                 <Image Source="/Assets/Icons/service_twitch.png"
                                        Width="16"
@@ -68,10 +66,8 @@
                         </ToggleButton>
                         <ToggleButton x:Name="ActivityFilterArduinoButton"
                                       Tag="ARDUINO"
-                                      IsChecked="True"
-                                      Style="{StaticResource ActivityFilterButton}"
-                                      Checked="ActivityFilterButton_CheckedChanged"
-                                      Unchecked="ActivityFilterButton_CheckedChanged">
+                                      IsChecked="{Binding ArduinoFilterEnabled, Mode=TwoWay}"
+                                      Style="{StaticResource ActivityFilterButton}">
                             <StackPanel Orientation="Horizontal">
                                 <Image Source="/Assets/Icons/service_arduino.png"
                                        Width="18"
@@ -83,10 +79,8 @@
                         </ToggleButton>
                         <ToggleButton x:Name="ActivityFilterAlexaButton"
                                       Tag="ALEXA"
-                                      IsChecked="True"
-                                      Style="{StaticResource ActivityFilterButton}"
-                                      Checked="ActivityFilterButton_CheckedChanged"
-                                      Unchecked="ActivityFilterButton_CheckedChanged">
+                                      IsChecked="{Binding AlexaFilterEnabled, Mode=TwoWay}"
+                                      Style="{StaticResource ActivityFilterButton}">
                             <StackPanel Orientation="Horizontal">
                                 <Image Source="/Assets/Icons/service_alexa.png"
                                        Width="16"
@@ -98,10 +92,8 @@
                         </ToggleButton>
                         <ToggleButton x:Name="ActivityFilterAudioButton"
                                       Tag="AUDIO"
-                                      IsChecked="True"
-                                      Style="{StaticResource ActivityFilterButton}"
-                                      Checked="ActivityFilterButton_CheckedChanged"
-                                      Unchecked="ActivityFilterButton_CheckedChanged">
+                                      IsChecked="{Binding AudioFilterEnabled, Mode=TwoWay}"
+                                      Style="{StaticResource ActivityFilterButton}">
                             <StackPanel Orientation="Horizontal">
                                 <Image Source="/Assets/Icons/service_audio.png"
                                        Width="16"
@@ -113,10 +105,8 @@
                         </ToggleButton>
                         <ToggleButton x:Name="ActivityFilterObsButton"
                                       Tag="OBS"
-                                      IsChecked="True"
-                                      Style="{StaticResource ActivityFilterButton}"
-                                      Checked="ActivityFilterButton_CheckedChanged"
-                                      Unchecked="ActivityFilterButton_CheckedChanged">
+                                      IsChecked="{Binding ObsFilterEnabled, Mode=TwoWay}"
+                                      Style="{StaticResource ActivityFilterButton}">
                             <StackPanel Orientation="Horizontal">
                                 <Image Source="/Assets/ServiceObs.png"
                                        Width="16"
@@ -128,10 +118,8 @@
                         </ToggleButton>
                         <ToggleButton x:Name="ActivityFilterEventButton"
                                       Tag="EVENTO"
-                                      IsChecked="True"
-                                      Style="{StaticResource ActivityFilterButton}"
-                                      Checked="ActivityFilterButton_CheckedChanged"
-                                      Unchecked="ActivityFilterButton_CheckedChanged">
+                                      IsChecked="{Binding EventFilterEnabled, Mode=TwoWay}"
+                                      Style="{StaticResource ActivityFilterButton}">
                             <StackPanel Orientation="Horizontal">
                                 <Viewbox Width="16" Height="16" Margin="0,0,7,0">
                                     <Path Data="M5,4 L19,4 L19,18 L5,18 Z M8,2 L8,6 M16,2 L16,6 M5,9 L19,9"
@@ -147,10 +135,8 @@
                         </ToggleButton>
                         <ToggleButton x:Name="ActivityFilterSystemButton"
                                       Tag="SISTEMA"
-                                      IsChecked="True"
-                                      Style="{StaticResource ActivityFilterButton}"
-                                      Checked="ActivityFilterButton_CheckedChanged"
-                                      Unchecked="ActivityFilterButton_CheckedChanged">
+                                      IsChecked="{Binding SystemFilterEnabled, Mode=TwoWay}"
+                                      Style="{StaticResource ActivityFilterButton}">
                             <StackPanel Orientation="Horizontal">
                                 <Viewbox Width="16" Height="16" Margin="0,0,7,0">
                                     <Path Data="M12,8 A4,4 0 1 1 12,16 A4,4 0 1 1 12,8 M12,2 L14,2 L15,5 L18,4 L20,6 L19,9 L22,11 L22,13 L19,15 L20,18 L18,20 L15,19 L14,22 L10,22 L9,19 L6,20 L4,18 L5,15 L2,13 L2,11 L5,9 L4,6 L6,4 L9,5 L10,2 Z"
@@ -166,10 +152,8 @@
                         </ToggleButton>
                         <ToggleButton x:Name="ActivityFilterImportantButton"
                                       Tag="IMPORTANTE"
-                                      IsChecked="True"
-                                      Style="{StaticResource ActivityFilterButton}"
-                                      Checked="ActivityFilterButton_CheckedChanged"
-                                      Unchecked="ActivityFilterButton_CheckedChanged">
+                                      IsChecked="{Binding ImportantFilterEnabled, Mode=TwoWay}"
+                                      Style="{StaticResource ActivityFilterButton}">
                             <StackPanel Orientation="Horizontal">
                                 <Border Width="16"
                                         Height="16"

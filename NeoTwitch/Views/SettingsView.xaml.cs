@@ -16,5 +16,4 @@ public partial class SettingsView : NeoTwitchView
 
     private void ThemeModeChanged(object sender, SelectionChangedEventArgs e) => Host?.ThemeModeChanged(sender, e);
 
-    private void CloseBehaviorRadio_Checked(object sender, RoutedEventArgs e) => Host?.CloseBehaviorRadio_Checked(sender, e);
 }

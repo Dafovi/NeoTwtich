@@ -266,9 +266,7 @@
                                                TextWrapping="Wrap"
                                                Margin="0,6,0,14" />
                                     <CheckBox x:Name="CloseToTrayCheck"
-                                              Visibility="Collapsed"
-                                              Checked="GlobalSettingsChanged"
-                                              Unchecked="GlobalSettingsChanged" />
+                                              Visibility="Collapsed" />
                                     <Grid>
                                         <Grid.ColumnDefinitions>
                                             <ColumnDefinition Width="*" />
@@ -285,7 +283,8 @@
                                                 <RadioButton x:Name="CloseToTrayRadio"
                                                              Content=""
                                                              IsChecked="{Binding IsChecked, ElementName=CloseToTrayCheck}"
-                                                             Checked="CloseBehaviorRadio_Checked" />
+                                                             Command="{Binding SelectCloseBehaviorCommand}"
+                                                             CommandParameter="Tray" />
                                                 <TextBlock Text="Minimizar a la bandeja"
                                                            FontWeight="SemiBold"
                                                            FontSize="12"
@@ -306,7 +305,8 @@
                                             <StackPanel>
                                                 <RadioButton x:Name="CloseAppRadio"
                                                              Content=""
-                                                             Checked="CloseBehaviorRadio_Checked" />
+                                                             Command="{Binding SelectCloseBehaviorCommand}"
+                                                             CommandParameter="Close" />
                                                 <TextBlock Text="Cerrar aplicación"
                                                            FontWeight="SemiBold"
                                                            FontSize="12"

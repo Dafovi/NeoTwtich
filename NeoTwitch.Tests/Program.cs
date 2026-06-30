@@ -1464,6 +1464,7 @@ static class SettingsViewModelTests
             () => actions.Add("restore"),
             () => actions.Add("diagnostics"),
             () => actions.Add("save"));
+        viewModel.ConfigureEditorActions(parameter => actions.Add($"close:{parameter}"));
 
         viewModel.ImportSettingsCommand.Execute(null);
         viewModel.ExportSettingsCommand.Execute(null);
@@ -1471,8 +1472,9 @@ static class SettingsViewModelTests
         viewModel.RestoreBackupCommand.Execute(null);
         viewModel.RunDiagnosticsCommand.Execute(null);
         viewModel.SaveCommand.Execute(null);
+        viewModel.SelectCloseBehaviorCommand.Execute("Tray");
 
-        TestAssert.Equal("import,export,backup,restore,diagnostics,save", string.Join(",", actions));
+        TestAssert.Equal("import,export,backup,restore,diagnostics,save,close:Tray", string.Join(",", actions));
     }
 }
 

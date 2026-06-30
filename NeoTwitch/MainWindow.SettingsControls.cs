@@ -40,6 +40,22 @@ public partial class MainWindow
             return;
         }
 
+        ApplyGlobalSettingsChange();
+    }
+
+    private void SelectCloseBehavior(object? parameter)
+    {
+        if (_initializingComponent || _loadingUi)
+        {
+            return;
+        }
+
+        CloseToTrayCheck.IsChecked = string.Equals(parameter?.ToString(), "Tray", StringComparison.OrdinalIgnoreCase);
+        ApplyGlobalSettingsChange();
+    }
+
+    private void ApplyGlobalSettingsChange()
+    {
         SaveGlobalSettingsFromFields();
         SaveConfig();
         ApplyStartWithWindowsRegistration();
@@ -51,17 +67,6 @@ public partial class MainWindow
         ApplyBackgroundOutputMode();
         UpdateNavigationButtons();
         UpdateCloseBehaviorCards();
-    }
-
-    internal void CloseBehaviorRadio_Checked(object sender, RoutedEventArgs e)
-    {
-        if (_initializingComponent || _loadingUi)
-        {
-            return;
-        }
-
-        CloseToTrayCheck.IsChecked = sender == CloseToTrayRadio;
-        GlobalSettingsChanged(sender, e);
     }
 
     internal void ThemeModeChanged(object sender, SelectionChangedEventArgs e)

@@ -10,6 +10,7 @@ public sealed class SettingsViewModel : ObservableObject
     private Action _restoreBackup = Noop;
     private Action _runDiagnostics = Noop;
     private Action _save = Noop;
+    private Action<object?> _selectCloseBehavior = Noop;
 
     public SettingsViewModel()
     {
@@ -19,6 +20,7 @@ public sealed class SettingsViewModel : ObservableObject
         RestoreBackupCommand = new RelayCommand(() => _restoreBackup());
         RunDiagnosticsCommand = new RelayCommand(() => _runDiagnostics());
         SaveCommand = new RelayCommand(() => _save());
+        SelectCloseBehaviorCommand = new RelayCommand(parameter => _selectCloseBehavior(parameter));
     }
 
     public RelayCommand ImportSettingsCommand { get; }
@@ -32,6 +34,8 @@ public sealed class SettingsViewModel : ObservableObject
     public RelayCommand RunDiagnosticsCommand { get; }
 
     public RelayCommand SaveCommand { get; }
+
+    public RelayCommand SelectCloseBehaviorCommand { get; }
 
     public void ConfigureActions(
         Action importSettings,
@@ -49,7 +53,16 @@ public sealed class SettingsViewModel : ObservableObject
         _save = save;
     }
 
+    public void ConfigureEditorActions(Action<object?> selectCloseBehavior)
+    {
+        _selectCloseBehavior = selectCloseBehavior;
+    }
+
     private static void Noop()
+    {
+    }
+
+    private static void Noop(object? _)
     {
     }
 }

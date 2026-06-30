@@ -807,12 +807,14 @@
                                                                                             Height="30"
                                                                                             Margin="0,0,6,0"
                                                                                             Tag="Brightness:-15"
-                                                                                            Click="LightValueButton_Click" />
+                                                                                            Command="{Binding AdjustLightValueCommand}"
+                                                                                            CommandParameter="{Binding Tag, RelativeSource={RelativeSource Self}}" />
                                                                                     <Button Content="+"
                                                                                             Width="34"
                                                                                             Height="30"
                                                                                             Tag="Brightness:15"
-                                                                                            Click="LightValueButton_Click" />
+                                                                                            Command="{Binding AdjustLightValueCommand}"
+                                                                                            CommandParameter="{Binding Tag, RelativeSource={RelativeSource Self}}" />
                                                                                 </StackPanel>
                                                                                 <Slider x:Name="BrightnessSlider"
                                                                                         Minimum="0"
@@ -847,12 +849,14 @@
                                                                                         DockPanel.Dock="Left"
                                                                                         Width="32"
                                                                                         Tag="Duration:-250"
-                                                                                        Click="LightValueButton_Click" />
+                                                                                        Command="{Binding AdjustLightValueCommand}"
+                                                                                        CommandParameter="{Binding Tag, RelativeSource={RelativeSource Self}}" />
                                                                                 <Button Content="+"
                                                                                         DockPanel.Dock="Right"
                                                                                         Width="32"
                                                                                         Tag="Duration:250"
-                                                                                        Click="LightValueButton_Click" />
+                                                                                        Command="{Binding AdjustLightValueCommand}"
+                                                                                        CommandParameter="{Binding Tag, RelativeSource={RelativeSource Self}}" />
                                                                                 <StackPanel Orientation="Horizontal"
                                                                                             HorizontalAlignment="Center"
                                                                                             MinWidth="102">
@@ -898,12 +902,14 @@
                                                                                         DockPanel.Dock="Left"
                                                                                         Width="32"
                                                                                         Tag="Cycle:-10"
-                                                                                        Click="LightValueButton_Click" />
+                                                                                        Command="{Binding AdjustLightValueCommand}"
+                                                                                        CommandParameter="{Binding Tag, RelativeSource={RelativeSource Self}}" />
                                                                                 <Button Content="+"
                                                                                         DockPanel.Dock="Right"
                                                                                         Width="32"
                                                                                         Tag="Cycle:10"
-                                                                                        Click="LightValueButton_Click" />
+                                                                                        Command="{Binding AdjustLightValueCommand}"
+                                                                                        CommandParameter="{Binding Tag, RelativeSource={RelativeSource Self}}" />
                                                                                 <StackPanel Orientation="Horizontal"
                                                                                             HorizontalAlignment="Center"
                                                                                             MinWidth="102">
@@ -949,12 +955,14 @@
                                                                                         DockPanel.Dock="Left"
                                                                                         Width="32"
                                                                                         Tag="Step:-10"
-                                                                                        Click="LightValueButton_Click" />
+                                                                                        Command="{Binding AdjustLightValueCommand}"
+                                                                                        CommandParameter="{Binding Tag, RelativeSource={RelativeSource Self}}" />
                                                                                 <Button Content="+"
                                                                                         DockPanel.Dock="Right"
                                                                                         Width="32"
                                                                                         Tag="Step:10"
-                                                                                        Click="LightValueButton_Click" />
+                                                                                        Command="{Binding AdjustLightValueCommand}"
+                                                                                        CommandParameter="{Binding Tag, RelativeSource={RelativeSource Self}}" />
                                                                                 <StackPanel Orientation="Horizontal"
                                                                                             HorizontalAlignment="Center"
                                                                                             MinWidth="102">
@@ -997,13 +1005,16 @@
                                                                         <UniformGrid Columns="3">
                                                                             <Button Content="Suave"
                                                                                     Tag="Soft"
-                                                                                    Click="LightPresetButton_Click" />
+                                                                                    Command="{Binding SelectLightPresetCommand}"
+                                                                                    CommandParameter="{Binding Tag, RelativeSource={RelativeSource Self}}" />
                                                                             <Button Content="Medio"
                                                                                     Tag="Medium"
-                                                                                    Click="LightPresetButton_Click" />
+                                                                                    Command="{Binding SelectLightPresetCommand}"
+                                                                                    CommandParameter="{Binding Tag, RelativeSource={RelativeSource Self}}" />
                                                                             <Button Content="Rapido"
                                                                                     Tag="Fast"
-                                                                                    Click="LightPresetButton_Click" />
+                                                                                    Command="{Binding SelectLightPresetCommand}"
+                                                                                    CommandParameter="{Binding Tag, RelativeSource={RelativeSource Self}}" />
                                                                         </UniformGrid>
                                                                     </StackPanel>
                                                                 </Border>

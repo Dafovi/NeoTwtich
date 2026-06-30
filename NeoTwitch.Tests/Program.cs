@@ -527,18 +527,22 @@ static class AlertsViewModelTests
         viewModel.ConfigureEditorActions(
             parameter => actions.Add($"event:{parameter}"),
             parameter => actions.Add($"pattern:{parameter}"),
+            parameter => actions.Add($"preset:{parameter}"),
+            parameter => actions.Add($"adjust:{parameter}"),
             parameter => actions.Add($"audio:{parameter}"),
             parameter => actions.Add($"obs-kind:{parameter}"),
             parameter => actions.Add($"obs-mode:{parameter}"));
 
         viewModel.SelectEventKindCommand.Execute(TwitchEventKind.Follow);
         viewModel.SelectLightPatternCommand.Execute(LightPattern.Rave);
+        viewModel.SelectLightPresetCommand.Execute("Fast");
+        viewModel.AdjustLightValueCommand.Execute("Brightness:15");
         viewModel.SelectAudioModeCommand.Execute(AudioSourceMode.Group);
         viewModel.SelectObsMediaKindCommand.Execute(ObsMediaKind.Video);
         viewModel.SelectObsMediaSourceModeCommand.Execute(MediaSourceMode.Single);
 
         TestAssert.Equal(
-            "event:Follow,pattern:Rave,audio:Group,obs-kind:Video,obs-mode:Single",
+            "event:Follow,pattern:Rave,preset:Fast,adjust:Brightness:15,audio:Group,obs-kind:Video,obs-mode:Single",
             string.Join(",", actions));
     }
 }
@@ -2236,7 +2240,10 @@ static class LightsViewModelTests
             () => actions.Add("stop"),
             () => actions.Add("sketch"),
             () => actions.Add("guide"));
-        viewModel.ConfigureEditorActions(parameter => actions.Add($"pattern:{parameter}"));
+        viewModel.ConfigureEditorActions(
+            parameter => actions.Add($"pattern:{parameter}"),
+            parameter => actions.Add($"adjust:{parameter}"),
+            parameter => actions.Add($"preset:{parameter}"));
 
         viewModel.AddStripCommand.Execute(null);
         viewModel.DuplicateStripCommand.Execute(null);
@@ -2246,8 +2253,10 @@ static class LightsViewModelTests
         viewModel.OpenSketchCommand.Execute(null);
         viewModel.OpenGuideCommand.Execute(null);
         viewModel.SelectBackgroundPatternCommand.Execute(LightPattern.Pulse);
+        viewModel.AdjustBackgroundLightValueCommand.Execute("Step:10");
+        viewModel.SelectBackgroundLightPresetCommand.Execute("Medium");
 
-        TestAssert.Equal("add,duplicate,remove,apply,stop,sketch,guide,pattern:Pulse", string.Join(",", actions));
+        TestAssert.Equal("add,duplicate,remove,apply,stop,sketch,guide,pattern:Pulse,adjust:Step:10,preset:Medium", string.Join(",", actions));
     }
 }
 

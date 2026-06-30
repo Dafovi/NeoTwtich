@@ -30,6 +30,8 @@ public partial class MainWindow
             _alertsViewModel.ConfigureEditorActions(
                 SelectRuleEventKind,
                 SelectRuleLightPattern,
+                SelectRuleLightPreset,
+                AdjustRuleLightValue,
                 SelectRuleAudioMode,
                 SelectRuleObsMediaKind,
                 SelectRuleObsMediaSourceMode);
@@ -69,7 +71,10 @@ public partial class MainWindow
                 StopArduinoBackground,
                 OpenArduinoSketch,
                 OpenArduinoGuide);
-            _lightsViewModel.ConfigureEditorActions(SelectBackgroundPattern);
+            _lightsViewModel.ConfigureEditorActions(
+                SelectBackgroundPattern,
+                AdjustBackgroundLightValue,
+                SelectBackgroundLightPreset);
             _settingsViewModel = new SettingsViewModel();
             _audioLibraryViewModel = new LibraryScreenViewModel<AudioLibraryRow, AudioGroupRow>();
             _imageLibraryViewModel = new LibraryScreenViewModel<MediaLibraryRow, MediaGroupRow>();

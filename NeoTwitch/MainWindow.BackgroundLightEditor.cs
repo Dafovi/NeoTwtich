@@ -45,14 +45,14 @@ public partial class MainWindow
         UpdateBackgroundLedPreviewTimerState();
     }
 
-    internal void BackgroundLightValueButton_Click(object sender, RoutedEventArgs e)
+    private void AdjustBackgroundLightValue(object? parameter)
     {
-        if (_initializingComponent || _loadingUi || sender is not System.Windows.Controls.Button button)
+        if (_initializingComponent || _loadingUi)
         {
             return;
         }
 
-        if (!LightControlInputService.TryParseDelta(button.Tag?.ToString(), out var delta))
+        if (!LightControlInputService.TryParseDelta(parameter?.ToString(), out var delta))
         {
             return;
         }
@@ -78,9 +78,9 @@ public partial class MainWindow
         UpdateBackgroundLedPreviewTimerState();
     }
 
-    internal void BackgroundLightPresetButton_Click(object sender, RoutedEventArgs e)
+    private void SelectBackgroundLightPreset(object? parameter)
     {
-        if (_initializingComponent || _loadingUi || sender is not System.Windows.Controls.Button button || button.Tag is not string preset)
+        if (_initializingComponent || _loadingUi || parameter?.ToString() is not { Length: > 0 } preset)
         {
             return;
         }

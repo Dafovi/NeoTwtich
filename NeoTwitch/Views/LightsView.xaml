@@ -480,12 +480,14 @@
                                                             Height="30"
                                                             Margin="0,0,6,0"
                                                             Tag="Brightness:-15"
-                                                            Click="BackgroundLightValueButton_Click" />
+                                                            Command="{Binding AdjustBackgroundLightValueCommand}"
+                                                            CommandParameter="{Binding Tag, RelativeSource={RelativeSource Self}}" />
                                                     <Button Content="+"
                                                             Width="34"
                                                             Height="30"
                                                             Tag="Brightness:15"
-                                                            Click="BackgroundLightValueButton_Click" />
+                                                            Command="{Binding AdjustBackgroundLightValueCommand}"
+                                                            CommandParameter="{Binding Tag, RelativeSource={RelativeSource Self}}" />
                                                 </StackPanel>
                                             </Grid>
                                         </Border>
@@ -513,12 +515,14 @@
                                                             DockPanel.Dock="Left"
                                                             Width="32"
                                                             Tag="Cycle:-10"
-                                                            Click="BackgroundLightValueButton_Click" />
+                                                            Command="{Binding AdjustBackgroundLightValueCommand}"
+                                                            CommandParameter="{Binding Tag, RelativeSource={RelativeSource Self}}" />
                                                     <Button Content="+"
                                                             DockPanel.Dock="Right"
                                                             Width="32"
                                                             Tag="Cycle:10"
-                                                            Click="BackgroundLightValueButton_Click" />
+                                                            Command="{Binding AdjustBackgroundLightValueCommand}"
+                                                            CommandParameter="{Binding Tag, RelativeSource={RelativeSource Self}}" />
                                                     <StackPanel Orientation="Horizontal"
                                                                 HorizontalAlignment="Center"
                                                                 MinWidth="106">
@@ -564,12 +568,14 @@
                                                             DockPanel.Dock="Left"
                                                             Width="32"
                                                             Tag="Step:-10"
-                                                            Click="BackgroundLightValueButton_Click" />
+                                                            Command="{Binding AdjustBackgroundLightValueCommand}"
+                                                            CommandParameter="{Binding Tag, RelativeSource={RelativeSource Self}}" />
                                                     <Button Content="+"
                                                             DockPanel.Dock="Right"
                                                             Width="32"
                                                             Tag="Step:10"
-                                                            Click="BackgroundLightValueButton_Click" />
+                                                            Command="{Binding AdjustBackgroundLightValueCommand}"
+                                                            CommandParameter="{Binding Tag, RelativeSource={RelativeSource Self}}" />
                                                     <StackPanel Orientation="Horizontal"
                                                                 HorizontalAlignment="Center"
                                                                 MinWidth="106">
@@ -612,13 +618,16 @@
                                             <UniformGrid Columns="3">
                                                 <Button Content="Suave"
                                                         Tag="Soft"
-                                                        Click="BackgroundLightPresetButton_Click" />
+                                                        Command="{Binding SelectBackgroundLightPresetCommand}"
+                                                        CommandParameter="{Binding Tag, RelativeSource={RelativeSource Self}}" />
                                                 <Button Content="Medio"
                                                         Tag="Medium"
-                                                        Click="BackgroundLightPresetButton_Click" />
+                                                        Command="{Binding SelectBackgroundLightPresetCommand}"
+                                                        CommandParameter="{Binding Tag, RelativeSource={RelativeSource Self}}" />
                                                 <Button Content="Rapido"
                                                         Tag="Fast"
-                                                        Click="BackgroundLightPresetButton_Click" />
+                                                        Command="{Binding SelectBackgroundLightPresetCommand}"
+                                                        CommandParameter="{Binding Tag, RelativeSource={RelativeSource Self}}" />
                                             </UniformGrid>
                                         </StackPanel>
                                     </Border>

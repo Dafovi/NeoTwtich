@@ -35,7 +35,7 @@ public sealed class AlertsViewModel : ObservableObject
         _rulesViewSource.Filter += RulesViewSource_Filter;
         SelectStatusFilterCommand = new RelayCommand(parameter => SelectStatusFilter(parameter?.ToString()));
         ConfigureActions(NoOp, NoOp, NoOp, NoOp, NoOp);
-        ConfigureEditorActions(NoOp, NoOp, NoOp, NoOp, NoOp);
+        ConfigureEditorActions(NoOp, NoOp, NoOp, NoOp, NoOp, NoOp, NoOp);
     }
 
     public event EventHandler? FiltersChanged;
@@ -61,6 +61,10 @@ public sealed class AlertsViewModel : ObservableObject
     public ICommand SelectEventKindCommand { get; private set; } = new RelayCommand(NoOp);
 
     public ICommand SelectLightPatternCommand { get; private set; } = new RelayCommand(NoOp);
+
+    public ICommand SelectLightPresetCommand { get; private set; } = new RelayCommand(NoOp);
+
+    public ICommand AdjustLightValueCommand { get; private set; } = new RelayCommand(NoOp);
 
     public ICommand SelectAudioModeCommand { get; private set; } = new RelayCommand(NoOp);
 
@@ -179,18 +183,24 @@ public sealed class AlertsViewModel : ObservableObject
     public void ConfigureEditorActions(
         Action<object?> selectEventKind,
         Action<object?> selectLightPattern,
+        Action<object?> selectLightPreset,
+        Action<object?> adjustLightValue,
         Action<object?> selectAudioMode,
         Action<object?> selectObsMediaKind,
         Action<object?> selectObsMediaSourceMode)
     {
         SelectEventKindCommand = new RelayCommand(selectEventKind);
         SelectLightPatternCommand = new RelayCommand(selectLightPattern);
+        SelectLightPresetCommand = new RelayCommand(selectLightPreset);
+        AdjustLightValueCommand = new RelayCommand(adjustLightValue);
         SelectAudioModeCommand = new RelayCommand(selectAudioMode);
         SelectObsMediaKindCommand = new RelayCommand(selectObsMediaKind);
         SelectObsMediaSourceModeCommand = new RelayCommand(selectObsMediaSourceMode);
 
         OnPropertyChanged(nameof(SelectEventKindCommand));
         OnPropertyChanged(nameof(SelectLightPatternCommand));
+        OnPropertyChanged(nameof(SelectLightPresetCommand));
+        OnPropertyChanged(nameof(AdjustLightValueCommand));
         OnPropertyChanged(nameof(SelectAudioModeCommand));
         OnPropertyChanged(nameof(SelectObsMediaKindCommand));
         OnPropertyChanged(nameof(SelectObsMediaSourceModeCommand));

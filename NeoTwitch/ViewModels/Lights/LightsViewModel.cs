@@ -12,6 +12,8 @@ public sealed class LightsViewModel : ObservableObject
     private Action _openSketch = Noop;
     private Action _openGuide = Noop;
     private Action<object?> _selectBackgroundPattern = Noop;
+    private Action<object?> _adjustBackgroundLightValue = Noop;
+    private Action<object?> _selectBackgroundLightPreset = Noop;
 
     public LightsViewModel()
     {
@@ -23,6 +25,8 @@ public sealed class LightsViewModel : ObservableObject
         OpenSketchCommand = new RelayCommand(() => _openSketch());
         OpenGuideCommand = new RelayCommand(() => _openGuide());
         SelectBackgroundPatternCommand = new RelayCommand(parameter => _selectBackgroundPattern(parameter));
+        AdjustBackgroundLightValueCommand = new RelayCommand(parameter => _adjustBackgroundLightValue(parameter));
+        SelectBackgroundLightPresetCommand = new RelayCommand(parameter => _selectBackgroundLightPreset(parameter));
     }
 
     public RelayCommand AddStripCommand { get; }
@@ -40,6 +44,10 @@ public sealed class LightsViewModel : ObservableObject
     public RelayCommand OpenGuideCommand { get; }
 
     public RelayCommand SelectBackgroundPatternCommand { get; }
+
+    public RelayCommand AdjustBackgroundLightValueCommand { get; }
+
+    public RelayCommand SelectBackgroundLightPresetCommand { get; }
 
     public void ConfigureActions(
         Action addStrip,
@@ -59,9 +67,14 @@ public sealed class LightsViewModel : ObservableObject
         _openGuide = openGuide;
     }
 
-    public void ConfigureEditorActions(Action<object?> selectBackgroundPattern)
+    public void ConfigureEditorActions(
+        Action<object?> selectBackgroundPattern,
+        Action<object?> adjustBackgroundLightValue,
+        Action<object?> selectBackgroundLightPreset)
     {
         _selectBackgroundPattern = selectBackgroundPattern;
+        _adjustBackgroundLightValue = adjustBackgroundLightValue;
+        _selectBackgroundLightPreset = selectBackgroundLightPreset;
     }
 
     private static void Noop()

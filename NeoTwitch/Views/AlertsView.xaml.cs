@@ -24,10 +24,6 @@ public partial class AlertsView : NeoTwitchView
 
     private void TargetPinsChoiceBox_SelectionChanged(object sender, SelectionChangedEventArgs e) => Host?.TargetPinsChoiceBox_SelectionChanged(sender, e);
 
-    private void LightPresetButton_Click(object sender, RoutedEventArgs e) => Host?.LightPresetButton_Click(sender, e);
-
-    private void LightValueButton_Click(object sender, RoutedEventArgs e) => Host?.LightValueButton_Click(sender, e);
-
     private void LightNumberBox_TextChanged(object sender, TextChangedEventArgs e) => Host?.LightNumberBox_TextChanged(sender, e);
 
     private void PrimaryColorButton_Click(object sender, RoutedEventArgs e) => Host?.PrimaryColorButton_Click(sender, e);

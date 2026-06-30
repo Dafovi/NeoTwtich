@@ -21,9 +21,9 @@ public partial class MainWindow
         }
     }
 
-    internal void LightPresetButton_Click(object sender, RoutedEventArgs e)
+    private void SelectRuleLightPreset(object? parameter)
     {
-        if (sender is not System.Windows.Controls.Button button || button.Tag is not string preset)
+        if (parameter?.ToString() is not { Length: > 0 } preset)
         {
             return;
         }
@@ -40,14 +40,14 @@ public partial class MainWindow
         }
     }
 
-    internal void LightValueButton_Click(object sender, RoutedEventArgs e)
+    private void AdjustRuleLightValue(object? parameter)
     {
-        if (_initializingComponent || _loadingRule || sender is not System.Windows.Controls.Button button)
+        if (_initializingComponent || _loadingRule)
         {
             return;
         }
 
-        if (!LightControlInputService.TryParseDelta(button.Tag?.ToString(), out var delta))
+        if (!LightControlInputService.TryParseDelta(parameter?.ToString(), out var delta))
         {
             return;
         }

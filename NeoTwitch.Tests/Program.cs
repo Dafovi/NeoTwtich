@@ -2236,6 +2236,7 @@ static class LightsViewModelTests
             () => actions.Add("stop"),
             () => actions.Add("sketch"),
             () => actions.Add("guide"));
+        viewModel.ConfigureEditorActions(parameter => actions.Add($"pattern:{parameter}"));
 
         viewModel.AddStripCommand.Execute(null);
         viewModel.DuplicateStripCommand.Execute(null);
@@ -2244,8 +2245,9 @@ static class LightsViewModelTests
         viewModel.StopBackgroundCommand.Execute(null);
         viewModel.OpenSketchCommand.Execute(null);
         viewModel.OpenGuideCommand.Execute(null);
+        viewModel.SelectBackgroundPatternCommand.Execute(LightPattern.Pulse);
 
-        TestAssert.Equal("add,duplicate,remove,apply,stop,sketch,guide", string.Join(",", actions));
+        TestAssert.Equal("add,duplicate,remove,apply,stop,sketch,guide,pattern:Pulse", string.Join(",", actions));
     }
 }
 

@@ -22,8 +22,6 @@ public partial class LightsView : NeoTwitchView
 
     private void BackgroundFieldChanged(object sender, RoutedPropertyChangedEventArgs<double> e) => Host?.BackgroundFieldChanged(sender, e);
 
-    private void BackgroundPatternTile_Click(object sender, RoutedEventArgs e) => Host?.BackgroundPatternTile_Click(sender, e);
-
     private void BackgroundLightValueButton_Click(object sender, RoutedEventArgs e) => Host?.BackgroundLightValueButton_Click(sender, e);
 
     private void BackgroundLightNumberBox_TextChanged(object sender, TextChangedEventArgs e) => Host?.BackgroundLightNumberBox_TextChanged(sender, e);

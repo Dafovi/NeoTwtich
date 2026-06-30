@@ -69,6 +69,7 @@ public partial class MainWindow
                 StopArduinoBackground,
                 OpenArduinoSketch,
                 OpenArduinoGuide);
+            _lightsViewModel.ConfigureEditorActions(SelectBackgroundPattern);
             _settingsViewModel = new SettingsViewModel();
             _audioLibraryViewModel = new LibraryScreenViewModel<AudioLibraryRow, AudioGroupRow>();
             _imageLibraryViewModel = new LibraryScreenViewModel<MediaLibraryRow, MediaGroupRow>();

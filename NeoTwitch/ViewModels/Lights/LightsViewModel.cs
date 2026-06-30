@@ -11,6 +11,7 @@ public sealed class LightsViewModel : ObservableObject
     private Action _stopBackground = Noop;
     private Action _openSketch = Noop;
     private Action _openGuide = Noop;
+    private Action<object?> _selectBackgroundPattern = Noop;
 
     public LightsViewModel()
     {
@@ -21,6 +22,7 @@ public sealed class LightsViewModel : ObservableObject
         StopBackgroundCommand = new RelayCommand(() => _stopBackground());
         OpenSketchCommand = new RelayCommand(() => _openSketch());
         OpenGuideCommand = new RelayCommand(() => _openGuide());
+        SelectBackgroundPatternCommand = new RelayCommand(parameter => _selectBackgroundPattern(parameter));
     }
 
     public RelayCommand AddStripCommand { get; }
@@ -36,6 +38,8 @@ public sealed class LightsViewModel : ObservableObject
     public RelayCommand OpenSketchCommand { get; }
 
     public RelayCommand OpenGuideCommand { get; }
+
+    public RelayCommand SelectBackgroundPatternCommand { get; }
 
     public void ConfigureActions(
         Action addStrip,
@@ -55,7 +59,16 @@ public sealed class LightsViewModel : ObservableObject
         _openGuide = openGuide;
     }
 
+    public void ConfigureEditorActions(Action<object?> selectBackgroundPattern)
+    {
+        _selectBackgroundPattern = selectBackgroundPattern;
+    }
+
     private static void Noop()
+    {
+    }
+
+    private static void Noop(object? _)
     {
     }
 }

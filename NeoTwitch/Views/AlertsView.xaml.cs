@@ -26,12 +26,6 @@ public partial class AlertsView : NeoTwitchView
 
     private void LightNumberBox_TextChanged(object sender, TextChangedEventArgs e) => Host?.LightNumberBox_TextChanged(sender, e);
 
-    private void PrimaryColorButton_Click(object sender, RoutedEventArgs e) => Host?.PrimaryColorButton_Click(sender, e);
-
-    private void SecondaryColorButton_Click(object sender, RoutedEventArgs e) => Host?.SecondaryColorButton_Click(sender, e);
-
-    private void TertiaryColorButton_Click(object sender, RoutedEventArgs e) => Host?.TertiaryColorButton_Click(sender, e);
-
     private void RuleLedPreviewPanel_IsVisibleChanged(object sender, DependencyPropertyChangedEventArgs e) => Host?.RuleLedPreviewPanel_IsVisibleChanged(sender, e);
 
     private void RuleFilterButtonStateChanged(object sender, RoutedEventArgs e)

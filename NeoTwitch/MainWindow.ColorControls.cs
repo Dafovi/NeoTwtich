@@ -1,4 +1,3 @@
-using System.Windows;
 using System.Windows.Media;
 using NeoTwitch.Models;
 using NeoTwitch.Services;
@@ -7,34 +6,26 @@ namespace NeoTwitch;
 
 public partial class MainWindow
 {
-    internal void PrimaryColorButton_Click(object sender, RoutedEventArgs e)
+    private void PickRuleLightColor(object? parameter)
     {
-        PickColor(PrimaryColorBox);
+        PickColor(parameter?.ToString() switch
+        {
+            "Primary" => PrimaryColorBox,
+            "Secondary" => SecondaryColorBox,
+            "Tertiary" => TertiaryColorBox,
+            _ => null
+        });
     }
 
-    internal void SecondaryColorButton_Click(object sender, RoutedEventArgs e)
+    private void PickBackgroundLightColor(object? parameter)
     {
-        PickColor(SecondaryColorBox);
-    }
-
-    internal void TertiaryColorButton_Click(object sender, RoutedEventArgs e)
-    {
-        PickColor(TertiaryColorBox);
-    }
-
-    internal void BackgroundPrimaryColorButton_Click(object sender, RoutedEventArgs e)
-    {
-        PickColor(BackgroundPrimaryColorBox);
-    }
-
-    internal void BackgroundSecondaryColorButton_Click(object sender, RoutedEventArgs e)
-    {
-        PickColor(BackgroundSecondaryColorBox);
-    }
-
-    internal void BackgroundTertiaryColorButton_Click(object sender, RoutedEventArgs e)
-    {
-        PickColor(BackgroundTertiaryColorBox);
+        PickColor(parameter?.ToString() switch
+        {
+            "Primary" => BackgroundPrimaryColorBox,
+            "Secondary" => BackgroundSecondaryColorBox,
+            "Tertiary" => BackgroundTertiaryColorBox,
+            _ => null
+        });
     }
 
     private void UpdateColorButtons()
@@ -59,8 +50,13 @@ public partial class MainWindow
         }
     }
 
-    private void PickColor(System.Windows.Controls.TextBox target)
+    private void PickColor(System.Windows.Controls.TextBox? target)
     {
+        if (target is null)
+        {
+            return;
+        }
+
         var dialog = new Views.ColorPickerDialog(target.Text, ThemeModeService.ResolveDarkMode(_config.ThemeMode), BuildRecentColorPalette())
         {
             Owner = this

@@ -365,12 +365,16 @@
                                                             Width="38"
                                                             Margin="0,0,10,0"
                                                             ToolTip="Escoger color"
-                                                            Click="BackgroundPrimaryColorButton_Click" />
+                                                            Tag="Primary"
+                                                            Command="{Binding PickBackgroundLightColorCommand}"
+                                                            CommandParameter="{Binding Tag, RelativeSource={RelativeSource Self}}" />
                                                     <Button Content="Editar color"
                                                             DockPanel.Dock="Right"
                                                             MinWidth="104"
                                                             Margin="10,0,0,0"
-                                                            Click="BackgroundPrimaryColorButton_Click" />
+                                                            Tag="Primary"
+                                                            Command="{Binding PickBackgroundLightColorCommand}"
+                                                            CommandParameter="{Binding Tag, RelativeSource={RelativeSource Self}}" />
                                                     <TextBox x:Name="BackgroundPrimaryColorBox"
                                                              Margin="0"
                                                              TextChanged="BackgroundFieldChanged" />
@@ -387,12 +391,16 @@
                                                             Width="38"
                                                             Margin="0,0,10,0"
                                                             ToolTip="Escoger color"
-                                                            Click="BackgroundSecondaryColorButton_Click" />
+                                                            Tag="Secondary"
+                                                            Command="{Binding PickBackgroundLightColorCommand}"
+                                                            CommandParameter="{Binding Tag, RelativeSource={RelativeSource Self}}" />
                                                     <Button Content="Editar color"
                                                             DockPanel.Dock="Right"
                                                             MinWidth="104"
                                                             Margin="10,0,0,0"
-                                                            Click="BackgroundSecondaryColorButton_Click" />
+                                                            Tag="Secondary"
+                                                            Command="{Binding PickBackgroundLightColorCommand}"
+                                                            CommandParameter="{Binding Tag, RelativeSource={RelativeSource Self}}" />
                                                     <TextBox x:Name="BackgroundSecondaryColorBox"
                                                              Margin="0"
                                                              TextChanged="BackgroundFieldChanged" />
@@ -409,12 +417,16 @@
                                                             Width="38"
                                                             Margin="0,0,10,0"
                                                             ToolTip="Escoger color"
-                                                            Click="BackgroundTertiaryColorButton_Click" />
+                                                            Tag="Tertiary"
+                                                            Command="{Binding PickBackgroundLightColorCommand}"
+                                                            CommandParameter="{Binding Tag, RelativeSource={RelativeSource Self}}" />
                                                     <Button Content="Editar color"
                                                             DockPanel.Dock="Right"
                                                             MinWidth="104"
                                                             Margin="10,0,0,0"
-                                                            Click="BackgroundTertiaryColorButton_Click" />
+                                                            Tag="Tertiary"
+                                                            Command="{Binding PickBackgroundLightColorCommand}"
+                                                            CommandParameter="{Binding Tag, RelativeSource={RelativeSource Self}}" />
                                                     <TextBox x:Name="BackgroundTertiaryColorBox"
                                                              Margin="0"
                                                              TextChanged="BackgroundFieldChanged" />

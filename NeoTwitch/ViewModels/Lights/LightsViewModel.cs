@@ -14,6 +14,7 @@ public sealed class LightsViewModel : ObservableObject
     private Action<object?> _selectBackgroundPattern = Noop;
     private Action<object?> _adjustBackgroundLightValue = Noop;
     private Action<object?> _selectBackgroundLightPreset = Noop;
+    private Action<object?> _pickBackgroundLightColor = Noop;
 
     public LightsViewModel()
     {
@@ -27,6 +28,7 @@ public sealed class LightsViewModel : ObservableObject
         SelectBackgroundPatternCommand = new RelayCommand(parameter => _selectBackgroundPattern(parameter));
         AdjustBackgroundLightValueCommand = new RelayCommand(parameter => _adjustBackgroundLightValue(parameter));
         SelectBackgroundLightPresetCommand = new RelayCommand(parameter => _selectBackgroundLightPreset(parameter));
+        PickBackgroundLightColorCommand = new RelayCommand(parameter => _pickBackgroundLightColor(parameter));
     }
 
     public RelayCommand AddStripCommand { get; }
@@ -49,6 +51,8 @@ public sealed class LightsViewModel : ObservableObject
 
     public RelayCommand SelectBackgroundLightPresetCommand { get; }
 
+    public RelayCommand PickBackgroundLightColorCommand { get; }
+
     public void ConfigureActions(
         Action addStrip,
         Action duplicateStrip,
@@ -70,11 +74,13 @@ public sealed class LightsViewModel : ObservableObject
     public void ConfigureEditorActions(
         Action<object?> selectBackgroundPattern,
         Action<object?> adjustBackgroundLightValue,
-        Action<object?> selectBackgroundLightPreset)
+        Action<object?> selectBackgroundLightPreset,
+        Action<object?> pickBackgroundLightColor)
     {
         _selectBackgroundPattern = selectBackgroundPattern;
         _adjustBackgroundLightValue = adjustBackgroundLightValue;
         _selectBackgroundLightPreset = selectBackgroundLightPreset;
+        _pickBackgroundLightColor = pickBackgroundLightColor;
     }
 
     private static void Noop()

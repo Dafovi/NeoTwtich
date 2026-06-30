@@ -698,12 +698,16 @@
                                                                                             Width="38"
                                                                                             Margin="0,0,10,0"
                                                                                             ToolTip="Escoger color"
-                                                                                            Click="PrimaryColorButton_Click" />
+                                                                                            Tag="Primary"
+                                                                                            Command="{Binding PickLightColorCommand}"
+                                                                                            CommandParameter="{Binding Tag, RelativeSource={RelativeSource Self}}" />
                                                                                     <Button Content="Editar color"
                                                                                             DockPanel.Dock="Right"
                                                                                             MinWidth="104"
                                                                                             Margin="10,0,0,0"
-                                                                                            Click="PrimaryColorButton_Click" />
+                                                                                            Tag="Primary"
+                                                                                            Command="{Binding PickLightColorCommand}"
+                                                                                            CommandParameter="{Binding Tag, RelativeSource={RelativeSource Self}}" />
                                                                                     <TextBox x:Name="PrimaryColorBox"
                                                                                              Margin="0"
                                                                                              TextChanged="RuleFieldChanged" />
@@ -721,12 +725,16 @@
                                                                                         Width="38"
                                                                                         Margin="0,0,10,0"
                                                                                         ToolTip="Escoger color"
-                                                                                        Click="SecondaryColorButton_Click" />
+                                                                                        Tag="Secondary"
+                                                                                        Command="{Binding PickLightColorCommand}"
+                                                                                        CommandParameter="{Binding Tag, RelativeSource={RelativeSource Self}}" />
                                                                                 <Button Content="Editar color"
                                                                                         DockPanel.Dock="Right"
                                                                                         MinWidth="104"
                                                                                         Margin="10,0,0,0"
-                                                                                        Click="SecondaryColorButton_Click" />
+                                                                                        Tag="Secondary"
+                                                                                        Command="{Binding PickLightColorCommand}"
+                                                                                        CommandParameter="{Binding Tag, RelativeSource={RelativeSource Self}}" />
                                                                                 <TextBox x:Name="SecondaryColorBox"
                                                                                          Margin="0"
                                                                                          TextChanged="RuleFieldChanged" />
@@ -743,12 +751,16 @@
                                                                                         Width="38"
                                                                                         Margin="0,0,10,0"
                                                                                         ToolTip="Escoger color"
-                                                                                        Click="TertiaryColorButton_Click" />
+                                                                                        Tag="Tertiary"
+                                                                                        Command="{Binding PickLightColorCommand}"
+                                                                                        CommandParameter="{Binding Tag, RelativeSource={RelativeSource Self}}" />
                                                                                 <Button Content="Editar color"
                                                                                         DockPanel.Dock="Right"
                                                                                         MinWidth="104"
                                                                                         Margin="10,0,0,0"
-                                                                                        Click="TertiaryColorButton_Click" />
+                                                                                        Tag="Tertiary"
+                                                                                        Command="{Binding PickLightColorCommand}"
+                                                                                        CommandParameter="{Binding Tag, RelativeSource={RelativeSource Self}}" />
                                                                                 <TextBox x:Name="TertiaryColorBox"
                                                                                          Margin="0"
                                                                                          TextChanged="RuleFieldChanged" />

@@ -529,6 +529,7 @@ static class AlertsViewModelTests
             parameter => actions.Add($"pattern:{parameter}"),
             parameter => actions.Add($"preset:{parameter}"),
             parameter => actions.Add($"adjust:{parameter}"),
+            parameter => actions.Add($"color:{parameter}"),
             parameter => actions.Add($"audio:{parameter}"),
             parameter => actions.Add($"obs-kind:{parameter}"),
             parameter => actions.Add($"obs-mode:{parameter}"));
@@ -537,12 +538,13 @@ static class AlertsViewModelTests
         viewModel.SelectLightPatternCommand.Execute(LightPattern.Rave);
         viewModel.SelectLightPresetCommand.Execute("Fast");
         viewModel.AdjustLightValueCommand.Execute("Brightness:15");
+        viewModel.PickLightColorCommand.Execute("Primary");
         viewModel.SelectAudioModeCommand.Execute(AudioSourceMode.Group);
         viewModel.SelectObsMediaKindCommand.Execute(ObsMediaKind.Video);
         viewModel.SelectObsMediaSourceModeCommand.Execute(MediaSourceMode.Single);
 
         TestAssert.Equal(
-            "event:Follow,pattern:Rave,preset:Fast,adjust:Brightness:15,audio:Group,obs-kind:Video,obs-mode:Single",
+            "event:Follow,pattern:Rave,preset:Fast,adjust:Brightness:15,color:Primary,audio:Group,obs-kind:Video,obs-mode:Single",
             string.Join(",", actions));
     }
 }
@@ -2243,7 +2245,8 @@ static class LightsViewModelTests
         viewModel.ConfigureEditorActions(
             parameter => actions.Add($"pattern:{parameter}"),
             parameter => actions.Add($"adjust:{parameter}"),
-            parameter => actions.Add($"preset:{parameter}"));
+            parameter => actions.Add($"preset:{parameter}"),
+            parameter => actions.Add($"color:{parameter}"));
 
         viewModel.AddStripCommand.Execute(null);
         viewModel.DuplicateStripCommand.Execute(null);
@@ -2255,8 +2258,9 @@ static class LightsViewModelTests
         viewModel.SelectBackgroundPatternCommand.Execute(LightPattern.Pulse);
         viewModel.AdjustBackgroundLightValueCommand.Execute("Step:10");
         viewModel.SelectBackgroundLightPresetCommand.Execute("Medium");
+        viewModel.PickBackgroundLightColorCommand.Execute("Secondary");
 
-        TestAssert.Equal("add,duplicate,remove,apply,stop,sketch,guide,pattern:Pulse,adjust:Step:10,preset:Medium", string.Join(",", actions));
+        TestAssert.Equal("add,duplicate,remove,apply,stop,sketch,guide,pattern:Pulse,adjust:Step:10,preset:Medium,color:Secondary", string.Join(",", actions));
     }
 }
 

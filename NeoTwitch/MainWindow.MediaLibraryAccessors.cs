@@ -64,8 +64,4 @@ public partial class MainWindow
             _text.Get(UiTextKeys.LibrarySelectedGroup));
     }
 
-    private void UpdateVideoVolumeText()
-    {
-        VideoVolumeValueText.Text = $"{_config.VideoVolumePercent}%";
-    }
 }

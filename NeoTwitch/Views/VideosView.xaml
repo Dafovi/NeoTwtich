@@ -62,16 +62,13 @@
                                             VerticalAlignment="Center">
                                     <TextBlock Text="Volumen de videos"
                                                Style="{StaticResource MutedText}" />
-                                    <Slider x:Name="VideoVolumeSlider"
-                                            Minimum="0"
+                                    <Slider Minimum="0"
                                             Maximum="100"
-                                            Value="100"
-                                            Margin="0,8,12,0"
-                                            ValueChanged="VideoVolumeSlider_ValueChanged" />
+                                            Value="{Binding VolumePercent, Mode=TwoWay, UpdateSourceTrigger=PropertyChanged}"
+                                            Margin="0,8,12,0" />
                                 </StackPanel>
-                                <TextBlock x:Name="VideoVolumeValueText"
-                                           Grid.Column="2"
-                                           Text="100%"
+                                <TextBlock Grid.Column="2"
+                                           Text="{Binding VolumeText}"
                                            Foreground="#14B8A6"
                                            FontSize="18"
                                            FontWeight="SemiBold"

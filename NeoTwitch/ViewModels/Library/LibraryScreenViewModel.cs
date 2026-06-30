@@ -14,7 +14,9 @@ public sealed class LibraryScreenViewModel<TAssetRow, TGroupRow> : ObservableObj
     private string _footerText = "";
     private string _searchText = "";
     private string _filter = AllFilter;
+    private double _volumePercent = 100;
     private bool _suppressFilterEvents;
+    private Action<int> _volumeChanged = NoOpInt;
 
     public LibraryScreenViewModel()
     {
@@ -43,6 +45,14 @@ public sealed class LibraryScreenViewModel<TAssetRow, TGroupRow> : ObservableObj
     public RelayCommand PreviewAssetCommand { get; private set; } = new(NoOp);
 
     public RelayCommand DeleteAssetCommand { get; private set; } = new(NoOp);
+
+    public double VolumePercent
+    {
+        get => _volumePercent;
+        set => SetVolume(value);
+    }
+
+    public string VolumeText => $"{(int)Math.Round(VolumePercent)}%";
 
     public string SearchText
     {
@@ -104,6 +114,27 @@ public sealed class LibraryScreenViewModel<TAssetRow, TGroupRow> : ObservableObj
         OnPropertyChanged(nameof(DeleteGroupCommand));
         OnPropertyChanged(nameof(PreviewAssetCommand));
         OnPropertyChanged(nameof(DeleteAssetCommand));
+    }
+
+    public void ConfigureVolume(Action<int> volumeChanged)
+    {
+        _volumeChanged = volumeChanged ?? NoOpInt;
+    }
+
+    public void SetVolume(double value, bool notify = true)
+    {
+        var normalized = Math.Clamp(value, 0, 100);
+        if (!SetProperty(ref _volumePercent, normalized, nameof(VolumePercent)))
+        {
+            return;
+        }
+
+        OnPropertyChanged(nameof(VolumeText));
+
+        if (notify)
+        {
+            _volumeChanged((int)Math.Round(normalized));
+        }
     }
 
     public void SetFilters(string searchText, string filter, bool notify = true)
@@ -169,6 +200,10 @@ public sealed class LibraryScreenViewModel<TAssetRow, TGroupRow> : ObservableObj
     }
 
     private static void NoOp(object? parameter)
+    {
+    }
+
+    private static void NoOpInt(int value)
     {
     }
 }

@@ -42,7 +42,7 @@ public partial class MainWindow
         ThemeModeBox.SelectedValue = _config.ThemeMode;
         CloseToTrayCheck.IsChecked = _config.CloseToTray;
         AlertVolumeSlider.Value = _config.AlertVolumePercent;
-        VideoVolumeSlider.Value = _config.VideoVolumePercent;
+        _videoLibraryViewModel.SetVolume(_config.VideoVolumePercent, notify: false);
     }
 
     private void LoadQueueConfigIntoUi()
@@ -105,6 +105,5 @@ public partial class MainWindow
         UpdateStatusText();
         RefreshMediaLibraryView(MediaLibraryKind.Image);
         RefreshMediaLibraryView(MediaLibraryKind.Video);
-        UpdateVideoVolumeText();
     }
 }

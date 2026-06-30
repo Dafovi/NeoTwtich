@@ -54,15 +54,14 @@ public partial class MainWindow
         RefreshMediaLibraryView(kind);
     }
 
-    internal void VideoVolumeSlider_ValueChanged(object sender, RoutedPropertyChangedEventArgs<double> e)
+    private void UpdateVideoVolume(int volumePercent)
     {
         if (_loadingUi)
         {
             return;
         }
 
-        _config.VideoVolumePercent = (int)Math.Round(VideoVolumeSlider.Value);
-        UpdateVideoVolumeText();
+        _config.VideoVolumePercent = volumePercent;
         SaveConfig();
     }
 

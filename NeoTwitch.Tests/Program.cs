@@ -1429,6 +1429,20 @@ static class LibraryScreenViewModelTests
         TestAssert.Equal("ALL", viewModel.Filter);
         TestAssert.Equal(2, filterChanges);
 
+        var volumeChanges = new List<int>();
+        viewModel.ConfigureVolume(volumeChanges.Add);
+        viewModel.SetVolume(42.6, notify: false);
+
+        TestAssert.Equal(43, (int)Math.Round(viewModel.VolumePercent));
+        TestAssert.Equal("43%", viewModel.VolumeText);
+        TestAssert.Equal(0, volumeChanges.Count);
+
+        viewModel.VolumePercent = 150;
+
+        TestAssert.Equal(100, (int)Math.Round(viewModel.VolumePercent));
+        TestAssert.Equal("100%", viewModel.VolumeText);
+        TestAssert.Equal("100", string.Join(",", volumeChanges));
+
         var actions = new List<string>();
         viewModel.ConfigureActions(
             () => actions.Add("browse"),

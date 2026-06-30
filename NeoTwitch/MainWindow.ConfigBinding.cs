@@ -67,7 +67,7 @@ public partial class MainWindow
                 ThemeModeBox.SelectedValue as string ?? _config.ThemeMode,
                 CloseToTrayCheck.IsChecked == true,
                 AlertVolumeSlider.Value,
-                VideoVolumeSlider.Value,
+                _videoLibraryViewModel.VolumePercent,
                 MaxQueuedSameRuleAlertsBox.Text,
                 SameRuleQueueCooldownBox.Text,
                 MaxQueuedDifferentRuleAlertsBox.Text,

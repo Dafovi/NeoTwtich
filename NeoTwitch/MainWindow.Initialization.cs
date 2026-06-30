@@ -106,6 +106,7 @@ public partial class MainWindow
                 parameter => DeleteMediaGroup(MediaLibraryKind.Video, parameter),
                 parameter => PreviewMediaAsset(MediaLibraryKind.Video, parameter),
                 parameter => DeleteMediaAsset(MediaLibraryKind.Video, parameter));
+            _videoLibraryViewModel.ConfigureVolume(UpdateVideoVolume);
             _audioLibraryViewModel.FiltersChanged += AudioLibraryFiltersChanged;
             _imageLibraryViewModel.FiltersChanged += ImageLibraryFiltersChanged;
             _videoLibraryViewModel.FiltersChanged += VideoLibraryFiltersChanged;

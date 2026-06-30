@@ -50,9 +50,7 @@ public partial class MainWindow
             _text.Get(UiTextKeys.AppStateError));
         var (text, color, imagePath) = ConnectionStateService.GetAppStateVisual(state, labels);
 
-        SettingsAppStateIcon.Source = PackImageLoader.Load(imagePath);
-        SettingsDiagnosticStatusText.Text = text;
-        SettingsDiagnosticStatusText.Foreground = FrozenBrushFrom(color);
+        _settingsViewModel.UpdateAppState(text, FrozenBrushFrom(color), imagePath);
     }
 
     private void ShowDiagnosticsReport(DiagnosticResult result)

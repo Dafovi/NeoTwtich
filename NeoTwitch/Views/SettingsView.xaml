@@ -234,10 +234,9 @@
                                                  Fill="#22C55E"
                                                  VerticalAlignment="Center"
                                                  Margin="0,0,8,0" />
-                                        <TextBlock x:Name="SettingsDiagnosticStatusText"
-                                                   Text="Estado: Todo en orden"
+                                        <TextBlock Text="{Binding DiagnosticStatusText}"
                                                    Tag="Success"
-                                                   Foreground="#22C55E"
+                                                   Foreground="{Binding DiagnosticStatusBrush}"
                                                    FontSize="12"
                                                    VerticalAlignment="Center" />
                                     </StackPanel>
@@ -331,8 +330,7 @@
                                                FontWeight="SemiBold"
                                                HorizontalAlignment="Center"
                                                Margin="0,0,0,16" />
-                                    <Image x:Name="SettingsAppStateIcon"
-                                           Source="/Assets/Icons/appstate_ok.png"
+                                    <Image Source="{Binding AppStateIconPath}"
                                            Width="82"
                                            Height="82"
                                            Stretch="Uniform" />
@@ -351,8 +349,7 @@
                                             Padding="8,3"
                                             Margin="0,12,0,0"
                                             Tag="StaticBrush">
-                                        <TextBlock x:Name="SettingsVersionText"
-                                                   Text="V"
+                                        <TextBlock Text="{Binding VersionText}"
                                                    Tag="Success"
                                                    Foreground="#22C55E"
                                                    FontWeight="SemiBold"
@@ -452,12 +449,12 @@
                                                Style="{StaticResource TitleText}"
                                                FontWeight="SemiBold"
                                                Margin="0,0,0,10" />
-                                    <TextBlock x:Name="SettingsPathText"
-                                               Style="{StaticResource MutedText}"
+                                    <TextBlock Style="{StaticResource MutedText}"
+                                               Text="{Binding SettingsPathText}"
                                                FontSize="11"
                                                TextWrapping="Wrap" />
-                                    <TextBlock x:Name="BackupPathText"
-                                               Style="{StaticResource MutedText}"
+                                    <TextBlock Style="{StaticResource MutedText}"
+                                               Text="{Binding BackupPathText}"
                                                FontSize="11"
                                                TextWrapping="Wrap"
                                                Margin="0,6,0,0" />

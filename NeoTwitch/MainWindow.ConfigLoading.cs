@@ -82,9 +82,10 @@ public partial class MainWindow
 
     private void LoadSettingsMetadataIntoUi()
     {
-        SettingsPathText.Text = _settingsStore.SettingsPath;
-        BackupPathText.Text = _text.Format(UiTextKeys.SettingsAutomaticBackupsText, _settingsStore.BackupDirectory);
-        SettingsVersionText.Text = $"V{NeoTwitchProduct.CurrentVersionText}";
+        _settingsViewModel.UpdateMetadata(
+            _settingsStore.SettingsPath,
+            _text.Format(UiTextKeys.SettingsAutomaticBackupsText, _settingsStore.BackupDirectory),
+            $"V{NeoTwitchProduct.CurrentVersionText}");
         UpdateCloseBehaviorCards();
     }
 

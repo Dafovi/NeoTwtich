@@ -1490,6 +1490,16 @@ static class SettingsViewModelTests
         viewModel.SelectCloseBehaviorCommand.Execute("Tray");
 
         TestAssert.Equal("import,export,backup,restore,diagnostics,save,close:Tray", string.Join(",", actions));
+
+        viewModel.UpdateMetadata("settings.json", "backups", "V2.2.3");
+        viewModel.UpdateBackupPathText("backup manual");
+        viewModel.UpdateAppState("Estado: aviso", System.Windows.Media.Brushes.Orange, "/icon.png");
+
+        TestAssert.Equal("settings.json", viewModel.SettingsPathText);
+        TestAssert.Equal("backup manual", viewModel.BackupPathText);
+        TestAssert.Equal("V2.2.3", viewModel.VersionText);
+        TestAssert.Equal("Estado: aviso", viewModel.DiagnosticStatusText);
+        TestAssert.Equal("/icon.png", viewModel.AppStateIconPath);
     }
 }
 

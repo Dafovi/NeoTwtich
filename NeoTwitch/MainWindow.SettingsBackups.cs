@@ -20,7 +20,7 @@ public partial class MainWindow
             Directory.CreateDirectory(_settingsStore.BackupDirectory);
             var backupPath = Path.Combine(_settingsStore.BackupDirectory, $"settings-manual-{DateTime.Now:yyyyMMdd-HHmmss}.json");
             _settingsStore.Export(_config, backupPath);
-            BackupPathText.Text = _text.Format(UiTextKeys.SettingsManualBackupText, backupPath);
+            _settingsViewModel.UpdateBackupPathText(_text.Format(UiTextKeys.SettingsManualBackupText, backupPath));
             AddLog(_text.Format(UiTextKeys.SettingsBackupCreatedLog, backupPath));
             WpfMessageBox.Show(this, _text.Get(UiTextKeys.SettingsBackupSuccessPrompt), _text.Get(UiTextKeys.SettingsBackupTitle), MessageBoxButton.OK, MessageBoxImage.Information);
         }

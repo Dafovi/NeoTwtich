@@ -112,6 +112,7 @@ var tests = new (string Name, Action Body)[]
     ("DashboardSummaryDisplayService formats summary metrics", DashboardSummaryDisplayTests.FormatsSummaryMetrics),
     ("DashboardViewModel updates summary metrics", DashboardViewModelTests.UpdatesSummaryMetrics),
     ("DashboardViewModel updates connection states", DashboardViewModelTests.UpdatesConnectionStates),
+    ("DashboardStatusTextLabelFactory builds labels", DashboardStatusTextLabelFactoryTests.BuildsLabels),
     ("DashboardStatusTextService formats live Twitch status", DashboardStatusTextTests.FormatsLiveTwitchStatus),
     ("DashboardStatusTextService formats connection labels", DashboardStatusTextTests.FormatsConnectionLabels),
     ("DashboardStatusTextService formats Arduino status", DashboardStatusTextTests.FormatsArduinoStatus),
@@ -2263,6 +2264,19 @@ static class LightsViewModelTests
         viewModel.PickBackgroundLightColorCommand.Execute("Secondary");
 
         TestAssert.Equal("add,duplicate,remove,apply,stop,sketch,guide,pattern:Pulse,adjust:Step:10,preset:Medium,color:Secondary", string.Join(",", actions));
+    }
+}
+
+static class DashboardStatusTextLabelFactoryTests
+{
+    public static void BuildsLabels()
+    {
+        var labels = DashboardStatusTextLabelFactory.Build(UiTextService.CreateDefault());
+
+        TestAssert.Equal("Sin Twitch", labels.NoTwitch);
+        TestAssert.Equal("Conectado", labels.ConnectionConnected);
+        TestAssert.Contains("{0}", labels.ArduinoConnectedFormat);
+        TestAssert.Contains("{0}", labels.AlexaSidebarFormat);
     }
 }
 

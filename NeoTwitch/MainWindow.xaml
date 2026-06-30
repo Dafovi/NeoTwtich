@@ -243,16 +243,7 @@
                             </StackPanel>
                         </Grid>
                     </Border>
-                    <Grid Visibility="Collapsed">
-                        <TextBlock x:Name="TwitchConnectionText" Text="Sin conectar" />
-                        <TextBlock x:Name="TwitchStatusText" />
-                        <TextBlock x:Name="ArduinoConnectionText" Text="Sin conectar" />
-                        <TextBlock x:Name="ArduinoStatusText" />
-                        <TextBlock x:Name="AlexaConnectionText" Text="Sin conectar" />
-                        <TextBlock x:Name="AlexaSidebarStatusText" />
-                    </Grid>
-                    <TextBlock x:Name="VersionText"
-                               Text="V0.0.0"
+                    <TextBlock Text="{Binding VersionText}"
                                FontSize="11"
                                Foreground="{DynamicResource ThemeSidebarMutedTextBrush}"
                                HorizontalAlignment="Left"

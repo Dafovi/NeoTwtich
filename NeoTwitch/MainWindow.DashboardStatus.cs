@@ -21,44 +21,46 @@ public partial class MainWindow
             labels);
 
         _shellViewModel.UpdateChannel(channel.Name, channel.Login);
-        TwitchConnectionText.Text = DashboardStatusTextService.BuildTwitchConnectionText(
-            _isTwitchAuthorizing,
-            _isTwitchConnecting,
-            !string.IsNullOrWhiteSpace(_twitchConnectionError),
-            _eventSubClient.IsRunning,
-            _config.Token.HasToken,
-            labels);
-        TwitchStatusText.Text = DashboardStatusTextService.BuildTwitchStatusText(
-            _isTwitchAuthorizing,
-            _isTwitchConnecting,
-            _streamStatus,
-            _eventSubClient.IsRunning,
-            labels);
+        _shellViewModel.UpdateServiceStatusText(
+            twitchConnection: DashboardStatusTextService.BuildTwitchConnectionText(
+                _isTwitchAuthorizing,
+                _isTwitchConnecting,
+                !string.IsNullOrWhiteSpace(_twitchConnectionError),
+                _eventSubClient.IsRunning,
+                _config.Token.HasToken,
+                labels),
+            twitchStatus: DashboardStatusTextService.BuildTwitchStatusText(
+                _isTwitchAuthorizing,
+                _isTwitchConnecting,
+                _streamStatus,
+                _eventSubClient.IsRunning,
+                labels));
         UpdateTwitchLiveIndicator();
         UpdateChannelAvatar();
 
         var totalLeds = _config.LedStrips.Sum(strip => strip.LedCount);
-        ArduinoConnectionText.Text = DashboardStatusTextService.BuildArduinoConnectionText(
-            _config.ArduinoEnabled,
-            _isArduinoConnecting,
-            _lightController.HasConfirmedAck,
-            _lightController.IsCompatibleWithoutAck,
-            _lightController.HasOpenPort,
-            _lightController.CurrentPort,
-            labels);
-        ArduinoStatusText.Text = DashboardStatusTextService.BuildArduinoStatusText(
-            _config.ArduinoEnabled,
-            _isArduinoConnecting,
-            _lightController.HasConfirmedAck,
-            _lightController.IsCompatibleWithoutAck,
-            _lightController.HasOpenPort,
-            _config.SerialPort,
-            _config.BaudRate,
-            _config.LedStrips.Count,
-            totalLeds,
-            _config.BackgroundEnabled,
-            DisplayNameService.For(_config.BackgroundPattern, _text),
-            labels);
+        _shellViewModel.UpdateServiceStatusText(
+            arduinoConnection: DashboardStatusTextService.BuildArduinoConnectionText(
+                _config.ArduinoEnabled,
+                _isArduinoConnecting,
+                _lightController.HasConfirmedAck,
+                _lightController.IsCompatibleWithoutAck,
+                _lightController.HasOpenPort,
+                _lightController.CurrentPort,
+                labels),
+            arduinoStatus: DashboardStatusTextService.BuildArduinoStatusText(
+                _config.ArduinoEnabled,
+                _isArduinoConnecting,
+                _lightController.HasConfirmedAck,
+                _lightController.IsCompatibleWithoutAck,
+                _lightController.HasOpenPort,
+                _config.SerialPort,
+                _config.BaudRate,
+                _config.LedStrips.Count,
+                totalLeds,
+                _config.BackgroundEnabled,
+                DisplayNameService.For(_config.BackgroundPattern, _text),
+                labels));
         RefreshDashboardConnectionStates();
         UpdateDashboardSummary();
         UpdateLightsArduinoStatus();
@@ -104,20 +106,21 @@ public partial class MainWindow
         var status = DashboardStatusTextService.BuildAlexaStatusText(_config.Alexa.Enabled, _config.Alexa.IsConfigured, labels);
 
         _connectionsViewModel.UpdateAlexaStatusText(status);
-        AlexaConnectionText.Text = DashboardStatusTextService.BuildAlexaConnectionText(
-            _config.Alexa.Enabled,
-            _config.Alexa.IsConfigured,
-            _isAlexaConnecting,
-            _alexaRelayConnected,
-            labels);
-        AlexaSidebarStatusText.Text = _config.Alexa.IsConfigured
+        _shellViewModel.UpdateServiceStatusText(
+            alexaConnection: DashboardStatusTextService.BuildAlexaConnectionText(
+                _config.Alexa.Enabled,
+                _config.Alexa.IsConfigured,
+                _isAlexaConnecting,
+                _alexaRelayConnected,
+                labels),
+            alexaSidebarStatus: _config.Alexa.IsConfigured
             ? DashboardStatusTextService.BuildAlexaSidebarStatusText(
                 _config.BackgroundAlexaEnabled,
                 _config.BackgroundAlexaOnEventName,
                 _config.BackgroundAlexaTurnOffAfterEvent,
                 _config.BackgroundAlexaOffEventName,
                 labels)
-            : status;
+            : status);
         UpdateConnectionButtons();
         RefreshDashboardConnectionStates();
         UpdateDashboardSummary();

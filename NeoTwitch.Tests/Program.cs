@@ -2933,6 +2933,21 @@ static class ShellViewModelTests
 
         TestAssert.Equal("Offline", shell.LiveStateText);
         TestAssert.Equal((byte)0x00, shell.LiveDotFill.Color.A);
+
+        shell.UpdateServiceStatusText(
+            twitchConnection: "Twitch conectado",
+            twitchStatus: "En vivo",
+            arduinoConnection: "Arduino conectado",
+            arduinoStatus: "300 LEDs",
+            alexaConnection: "Alexa lista",
+            alexaSidebarStatus: "Fondo activo");
+
+        TestAssert.Equal("Twitch conectado", shell.TwitchConnectionText);
+        TestAssert.Equal("En vivo", shell.TwitchStatusText);
+        TestAssert.Equal("Arduino conectado", shell.ArduinoConnectionText);
+        TestAssert.Equal("300 LEDs", shell.ArduinoStatusText);
+        TestAssert.Equal("Alexa lista", shell.AlexaConnectionText);
+        TestAssert.Equal("Fondo activo", shell.AlexaSidebarStatusText);
     }
 }
 

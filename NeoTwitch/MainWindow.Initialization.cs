@@ -132,7 +132,6 @@ public partial class MainWindow
             InitializeBackgroundOptionSources();
             InitializeConnectionOptionSources();
 
-            VersionText.Text = _shellViewModel.VersionText;
             ConfigureNavigationIcons();
             ConfigureActionIcons();
             ArrangeAlertActionCards();

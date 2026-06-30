@@ -13,7 +13,6 @@ public partial class MainWindow
         try
         {
             var result = await _updateService.CheckLatestAsync(CancellationToken.None);
-            VersionText.Text = $"V{result.CurrentVersion}";
 
             if (!result.IsUpdateAvailable)
             {

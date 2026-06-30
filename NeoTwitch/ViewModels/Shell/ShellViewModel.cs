@@ -30,6 +30,12 @@ public sealed class ShellViewModel : ObservableObject
     private string _channelLogin = "";
     private string _liveStateText = "";
     private string _topProfileText = "";
+    private string _twitchConnectionText = "Sin conectar";
+    private string _twitchStatusText = "";
+    private string _arduinoConnectionText = "Sin conectar";
+    private string _arduinoStatusText = "";
+    private string _alexaConnectionText = "Sin conectar";
+    private string _alexaSidebarStatusText = "";
     private SolidColorBrush _liveDotFill = UiBrushFactory.FrozenBrushFrom("#00000000");
     private SolidColorBrush _liveDotStroke = UiBrushFactory.FrozenBrushFrom("#94A3B8");
     private SolidColorBrush _liveStateBrush = UiBrushFactory.FrozenBrushFrom("#94A3B8");
@@ -133,6 +139,42 @@ public sealed class ShellViewModel : ObservableObject
         private set => SetProperty(ref _topProfileBrush, value);
     }
 
+    public string TwitchConnectionText
+    {
+        get => _twitchConnectionText;
+        private set => SetProperty(ref _twitchConnectionText, value);
+    }
+
+    public string TwitchStatusText
+    {
+        get => _twitchStatusText;
+        private set => SetProperty(ref _twitchStatusText, value);
+    }
+
+    public string ArduinoConnectionText
+    {
+        get => _arduinoConnectionText;
+        private set => SetProperty(ref _arduinoConnectionText, value);
+    }
+
+    public string ArduinoStatusText
+    {
+        get => _arduinoStatusText;
+        private set => SetProperty(ref _arduinoStatusText, value);
+    }
+
+    public string AlexaConnectionText
+    {
+        get => _alexaConnectionText;
+        private set => SetProperty(ref _alexaConnectionText, value);
+    }
+
+    public string AlexaSidebarStatusText
+    {
+        get => _alexaSidebarStatusText;
+        private set => SetProperty(ref _alexaSidebarStatusText, value);
+    }
+
     public NavigationItemViewModel? FindByIndex(int tabIndex)
     {
         return Items.FirstOrDefault(item => item.TabIndex == tabIndex);
@@ -175,6 +217,45 @@ public sealed class ShellViewModel : ObservableObject
     {
         ChannelName = name;
         ChannelLogin = login;
+    }
+
+    public void UpdateServiceStatusText(
+        string? twitchConnection = null,
+        string? twitchStatus = null,
+        string? arduinoConnection = null,
+        string? arduinoStatus = null,
+        string? alexaConnection = null,
+        string? alexaSidebarStatus = null)
+    {
+        if (twitchConnection is not null)
+        {
+            TwitchConnectionText = twitchConnection;
+        }
+
+        if (twitchStatus is not null)
+        {
+            TwitchStatusText = twitchStatus;
+        }
+
+        if (arduinoConnection is not null)
+        {
+            ArduinoConnectionText = arduinoConnection;
+        }
+
+        if (arduinoStatus is not null)
+        {
+            ArduinoStatusText = arduinoStatus;
+        }
+
+        if (alexaConnection is not null)
+        {
+            AlexaConnectionText = alexaConnection;
+        }
+
+        if (alexaSidebarStatus is not null)
+        {
+            AlexaSidebarStatusText = alexaSidebarStatus;
+        }
     }
 
     public void UpdateLiveIndicator(bool isLive, ThemePalette palette, string liveText, string offlineText, string profileText)

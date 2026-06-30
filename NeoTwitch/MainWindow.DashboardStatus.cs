@@ -89,10 +89,7 @@ public partial class MainWindow
             _config.LedStrips,
             GetDashboardStatusTextLabels());
 
-        LightsArduinoDeviceText.Text = status.Device;
-        LightsArduinoPortText.Text = status.Port;
-        LightsArduinoLedCountText.Text = status.LedCount;
-        LightsArduinoPinsText.Text = status.Pins;
+        _lightsViewModel.UpdateArduinoStatus(status);
     }
 
     private void UpdateAlexaStatusText()

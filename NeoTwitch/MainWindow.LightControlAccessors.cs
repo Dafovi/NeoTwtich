@@ -58,8 +58,4 @@ public partial class MainWindow
     private WpfBorder BackgroundLedPreviewPanel => LightsView.BackgroundLedPreviewPanel;
     private WpfItemsControl BackgroundLedPreviewList => LightsView.BackgroundLedPreviewList;
     private WpfButton ApplyArduinoBackgroundButton => LightsView.ApplyArduinoBackgroundButton;
-    private WpfTextBlock LightsArduinoDeviceText => LightsView.LightsArduinoDeviceText;
-    private WpfTextBlock LightsArduinoPortText => LightsView.LightsArduinoPortText;
-    private WpfTextBlock LightsArduinoLedCountText => LightsView.LightsArduinoLedCountText;
-    private WpfTextBlock LightsArduinoPinsText => LightsView.LightsArduinoPinsText;
 }

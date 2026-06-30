@@ -784,7 +784,8 @@
                                                 <TextBlock Text="Dispositivo" Style="{StaticResource MutedText}" />
                                                 <TextBlock x:Name="LightsArduinoDeviceText"
                                                            Grid.Column="1"
-                                                           FontWeight="SemiBold" />
+                                                           FontWeight="SemiBold"
+                                                           Text="{Binding ArduinoDeviceText}" />
                                             </Grid>
                                             <Grid Margin="0,6,0,0">
                                                 <Grid.ColumnDefinitions>
@@ -794,7 +795,8 @@
                                                 <TextBlock Text="Puerto actual" Style="{StaticResource MutedText}" />
                                                 <TextBlock x:Name="LightsArduinoPortText"
                                                            Grid.Column="1"
-                                                           FontWeight="SemiBold" />
+                                                           FontWeight="SemiBold"
+                                                           Text="{Binding ArduinoPortText}" />
                                             </Grid>
                                             <Grid Margin="0,6,0,0">
                                                 <Grid.ColumnDefinitions>
@@ -804,7 +806,8 @@
                                                 <TextBlock Text="LEDs configurados" Style="{StaticResource MutedText}" />
                                                 <TextBlock x:Name="LightsArduinoLedCountText"
                                                            Grid.Column="1"
-                                                           FontWeight="SemiBold" />
+                                                           FontWeight="SemiBold"
+                                                           Text="{Binding ArduinoLedCountText}" />
                                             </Grid>
                                             <Grid Margin="0,6,0,0">
                                                 <Grid.ColumnDefinitions>
@@ -814,7 +817,8 @@
                                                 <TextBlock Text="Pines activos" Style="{StaticResource MutedText}" />
                                                 <TextBlock x:Name="LightsArduinoPinsText"
                                                            Grid.Column="1"
-                                                           FontWeight="SemiBold" />
+                                                           FontWeight="SemiBold"
+                                                           Text="{Binding ArduinoPinsText}" />
                                             </Grid>
                                         </StackPanel>
                                     </Border>

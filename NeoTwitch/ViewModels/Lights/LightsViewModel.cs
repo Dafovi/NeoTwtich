@@ -1,9 +1,14 @@
+using NeoTwitch.Services.Dashboard;
 using NeoTwitch.ViewModels.Core;
 
 namespace NeoTwitch.ViewModels.Lights;
 
 public sealed class LightsViewModel : ObservableObject
 {
+    private string _arduinoDeviceText = "";
+    private string _arduinoPortText = "";
+    private string _arduinoLedCountText = "";
+    private string _arduinoPinsText = "";
     private Action _addStrip = Noop;
     private Action _duplicateStrip = Noop;
     private Action _removeStrip = Noop;
@@ -53,6 +58,30 @@ public sealed class LightsViewModel : ObservableObject
 
     public RelayCommand PickBackgroundLightColorCommand { get; }
 
+    public string ArduinoDeviceText
+    {
+        get => _arduinoDeviceText;
+        private set => SetProperty(ref _arduinoDeviceText, value);
+    }
+
+    public string ArduinoPortText
+    {
+        get => _arduinoPortText;
+        private set => SetProperty(ref _arduinoPortText, value);
+    }
+
+    public string ArduinoLedCountText
+    {
+        get => _arduinoLedCountText;
+        private set => SetProperty(ref _arduinoLedCountText, value);
+    }
+
+    public string ArduinoPinsText
+    {
+        get => _arduinoPinsText;
+        private set => SetProperty(ref _arduinoPinsText, value);
+    }
+
     public void ConfigureActions(
         Action addStrip,
         Action duplicateStrip,
@@ -81,6 +110,14 @@ public sealed class LightsViewModel : ObservableObject
         _adjustBackgroundLightValue = adjustBackgroundLightValue;
         _selectBackgroundLightPreset = selectBackgroundLightPreset;
         _pickBackgroundLightColor = pickBackgroundLightColor;
+    }
+
+    public void UpdateArduinoStatus(LightsArduinoStatusText status)
+    {
+        ArduinoDeviceText = status.Device;
+        ArduinoPortText = status.Port;
+        ArduinoLedCountText = status.LedCount;
+        ArduinoPinsText = status.Pins;
     }
 
     private static void Noop()

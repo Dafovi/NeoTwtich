@@ -118,7 +118,6 @@ public partial class MainWindow
             BackgroundBrightnessValueText.Text = $"{backgroundBrightnessPercent}%";
             BackgroundCycleValueText.Text = ((int)Math.Round(BackgroundCycleSlider.Value)).ToString();
             BackgroundStepValueText.Text = ((int)Math.Round(BackgroundStepSlider.Value)).ToString();
-            AlertVolumeValueText.Text = $"{(int)Math.Round(AlertVolumeSlider.Value)}%";
         }
         finally
         {

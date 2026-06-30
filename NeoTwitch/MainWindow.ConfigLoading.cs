@@ -41,7 +41,7 @@ public partial class MainWindow
         StartWithWindowsCheck.IsChecked = _config.StartWithWindows;
         ThemeModeBox.SelectedValue = _config.ThemeMode;
         CloseToTrayCheck.IsChecked = _config.CloseToTray;
-        AlertVolumeSlider.Value = _config.AlertVolumePercent;
+        _audioLibraryViewModel.SetVolume(_config.AlertVolumePercent, notify: false);
         _videoLibraryViewModel.SetVolume(_config.VideoVolumePercent, notify: false);
     }
 

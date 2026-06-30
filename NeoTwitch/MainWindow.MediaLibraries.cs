@@ -65,6 +65,17 @@ public partial class MainWindow
         SaveConfig();
     }
 
+    private void UpdateAlertVolume(int volumePercent)
+    {
+        if (_loadingUi)
+        {
+            return;
+        }
+
+        _config.AlertVolumePercent = volumePercent;
+        SaveConfig();
+    }
+
     internal void ImageLibraryGroupBox_DropDownClosed(object sender, EventArgs e)
     {
         UpdateMediaAssetGroup(MediaLibraryKind.Image, sender);

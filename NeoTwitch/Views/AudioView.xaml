@@ -64,16 +64,15 @@
                                             VerticalAlignment="Center">
                                     <TextBlock Text="Volumen general"
                                                FontWeight="SemiBold" />
-                                    <Slider x:Name="AlertVolumeSlider"
-                                            Minimum="0"
+                                    <Slider Minimum="0"
                                             Maximum="100"
                                             TickFrequency="1"
+                                            Value="{Binding VolumePercent, Mode=TwoWay, UpdateSourceTrigger=PropertyChanged}"
                                             Margin="0,8,12,0"
-                                            ValueChanged="GlobalSettingsChanged" />
+                                            />
                                 </StackPanel>
-                                <TextBlock x:Name="AlertVolumeValueText"
-                                           Grid.Column="2"
-                                           Text="100%"
+                                <TextBlock Grid.Column="2"
+                                           Text="{Binding VolumeText}"
                                            Foreground="#14B8A6"
                                            FontSize="18"
                                            FontWeight="SemiBold"

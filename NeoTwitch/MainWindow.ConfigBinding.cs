@@ -66,7 +66,7 @@ public partial class MainWindow
                 StartWithWindowsCheck.IsChecked == true,
                 ThemeModeBox.SelectedValue as string ?? _config.ThemeMode,
                 CloseToTrayCheck.IsChecked == true,
-                AlertVolumeSlider.Value,
+                _audioLibraryViewModel.VolumePercent,
                 _videoLibraryViewModel.VolumePercent,
                 MaxQueuedSameRuleAlertsBox.Text,
                 SameRuleQueueCooldownBox.Text,

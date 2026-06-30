@@ -1,15 +1,11 @@
 using WpfButton = System.Windows.Controls.Button;
 using WpfComboBox = System.Windows.Controls.ComboBox;
-using WpfSlider = System.Windows.Controls.Slider;
-using WpfTextBlock = System.Windows.Controls.TextBlock;
 using WpfTextBox = System.Windows.Controls.TextBox;
 
 namespace NeoTwitch;
 
 public partial class MainWindow
 {
-    private WpfSlider AlertVolumeSlider => AudioView.AlertVolumeSlider;
-    private WpfTextBlock AlertVolumeValueText => AudioView.AlertVolumeValueText;
     private WpfTextBox AudioSearchBox => AudioView.AudioSearchBox;
     private WpfButton AudioFilterAllButton => AudioView.AudioFilterAllButton;
     private WpfButton AudioFilterWithAlertButton => AudioView.AudioFilterWithAlertButton;

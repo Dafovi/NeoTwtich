@@ -90,6 +90,7 @@ public partial class MainWindow
                 SaveSettingsFromUi);
             _settingsViewModel.ConfigureEditorActions(SelectCloseBehavior);
             _audioLibraryViewModel.ConfigureActions(BrowseNewAudio, SaveNewAudio, AddAudioGroup, ViewAudioGroup, DeleteAudioGroup, PreviewAudio, DeleteAudio);
+            _audioLibraryViewModel.ConfigureVolume(UpdateAlertVolume);
             _imageLibraryViewModel.ConfigureActions(
                 () => BrowseNewMedia(MediaLibraryKind.Image),
                 () => SaveNewMedia(MediaLibraryKind.Image),

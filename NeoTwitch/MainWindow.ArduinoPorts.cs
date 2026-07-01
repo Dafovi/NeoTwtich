@@ -13,12 +13,12 @@ public partial class MainWindow
         try
         {
             _availablePorts = SerialLightController.GetAvailablePortInfos();
-            PortComboBox.ItemsSource = _availablePorts;
+            _connectionsViewModel.UpdatePortChoices(_availablePorts);
         }
         catch (Exception ex)
         {
             _availablePorts = [];
-            PortComboBox.ItemsSource = _availablePorts;
+            _connectionsViewModel.UpdatePortChoices(_availablePorts);
             CrashReporter.Log(ex, _text.Get(UiTextKeys.ArduinoPortsRefreshFailureCrash));
             AddLog(_text.Format(UiTextKeys.ArduinoPortsRefreshFailureLog, ex.Message));
         }

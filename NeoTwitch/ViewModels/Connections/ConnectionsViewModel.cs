@@ -1,3 +1,4 @@
+using System.Collections;
 using System.Windows.Media;
 using NeoTwitch.Services.Status;
 using NeoTwitch.Services.Ui;
@@ -33,6 +34,7 @@ public sealed class ConnectionsViewModel : ObservableObject
     private ConnectionButtonViewModel _obsTestButton = ConnectionButtonViewModel.From("Actualizar escenas", "Refresh", isEnabled: false);
     private string _alexaStatusText = "";
     private string _obsConnectionHelpText = "";
+    private IEnumerable? _portChoices;
 
     public ConnectionsViewModel()
     {
@@ -149,6 +151,12 @@ public sealed class ConnectionsViewModel : ObservableObject
         private set => SetProperty(ref _obsConnectionHelpText, value);
     }
 
+    public IEnumerable? PortChoices
+    {
+        get => _portChoices;
+        private set => SetProperty(ref _portChoices, value);
+    }
+
     public void UpdateBadges(
         ConnectionStateVisual twitch,
         ConnectionStateVisual arduino,
@@ -183,6 +191,11 @@ public sealed class ConnectionsViewModel : ObservableObject
     public void UpdateObsConnectionHelpText(string statusText)
     {
         ObsConnectionHelpText = statusText;
+    }
+
+    public void UpdatePortChoices(IEnumerable? ports)
+    {
+        PortChoices = ports;
     }
 
     public void ConfigureActions(

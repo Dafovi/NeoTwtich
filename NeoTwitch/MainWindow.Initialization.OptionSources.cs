@@ -70,7 +70,5 @@ public partial class MainWindow
         ThemeModeBox.SelectedValuePath = nameof(UiOption<string>.Value);
 
         StripsList.ItemsSource = _config.LedStrips;
-        PortComboBox.DisplayMemberPath = nameof(SerialPortInfo.DisplayName);
-        PortComboBox.SelectedValuePath = nameof(SerialPortInfo.PortName);
     }
 }

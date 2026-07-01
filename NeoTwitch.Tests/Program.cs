@@ -2195,11 +2195,14 @@ static class ConnectionsViewModelTests
             new ConnectionStateVisual("OBS error", "#F43F5E", "Assets/Icons/status_error.png"));
         viewModel.UpdateAlexaStatusText("Alexa configurada");
         viewModel.UpdateObsConnectionHelpText("OBS desconectado");
+        var portChoices = new[] { "COM3" };
+        viewModel.UpdatePortChoices(portChoices);
 
         TestAssert.Equal("Twitch listo", viewModel.TwitchBadge.Text);
         TestAssert.Equal("Arduino off", viewModel.ArduinoBadge.Text);
         TestAssert.Equal("Alexa configurada", viewModel.AlexaStatusText);
         TestAssert.Equal("OBS desconectado", viewModel.ObsConnectionHelpText);
+        TestAssert.Same(portChoices, viewModel.PortChoices);
         TestAssert.Equal((byte)0x22, viewModel.TwitchBadge.ForegroundBrush.Color.R);
         TestAssert.Equal((byte)0x22, viewModel.TwitchBadge.BackgroundBrush.Color.A);
     }

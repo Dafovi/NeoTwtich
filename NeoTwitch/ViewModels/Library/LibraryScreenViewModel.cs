@@ -1,3 +1,4 @@
+using System.Collections;
 using System.Collections.ObjectModel;
 using NeoTwitch.Services.Library;
 using NeoTwitch.ViewModels.Core;
@@ -19,6 +20,8 @@ public sealed class LibraryScreenViewModel<TAssetRow, TGroupRow> : ObservableObj
     private string _newAssetAlertId = "";
     private string _newAssetGroupId = "";
     private string _newGroupName = "";
+    private IEnumerable? _newAssetAlertChoices;
+    private IEnumerable? _newAssetGroupChoices;
     private double _volumePercent = 100;
     private bool _suppressFilterEvents;
     private Action<int> _volumeChanged = NoOpInt;
@@ -125,6 +128,18 @@ public sealed class LibraryScreenViewModel<TAssetRow, TGroupRow> : ObservableObj
         set => SetProperty(ref _newGroupName, value ?? "");
     }
 
+    public IEnumerable? NewAssetAlertChoices
+    {
+        get => _newAssetAlertChoices;
+        private set => SetProperty(ref _newAssetAlertChoices, value);
+    }
+
+    public IEnumerable? NewAssetGroupChoices
+    {
+        get => _newAssetGroupChoices;
+        private set => SetProperty(ref _newAssetGroupChoices, value);
+    }
+
     public void ConfigureActions(
         Action browseAsset,
         Action saveAsset,
@@ -154,6 +169,12 @@ public sealed class LibraryScreenViewModel<TAssetRow, TGroupRow> : ObservableObj
     public void ConfigureVolume(Action<int> volumeChanged)
     {
         _volumeChanged = volumeChanged ?? NoOpInt;
+    }
+
+    public void SetNewAssetChoices(IEnumerable? groupChoices, IEnumerable? alertChoices = null)
+    {
+        NewAssetGroupChoices = groupChoices;
+        NewAssetAlertChoices = alertChoices;
     }
 
     public void SetVolume(double value, bool notify = true)

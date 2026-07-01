@@ -53,15 +53,6 @@ public partial class MainWindow
 
             libraryViewModel.UpdateSummary(summary);
 
-            if (kind == MediaLibraryKind.Image)
-            {
-                NewImageGroupBox.Items.Refresh();
-            }
-            else
-            {
-                NewVideoGroupBox.Items.Refresh();
-            }
-
             UpdateMediaFilterButtons(kind);
             RefreshRuleObsMediaChoices();
         }

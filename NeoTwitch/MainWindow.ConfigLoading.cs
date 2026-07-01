@@ -75,8 +75,9 @@ public partial class MainWindow
         _alertsViewModel.SetRulesSource(_config.Rules);
         RuleAudioAssetBox.ItemsSource = _config.AudioLibrary;
         RuleAudioGroupBox.ItemsSource = _config.AudioGroups;
-        NewAudioAlertBox.ItemsSource = AudioAlertChoices;
-        NewAudioGroupBox.ItemsSource = AudioGroupChoices;
+        _audioLibraryViewModel.SetNewAssetChoices(AudioGroupChoices, AudioAlertChoices);
+        _imageLibraryViewModel.SetNewAssetChoices(ImageGroupChoices);
+        _videoLibraryViewModel.SetNewAssetChoices(VideoGroupChoices);
         StripsList.ItemsSource = _config.LedStrips;
     }
 

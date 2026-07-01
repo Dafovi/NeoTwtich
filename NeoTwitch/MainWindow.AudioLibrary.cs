@@ -66,8 +66,6 @@ public partial class MainWindow
 
             RuleAudioAssetBox.Items.Refresh();
             RuleAudioGroupBox.Items.Refresh();
-            NewAudioAlertBox.Items.Refresh();
-            NewAudioGroupBox.Items.Refresh();
             UpdateAudioFilterButtons();
         }
         finally

@@ -464,13 +464,17 @@
                                                 <StackPanel>
                                                     <TextBlock Text="Alerta asignada"
                                                                Style="{StaticResource MutedText}" />
-                                                    <ComboBox x:Name="NewAudioAlertBox"
+                                                    <ComboBox ItemsSource="{Binding NewAssetAlertChoices}"
+                                                              DisplayMemberPath="Name"
+                                                              SelectedValuePath="Id"
                                                               SelectedValue="{Binding NewAssetAlertId, Mode=TwoWay, UpdateSourceTrigger=PropertyChanged}" />
                                                 </StackPanel>
                                                 <StackPanel Grid.Column="2">
                                                     <TextBlock Text="Grupo"
                                                                Style="{StaticResource MutedText}" />
-                                                    <ComboBox x:Name="NewAudioGroupBox"
+                                                    <ComboBox ItemsSource="{Binding NewAssetGroupChoices}"
+                                                              DisplayMemberPath="Name"
+                                                              SelectedValuePath="Id"
                                                               SelectedValue="{Binding NewAssetGroupId, Mode=TwoWay, UpdateSourceTrigger=PropertyChanged}" />
                                                 </StackPanel>
                                             </Grid>

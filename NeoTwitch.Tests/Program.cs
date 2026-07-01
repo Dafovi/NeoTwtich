@@ -1458,6 +1458,13 @@ static class LibraryScreenViewModelTests
         TestAssert.Equal("group-1", viewModel.NewAssetGroupId);
         TestAssert.Equal("", viewModel.NewGroupName);
 
+        var groupChoices = new[] { "grupo-a" };
+        var alertChoices = new[] { "alerta-a" };
+        viewModel.SetNewAssetChoices(groupChoices, alertChoices);
+
+        TestAssert.Same(groupChoices, viewModel.NewAssetGroupChoices);
+        TestAssert.Same(alertChoices, viewModel.NewAssetAlertChoices);
+
         viewModel.ClearNewAssetForm();
 
         TestAssert.Equal("", viewModel.NewAssetPath);

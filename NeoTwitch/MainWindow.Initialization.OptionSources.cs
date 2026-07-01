@@ -47,21 +47,9 @@ public partial class MainWindow
 
     private void InitializeLibraryOptionSources()
     {
-        NewAudioAlertBox.ItemsSource = AudioAlertChoices;
-        NewAudioAlertBox.DisplayMemberPath = nameof(AudioAlertChoice.Name);
-        NewAudioAlertBox.SelectedValuePath = nameof(AudioAlertChoice.Id);
-
-        NewAudioGroupBox.ItemsSource = AudioGroupChoices;
-        NewAudioGroupBox.DisplayMemberPath = nameof(AudioGroupChoice.Name);
-        NewAudioGroupBox.SelectedValuePath = nameof(AudioGroupChoice.Id);
-
-        NewImageGroupBox.ItemsSource = ImageGroupChoices;
-        NewImageGroupBox.DisplayMemberPath = nameof(MediaGroupChoice.Name);
-        NewImageGroupBox.SelectedValuePath = nameof(MediaGroupChoice.Id);
-
-        NewVideoGroupBox.ItemsSource = VideoGroupChoices;
-        NewVideoGroupBox.DisplayMemberPath = nameof(MediaGroupChoice.Name);
-        NewVideoGroupBox.SelectedValuePath = nameof(MediaGroupChoice.Id);
+        _audioLibraryViewModel.SetNewAssetChoices(AudioGroupChoices, AudioAlertChoices);
+        _imageLibraryViewModel.SetNewAssetChoices(ImageGroupChoices);
+        _videoLibraryViewModel.SetNewAssetChoices(VideoGroupChoices);
     }
 
     private void InitializeBackgroundOptionSources()

@@ -19,7 +19,7 @@ public partial class MainWindow
         _loadingUi = true;
         try
         {
-            _dashboardViewModel = new DashboardViewModel(GoToActivity);
+            _dashboardViewModel = new DashboardViewModel(GoToActivity, _activityLog.DashboardEntries);
             _alertsViewModel = new AlertsViewModel(_ruleCategoryOptions, _text);
             _alertsViewModel.ConfigureActions(
                 AddRule,
@@ -122,8 +122,6 @@ public partial class MainWindow
             AudioView.DataContext = _audioLibraryViewModel;
             ImagesView.DataContext = _imageLibraryViewModel;
             VideosView.DataContext = _videoLibraryViewModel;
-            ActivityList.ItemsSource = _activityViewModel.EntriesView;
-            DashboardActivityList.ItemsSource = _activityViewModel.DashboardEntries;
 
             InitializePreviewDots();
             InitializePreviewTimers();

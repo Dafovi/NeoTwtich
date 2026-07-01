@@ -2147,7 +2147,8 @@ static class DashboardViewModelTests
 {
     public static void UpdatesSummaryMetrics()
     {
-        var viewModel = new DashboardViewModel(() => { });
+        var recentEntries = new[] { "uno" };
+        var viewModel = new DashboardViewModel(() => { }, recentEntries);
         var display = DashboardSummaryDisplayService.Build(new DashboardSummarySnapshot(
             Followers: 7,
             Subscriptions: 2,
@@ -2160,6 +2161,7 @@ static class DashboardViewModelTests
         TestAssert.Equal("+7", viewModel.Followers.Text);
         TestAssert.Equal("+900", viewModel.Bits.Text);
         TestAssert.Equal("4", viewModel.Events.Text);
+        TestAssert.Same(recentEntries, viewModel.RecentActivityEntries);
     }
 
     public static void UpdatesConnectionStates()

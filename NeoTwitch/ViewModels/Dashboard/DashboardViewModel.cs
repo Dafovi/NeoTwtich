@@ -1,3 +1,4 @@
+using System.Collections;
 using System.Windows.Input;
 using System.Windows.Media;
 using NeoTwitch.Services.Dashboard;
@@ -19,12 +20,15 @@ public sealed class DashboardViewModel : ObservableObject
     private DashboardConnectionCardViewModel _alexaState = DashboardConnectionCardViewModel.From("Desconectado", "#F43F5E", "Assets/Icons/status_error.png");
     private DashboardConnectionCardViewModel _obsState = DashboardConnectionCardViewModel.From("Desconectado", "#F43F5E", "Assets/Icons/status_error.png");
 
-    public DashboardViewModel(Action goToActivity)
+    public DashboardViewModel(Action goToActivity, IEnumerable? recentActivityEntries = null)
     {
         GoToActivityCommand = new RelayCommand(goToActivity);
+        RecentActivityEntries = recentActivityEntries;
     }
 
     public ICommand GoToActivityCommand { get; }
+
+    public IEnumerable? RecentActivityEntries { get; }
 
     public DashboardSummaryMetricViewModel Followers
     {

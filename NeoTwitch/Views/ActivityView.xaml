@@ -203,6 +203,7 @@
                             </Grid>
                             <ListBox x:Name="ActivityList"
                                      Grid.Row="1"
+                                     ItemsSource="{Binding EntriesView}"
                                      BorderThickness="0"
                                      Background="Transparent"
                                      ItemContainerStyle="{StaticResource ActivityListItem}"

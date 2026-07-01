@@ -350,6 +350,7 @@
                                         Command="{Binding GoToActivityCommand}" />
                             </Grid>
                             <ListBox x:Name="DashboardActivityList"
+                                     ItemsSource="{Binding RecentActivityEntries}"
                                      BorderThickness="0"
                                      Background="Transparent"
                                      ItemContainerStyle="{StaticResource ActivityListItem}"

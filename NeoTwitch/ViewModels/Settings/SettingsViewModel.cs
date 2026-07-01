@@ -1,3 +1,4 @@
+using System.Collections;
 using NeoTwitch.ViewModels.Core;
 using WpfBrush = System.Windows.Media.Brush;
 using WpfBrushes = System.Windows.Media.Brushes;
@@ -12,6 +13,7 @@ public sealed class SettingsViewModel : ObservableObject
     private string _diagnosticStatusText = "Estado: Todo en orden";
     private string _appStateIconPath = "/Assets/Icons/appstate_ok.png";
     private WpfBrush _diagnosticStatusBrush = WpfBrushes.LimeGreen;
+    private IEnumerable? _themeModeChoices;
     private Action _importSettings = Noop;
     private Action _exportSettings = Noop;
     private Action _createBackup = Noop;
@@ -81,6 +83,12 @@ public sealed class SettingsViewModel : ObservableObject
         private set => SetProperty(ref _appStateIconPath, value);
     }
 
+    public IEnumerable? ThemeModeChoices
+    {
+        get => _themeModeChoices;
+        private set => SetProperty(ref _themeModeChoices, value);
+    }
+
     public void ConfigureActions(
         Action importSettings,
         Action exportSettings,
@@ -119,6 +127,11 @@ public sealed class SettingsViewModel : ObservableObject
         DiagnosticStatusText = statusText;
         DiagnosticStatusBrush = statusBrush;
         AppStateIconPath = iconPath;
+    }
+
+    public void UpdateThemeModeChoices(IEnumerable? choices)
+    {
+        ThemeModeChoices = choices;
     }
 
     private static void Noop()

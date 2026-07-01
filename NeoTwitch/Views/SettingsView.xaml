@@ -160,6 +160,9 @@
                                     </StackPanel>
                                     <ComboBox x:Name="ThemeModeBox"
                                               Grid.Column="2"
+                                              ItemsSource="{Binding ThemeModeChoices}"
+                                              DisplayMemberPath="Label"
+                                              SelectedValuePath="Value"
                                               SelectionChanged="ThemeModeChanged" />
                                 </Grid>
                             </StackPanel>

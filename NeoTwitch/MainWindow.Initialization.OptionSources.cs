@@ -65,10 +65,7 @@ public partial class MainWindow
 
     private void InitializeConnectionOptionSources()
     {
-        ThemeModeBox.ItemsSource = _themeModeOptions;
-        ThemeModeBox.DisplayMemberPath = nameof(UiOption<string>.Label);
-        ThemeModeBox.SelectedValuePath = nameof(UiOption<string>.Value);
-
+        _settingsViewModel.UpdateThemeModeChoices(_themeModeOptions);
         StripsList.ItemsSource = _config.LedStrips;
     }
 }

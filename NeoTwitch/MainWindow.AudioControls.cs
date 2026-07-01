@@ -10,9 +10,6 @@ public partial class MainWindow
     private WpfButton AudioFilterAllButton => AudioView.AudioFilterAllButton;
     private WpfButton AudioFilterWithAlertButton => AudioView.AudioFilterWithAlertButton;
     private WpfButton AudioFilterNoGroupButton => AudioView.AudioFilterNoGroupButton;
-    private WpfTextBox NewAudioPathBox => AudioView.NewAudioPathBox;
-    private WpfTextBox NewAudioNameBox => AudioView.NewAudioNameBox;
     private WpfComboBox NewAudioAlertBox => AudioView.NewAudioAlertBox;
     private WpfComboBox NewAudioGroupBox => AudioView.NewAudioGroupBox;
-    private WpfTextBox NewAudioGroupNameBox => AudioView.NewAudioGroupNameBox;
 }

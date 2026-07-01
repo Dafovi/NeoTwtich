@@ -14,6 +14,11 @@ public sealed class LibraryScreenViewModel<TAssetRow, TGroupRow> : ObservableObj
     private string _footerText = "";
     private string _searchText = "";
     private string _filter = AllFilter;
+    private string _newAssetPath = "";
+    private string _newAssetName = "";
+    private string _newAssetAlertId = "";
+    private string _newAssetGroupId = "";
+    private string _newGroupName = "";
     private double _volumePercent = 100;
     private bool _suppressFilterEvents;
     private Action<int> _volumeChanged = NoOpInt;
@@ -90,6 +95,36 @@ public sealed class LibraryScreenViewModel<TAssetRow, TGroupRow> : ObservableObj
         private set => SetProperty(ref _footerText, value);
     }
 
+    public string NewAssetPath
+    {
+        get => _newAssetPath;
+        set => SetProperty(ref _newAssetPath, value ?? "");
+    }
+
+    public string NewAssetName
+    {
+        get => _newAssetName;
+        set => SetProperty(ref _newAssetName, value ?? "");
+    }
+
+    public string NewAssetAlertId
+    {
+        get => _newAssetAlertId;
+        set => SetProperty(ref _newAssetAlertId, value ?? "");
+    }
+
+    public string NewAssetGroupId
+    {
+        get => _newAssetGroupId;
+        set => SetProperty(ref _newAssetGroupId, value ?? "");
+    }
+
+    public string NewGroupName
+    {
+        get => _newGroupName;
+        set => SetProperty(ref _newGroupName, value ?? "");
+    }
+
     public void ConfigureActions(
         Action browseAsset,
         Action saveAsset,
@@ -154,6 +189,29 @@ public sealed class LibraryScreenViewModel<TAssetRow, TGroupRow> : ObservableObj
         {
             _suppressFilterEvents = false;
         }
+    }
+
+    public void SetNewAssetPath(string path, string suggestedName)
+    {
+        NewAssetPath = path;
+        if (string.IsNullOrWhiteSpace(NewAssetName))
+        {
+            NewAssetName = suggestedName;
+        }
+    }
+
+    public void ClearNewAssetForm()
+    {
+        NewAssetPath = "";
+        NewAssetName = "";
+        NewAssetAlertId = "";
+        NewAssetGroupId = "";
+    }
+
+    public void SelectNewAssetGroup(string groupId)
+    {
+        NewAssetGroupId = groupId;
+        NewGroupName = "";
     }
 
     public void ReplaceAssetRows(IEnumerable<TAssetRow> rows)

@@ -10,8 +10,5 @@ public partial class MainWindow
     private WpfButton ImageFilterAllButton => ImagesView.ImageFilterAllButton;
     private WpfButton ImageFilterWithGroupButton => ImagesView.ImageFilterWithGroupButton;
     private WpfButton ImageFilterNoGroupButton => ImagesView.ImageFilterNoGroupButton;
-    private WpfTextBox NewImagePathBox => ImagesView.NewImagePathBox;
-    private WpfTextBox NewImageNameBox => ImagesView.NewImageNameBox;
     private WpfComboBox NewImageGroupBox => ImagesView.NewImageGroupBox;
-    private WpfTextBox NewImageGroupNameBox => ImagesView.NewImageGroupNameBox;
 }

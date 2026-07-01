@@ -449,11 +449,11 @@
                                         <StackPanel>
                                             <TextBlock Text="Archivo seleccionado"
                                                        Style="{StaticResource MutedText}" />
-                                            <TextBox x:Name="NewAudioPathBox"
+                                            <TextBox Text="{Binding NewAssetPath, Mode=TwoWay, UpdateSourceTrigger=PropertyChanged}"
                                                      IsReadOnly="True" />
                                             <TextBlock Text="Nombre del audio"
                                                        Style="{StaticResource MutedText}" />
-                                            <TextBox x:Name="NewAudioNameBox"
+                                            <TextBox Text="{Binding NewAssetName, Mode=TwoWay, UpdateSourceTrigger=PropertyChanged}"
                                                      ToolTip="Nombre corto para reconocerlo en las alertas" />
                                             <Grid>
                                                 <Grid.ColumnDefinitions>
@@ -464,12 +464,14 @@
                                                 <StackPanel>
                                                     <TextBlock Text="Alerta asignada"
                                                                Style="{StaticResource MutedText}" />
-                                                    <ComboBox x:Name="NewAudioAlertBox" />
+                                                    <ComboBox x:Name="NewAudioAlertBox"
+                                                              SelectedValue="{Binding NewAssetAlertId, Mode=TwoWay, UpdateSourceTrigger=PropertyChanged}" />
                                                 </StackPanel>
                                                 <StackPanel Grid.Column="2">
                                                     <TextBlock Text="Grupo"
                                                                Style="{StaticResource MutedText}" />
-                                                    <ComboBox x:Name="NewAudioGroupBox" />
+                                                    <ComboBox x:Name="NewAudioGroupBox"
+                                                              SelectedValue="{Binding NewAssetGroupId, Mode=TwoWay, UpdateSourceTrigger=PropertyChanged}" />
                                                 </StackPanel>
                                             </Grid>
                                             <Button Style="{StaticResource PrimaryButton}"
@@ -527,7 +529,7 @@
                                             <ColumnDefinition Width="10" />
                                             <ColumnDefinition Width="Auto" />
                                         </Grid.ColumnDefinitions>
-                                        <TextBox x:Name="NewAudioGroupNameBox"
+                                        <TextBox Text="{Binding NewGroupName, Mode=TwoWay, UpdateSourceTrigger=PropertyChanged}"
                                                  Margin="0"
                                                  ToolTip="Nombre del nuevo grupo" />
                                         <Button Grid.Column="2"

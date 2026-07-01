@@ -10,8 +10,5 @@ public partial class MainWindow
     private WpfButton VideoFilterAllButton => VideosView.VideoFilterAllButton;
     private WpfButton VideoFilterWithGroupButton => VideosView.VideoFilterWithGroupButton;
     private WpfButton VideoFilterNoGroupButton => VideosView.VideoFilterNoGroupButton;
-    private WpfTextBox NewVideoPathBox => VideosView.NewVideoPathBox;
-    private WpfTextBox NewVideoNameBox => VideosView.NewVideoNameBox;
     private WpfComboBox NewVideoGroupBox => VideosView.NewVideoGroupBox;
-    private WpfTextBox NewVideoGroupNameBox => VideosView.NewVideoGroupNameBox;
 }

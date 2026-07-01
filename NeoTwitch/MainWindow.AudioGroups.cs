@@ -11,7 +11,7 @@ public partial class MainWindow
 {
     private void AddAudioGroup()
     {
-        var name = NewAudioGroupNameBox.Text.Trim();
+        var name = _audioLibraryViewModel.NewGroupName.Trim();
         if (string.IsNullOrWhiteSpace(name))
         {
             WpfMessageBox.Show(this, _text.Get(UiTextKeys.LibraryWriteGroupName), _text.Get(UiTextKeys.AudioTitle), MessageBoxButton.OK, MessageBoxImage.Information);
@@ -26,13 +26,11 @@ public partial class MainWindow
 
         if (!mutation.Created)
         {
-            NewAudioGroupBox.SelectedValue = mutation.Group.Id;
-            NewAudioGroupNameBox.Text = "";
+            _audioLibraryViewModel.SelectNewAssetGroup(mutation.Group.Id);
             return;
         }
 
-        NewAudioGroupBox.SelectedValue = mutation.Group.Id;
-        NewAudioGroupNameBox.Text = "";
+        _audioLibraryViewModel.SelectNewAssetGroup(mutation.Group.Id);
 
         SaveConfig();
         RefreshAudioLibraryView();

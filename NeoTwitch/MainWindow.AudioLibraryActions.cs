@@ -56,31 +56,27 @@ public partial class MainWindow
             return;
         }
 
-        _newAudioPath = dialog.FileName;
-        NewAudioPathBox.Text = dialog.FileName;
-        if (string.IsNullOrWhiteSpace(NewAudioNameBox.Text))
-        {
-            NewAudioNameBox.Text = Path.GetFileNameWithoutExtension(dialog.FileName);
-        }
+        _audioLibraryViewModel.SetNewAssetPath(dialog.FileName, Path.GetFileNameWithoutExtension(dialog.FileName));
     }
 
     private async void SaveNewAudio()
     {
-        if (string.IsNullOrWhiteSpace(_newAudioPath) || !File.Exists(_newAudioPath))
+        var path = _audioLibraryViewModel.NewAssetPath;
+        if (string.IsNullOrWhiteSpace(path) || !File.Exists(path))
         {
             WpfMessageBox.Show(this, _text.Get(UiTextKeys.AudioPickValidFile), _text.Get(UiTextKeys.AudioTitle), MessageBoxButton.OK, MessageBoxImage.Information);
             return;
         }
 
         var existing = _config.AudioLibrary.FirstOrDefault(audio =>
-            string.Equals(audio.FilePath, _newAudioPath, StringComparison.OrdinalIgnoreCase));
-        var audio = existing ?? new AudioAssetConfig { FilePath = _newAudioPath };
-        audio.Name = string.IsNullOrWhiteSpace(NewAudioNameBox.Text)
-            ? Path.GetFileNameWithoutExtension(_newAudioPath)
-            : NewAudioNameBox.Text.Trim();
-        audio.GroupId = NewAudioGroupBox.SelectedValue as string ?? "";
+            string.Equals(audio.FilePath, path, StringComparison.OrdinalIgnoreCase));
+        var audio = existing ?? new AudioAssetConfig { FilePath = path };
+        audio.Name = string.IsNullOrWhiteSpace(_audioLibraryViewModel.NewAssetName)
+            ? Path.GetFileNameWithoutExtension(path)
+            : _audioLibraryViewModel.NewAssetName.Trim();
+        audio.GroupId = _audioLibraryViewModel.NewAssetGroupId;
 
-        var duration = await _audioPlayer.ProbeDurationAsync(_newAudioPath);
+        var duration = await _audioPlayer.ProbeDurationAsync(path);
         if (duration is { TotalMilliseconds: > 0 })
         {
             audio.DurationMs = (int)Math.Round(duration.Value.TotalMilliseconds);
@@ -91,7 +87,7 @@ public partial class MainWindow
             _config.AudioLibrary.Add(audio);
         }
 
-        var selectedRuleId = NewAudioAlertBox.SelectedValue as string ?? "";
+        var selectedRuleId = _audioLibraryViewModel.NewAssetAlertId;
         var rule = _config.Rules.FirstOrDefault(item => string.Equals(item.Id, selectedRuleId, StringComparison.OrdinalIgnoreCase));
         if (rule is not null)
         {
@@ -106,11 +102,7 @@ public partial class MainWindow
             }
         }
 
-        NewAudioPathBox.Text = "";
-        NewAudioNameBox.Text = "";
-        NewAudioAlertBox.SelectedValue = "";
-        NewAudioGroupBox.SelectedValue = "";
-        _newAudioPath = "";
+        _audioLibraryViewModel.ClearNewAssetForm();
 
         SaveConfig();
         RefreshAudioLibraryView();

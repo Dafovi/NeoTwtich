@@ -56,15 +56,12 @@ public partial class MainWindow
     private string _audioSearchText = "";
     private string _audioFilter = "ALL";
     private string _audioGroupFilterId = "";
-    private string _newAudioPath = "";
     private string _imageSearchText = "";
     private string _imageFilter = "ALL";
     private string _imageGroupFilterId = "";
-    private string _newImagePath = "";
     private string _videoSearchText = "";
     private string _videoFilter = "ALL";
     private string _videoGroupFilterId = "";
-    private string _newVideoPath = "";
     private AudioSourceMode _ruleAudioMode = AudioSourceMode.Single;
     private bool _refreshingAudioLibrary;
     private bool _refreshingImageLibrary;

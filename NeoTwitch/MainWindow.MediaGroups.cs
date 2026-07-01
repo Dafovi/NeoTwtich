@@ -12,9 +12,9 @@ public partial class MainWindow
 {
     private void AddMediaGroup(MediaLibraryKind kind)
     {
-        var nameBox = kind == MediaLibraryKind.Image ? NewImageGroupNameBox : NewVideoGroupNameBox;
+        var viewModel = GetMediaLibraryViewModel(kind);
         var title = MediaLibraryTitle(kind);
-        var name = nameBox.Text.Trim();
+        var name = viewModel.NewGroupName.Trim();
         if (string.IsNullOrWhiteSpace(name))
         {
             WpfMessageBox.Show(this, _text.Get(UiTextKeys.LibraryWriteGroupName), title, MessageBoxButton.OK, MessageBoxImage.Information);
@@ -30,29 +30,11 @@ public partial class MainWindow
 
         if (!mutation.Created)
         {
-            if (kind == MediaLibraryKind.Image)
-            {
-                NewImageGroupBox.SelectedValue = mutation.Group.Id;
-            }
-            else
-            {
-                NewVideoGroupBox.SelectedValue = mutation.Group.Id;
-            }
-
-            nameBox.Text = "";
+            viewModel.SelectNewAssetGroup(mutation.Group.Id);
             return;
         }
 
-        if (kind == MediaLibraryKind.Image)
-        {
-            NewImageGroupBox.SelectedValue = mutation.Group.Id;
-        }
-        else
-        {
-            NewVideoGroupBox.SelectedValue = mutation.Group.Id;
-        }
-
-        nameBox.Text = "";
+        viewModel.SelectNewAssetGroup(mutation.Group.Id);
         SaveConfig();
         RefreshMediaLibraryView(kind);
         AddLog(_text.Format(UiTextKeys.LibraryGroupCreatedLog, title, mutation.Group.Name), ActivityLogKind.Info);

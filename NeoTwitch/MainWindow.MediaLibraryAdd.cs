@@ -27,27 +27,18 @@ public partial class MainWindow
 
         if (kind == MediaLibraryKind.Image)
         {
-            _newImagePath = dialog.FileName;
-            NewImagePathBox.Text = dialog.FileName;
-            if (string.IsNullOrWhiteSpace(NewImageNameBox.Text))
-            {
-                NewImageNameBox.Text = Path.GetFileNameWithoutExtension(dialog.FileName);
-            }
+            _imageLibraryViewModel.SetNewAssetPath(dialog.FileName, Path.GetFileNameWithoutExtension(dialog.FileName));
         }
         else
         {
-            _newVideoPath = dialog.FileName;
-            NewVideoPathBox.Text = dialog.FileName;
-            if (string.IsNullOrWhiteSpace(NewVideoNameBox.Text))
-            {
-                NewVideoNameBox.Text = Path.GetFileNameWithoutExtension(dialog.FileName);
-            }
+            _videoLibraryViewModel.SetNewAssetPath(dialog.FileName, Path.GetFileNameWithoutExtension(dialog.FileName));
         }
     }
 
     private void SaveNewMedia(MediaLibraryKind kind)
     {
-        var path = kind == MediaLibraryKind.Image ? _newImagePath : _newVideoPath;
+        var viewModel = GetMediaLibraryViewModel(kind);
+        var path = viewModel.NewAssetPath;
         var title = MediaLibraryTitle(kind);
         if (string.IsNullOrWhiteSpace(path) || !File.Exists(path))
         {
@@ -58,12 +49,10 @@ public partial class MainWindow
         var library = GetMediaLibrary(kind);
         var existing = library.FirstOrDefault(asset => string.Equals(asset.FilePath, path, StringComparison.OrdinalIgnoreCase));
         var asset = existing ?? new MediaAssetConfig { FilePath = path };
-        asset.Name = kind == MediaLibraryKind.Image
-            ? string.IsNullOrWhiteSpace(NewImageNameBox.Text) ? Path.GetFileNameWithoutExtension(path) : NewImageNameBox.Text.Trim()
-            : string.IsNullOrWhiteSpace(NewVideoNameBox.Text) ? Path.GetFileNameWithoutExtension(path) : NewVideoNameBox.Text.Trim();
-        asset.GroupId = kind == MediaLibraryKind.Image
-            ? NewImageGroupBox.SelectedValue as string ?? ""
-            : NewVideoGroupBox.SelectedValue as string ?? "";
+        asset.Name = string.IsNullOrWhiteSpace(viewModel.NewAssetName)
+            ? Path.GetFileNameWithoutExtension(path)
+            : viewModel.NewAssetName.Trim();
+        asset.GroupId = viewModel.NewAssetGroupId;
 
         if (kind == MediaLibraryKind.Image)
         {
@@ -90,19 +79,6 @@ public partial class MainWindow
 
     private void ClearNewMediaForm(MediaLibraryKind kind)
     {
-        if (kind == MediaLibraryKind.Image)
-        {
-            _newImagePath = "";
-            NewImagePathBox.Text = "";
-            NewImageNameBox.Text = "";
-            NewImageGroupBox.SelectedValue = "";
-        }
-        else
-        {
-            _newVideoPath = "";
-            NewVideoPathBox.Text = "";
-            NewVideoNameBox.Text = "";
-            NewVideoGroupBox.SelectedValue = "";
-        }
+        GetMediaLibraryViewModel(kind).ClearNewAssetForm();
     }
 }

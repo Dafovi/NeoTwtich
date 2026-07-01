@@ -1443,6 +1443,28 @@ static class LibraryScreenViewModelTests
         TestAssert.Equal("100%", viewModel.VolumeText);
         TestAssert.Equal("100", string.Join(",", volumeChanges));
 
+        viewModel.SetNewAssetPath("C:/alertas/follow.mp3", "follow");
+
+        TestAssert.Equal("C:/alertas/follow.mp3", viewModel.NewAssetPath);
+        TestAssert.Equal("follow", viewModel.NewAssetName);
+
+        viewModel.NewAssetName = "mi follow";
+        viewModel.SetNewAssetPath("C:/alertas/otro.mp3", "otro");
+        viewModel.NewAssetAlertId = "rule-1";
+        viewModel.SelectNewAssetGroup("group-1");
+
+        TestAssert.Equal("C:/alertas/otro.mp3", viewModel.NewAssetPath);
+        TestAssert.Equal("mi follow", viewModel.NewAssetName);
+        TestAssert.Equal("group-1", viewModel.NewAssetGroupId);
+        TestAssert.Equal("", viewModel.NewGroupName);
+
+        viewModel.ClearNewAssetForm();
+
+        TestAssert.Equal("", viewModel.NewAssetPath);
+        TestAssert.Equal("", viewModel.NewAssetName);
+        TestAssert.Equal("", viewModel.NewAssetAlertId);
+        TestAssert.Equal("", viewModel.NewAssetGroupId);
+
         var actions = new List<string>();
         viewModel.ConfigureActions(
             () => actions.Add("browse"),

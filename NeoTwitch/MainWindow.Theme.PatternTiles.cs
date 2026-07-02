@@ -12,9 +12,7 @@ public partial class MainWindow
             return;
         }
 
-        var selectedPattern = PatternBox.SelectedValue is LightPattern pattern
-            ? pattern
-            : LightPattern.Pulse;
+        var selectedPattern = _alertsViewModel.Editor.Pattern;
         var palette = _config.DarkMode
             ? ThemePalette.Dark
             : ThemePalette.Light;

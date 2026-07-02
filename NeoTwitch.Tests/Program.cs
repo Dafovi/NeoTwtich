@@ -2399,7 +2399,16 @@ static class RuleEditorViewModelTests
             ObsMediaDurationMs = 9000,
             AudioSourceMode = AudioSourceMode.Group,
             AudioAssetId = "audio-1",
-            AudioGroupId = "audios"
+            AudioGroupId = "audios",
+            Pattern = LightPattern.Rave,
+            TargetPins = "6, 7",
+            PrimaryColor = "#112233",
+            SecondaryColor = "#445566",
+            TertiaryColor = "#778899",
+            Brightness = 211,
+            DurationMs = 3000,
+            CycleMs = 120,
+            StepMs = 450
         };
 
         viewModel.LoadBasicFields(rule);
@@ -2429,6 +2438,15 @@ static class RuleEditorViewModelTests
         TestAssert.Equal(AudioSourceMode.Group, viewModel.AudioSourceMode);
         TestAssert.Equal("audio-1", viewModel.AudioAssetId);
         TestAssert.Equal("audios", viewModel.AudioGroupId);
+        TestAssert.Equal(LightPattern.Rave, viewModel.Pattern);
+        TestAssert.Equal("6, 7", viewModel.TargetPins);
+        TestAssert.Equal("#112233", viewModel.PrimaryColor);
+        TestAssert.Equal("#445566", viewModel.SecondaryColor);
+        TestAssert.Equal("#778899", viewModel.TertiaryColor);
+        TestAssert.Equal(211d, viewModel.Brightness);
+        TestAssert.Equal(3000d, viewModel.DurationMs);
+        TestAssert.Equal(120d, viewModel.CycleMs);
+        TestAssert.Equal(450d, viewModel.StepMs);
 
         viewModel.Clear();
 
@@ -2457,6 +2475,15 @@ static class RuleEditorViewModelTests
         TestAssert.Equal(AudioSourceMode.Single, viewModel.AudioSourceMode);
         TestAssert.Equal("", viewModel.AudioAssetId);
         TestAssert.Equal("", viewModel.AudioGroupId);
+        TestAssert.Equal(LightPattern.Pulse, viewModel.Pattern);
+        TestAssert.Equal("", viewModel.TargetPins);
+        TestAssert.Equal("#14B8A6", viewModel.PrimaryColor);
+        TestAssert.Equal("#B56CFF", viewModel.SecondaryColor);
+        TestAssert.Equal("#FFFFFF", viewModel.TertiaryColor);
+        TestAssert.Equal(180d, viewModel.Brightness);
+        TestAssert.Equal(5000d, viewModel.DurationMs);
+        TestAssert.Equal(80d, viewModel.CycleMs);
+        TestAssert.Equal(120d, viewModel.StepMs);
     }
 }
 

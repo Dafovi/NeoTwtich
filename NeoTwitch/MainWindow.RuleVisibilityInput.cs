@@ -30,9 +30,7 @@ public partial class MainWindow
             _config.VideoLibrary,
             _config.ImageGroups,
             _config.VideoGroups);
-        var pattern = PatternBox.SelectedValue is LightPattern selectedPattern
-            ? selectedPattern
-            : LightPattern.Pulse;
+        var pattern = editor.Pattern;
 
         return new RuleOptionVisibilityInput(
             kind,

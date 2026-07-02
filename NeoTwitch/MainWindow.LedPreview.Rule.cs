@@ -25,13 +25,12 @@ public partial class MainWindow
         }
 
         ResizeLedPreviewDots(_ruleLedPreviewDots, RuleLedPreviewPanel.ActualWidth);
-        var pattern = PatternBox.SelectedValue is LightPattern selectedPattern
-            ? selectedPattern
-            : LightPattern.Pulse;
-        var brightness = Math.Clamp(BrightnessSlider.Value / 255d, 0d, 1d);
-        var primary = LedPreviewService.ParseColor(PrimaryColorBox.Text, "#14B8A6");
-        var secondary = LedPreviewService.ParseColor(SecondaryColorBox.Text, "#B56CFF");
-        var tertiary = LedPreviewService.ParseColor(TertiaryColorBox.Text, "#FFFFFF");
+        var editor = _alertsViewModel.Editor;
+        var pattern = editor.Pattern;
+        var brightness = Math.Clamp(editor.Brightness / 255d, 0d, 1d);
+        var primary = LedPreviewService.ParseColor(editor.PrimaryColor, "#14B8A6");
+        var secondary = LedPreviewService.ParseColor(editor.SecondaryColor, "#B56CFF");
+        var tertiary = LedPreviewService.ParseColor(editor.TertiaryColor, "#FFFFFF");
         var count = _ruleLedPreviewDots.Count;
         _ruleLedPreviewStep++;
         var frame = LedPreviewService.BuildFrame(pattern, _ruleLedPreviewStep, count, brightness, primary, secondary, tertiary, _previewRandom);

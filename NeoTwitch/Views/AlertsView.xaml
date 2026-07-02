@@ -511,6 +511,7 @@
                                                                      Visibility="Collapsed"
                                                                      Height="0"
                                                                      Margin="0"
+                                                                     Text="{Binding Editor.TargetPins, Mode=TwoWay, UpdateSourceTrigger=PropertyChanged}"
                                                                      TextChanged="RuleFieldChanged"
                                                                      ToolTip="Dejalo vacio para usar todas las tiras. Ejemplo: 6, 7" />
 
@@ -521,6 +522,7 @@
                                                                           DisplayMemberPath="Label"
                                                                           SelectedValuePath="Value"
                                                                           Visibility="Collapsed"
+                                                                          SelectedValue="{Binding Editor.Pattern, Mode=TwoWay, UpdateSourceTrigger=PropertyChanged}"
                                                                           SelectionChanged="RuleFieldChanged" />
                                                                 <Grid Margin="0,4,0,12">
                                                                     <Grid.ColumnDefinitions>
@@ -724,6 +726,7 @@
                                                                                             CommandParameter="{Binding Tag, RelativeSource={RelativeSource Self}}" />
                                                                                     <TextBox x:Name="PrimaryColorBox"
                                                                                              Margin="0"
+                                                                                             Text="{Binding Editor.PrimaryColor, Mode=TwoWay, UpdateSourceTrigger=PropertyChanged}"
                                                                                              TextChanged="RuleFieldChanged" />
                                                                                 </DockPanel>
                                                                             </StackPanel>
@@ -751,6 +754,7 @@
                                                                                         CommandParameter="{Binding Tag, RelativeSource={RelativeSource Self}}" />
                                                                                 <TextBox x:Name="SecondaryColorBox"
                                                                                          Margin="0"
+                                                                                         Text="{Binding Editor.SecondaryColor, Mode=TwoWay, UpdateSourceTrigger=PropertyChanged}"
                                                                                          TextChanged="RuleFieldChanged" />
                                                                             </DockPanel>
 
@@ -777,6 +781,7 @@
                                                                                         CommandParameter="{Binding Tag, RelativeSource={RelativeSource Self}}" />
                                                                                 <TextBox x:Name="TertiaryColorBox"
                                                                                          Margin="0"
+                                                                                         Text="{Binding Editor.TertiaryColor, Mode=TwoWay, UpdateSourceTrigger=PropertyChanged}"
                                                                                          TextChanged="RuleFieldChanged" />
                                                                             </DockPanel>
                                                                         </StackPanel>
@@ -847,6 +852,7 @@
                                                                                         Maximum="255"
                                                                                         TickFrequency="1"
                                                                                         Visibility="Collapsed"
+                                                                                        Value="{Binding Editor.Brightness, Mode=TwoWay, UpdateSourceTrigger=PropertyChanged}"
                                                                                         ValueChanged="RuleFieldChanged" />
                                                                              </Grid>
                                                                          </Grid>
@@ -907,6 +913,7 @@
                                                                                     Maximum="60000"
                                                                                     TickFrequency="250"
                                                                                     Visibility="Collapsed"
+                                                                                    Value="{Binding Editor.DurationMs, Mode=TwoWay, UpdateSourceTrigger=PropertyChanged}"
                                                                                     ValueChanged="RuleFieldChanged" />
                                                                         </StackPanel>
                                                                     </Border>
@@ -960,6 +967,7 @@
                                                                                     Maximum="2000"
                                                                                     TickFrequency="10"
                                                                                     Visibility="Collapsed"
+                                                                                    Value="{Binding Editor.CycleMs, Mode=TwoWay, UpdateSourceTrigger=PropertyChanged}"
                                                                                     ValueChanged="RuleFieldChanged" />
                                                                         </StackPanel>
                                                                     </Border>
@@ -1013,6 +1021,7 @@
                                                                                     Maximum="5000"
                                                                                     TickFrequency="10"
                                                                                     Visibility="Collapsed"
+                                                                                    Value="{Binding Editor.StepMs, Mode=TwoWay, UpdateSourceTrigger=PropertyChanged}"
                                                                                     ValueChanged="RuleFieldChanged" />
                                                                         </StackPanel>
                                                                     </Border>

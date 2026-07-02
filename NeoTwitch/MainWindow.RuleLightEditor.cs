@@ -14,7 +14,7 @@ public partial class MainWindow
             return;
         }
 
-        TargetPinsBox.Text = TargetPinsChoiceBox.SelectedValue?.ToString() ?? "";
+        _alertsViewModel.Editor.TargetPins = TargetPinsChoiceBox.SelectedValue?.ToString() ?? "";
         if (SaveCurrentRuleFromFields())
         {
             UpdateRuleDirtyStateFromSnapshot();
@@ -113,13 +113,14 @@ public partial class MainWindow
             return;
         }
 
-        var choices = RulePinChoiceService.BuildChoices(_config.LedStrips, TargetPinsBox.Text);
+        var choices = RulePinChoiceService.BuildChoices(_config.LedStrips, _alertsViewModel.Editor.TargetPins);
 
         var wasLoading = _loadingRule;
         _loadingRule = true;
         try
         {
             _alertsViewModel.UpdateTargetPinChoices(choices.Options);
+            _alertsViewModel.Editor.TargetPins = choices.CurrentPins;
             TargetPinsChoiceBox.SelectedValue = choices.CurrentPins;
 
             if (TargetPinsChoiceBox.SelectedIndex < 0)
@@ -140,7 +141,7 @@ public partial class MainWindow
             return;
         }
 
-        PatternBox.SelectedValue = pattern;
+        _alertsViewModel.Editor.Pattern = pattern;
         UpdatePatternTileSelection();
         UpdateRuleLedPreviewFrame();
     }

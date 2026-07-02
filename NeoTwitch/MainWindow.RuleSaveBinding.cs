@@ -20,10 +20,6 @@ public partial class MainWindow
         var editor = _alertsViewModel.Editor;
         RefreshRuleObsMediaChoices();
 
-        var pattern = PatternBox.SelectedValue is LightPattern selectedPattern
-            ? selectedPattern
-            : LightPattern.Pulse;
-
         RuleEditorFormService.Apply(
             rule,
             new RuleEditorFormValues(
@@ -52,15 +48,15 @@ public partial class MainWindow
                 editor.AudioSourceMode,
                 editor.AudioAssetId,
                 editor.AudioGroupId,
-                pattern,
-                TargetPinsBox.Text,
-                PrimaryColorBox.Text,
-                SecondaryColorBox.Text,
-                TertiaryColorBox.Text,
-                BrightnessSlider.Value,
-                DurationSlider.Value,
-                CycleSlider.Value,
-                StepSlider.Value),
+                editor.Pattern,
+                editor.TargetPins,
+                editor.PrimaryColor,
+                editor.SecondaryColor,
+                editor.TertiaryColor,
+                editor.Brightness,
+                editor.DurationMs,
+                editor.CycleMs,
+                editor.StepMs),
             _config.AudioLibrary,
             _text);
 

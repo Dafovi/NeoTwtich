@@ -30,6 +30,15 @@ public sealed class RuleEditorViewModel : ObservableObject
     private AudioSourceMode _audioSourceMode = AudioSourceMode.Single;
     private string _audioAssetId = "";
     private string _audioGroupId = "";
+    private LightPattern _pattern = LightPattern.Pulse;
+    private string _targetPins = "";
+    private string _primaryColor = "#14B8A6";
+    private string _secondaryColor = "#B56CFF";
+    private string _tertiaryColor = "#FFFFFF";
+    private double _brightness = 180d;
+    private double _durationMs = 5000d;
+    private double _cycleMs = 80d;
+    private double _stepMs = 120d;
 
     public bool IsEnabled
     {
@@ -181,6 +190,60 @@ public sealed class RuleEditorViewModel : ObservableObject
         set => SetProperty(ref _audioGroupId, value ?? "");
     }
 
+    public LightPattern Pattern
+    {
+        get => _pattern;
+        set => SetProperty(ref _pattern, value);
+    }
+
+    public string TargetPins
+    {
+        get => _targetPins;
+        set => SetProperty(ref _targetPins, value ?? "");
+    }
+
+    public string PrimaryColor
+    {
+        get => _primaryColor;
+        set => SetProperty(ref _primaryColor, value ?? "");
+    }
+
+    public string SecondaryColor
+    {
+        get => _secondaryColor;
+        set => SetProperty(ref _secondaryColor, value ?? "");
+    }
+
+    public string TertiaryColor
+    {
+        get => _tertiaryColor;
+        set => SetProperty(ref _tertiaryColor, value ?? "");
+    }
+
+    public double Brightness
+    {
+        get => _brightness;
+        set => SetProperty(ref _brightness, value);
+    }
+
+    public double DurationMs
+    {
+        get => _durationMs;
+        set => SetProperty(ref _durationMs, value);
+    }
+
+    public double CycleMs
+    {
+        get => _cycleMs;
+        set => SetProperty(ref _cycleMs, value);
+    }
+
+    public double StepMs
+    {
+        get => _stepMs;
+        set => SetProperty(ref _stepMs, value);
+    }
+
     public void LoadBasicFields(EventRule rule)
     {
         IsEnabled = rule.IsEnabled;
@@ -208,6 +271,15 @@ public sealed class RuleEditorViewModel : ObservableObject
         AudioSourceMode = rule.AudioSourceMode;
         AudioAssetId = rule.AudioAssetId;
         AudioGroupId = rule.AudioGroupId;
+        Pattern = rule.Pattern;
+        TargetPins = rule.TargetPins;
+        PrimaryColor = rule.PrimaryColor;
+        SecondaryColor = rule.SecondaryColor;
+        TertiaryColor = rule.TertiaryColor;
+        Brightness = rule.Brightness;
+        DurationMs = rule.DurationMs;
+        CycleMs = rule.CycleMs;
+        StepMs = rule.StepMs;
     }
 
     public void Clear()
@@ -237,5 +309,14 @@ public sealed class RuleEditorViewModel : ObservableObject
         AudioSourceMode = AudioSourceMode.Single;
         AudioAssetId = "";
         AudioGroupId = "";
+        Pattern = LightPattern.Pulse;
+        TargetPins = "";
+        PrimaryColor = "#14B8A6";
+        SecondaryColor = "#B56CFF";
+        TertiaryColor = "#FFFFFF";
+        Brightness = 180d;
+        DurationMs = 5000d;
+        CycleMs = 80d;
+        StepMs = 120d;
     }
 }

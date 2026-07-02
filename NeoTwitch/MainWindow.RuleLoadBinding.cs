@@ -26,16 +26,7 @@ public partial class MainWindow
             _alertsViewModel.Editor.LoadBasicFields(rule);
             UpdateEventKindTileSelection();
             RefreshRuleObsMediaChoices();
-            PatternBox.SelectedValue = rule.Pattern;
-            TargetPinsBox.Text = rule.TargetPins;
             RefreshRulePinChoices();
-            PrimaryColorBox.Text = LightCommand.NormalizeColor(rule.PrimaryColor);
-            SecondaryColorBox.Text = LightCommand.NormalizeColor(rule.SecondaryColor);
-            TertiaryColorBox.Text = LightCommand.NormalizeColor(rule.TertiaryColor);
-            BrightnessSlider.Value = rule.Brightness;
-            DurationSlider.Value = rule.DurationMs;
-            CycleSlider.Value = rule.CycleMs;
-            StepSlider.Value = rule.StepMs;
             UpdateColorButtons();
             UpdateSliderLabels();
             UpdatePatternTileSelection();

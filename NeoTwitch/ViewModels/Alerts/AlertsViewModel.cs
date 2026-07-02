@@ -27,6 +27,7 @@ public sealed class AlertsViewModel : ObservableObject
     private IEnumerable? _obsSceneChoices;
     private IEnumerable? _obsMediaKindChoices;
     private IEnumerable? _obsMediaSourceModeChoices;
+    private IEnumerable? _targetPinChoices;
     private readonly CollectionViewSource _rulesViewSource = new();
     private readonly IUiTextService _text;
     private IList<EventRule>? _rules;
@@ -94,6 +95,12 @@ public sealed class AlertsViewModel : ObservableObject
     {
         get => _obsMediaSourceModeChoices;
         private set => SetProperty(ref _obsMediaSourceModeChoices, value);
+    }
+
+    public IEnumerable? TargetPinChoices
+    {
+        get => _targetPinChoices;
+        private set => SetProperty(ref _targetPinChoices, value);
     }
 
     public ICommand SelectStatusFilterCommand { get; }
@@ -277,6 +284,11 @@ public sealed class AlertsViewModel : ObservableObject
         ObsSceneChoices = obsSceneChoices;
         ObsMediaKindChoices = obsMediaKindChoices;
         ObsMediaSourceModeChoices = obsMediaSourceModeChoices;
+    }
+
+    public void UpdateTargetPinChoices(IEnumerable? choices)
+    {
+        TargetPinChoices = choices;
     }
 
     public void SelectStatusFilter(string? status)

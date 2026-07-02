@@ -495,6 +495,7 @@
                                                                        Text="Pines de salida"
                                                                        Style="{StaticResource MutedText}" />
                                                             <ComboBox x:Name="TargetPinsChoiceBox"
+                                                                      ItemsSource="{Binding TargetPinChoices}"
                                                                       DisplayMemberPath="Label"
                                                                       SelectedValuePath="Value"
                                                                       SelectionChanged="TargetPinsChoiceBox_SelectionChanged"

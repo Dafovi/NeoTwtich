@@ -119,7 +119,7 @@ public partial class MainWindow
         _loadingRule = true;
         try
         {
-            TargetPinsChoiceBox.ItemsSource = choices.Options;
+            _alertsViewModel.UpdateTargetPinChoices(choices.Options);
             TargetPinsChoiceBox.SelectedValue = choices.CurrentPins;
 
             if (TargetPinsChoiceBox.SelectedIndex < 0)

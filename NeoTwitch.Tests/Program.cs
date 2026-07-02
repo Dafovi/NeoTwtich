@@ -519,6 +519,9 @@ static class AlertsViewModelTests
         TestAssert.Same(obsScenes, viewModel.ObsSceneChoices);
         TestAssert.Same(obsKinds, viewModel.ObsMediaKindChoices);
         TestAssert.Same(obsModes, viewModel.ObsMediaSourceModeChoices);
+        var targetPins = new[] { "pin 6" };
+        viewModel.UpdateTargetPinChoices(targetPins);
+        TestAssert.Same(targetPins, viewModel.TargetPinChoices);
 
         var actions = new List<string>();
         viewModel.ConfigureActions(

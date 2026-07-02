@@ -42,7 +42,7 @@ public partial class MainWindow
         strip.Pin = ParseInt(StripPinBox.Text, 6, 0, 53);
         strip.LedCount = ParseInt(StripLedCountBox.Text, 30, 1, 600);
 
-        StripsList.Items.Refresh();
+        _lightsViewModel.RefreshLedStrips();
         RefreshRulesView();
         UpdateLightsArduinoStatus();
         RefreshRulePinChoices();

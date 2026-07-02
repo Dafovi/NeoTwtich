@@ -84,7 +84,7 @@ public partial class MainWindow
         _audioLibraryViewModel.SetNewAssetChoices(AudioGroupChoices, AudioAlertChoices);
         _imageLibraryViewModel.SetNewAssetChoices(ImageGroupChoices);
         _videoLibraryViewModel.SetNewAssetChoices(VideoGroupChoices);
-        StripsList.ItemsSource = _config.LedStrips;
+        _lightsViewModel.SetLedStripsSource(_config.LedStrips);
     }
 
     private void LoadSettingsMetadataIntoUi()

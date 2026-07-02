@@ -41,6 +41,6 @@ public partial class MainWindow
     private void InitializeConnectionOptionSources()
     {
         _settingsViewModel.UpdateThemeModeChoices(_themeModeOptions);
-        StripsList.ItemsSource = _config.LedStrips;
+        _lightsViewModel.SetLedStripsSource(_config.LedStrips);
     }
 }

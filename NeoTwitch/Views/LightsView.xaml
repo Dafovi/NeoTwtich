@@ -102,6 +102,7 @@
                                                    Margin="0,0,0,12" />
 
                                         <ListBox x:Name="StripsList"
+                                                 ItemsSource="{Binding LedStripsView}"
                                                  BorderBrush="{DynamicResource ThemeBorderBrush}"
                                                  Background="Transparent"
                                                  BorderThickness="0"

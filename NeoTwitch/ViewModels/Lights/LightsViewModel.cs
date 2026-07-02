@@ -1,4 +1,6 @@
 using System.Collections;
+using System.ComponentModel;
+using System.Windows.Data;
 using NeoTwitch.Services.Dashboard;
 using NeoTwitch.ViewModels.Core;
 
@@ -6,6 +8,7 @@ namespace NeoTwitch.ViewModels.Lights;
 
 public sealed class LightsViewModel : ObservableObject
 {
+    private readonly CollectionViewSource _ledStripsViewSource = new();
     private string _arduinoDeviceText = "";
     private string _arduinoPortText = "";
     private string _arduinoLedCountText = "";
@@ -59,6 +62,8 @@ public sealed class LightsViewModel : ObservableObject
     public RelayCommand SelectBackgroundLightPresetCommand { get; }
 
     public RelayCommand PickBackgroundLightColorCommand { get; }
+
+    public ICollectionView LedStripsView => _ledStripsViewSource.View;
 
     public string ArduinoDeviceText
     {
@@ -131,6 +136,17 @@ public sealed class LightsViewModel : ObservableObject
     public void UpdateBackgroundPatternChoices(IEnumerable? choices)
     {
         BackgroundPatternChoices = choices;
+    }
+
+    public void SetLedStripsSource(IEnumerable? ledStrips)
+    {
+        _ledStripsViewSource.Source = ledStrips;
+        OnPropertyChanged(nameof(LedStripsView));
+    }
+
+    public void RefreshLedStrips()
+    {
+        _ledStripsViewSource.View.Refresh();
     }
 
     private static void Noop()

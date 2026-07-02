@@ -2351,6 +2351,9 @@ static class LightsViewModelTests
         viewModel.UpdateArduinoStatus(new LightsArduinoStatusText("Arduino Uno", "COM3", "300", "Pin 6"));
         var patternChoices = new[] { "Fijo" };
         viewModel.UpdateBackgroundPatternChoices(patternChoices);
+        var strips = new[] { new LedStripConfig { Name = "Principal", Pin = 6, LedCount = 30 } };
+        viewModel.SetLedStripsSource(strips);
+        viewModel.RefreshLedStrips();
 
         TestAssert.Equal("add,duplicate,remove,apply,stop,sketch,guide,pattern:Pulse,adjust:Step:10,preset:Medium,color:Secondary", string.Join(",", actions));
         TestAssert.Equal("Arduino Uno", viewModel.ArduinoDeviceText);
@@ -2358,6 +2361,7 @@ static class LightsViewModelTests
         TestAssert.Equal("300", viewModel.ArduinoLedCountText);
         TestAssert.Equal("Pin 6", viewModel.ArduinoPinsText);
         TestAssert.Same(patternChoices, viewModel.BackgroundPatternChoices);
+        TestAssert.Same(strips, viewModel.LedStripsView.SourceCollection);
     }
 }
 

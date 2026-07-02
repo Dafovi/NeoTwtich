@@ -25,13 +25,11 @@ public partial class MainWindow
         }
 
         ResizeLedPreviewDots(_backgroundLedPreviewDots, BackgroundLedPreviewPanel.ActualWidth);
-        var pattern = BackgroundPatternBox.SelectedValue is LightPattern selectedPattern
-            ? selectedPattern
-            : LightPattern.Solid;
-        var brightness = Math.Clamp(BackgroundBrightnessSlider.Value / 255d, 0d, 1d);
-        var primary = LedPreviewService.ParseColor(BackgroundPrimaryColorBox.Text, "#14B8A6");
-        var secondary = LedPreviewService.ParseColor(BackgroundSecondaryColorBox.Text, "#B56CFF");
-        var tertiary = LedPreviewService.ParseColor(BackgroundTertiaryColorBox.Text, "#FFFFFF");
+        var pattern = _lightsViewModel.BackgroundPattern;
+        var brightness = Math.Clamp(_lightsViewModel.BackgroundBrightness / 255d, 0d, 1d);
+        var primary = LedPreviewService.ParseColor(_lightsViewModel.BackgroundPrimaryColor, "#14B8A6");
+        var secondary = LedPreviewService.ParseColor(_lightsViewModel.BackgroundSecondaryColor, "#B56CFF");
+        var tertiary = LedPreviewService.ParseColor(_lightsViewModel.BackgroundTertiaryColor, "#FFFFFF");
         var count = _backgroundLedPreviewDots.Count;
         _backgroundLedPreviewStep++;
         var frame = LedPreviewService.BuildFrame(pattern, _backgroundLedPreviewStep, count, brightness, primary, secondary, tertiary, _previewRandom);
@@ -75,7 +73,7 @@ public partial class MainWindow
             _backgroundLedPreviewTimer.Stop();
         }
 
-        if (BackgroundEnabledCheck.IsChecked != true || !_config.ArduinoEnabled)
+        if (!_lightsViewModel.BackgroundEnabled || !_config.ArduinoEnabled)
         {
             SetBackgroundLedPreviewAll("#334155");
         }
@@ -83,7 +81,7 @@ public partial class MainWindow
 
     private bool ShouldRunBackgroundLedPreview()
     {
-        return BackgroundEnabledCheck.IsChecked == true
+        return _lightsViewModel.BackgroundEnabled
             && _config.ArduinoEnabled
             && MainTabs.SelectedIndex == 3
             && BackgroundLedPreviewPanel.IsVisible;

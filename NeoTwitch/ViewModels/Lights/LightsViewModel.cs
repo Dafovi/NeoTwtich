@@ -2,6 +2,7 @@ using System.Collections;
 using System.Collections.ObjectModel;
 using System.ComponentModel;
 using System.Windows.Data;
+using NeoTwitch.Models;
 using NeoTwitch.Services.Dashboard;
 using NeoTwitch.ViewModels.Ui;
 using NeoTwitch.ViewModels.Core;
@@ -16,6 +17,15 @@ public sealed class LightsViewModel : ObservableObject
     private string _arduinoLedCountText = "";
     private string _arduinoPinsText = "";
     private IEnumerable? _backgroundPatternChoices;
+    private bool _backgroundEnabled;
+    private string _backgroundTargetPins = "";
+    private LightPattern _backgroundPattern = LightPattern.Solid;
+    private string _backgroundPrimaryColor = "#14B8A6";
+    private string _backgroundSecondaryColor = "#B56CFF";
+    private string _backgroundTertiaryColor = "#FFFFFF";
+    private double _backgroundBrightness = 40d;
+    private double _backgroundCycleMs = 120d;
+    private double _backgroundStepMs = 400d;
     private Action _addStrip = Noop;
     private Action _duplicateStrip = Noop;
     private Action _removeStrip = Noop;
@@ -97,6 +107,73 @@ public sealed class LightsViewModel : ObservableObject
     {
         get => _backgroundPatternChoices;
         private set => SetProperty(ref _backgroundPatternChoices, value);
+    }
+
+    public bool BackgroundEnabled
+    {
+        get => _backgroundEnabled;
+        set => SetProperty(ref _backgroundEnabled, value);
+    }
+
+    public string BackgroundTargetPins
+    {
+        get => _backgroundTargetPins;
+        set => SetProperty(ref _backgroundTargetPins, value ?? "");
+    }
+
+    public LightPattern BackgroundPattern
+    {
+        get => _backgroundPattern;
+        set => SetProperty(ref _backgroundPattern, value);
+    }
+
+    public string BackgroundPrimaryColor
+    {
+        get => _backgroundPrimaryColor;
+        set => SetProperty(ref _backgroundPrimaryColor, value ?? "");
+    }
+
+    public string BackgroundSecondaryColor
+    {
+        get => _backgroundSecondaryColor;
+        set => SetProperty(ref _backgroundSecondaryColor, value ?? "");
+    }
+
+    public string BackgroundTertiaryColor
+    {
+        get => _backgroundTertiaryColor;
+        set => SetProperty(ref _backgroundTertiaryColor, value ?? "");
+    }
+
+    public double BackgroundBrightness
+    {
+        get => _backgroundBrightness;
+        set => SetProperty(ref _backgroundBrightness, value);
+    }
+
+    public double BackgroundCycleMs
+    {
+        get => _backgroundCycleMs;
+        set => SetProperty(ref _backgroundCycleMs, value);
+    }
+
+    public double BackgroundStepMs
+    {
+        get => _backgroundStepMs;
+        set => SetProperty(ref _backgroundStepMs, value);
+    }
+
+    public void LoadBackground(AppConfig config)
+    {
+        BackgroundEnabled = config.BackgroundEnabled;
+        BackgroundTargetPins = config.BackgroundTargetPins;
+        BackgroundPattern = config.BackgroundPattern;
+        BackgroundPrimaryColor = config.BackgroundPrimaryColor;
+        BackgroundSecondaryColor = config.BackgroundSecondaryColor;
+        BackgroundTertiaryColor = config.BackgroundTertiaryColor;
+        BackgroundBrightness = config.BackgroundBrightness;
+        BackgroundCycleMs = config.BackgroundCycleMs;
+        BackgroundStepMs = config.BackgroundStepMs;
     }
 
     public void ConfigureActions(

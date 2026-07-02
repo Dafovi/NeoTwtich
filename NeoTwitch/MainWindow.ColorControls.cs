@@ -30,12 +30,12 @@ public partial class MainWindow
 
     private void UpdateColorButtons()
     {
-        PrimaryColorButton.Background = ToBrush(PrimaryColorBox.Text);
-        SecondaryColorButton.Background = ToBrush(SecondaryColorBox.Text);
-        TertiaryColorButton.Background = ToBrush(TertiaryColorBox.Text);
-        BackgroundPrimaryColorButton.Background = ToBrush(BackgroundPrimaryColorBox.Text);
-        BackgroundSecondaryColorButton.Background = ToBrush(BackgroundSecondaryColorBox.Text);
-        BackgroundTertiaryColorButton.Background = ToBrush(BackgroundTertiaryColorBox.Text);
+        PrimaryColorButton.Background = ToBrush(_alertsViewModel.Editor.PrimaryColor);
+        SecondaryColorButton.Background = ToBrush(_alertsViewModel.Editor.SecondaryColor);
+        TertiaryColorButton.Background = ToBrush(_alertsViewModel.Editor.TertiaryColor);
+        BackgroundPrimaryColorButton.Background = ToBrush(_lightsViewModel.BackgroundPrimaryColor);
+        BackgroundSecondaryColorButton.Background = ToBrush(_lightsViewModel.BackgroundSecondaryColor);
+        BackgroundTertiaryColorButton.Background = ToBrush(_lightsViewModel.BackgroundTertiaryColor);
     }
 
     private static SolidColorBrush ToBrush(string color)
@@ -79,12 +79,12 @@ public partial class MainWindow
             yield return color;
         }
 
-        yield return PrimaryColorBox.Text;
-        yield return SecondaryColorBox.Text;
-        yield return TertiaryColorBox.Text;
-        yield return BackgroundPrimaryColorBox.Text;
-        yield return BackgroundSecondaryColorBox.Text;
-        yield return BackgroundTertiaryColorBox.Text;
+        yield return _alertsViewModel.Editor.PrimaryColor;
+        yield return _alertsViewModel.Editor.SecondaryColor;
+        yield return _alertsViewModel.Editor.TertiaryColor;
+        yield return _lightsViewModel.BackgroundPrimaryColor;
+        yield return _lightsViewModel.BackgroundSecondaryColor;
+        yield return _lightsViewModel.BackgroundTertiaryColor;
 
         foreach (var rule in _config.Rules.Take(12))
         {

@@ -105,19 +105,19 @@ public partial class MainWindow
 
     private void UpdateSliderLabels()
     {
-        var brightnessPercent = CircularProgressGeometryService.ToPercent(BrightnessSlider.Value, BrightnessSlider.Maximum);
-        var backgroundBrightnessPercent = CircularProgressGeometryService.ToPercent(BackgroundBrightnessSlider.Value, BackgroundBrightnessSlider.Maximum);
+        var brightnessPercent = CircularProgressGeometryService.ToPercent(_alertsViewModel.Editor.Brightness, BrightnessSlider.Maximum);
+        var backgroundBrightnessPercent = CircularProgressGeometryService.ToPercent(_lightsViewModel.BackgroundBrightness, BackgroundBrightnessSlider.Maximum);
 
         _updatingLightValueFields = true;
         try
         {
             BrightnessValueText.Text = $"{brightnessPercent}%";
-            DurationValueText.Text = ((int)Math.Round(DurationSlider.Value)).ToString();
-            CycleValueText.Text = ((int)Math.Round(CycleSlider.Value)).ToString();
-            StepValueText.Text = ((int)Math.Round(StepSlider.Value)).ToString();
+            DurationValueText.Text = ((int)Math.Round(_alertsViewModel.Editor.DurationMs)).ToString();
+            CycleValueText.Text = ((int)Math.Round(_alertsViewModel.Editor.CycleMs)).ToString();
+            StepValueText.Text = ((int)Math.Round(_alertsViewModel.Editor.StepMs)).ToString();
             BackgroundBrightnessValueText.Text = $"{backgroundBrightnessPercent}%";
-            BackgroundCycleValueText.Text = ((int)Math.Round(BackgroundCycleSlider.Value)).ToString();
-            BackgroundStepValueText.Text = ((int)Math.Round(BackgroundStepSlider.Value)).ToString();
+            BackgroundCycleValueText.Text = ((int)Math.Round(_lightsViewModel.BackgroundCycleMs)).ToString();
+            BackgroundStepValueText.Text = ((int)Math.Round(_lightsViewModel.BackgroundStepMs)).ToString();
         }
         finally
         {

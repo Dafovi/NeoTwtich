@@ -2353,6 +2353,17 @@ static class LightsViewModelTests
         viewModel.UpdateArduinoStatus(new LightsArduinoStatusText("Arduino Uno", "COM3", "300", "Pin 6"));
         var patternChoices = new[] { "Fijo" };
         viewModel.UpdateBackgroundPatternChoices(patternChoices);
+        var config = AppConfig.CreateDefault();
+        config.BackgroundEnabled = true;
+        config.BackgroundTargetPins = "6, 7";
+        config.BackgroundPattern = LightPattern.Rave;
+        config.BackgroundPrimaryColor = "#112233";
+        config.BackgroundSecondaryColor = "#445566";
+        config.BackgroundTertiaryColor = "#778899";
+        config.BackgroundBrightness = 211;
+        config.BackgroundCycleMs = 120;
+        config.BackgroundStepMs = 450;
+        viewModel.LoadBackground(config);
         var strips = new[] { new LedStripConfig { Name = "Principal", Pin = 6, LedCount = 30 } };
         viewModel.SetLedStripsSource(strips);
         viewModel.RefreshLedStrips();
@@ -2363,6 +2374,15 @@ static class LightsViewModelTests
         TestAssert.Equal("300", viewModel.ArduinoLedCountText);
         TestAssert.Equal("Pin 6", viewModel.ArduinoPinsText);
         TestAssert.Same(patternChoices, viewModel.BackgroundPatternChoices);
+        TestAssert.True(viewModel.BackgroundEnabled);
+        TestAssert.Equal("6, 7", viewModel.BackgroundTargetPins);
+        TestAssert.Equal(LightPattern.Rave, viewModel.BackgroundPattern);
+        TestAssert.Equal("#112233", viewModel.BackgroundPrimaryColor);
+        TestAssert.Equal("#445566", viewModel.BackgroundSecondaryColor);
+        TestAssert.Equal("#778899", viewModel.BackgroundTertiaryColor);
+        TestAssert.Equal(211d, viewModel.BackgroundBrightness);
+        TestAssert.Equal(120d, viewModel.BackgroundCycleMs);
+        TestAssert.Equal(450d, viewModel.BackgroundStepMs);
         TestAssert.Same(strips, viewModel.LedStripsView.SourceCollection);
         TestAssert.Equal(0, viewModel.BackgroundLedPreviewDots.Count);
     }

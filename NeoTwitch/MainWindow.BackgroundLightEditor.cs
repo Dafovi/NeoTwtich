@@ -14,7 +14,7 @@ public partial class MainWindow
             return;
         }
 
-        BackgroundPatternBox.SelectedValue = pattern;
+        _lightsViewModel.BackgroundPattern = pattern;
         UpdateBackgroundPatternTileSelection();
         UpdateBackgroundLedPreviewFrame();
     }

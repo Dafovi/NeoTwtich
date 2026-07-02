@@ -55,9 +55,7 @@ public partial class MainWindow
             return;
         }
 
-        var selectedPattern = BackgroundPatternBox.SelectedValue is LightPattern pattern
-            ? pattern
-            : LightPattern.Solid;
+        var selectedPattern = _lightsViewModel.BackgroundPattern;
         var palette = _config.DarkMode
             ? ThemePalette.Dark
             : ThemePalette.Light;

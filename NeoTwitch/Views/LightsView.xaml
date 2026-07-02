@@ -175,6 +175,7 @@
                                            Margin="0,0,0,12" />
                                 <CheckBox x:Name="BackgroundEnabledCheck"
                                           Content="Mantener luces de fondo"
+                                          IsChecked="{Binding BackgroundEnabled, Mode=TwoWay, UpdateSourceTrigger=PropertyChanged}"
                                           Checked="BackgroundFieldChanged"
                                           Unchecked="BackgroundFieldChanged" />
 
@@ -183,6 +184,7 @@
                                            Style="{StaticResource MutedText}"
                                            Visibility="Collapsed" />
                                 <TextBox x:Name="BackgroundPinsBox"
+                                         Text="{Binding BackgroundTargetPins, Mode=TwoWay, UpdateSourceTrigger=PropertyChanged}"
                                          TextChanged="BackgroundFieldChanged"
                                          ToolTip="Dejalo vacio para usar todas las tiras."
                                          Visibility="Collapsed" />
@@ -195,6 +197,7 @@
                                                   DisplayMemberPath="Label"
                                                   SelectedValuePath="Value"
                                                   Visibility="Collapsed"
+                                                  SelectedValue="{Binding BackgroundPattern, Mode=TwoWay, UpdateSourceTrigger=PropertyChanged}"
                                                   SelectionChanged="BackgroundFieldChanged" />
                                         <Grid Margin="0,4,0,12">
                                             <Grid.ColumnDefinitions>
@@ -381,6 +384,7 @@
                                                             CommandParameter="{Binding Tag, RelativeSource={RelativeSource Self}}" />
                                                     <TextBox x:Name="BackgroundPrimaryColorBox"
                                                              Margin="0"
+                                                             Text="{Binding BackgroundPrimaryColor, Mode=TwoWay, UpdateSourceTrigger=PropertyChanged}"
                                                              TextChanged="BackgroundFieldChanged" />
                                                 </DockPanel>
 
@@ -407,6 +411,7 @@
                                                             CommandParameter="{Binding Tag, RelativeSource={RelativeSource Self}}" />
                                                     <TextBox x:Name="BackgroundSecondaryColorBox"
                                                              Margin="0"
+                                                             Text="{Binding BackgroundSecondaryColor, Mode=TwoWay, UpdateSourceTrigger=PropertyChanged}"
                                                              TextChanged="BackgroundFieldChanged" />
                                                 </DockPanel>
 
@@ -433,6 +438,7 @@
                                                             CommandParameter="{Binding Tag, RelativeSource={RelativeSource Self}}" />
                                                     <TextBox x:Name="BackgroundTertiaryColorBox"
                                                              Margin="0"
+                                                             Text="{Binding BackgroundTertiaryColor, Mode=TwoWay, UpdateSourceTrigger=PropertyChanged}"
                                                              TextChanged="BackgroundFieldChanged" />
                                                 </DockPanel>
                                             </StackPanel>
@@ -459,6 +465,7 @@
                                                         Maximum="255"
                                                         TickFrequency="1"
                                                         Visibility="Collapsed"
+                                                        Value="{Binding BackgroundBrightness, Mode=TwoWay, UpdateSourceTrigger=PropertyChanged}"
                                                         ValueChanged="BackgroundFieldChanged" />
                                                 <Grid Height="104"
                                                       Grid.Row="0"
@@ -563,6 +570,7 @@
                                                         Maximum="2000"
                                                         TickFrequency="10"
                                                         Visibility="Collapsed"
+                                                        Value="{Binding BackgroundCycleMs, Mode=TwoWay, UpdateSourceTrigger=PropertyChanged}"
                                                         ValueChanged="BackgroundFieldChanged" />
                                             </StackPanel>
                                         </Border>
@@ -616,6 +624,7 @@
                                                         Maximum="5000"
                                                         TickFrequency="10"
                                                         Visibility="Collapsed"
+                                                        Value="{Binding BackgroundStepMs, Mode=TwoWay, UpdateSourceTrigger=PropertyChanged}"
                                                         ValueChanged="BackgroundFieldChanged" />
                                             </StackPanel>
                                         </Border>

@@ -10,19 +10,19 @@ public partial class MainWindow
 {
     private void SaveBackgroundFromFields()
     {
-        _config.BackgroundEnabled = BackgroundEnabledCheck.IsChecked == true;
+        _config.BackgroundEnabled = _lightsViewModel.BackgroundEnabled;
         _config.BackgroundAlexaEnabled = BackgroundAlexaEnabledCheck.IsChecked == true;
         _config.BackgroundAlexaTurnOffAfterEvent = BackgroundAlexaTurnOffAfterEventCheck.IsChecked == true;
         _config.BackgroundAlexaOnEventName = NormalizeEventName(BackgroundAlexaOnEventBox.Text, "luz_encendida");
         _config.BackgroundAlexaOffEventName = NormalizeEventName(BackgroundAlexaOffEventBox.Text, "luz_apagada");
-        _config.BackgroundTargetPins = string.Join(", ", LightCommand.ParsePins(BackgroundPinsBox.Text));
-        _config.BackgroundPattern = BackgroundPatternBox.SelectedValue is LightPattern pattern ? pattern : LightPattern.Solid;
-        _config.BackgroundPrimaryColor = LightCommand.NormalizeColor(BackgroundPrimaryColorBox.Text);
-        _config.BackgroundSecondaryColor = LightCommand.NormalizeColor(BackgroundSecondaryColorBox.Text);
-        _config.BackgroundTertiaryColor = LightCommand.NormalizeColor(BackgroundTertiaryColorBox.Text);
-        _config.BackgroundBrightness = (int)Math.Round(BackgroundBrightnessSlider.Value);
-        _config.BackgroundCycleMs = (int)Math.Round(BackgroundCycleSlider.Value);
-        _config.BackgroundStepMs = (int)Math.Round(BackgroundStepSlider.Value);
+        _config.BackgroundTargetPins = string.Join(", ", LightCommand.ParsePins(_lightsViewModel.BackgroundTargetPins));
+        _config.BackgroundPattern = _lightsViewModel.BackgroundPattern;
+        _config.BackgroundPrimaryColor = LightCommand.NormalizeColor(_lightsViewModel.BackgroundPrimaryColor);
+        _config.BackgroundSecondaryColor = LightCommand.NormalizeColor(_lightsViewModel.BackgroundSecondaryColor);
+        _config.BackgroundTertiaryColor = LightCommand.NormalizeColor(_lightsViewModel.BackgroundTertiaryColor);
+        _config.BackgroundBrightness = (int)Math.Round(_lightsViewModel.BackgroundBrightness);
+        _config.BackgroundCycleMs = (int)Math.Round(_lightsViewModel.BackgroundCycleMs);
+        _config.BackgroundStepMs = (int)Math.Round(_lightsViewModel.BackgroundStepMs);
 
         UpdateColorButtons();
         UpdateSliderLabels();
@@ -38,13 +38,11 @@ public partial class MainWindow
         var alexaEnabled = BackgroundAlexaEnabledCheck.IsChecked == true;
         var alexaTurnOffAfterEvent = BackgroundAlexaTurnOffAfterEventCheck.IsChecked == true;
         var alexaAvailable = _config.Alexa.IsConfigured;
-        var pattern = BackgroundPatternBox.SelectedValue is LightPattern selectedPattern
-            ? selectedPattern
-            : LightPattern.Solid;
+        var pattern = _lightsViewModel.BackgroundPattern;
 
         var visibility = OptionVisibilityService.ResolveBackground(new BackgroundOptionVisibilityInput(
             arduinoAvailable,
-            BackgroundEnabledCheck.IsChecked == true,
+            _lightsViewModel.BackgroundEnabled,
             alexaAvailable,
             alexaEnabled,
             alexaTurnOffAfterEvent,

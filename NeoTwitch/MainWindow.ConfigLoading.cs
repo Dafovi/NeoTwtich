@@ -55,19 +55,11 @@ public partial class MainWindow
 
     private void LoadBackgroundConfigIntoUi()
     {
-        BackgroundEnabledCheck.IsChecked = _config.BackgroundEnabled;
+        _lightsViewModel.LoadBackground(_config);
         BackgroundAlexaEnabledCheck.IsChecked = _config.BackgroundAlexaEnabled;
         BackgroundAlexaTurnOffAfterEventCheck.IsChecked = _config.BackgroundAlexaTurnOffAfterEvent;
         BackgroundAlexaOnEventBox.Text = _config.BackgroundAlexaOnEventName;
         BackgroundAlexaOffEventBox.Text = _config.BackgroundAlexaOffEventName;
-        BackgroundPinsBox.Text = _config.BackgroundTargetPins;
-        BackgroundPatternBox.SelectedValue = _config.BackgroundPattern;
-        BackgroundPrimaryColorBox.Text = LightCommand.NormalizeColor(_config.BackgroundPrimaryColor);
-        BackgroundSecondaryColorBox.Text = LightCommand.NormalizeColor(_config.BackgroundSecondaryColor);
-        BackgroundTertiaryColorBox.Text = LightCommand.NormalizeColor(_config.BackgroundTertiaryColor);
-        BackgroundBrightnessSlider.Value = _config.BackgroundBrightness;
-        BackgroundCycleSlider.Value = _config.BackgroundCycleMs;
-        BackgroundStepSlider.Value = _config.BackgroundStepMs;
     }
 
     private void BindConfigCollectionsIntoUi()

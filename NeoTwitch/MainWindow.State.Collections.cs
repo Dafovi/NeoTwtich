@@ -19,11 +19,11 @@ public partial class MainWindow
     private readonly DispatcherTimer _backgroundLedPreviewTimer = new();
     private readonly DispatcherTimer _arduinoMonitorTimer = new();
 
-    public ObservableCollection<AudioGroupChoice> AudioGroupChoices { get; } = [];
+    private ObservableCollection<AudioGroupChoice> AudioGroupChoices { get; } = [];
 
-    public ObservableCollection<AudioAlertChoice> AudioAlertChoices { get; } = [];
+    private ObservableCollection<AudioAlertChoice> AudioAlertChoices { get; } = [];
 
-    public ObservableCollection<MediaGroupChoice> ImageGroupChoices { get; } = [];
+    private ObservableCollection<MediaGroupChoice> ImageGroupChoices { get; } = [];
 
-    public ObservableCollection<MediaGroupChoice> VideoGroupChoices { get; } = [];
+    private ObservableCollection<MediaGroupChoice> VideoGroupChoices { get; } = [];
 }

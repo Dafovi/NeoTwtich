@@ -299,7 +299,7 @@
                                                         </StackPanel>
                                                         <ComboBox Grid.Column="1"
                                                                   Tag="{Binding Id}"
-                                                                  ItemsSource="{Binding VideoGroupChoices, RelativeSource={RelativeSource AncestorType=Window}}"
+                                                                  ItemsSource="{Binding DataContext.NewAssetGroupChoices, RelativeSource={RelativeSource AncestorType={x:Type views:NeoTwitchView}}}"
                                                                   DisplayMemberPath="Name"
                                                                   SelectedValuePath="Id"
                                                                   SelectedValue="{Binding GroupId}"

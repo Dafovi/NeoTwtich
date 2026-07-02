@@ -1,3 +1,4 @@
+using System.Collections;
 using NeoTwitch.Services.Dashboard;
 using NeoTwitch.ViewModels.Core;
 
@@ -9,6 +10,7 @@ public sealed class LightsViewModel : ObservableObject
     private string _arduinoPortText = "";
     private string _arduinoLedCountText = "";
     private string _arduinoPinsText = "";
+    private IEnumerable? _backgroundPatternChoices;
     private Action _addStrip = Noop;
     private Action _duplicateStrip = Noop;
     private Action _removeStrip = Noop;
@@ -82,6 +84,12 @@ public sealed class LightsViewModel : ObservableObject
         private set => SetProperty(ref _arduinoPinsText, value);
     }
 
+    public IEnumerable? BackgroundPatternChoices
+    {
+        get => _backgroundPatternChoices;
+        private set => SetProperty(ref _backgroundPatternChoices, value);
+    }
+
     public void ConfigureActions(
         Action addStrip,
         Action duplicateStrip,
@@ -118,6 +126,11 @@ public sealed class LightsViewModel : ObservableObject
         ArduinoPortText = status.Port;
         ArduinoLedCountText = status.LedCount;
         ArduinoPinsText = status.Pins;
+    }
+
+    public void UpdateBackgroundPatternChoices(IEnumerable? choices)
+    {
+        BackgroundPatternChoices = choices;
     }
 
     private static void Noop()

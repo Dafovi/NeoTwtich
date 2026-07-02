@@ -2341,12 +2341,15 @@ static class LightsViewModelTests
         viewModel.SelectBackgroundLightPresetCommand.Execute("Medium");
         viewModel.PickBackgroundLightColorCommand.Execute("Secondary");
         viewModel.UpdateArduinoStatus(new LightsArduinoStatusText("Arduino Uno", "COM3", "300", "Pin 6"));
+        var patternChoices = new[] { "Fijo" };
+        viewModel.UpdateBackgroundPatternChoices(patternChoices);
 
         TestAssert.Equal("add,duplicate,remove,apply,stop,sketch,guide,pattern:Pulse,adjust:Step:10,preset:Medium,color:Secondary", string.Join(",", actions));
         TestAssert.Equal("Arduino Uno", viewModel.ArduinoDeviceText);
         TestAssert.Equal("COM3", viewModel.ArduinoPortText);
         TestAssert.Equal("300", viewModel.ArduinoLedCountText);
         TestAssert.Equal("Pin 6", viewModel.ArduinoPinsText);
+        TestAssert.Same(patternChoices, viewModel.BackgroundPatternChoices);
     }
 }
 

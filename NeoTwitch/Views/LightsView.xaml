@@ -190,6 +190,9 @@
                                     <StackPanel>
                                         <TextBlock Text="Patron de fondo" Style="{StaticResource MutedText}" />
                                         <ComboBox x:Name="BackgroundPatternBox"
+                                                  ItemsSource="{Binding BackgroundPatternChoices}"
+                                                  DisplayMemberPath="Label"
+                                                  SelectedValuePath="Value"
                                                   Visibility="Collapsed"
                                                   SelectionChanged="BackgroundFieldChanged" />
                                         <Grid Margin="0,4,0,12">

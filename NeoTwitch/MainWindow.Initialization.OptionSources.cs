@@ -39,9 +39,7 @@ public partial class MainWindow
 
     private void InitializeBackgroundOptionSources()
     {
-        BackgroundPatternBox.ItemsSource = _patternOptions;
-        BackgroundPatternBox.DisplayMemberPath = nameof(UiOption<LightPattern>.Label);
-        BackgroundPatternBox.SelectedValuePath = nameof(UiOption<LightPattern>.Value);
+        _lightsViewModel.UpdateBackgroundPatternChoices(_patternOptions);
     }
 
     private void InitializeConnectionOptionSources()

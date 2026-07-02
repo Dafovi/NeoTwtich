@@ -11,10 +11,10 @@ public partial class MainWindow
     private void SaveBackgroundFromFields()
     {
         _config.BackgroundEnabled = _lightsViewModel.BackgroundEnabled;
-        _config.BackgroundAlexaEnabled = BackgroundAlexaEnabledCheck.IsChecked == true;
-        _config.BackgroundAlexaTurnOffAfterEvent = BackgroundAlexaTurnOffAfterEventCheck.IsChecked == true;
-        _config.BackgroundAlexaOnEventName = NormalizeEventName(BackgroundAlexaOnEventBox.Text, "luz_encendida");
-        _config.BackgroundAlexaOffEventName = NormalizeEventName(BackgroundAlexaOffEventBox.Text, "luz_apagada");
+        _config.BackgroundAlexaEnabled = _alexaViewModel.BackgroundEnabled;
+        _config.BackgroundAlexaTurnOffAfterEvent = _alexaViewModel.BackgroundTurnOffAfterEvent;
+        _config.BackgroundAlexaOnEventName = NormalizeEventName(_alexaViewModel.BackgroundOnEventName, "luz_encendida");
+        _config.BackgroundAlexaOffEventName = NormalizeEventName(_alexaViewModel.BackgroundOffEventName, "luz_apagada");
         _config.BackgroundTargetPins = string.Join(", ", LightCommand.ParsePins(_lightsViewModel.BackgroundTargetPins));
         _config.BackgroundPattern = _lightsViewModel.BackgroundPattern;
         _config.BackgroundPrimaryColor = LightCommand.NormalizeColor(_lightsViewModel.BackgroundPrimaryColor);
@@ -35,8 +35,8 @@ public partial class MainWindow
     private void UpdateBackgroundOptionVisibility()
     {
         var arduinoAvailable = _config.ArduinoEnabled;
-        var alexaEnabled = BackgroundAlexaEnabledCheck.IsChecked == true;
-        var alexaTurnOffAfterEvent = BackgroundAlexaTurnOffAfterEventCheck.IsChecked == true;
+        var alexaEnabled = _alexaViewModel.BackgroundEnabled;
+        var alexaTurnOffAfterEvent = _alexaViewModel.BackgroundTurnOffAfterEvent;
         var alexaAvailable = _config.Alexa.IsConfigured;
         var pattern = _lightsViewModel.BackgroundPattern;
 

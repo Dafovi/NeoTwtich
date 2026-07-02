@@ -31,10 +31,7 @@ public partial class MainWindow
     private void LoadBackgroundConfigIntoUi()
     {
         _lightsViewModel.LoadBackground(_config);
-        BackgroundAlexaEnabledCheck.IsChecked = _config.BackgroundAlexaEnabled;
-        BackgroundAlexaTurnOffAfterEventCheck.IsChecked = _config.BackgroundAlexaTurnOffAfterEvent;
-        BackgroundAlexaOnEventBox.Text = _config.BackgroundAlexaOnEventName;
-        BackgroundAlexaOffEventBox.Text = _config.BackgroundAlexaOffEventName;
+        _alexaViewModel.LoadBackgroundConfig(_config);
     }
 
     private void BindConfigCollectionsIntoUi()

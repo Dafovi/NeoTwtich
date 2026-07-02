@@ -26,10 +26,12 @@
                                                Margin="0,0,0,12" />
                                     <CheckBox x:Name="BackgroundAlexaEnabledCheck"
                                               Content="Mantener fondo Alexa encendido"
+                                              IsChecked="{Binding BackgroundEnabled, Mode=TwoWay, UpdateSourceTrigger=PropertyChanged}"
                                               Checked="BackgroundFieldChanged"
                                               Unchecked="BackgroundFieldChanged" />
                                     <CheckBox x:Name="BackgroundAlexaTurnOffAfterEventCheck"
                                               Content="Apagar fondo Alexa al finalizar evento"
+                                              IsChecked="{Binding BackgroundTurnOffAfterEvent, Mode=TwoWay, UpdateSourceTrigger=PropertyChanged}"
                                               Checked="BackgroundFieldChanged"
                                               Unchecked="BackgroundFieldChanged" />
 
@@ -43,6 +45,7 @@
                                             <TextBlock Text="Evento Alexa encendido"
                                                        Style="{StaticResource MutedText}" />
                                             <TextBox x:Name="BackgroundAlexaOnEventBox"
+                                                     Text="{Binding BackgroundOnEventName, Mode=TwoWay, UpdateSourceTrigger=PropertyChanged}"
                                                      TextChanged="BackgroundFieldChanged"
                                                      ToolTip="Evento que recibira el relay cuando el fondo Alexa debe quedar encendido." />
                                         </StackPanel>
@@ -50,6 +53,7 @@
                                             <TextBlock Text="Evento Alexa apagado"
                                                        Style="{StaticResource MutedText}" />
                                             <TextBox x:Name="BackgroundAlexaOffEventBox"
+                                                     Text="{Binding BackgroundOffEventName, Mode=TwoWay, UpdateSourceTrigger=PropertyChanged}"
                                                      TextChanged="BackgroundFieldChanged"
                                                      ToolTip="Evento que recibira el relay cuando el fondo Alexa debe quedar apagado." />
                                         </StackPanel>

@@ -2384,6 +2384,18 @@ static class AlexaViewModelTests
     {
         var viewModel = new AlexaViewModel();
         var actions = new List<string>();
+        var config = AppConfig.CreateDefault();
+        config.BackgroundAlexaEnabled = true;
+        config.BackgroundAlexaTurnOffAfterEvent = true;
+        config.BackgroundAlexaOnEventName = "fondo_on";
+        config.BackgroundAlexaOffEventName = "fondo_off";
+
+        viewModel.LoadBackgroundConfig(config);
+
+        TestAssert.True(viewModel.BackgroundEnabled);
+        TestAssert.True(viewModel.BackgroundTurnOffAfterEvent);
+        TestAssert.Equal("fondo_on", viewModel.BackgroundOnEventName);
+        TestAssert.Equal("fondo_off", viewModel.BackgroundOffEventName);
 
         viewModel.ConfigureActions(
             () => actions.Add("apply"),

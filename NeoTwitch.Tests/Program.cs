@@ -527,6 +527,7 @@ static class AlertsViewModelTests
         viewModel.UpdateObsMediaChoices(obsAssets, obsGroups);
         TestAssert.Same(obsAssets, viewModel.ObsMediaAssetChoices);
         TestAssert.Same(obsGroups, viewModel.ObsMediaGroupChoices);
+        TestAssert.Equal(0, viewModel.LedPreviewDots.Count);
 
         var actions = new List<string>();
         viewModel.ConfigureActions(
@@ -2362,6 +2363,7 @@ static class LightsViewModelTests
         TestAssert.Equal("Pin 6", viewModel.ArduinoPinsText);
         TestAssert.Same(patternChoices, viewModel.BackgroundPatternChoices);
         TestAssert.Same(strips, viewModel.LedStripsView.SourceCollection);
+        TestAssert.Equal(0, viewModel.BackgroundLedPreviewDots.Count);
     }
 }
 

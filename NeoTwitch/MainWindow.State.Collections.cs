@@ -13,8 +13,8 @@ public partial class MainWindow
     private LibraryScreenViewModel<MediaLibraryRow, MediaGroupRow> _videoLibraryViewModel = null!;
     private ObservableCollection<ObsSceneRow> _obsSceneRows => _obsViewModel.SceneRows;
     private readonly ObservableCollection<ObsSceneChoice> _obsSceneChoices = [];
-    private readonly ObservableCollection<RuleLedPreviewDot> _ruleLedPreviewDots = [];
-    private readonly ObservableCollection<RuleLedPreviewDot> _backgroundLedPreviewDots = [];
+    private ObservableCollection<RuleLedPreviewDot> _ruleLedPreviewDots => _alertsViewModel.LedPreviewDots;
+    private ObservableCollection<RuleLedPreviewDot> _backgroundLedPreviewDots => _lightsViewModel.BackgroundLedPreviewDots;
     private readonly DispatcherTimer _ruleLedPreviewTimer = new();
     private readonly DispatcherTimer _backgroundLedPreviewTimer = new();
     private readonly DispatcherTimer _arduinoMonitorTimer = new();

@@ -1049,7 +1049,8 @@
                                                                     Padding="10"
                                                                     Background="{DynamicResource ThemeSurfaceBrush}"
                                                                     IsVisibleChanged="RuleLedPreviewPanel_IsVisibleChanged">
-                                                                <ItemsControl x:Name="RuleLedPreviewList">
+                                                                <ItemsControl x:Name="RuleLedPreviewList"
+                                                                              ItemsSource="{Binding LedPreviewDots}">
                                                                     <ItemsControl.ItemsPanel>
                                                                         <ItemsPanelTemplate>
                                                                             <UniformGrid Rows="1" />

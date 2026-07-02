@@ -1,7 +1,9 @@
 using System.Collections;
+using System.Collections.ObjectModel;
 using System.ComponentModel;
 using System.Windows.Data;
 using NeoTwitch.Services.Dashboard;
+using NeoTwitch.ViewModels.Ui;
 using NeoTwitch.ViewModels.Core;
 
 namespace NeoTwitch.ViewModels.Lights;
@@ -64,6 +66,8 @@ public sealed class LightsViewModel : ObservableObject
     public RelayCommand PickBackgroundLightColorCommand { get; }
 
     public ICollectionView LedStripsView => _ledStripsViewSource.View;
+
+    public ObservableCollection<RuleLedPreviewDot> BackgroundLedPreviewDots { get; } = [];
 
     public string ArduinoDeviceText
     {

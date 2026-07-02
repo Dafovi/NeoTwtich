@@ -1,5 +1,6 @@
 using System.Collections;
 using System.ComponentModel;
+using System.Collections.ObjectModel;
 using System.Windows.Input;
 using System.Windows.Data;
 using NeoTwitch.Models;
@@ -116,6 +117,8 @@ public sealed class AlertsViewModel : ObservableObject
         get => _targetPinChoices;
         private set => SetProperty(ref _targetPinChoices, value);
     }
+
+    public ObservableCollection<RuleLedPreviewDot> LedPreviewDots { get; } = [];
 
     public ICommand SelectStatusFilterCommand { get; }
 

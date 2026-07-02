@@ -150,8 +150,6 @@ public partial class MainWindow
             _backgroundLedPreviewDots.Add(PreviewDot(Services.Lights.LedPreviewService.ParseColor("#334155", "#334155"), 0.08));
         }
 
-        RuleLedPreviewList.ItemsSource = _ruleLedPreviewDots;
-        BackgroundLedPreviewList.ItemsSource = _backgroundLedPreviewDots;
     }
 
     private void InitializePreviewTimers()

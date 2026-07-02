@@ -659,7 +659,8 @@
                                         Padding="10"
                                         Background="{DynamicResource ThemeSurfaceBrush}"
                                         IsVisibleChanged="BackgroundLedPreviewPanel_IsVisibleChanged">
-                                    <ItemsControl x:Name="BackgroundLedPreviewList">
+                                    <ItemsControl x:Name="BackgroundLedPreviewList"
+                                                  ItemsSource="{Binding BackgroundLedPreviewDots}">
                                         <ItemsControl.ItemsPanel>
                                             <ItemsPanelTemplate>
                                                 <UniformGrid Rows="1" />

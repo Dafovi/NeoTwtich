@@ -64,8 +64,6 @@ public partial class MainWindow
                 GetLibrarySummaryLabels());
             _audioLibraryViewModel.UpdateSummary(summary);
 
-            RuleAudioAssetBox.Items.Refresh();
-            RuleAudioGroupBox.Items.Refresh();
             UpdateAudioFilterButtons();
         }
         finally

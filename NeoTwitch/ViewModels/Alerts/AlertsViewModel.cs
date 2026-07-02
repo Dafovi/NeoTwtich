@@ -1,3 +1,4 @@
+using System.Collections;
 using System.ComponentModel;
 using System.Windows.Input;
 using System.Windows.Data;
@@ -19,6 +20,13 @@ public sealed class AlertsViewModel : ObservableObject
     private bool _hasUnsavedChanges;
     private bool _suppressFilterEvents;
     private EventRule? _selectedRule;
+    private IEnumerable? _eventKindChoices;
+    private IEnumerable? _lightPatternChoices;
+    private IEnumerable? _audioAssetChoices;
+    private IEnumerable? _audioGroupChoices;
+    private IEnumerable? _obsSceneChoices;
+    private IEnumerable? _obsMediaKindChoices;
+    private IEnumerable? _obsMediaSourceModeChoices;
     private readonly CollectionViewSource _rulesViewSource = new();
     private readonly IUiTextService _text;
     private IList<EventRule>? _rules;
@@ -45,6 +53,48 @@ public sealed class AlertsViewModel : ObservableObject
     public ICollectionView RulesView => _rulesViewSource.View;
 
     public IReadOnlyList<UiOption<string>> CategoryOptions { get; }
+
+    public IEnumerable? EventKindChoices
+    {
+        get => _eventKindChoices;
+        private set => SetProperty(ref _eventKindChoices, value);
+    }
+
+    public IEnumerable? LightPatternChoices
+    {
+        get => _lightPatternChoices;
+        private set => SetProperty(ref _lightPatternChoices, value);
+    }
+
+    public IEnumerable? AudioAssetChoices
+    {
+        get => _audioAssetChoices;
+        private set => SetProperty(ref _audioAssetChoices, value);
+    }
+
+    public IEnumerable? AudioGroupChoices
+    {
+        get => _audioGroupChoices;
+        private set => SetProperty(ref _audioGroupChoices, value);
+    }
+
+    public IEnumerable? ObsSceneChoices
+    {
+        get => _obsSceneChoices;
+        private set => SetProperty(ref _obsSceneChoices, value);
+    }
+
+    public IEnumerable? ObsMediaKindChoices
+    {
+        get => _obsMediaKindChoices;
+        private set => SetProperty(ref _obsMediaKindChoices, value);
+    }
+
+    public IEnumerable? ObsMediaSourceModeChoices
+    {
+        get => _obsMediaSourceModeChoices;
+        private set => SetProperty(ref _obsMediaSourceModeChoices, value);
+    }
 
     public ICommand SelectStatusFilterCommand { get; }
 
@@ -209,6 +259,24 @@ public sealed class AlertsViewModel : ObservableObject
         OnPropertyChanged(nameof(SelectAudioModeCommand));
         OnPropertyChanged(nameof(SelectObsMediaKindCommand));
         OnPropertyChanged(nameof(SelectObsMediaSourceModeCommand));
+    }
+
+    public void UpdateEditorChoices(
+        IEnumerable? eventKindChoices,
+        IEnumerable? lightPatternChoices,
+        IEnumerable? audioAssetChoices,
+        IEnumerable? audioGroupChoices,
+        IEnumerable? obsSceneChoices,
+        IEnumerable? obsMediaKindChoices,
+        IEnumerable? obsMediaSourceModeChoices)
+    {
+        EventKindChoices = eventKindChoices;
+        LightPatternChoices = lightPatternChoices;
+        AudioAssetChoices = audioAssetChoices;
+        AudioGroupChoices = audioGroupChoices;
+        ObsSceneChoices = obsSceneChoices;
+        ObsMediaKindChoices = obsMediaKindChoices;
+        ObsMediaSourceModeChoices = obsMediaSourceModeChoices;
     }
 
     public void SelectStatusFilter(string? status)

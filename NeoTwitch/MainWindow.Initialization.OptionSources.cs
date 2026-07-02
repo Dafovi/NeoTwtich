@@ -15,29 +15,14 @@ public partial class MainWindow
 
     private void InitializeRuleOptionSources()
     {
-        EventKindBox.ItemsSource = _eventOptions;
-        EventKindBox.DisplayMemberPath = nameof(UiOption<TwitchEventKind>.Label);
-        EventKindBox.SelectedValuePath = nameof(UiOption<TwitchEventKind>.Value);
-
-        RuleAudioAssetBox.ItemsSource = _config.AudioLibrary;
-        RuleAudioAssetBox.DisplayMemberPath = nameof(AudioAssetConfig.DisplayName);
-        RuleAudioAssetBox.SelectedValuePath = nameof(AudioAssetConfig.Id);
-
-        RuleAudioGroupBox.ItemsSource = _config.AudioGroups;
-        RuleAudioGroupBox.DisplayMemberPath = nameof(AudioGroupConfig.Name);
-        RuleAudioGroupBox.SelectedValuePath = nameof(AudioGroupConfig.Id);
-
-        RuleObsSceneBox.ItemsSource = _obsSceneChoices;
-        RuleObsSceneBox.DisplayMemberPath = nameof(ObsSceneChoice.Label);
-        RuleObsSceneBox.SelectedValuePath = nameof(ObsSceneChoice.Name);
-
-        RuleObsMediaKindBox.ItemsSource = _obsMediaKindOptions;
-        RuleObsMediaKindBox.DisplayMemberPath = nameof(UiOption<ObsMediaKind>.Label);
-        RuleObsMediaKindBox.SelectedValuePath = nameof(UiOption<ObsMediaKind>.Value);
-
-        RuleObsMediaSourceModeBox.ItemsSource = _mediaSourceModeOptions;
-        RuleObsMediaSourceModeBox.DisplayMemberPath = nameof(UiOption<MediaSourceMode>.Label);
-        RuleObsMediaSourceModeBox.SelectedValuePath = nameof(UiOption<MediaSourceMode>.Value);
+        _alertsViewModel.UpdateEditorChoices(
+            _eventOptions,
+            _patternOptions,
+            _config.AudioLibrary,
+            _config.AudioGroups,
+            _obsSceneChoices,
+            _obsMediaKindOptions,
+            _mediaSourceModeOptions);
 
         RuleObsMediaAssetBox.DisplayMemberPath = nameof(MediaAssetConfig.DisplayName);
         RuleObsMediaAssetBox.SelectedValuePath = nameof(MediaAssetConfig.Id);
@@ -54,10 +39,6 @@ public partial class MainWindow
 
     private void InitializeBackgroundOptionSources()
     {
-        PatternBox.ItemsSource = _patternOptions;
-        PatternBox.DisplayMemberPath = nameof(UiOption<LightPattern>.Label);
-        PatternBox.SelectedValuePath = nameof(UiOption<LightPattern>.Value);
-
         BackgroundPatternBox.ItemsSource = _patternOptions;
         BackgroundPatternBox.DisplayMemberPath = nameof(UiOption<LightPattern>.Label);
         BackgroundPatternBox.SelectedValuePath = nameof(UiOption<LightPattern>.Value);

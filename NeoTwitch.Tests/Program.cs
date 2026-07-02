@@ -503,6 +503,23 @@ static class AlertsViewModelTests
         TestAssert.True(viewModel.IsAllStatusSelected);
         TestAssert.Equal(0.68d, viewModel.SaveButtonOpacity);
 
+        var eventChoices = new[] { "evento" };
+        var patternChoices = new[] { "patron" };
+        var audioAssets = new[] { "audio" };
+        var audioGroups = new[] { "grupo-audio" };
+        var obsScenes = new[] { "escena" };
+        var obsKinds = new[] { "obs-kind" };
+        var obsModes = new[] { "obs-mode" };
+        viewModel.UpdateEditorChoices(eventChoices, patternChoices, audioAssets, audioGroups, obsScenes, obsKinds, obsModes);
+
+        TestAssert.Same(eventChoices, viewModel.EventKindChoices);
+        TestAssert.Same(patternChoices, viewModel.LightPatternChoices);
+        TestAssert.Same(audioAssets, viewModel.AudioAssetChoices);
+        TestAssert.Same(audioGroups, viewModel.AudioGroupChoices);
+        TestAssert.Same(obsScenes, viewModel.ObsSceneChoices);
+        TestAssert.Same(obsKinds, viewModel.ObsMediaKindChoices);
+        TestAssert.Same(obsModes, viewModel.ObsMediaSourceModeChoices);
+
         var actions = new List<string>();
         viewModel.ConfigureActions(
             () => actions.Add("add"),

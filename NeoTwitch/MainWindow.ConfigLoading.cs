@@ -73,8 +73,14 @@ public partial class MainWindow
     private void BindConfigCollectionsIntoUi()
     {
         _alertsViewModel.SetRulesSource(_config.Rules);
-        RuleAudioAssetBox.ItemsSource = _config.AudioLibrary;
-        RuleAudioGroupBox.ItemsSource = _config.AudioGroups;
+        _alertsViewModel.UpdateEditorChoices(
+            _eventOptions,
+            _patternOptions,
+            _config.AudioLibrary,
+            _config.AudioGroups,
+            _obsSceneChoices,
+            _obsMediaKindOptions,
+            _mediaSourceModeOptions);
         _audioLibraryViewModel.SetNewAssetChoices(AudioGroupChoices, AudioAlertChoices);
         _imageLibraryViewModel.SetNewAssetChoices(ImageGroupChoices);
         _videoLibraryViewModel.SetNewAssetChoices(VideoGroupChoices);

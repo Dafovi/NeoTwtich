@@ -293,6 +293,9 @@
                                                    Style="{StaticResource MutedText}"
                                                    FontSize="12" />
                                         <ComboBox x:Name="EventKindBox"
+                                                  ItemsSource="{Binding EventKindChoices}"
+                                                  DisplayMemberPath="Label"
+                                                  SelectedValuePath="Value"
                                                   Visibility="Collapsed"
                                                   SelectionChanged="RuleFieldChanged" />
 
@@ -506,6 +509,9 @@
                                                             <StackPanel x:Name="PatternGrid">
                                                                 <TextBlock Text="Patron" Style="{StaticResource MutedText}" />
                                                                 <ComboBox x:Name="PatternBox"
+                                                                          ItemsSource="{Binding LightPatternChoices}"
+                                                                          DisplayMemberPath="Label"
+                                                                          SelectedValuePath="Value"
                                                                           Visibility="Collapsed"
                                                                           SelectionChanged="RuleFieldChanged" />
                                                                 <Grid Margin="0,4,0,12">
@@ -1140,6 +1146,9 @@
                                                                 <TextBlock Text="Audio guardado"
                                                                            Style="{StaticResource MutedText}" />
                                                                 <ComboBox x:Name="RuleAudioAssetBox"
+                                                                          ItemsSource="{Binding AudioAssetChoices}"
+                                                                          DisplayMemberPath="DisplayName"
+                                                                          SelectedValuePath="Id"
                                                                           SelectionChanged="RuleFieldChanged" />
                                                             </StackPanel>
 
@@ -1150,6 +1159,9 @@
                                                                 <TextBlock Text="Grupo de audios"
                                                                            Style="{StaticResource MutedText}" />
                                                                 <ComboBox x:Name="RuleAudioGroupBox"
+                                                                          ItemsSource="{Binding AudioGroupChoices}"
+                                                                          DisplayMemberPath="Name"
+                                                                          SelectedValuePath="Id"
                                                                           SelectionChanged="RuleFieldChanged" />
                                                             </StackPanel>
 
@@ -1290,6 +1302,9 @@
                                                             <TextBlock Text="Escena de OBS"
                                                                        Style="{StaticResource MutedText}" />
                                                             <ComboBox x:Name="RuleObsSceneBox"
+                                                                      ItemsSource="{Binding ObsSceneChoices}"
+                                                                      DisplayMemberPath="Label"
+                                                                      SelectedValuePath="Name"
                                                                       Margin="0,4,0,0"
                                                                       SelectionChanged="RuleFieldChanged" />
 
@@ -1360,6 +1375,9 @@
                                                                         CommandParameter="{Binding Tag, RelativeSource={RelativeSource Self}}" />
                                                             </Grid>
                                                             <ComboBox x:Name="RuleObsMediaKindBox"
+                                                                      ItemsSource="{Binding ObsMediaKindChoices}"
+                                                                      DisplayMemberPath="Label"
+                                                                      SelectedValuePath="Value"
                                                                       Visibility="Collapsed"
                                                                       SelectionChanged="RuleFieldChanged" />
 
@@ -1384,6 +1402,9 @@
                                                                         CommandParameter="{Binding Tag, RelativeSource={RelativeSource Self}}" />
                                                             </Grid>
                                                             <ComboBox x:Name="RuleObsMediaSourceModeBox"
+                                                                      ItemsSource="{Binding ObsMediaSourceModeChoices}"
+                                                                      DisplayMemberPath="Label"
+                                                                      SelectedValuePath="Value"
                                                                       Visibility="Collapsed"
                                                                       SelectionChanged="RuleFieldChanged" />
 

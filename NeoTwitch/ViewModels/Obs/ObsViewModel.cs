@@ -1,4 +1,5 @@
 using System.Collections.ObjectModel;
+using NeoTwitch.Models;
 using NeoTwitch.Services.Status;
 using NeoTwitch.ViewModels.Core;
 
@@ -18,8 +19,18 @@ public sealed class ObsViewModel : ObservableObject
     private string _version = "Sin version";
     private string _sceneCount = "0";
     private string _studioMode = "Desactivado";
+    private string _overlayUrl = "";
+    private string _overlayWidthText = "1920";
+    private string _overlayHeightText = "1080";
+    private string _overlayMediaWidthText = "640";
+    private string _overlayMediaHeightText = "360";
+    private string _overlayPositionMode = "Center";
+    private string _overlayXText = "0";
+    private string _overlayYText = "0";
     private bool _isScenesEnabled;
     private double _scenesOpacity = 0.58d;
+    private bool _isCustomOverlayPosition;
+    private double _overlayCoordinateOpacity = 0.58d;
 
     public ObsViewModel()
     {
@@ -99,6 +110,72 @@ public sealed class ObsViewModel : ObservableObject
         private set => SetProperty(ref _scenesOpacity, value);
     }
 
+    public string OverlayUrl
+    {
+        get => _overlayUrl;
+        private set => SetProperty(ref _overlayUrl, value);
+    }
+
+    public string OverlayWidthText
+    {
+        get => _overlayWidthText;
+        set => SetProperty(ref _overlayWidthText, value ?? "");
+    }
+
+    public string OverlayHeightText
+    {
+        get => _overlayHeightText;
+        set => SetProperty(ref _overlayHeightText, value ?? "");
+    }
+
+    public string OverlayMediaWidthText
+    {
+        get => _overlayMediaWidthText;
+        set => SetProperty(ref _overlayMediaWidthText, value ?? "");
+    }
+
+    public string OverlayMediaHeightText
+    {
+        get => _overlayMediaHeightText;
+        set => SetProperty(ref _overlayMediaHeightText, value ?? "");
+    }
+
+    public string OverlayPositionMode
+    {
+        get => _overlayPositionMode;
+        set
+        {
+            if (SetProperty(ref _overlayPositionMode, value ?? "Center"))
+            {
+                UpdateOverlayPositionState();
+            }
+        }
+    }
+
+    public string OverlayXText
+    {
+        get => _overlayXText;
+        set => SetProperty(ref _overlayXText, value ?? "");
+    }
+
+    public string OverlayYText
+    {
+        get => _overlayYText;
+        set => SetProperty(ref _overlayYText, value ?? "");
+    }
+
+    public bool IsCustomOverlayPosition
+    {
+        get => _isCustomOverlayPosition;
+        private set => SetProperty(ref _isCustomOverlayPosition, value);
+    }
+
+    public double OverlayCoordinateOpacity
+    {
+        get => _overlayCoordinateOpacity;
+        private set => SetProperty(ref _overlayCoordinateOpacity, value);
+    }
+
     public void UpdateStatus(ObsStatusText status, bool isScenesEnabled)
     {
         ConnectionState = status.State;
@@ -127,6 +204,25 @@ public sealed class ObsViewModel : ObservableObject
         SceneRows.Clear();
     }
 
+    public void LoadOverlayConfig(AppConfig config, string overlayUrl)
+    {
+        OverlayUrl = overlayUrl;
+        OverlayWidthText = config.Obs.OverlayWidth.ToString();
+        OverlayHeightText = config.Obs.OverlayHeight.ToString();
+        OverlayMediaWidthText = config.Obs.OverlayMediaWidth.ToString();
+        OverlayMediaHeightText = config.Obs.OverlayMediaHeight.ToString();
+        OverlayPositionMode = config.Obs.OverlayPositionMode;
+        OverlayXText = config.Obs.OverlayX.ToString();
+        OverlayYText = config.Obs.OverlayY.ToString();
+        UpdateOverlayPositionState();
+    }
+
+    public void UpdateOverlayUrl(string overlayUrl)
+    {
+        OverlayUrl = overlayUrl;
+        UpdateOverlayPositionState();
+    }
+
     public void ConfigureActions(
         Action copyOverlayUrl,
         Action refreshScenes,
@@ -145,5 +241,12 @@ public sealed class ObsViewModel : ObservableObject
 
     private static void Noop(object? _)
     {
+    }
+
+    private void UpdateOverlayPositionState()
+    {
+        var customPosition = string.Equals(OverlayPositionMode, "Custom", StringComparison.OrdinalIgnoreCase);
+        IsCustomOverlayPosition = customPosition;
+        OverlayCoordinateOpacity = customPosition ? 1d : 0.58d;
     }
 }

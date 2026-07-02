@@ -173,6 +173,7 @@
                                     </Grid.ColumnDefinitions>
                                     <TextBox x:Name="ObsOverlayUrlBox"
                                              IsReadOnly="True"
+                                             Text="{Binding OverlayUrl}"
                                              Margin="0" />
                                     <Button Grid.Column="2"
                                             Content="Copiar"
@@ -189,12 +190,14 @@
                                         <TextBlock Text="Ancho overlay"
                                                    Style="{StaticResource MutedText}" />
                                         <TextBox x:Name="ObsOverlayWidthBox"
+                                                 Text="{Binding OverlayWidthText, Mode=TwoWay, UpdateSourceTrigger=PropertyChanged}"
                                                  TextChanged="ObsOverlaySettingsChanged" />
                                     </StackPanel>
                                     <StackPanel Grid.Column="2">
                                         <TextBlock Text="Alto overlay"
                                                    Style="{StaticResource MutedText}" />
                                         <TextBox x:Name="ObsOverlayHeightBox"
+                                                 Text="{Binding OverlayHeightText, Mode=TwoWay, UpdateSourceTrigger=PropertyChanged}"
                                                  TextChanged="ObsOverlaySettingsChanged" />
                                     </StackPanel>
                                 </Grid>
@@ -208,12 +211,14 @@
                                         <TextBlock Text="Ancho medio"
                                                    Style="{StaticResource MutedText}" />
                                         <TextBox x:Name="ObsOverlayMediaWidthBox"
+                                                 Text="{Binding OverlayMediaWidthText, Mode=TwoWay, UpdateSourceTrigger=PropertyChanged}"
                                                  TextChanged="ObsOverlaySettingsChanged" />
                                     </StackPanel>
                                     <StackPanel Grid.Column="2">
                                         <TextBlock Text="Alto medio"
                                                    Style="{StaticResource MutedText}" />
                                         <TextBox x:Name="ObsOverlayMediaHeightBox"
+                                                 Text="{Binding OverlayMediaHeightText, Mode=TwoWay, UpdateSourceTrigger=PropertyChanged}"
                                                  TextChanged="ObsOverlaySettingsChanged" />
                                     </StackPanel>
                                 </Grid>
@@ -223,6 +228,7 @@
                                 <ComboBox x:Name="ObsOverlayPositionBox"
                                           Margin="0,4,0,8"
                                           SelectedValuePath="Tag"
+                                          SelectedValue="{Binding OverlayPositionMode, Mode=TwoWay, UpdateSourceTrigger=PropertyChanged}"
                                           SelectionChanged="ObsOverlaySettingsChanged">
                                     <ComboBoxItem Content="Centrada" Tag="Center" />
                                     <ComboBoxItem Content="Aleatoria" Tag="Random" />
@@ -238,12 +244,18 @@
                                         <TextBlock Text="X"
                                                    Style="{StaticResource MutedText}" />
                                         <TextBox x:Name="ObsOverlayXBox"
+                                                 Text="{Binding OverlayXText, Mode=TwoWay, UpdateSourceTrigger=PropertyChanged}"
+                                                 IsEnabled="{Binding IsCustomOverlayPosition}"
+                                                 Opacity="{Binding OverlayCoordinateOpacity}"
                                                  TextChanged="ObsOverlaySettingsChanged" />
                                     </StackPanel>
                                     <StackPanel Grid.Column="2">
                                         <TextBlock Text="Y"
                                                    Style="{StaticResource MutedText}" />
                                         <TextBox x:Name="ObsOverlayYBox"
+                                                 Text="{Binding OverlayYText, Mode=TwoWay, UpdateSourceTrigger=PropertyChanged}"
+                                                 IsEnabled="{Binding IsCustomOverlayPosition}"
+                                                 Opacity="{Binding OverlayCoordinateOpacity}"
                                                  TextChanged="ObsOverlaySettingsChanged" />
                                     </StackPanel>
                                 </Grid>

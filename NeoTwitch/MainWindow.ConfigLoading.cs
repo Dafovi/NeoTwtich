@@ -14,13 +14,7 @@ public partial class MainWindow
         _connectionsViewModel.LoadArduinoConfig(_config);
         _connectionsViewModel.LoadAlexaConfig(_config);
         _connectionsViewModel.LoadObsConnectionConfig(_config);
-        ObsOverlayWidthBox.Text = _config.Obs.OverlayWidth.ToString();
-        ObsOverlayHeightBox.Text = _config.Obs.OverlayHeight.ToString();
-        ObsOverlayMediaWidthBox.Text = _config.Obs.OverlayMediaWidth.ToString();
-        ObsOverlayMediaHeightBox.Text = _config.Obs.OverlayMediaHeight.ToString();
-        ObsOverlayPositionBox.SelectedValue = _config.Obs.OverlayPositionMode;
-        ObsOverlayXBox.Text = _config.Obs.OverlayX.ToString();
-        ObsOverlayYBox.Text = _config.Obs.OverlayY.ToString();
+        _obsViewModel.LoadOverlayConfig(_config, BuildObsOverlayUrl());
     }
 
     private void LoadGlobalPreferencesIntoUi()

@@ -80,13 +80,13 @@ public partial class MainWindow
                 _connectionsViewModel.ObsPortText,
                 _connectionsViewModel.ObsPassword,
                 _settingsViewModel.ObsAutoReconnect,
-                ObsOverlayWidthBox.Text,
-                ObsOverlayHeightBox.Text,
-                ObsOverlayMediaWidthBox.Text,
-                ObsOverlayMediaHeightBox.Text,
-                ObsOverlayPositionBox.SelectedValue as string ?? "Center",
-                ObsOverlayXBox.Text,
-                ObsOverlayYBox.Text));
+                _obsViewModel.OverlayWidthText,
+                _obsViewModel.OverlayHeightText,
+                _obsViewModel.OverlayMediaWidthText,
+                _obsViewModel.OverlayMediaHeightText,
+                _obsViewModel.OverlayPositionMode,
+                _obsViewModel.OverlayXText,
+                _obsViewModel.OverlayYText));
     }
 
     private void ApplyStartWithWindowsRegistration()

@@ -63,12 +63,7 @@ public partial class MainWindow
             return;
         }
 
-        ObsOverlayUrlBox.Text = BuildObsOverlayUrl();
-        var customPosition = string.Equals(_config.Obs.OverlayPositionMode, "Custom", StringComparison.OrdinalIgnoreCase);
-        ObsOverlayXBox.IsEnabled = customPosition;
-        ObsOverlayYBox.IsEnabled = customPosition;
-        ObsOverlayXBox.Opacity = customPosition ? 1d : 0.58d;
-        ObsOverlayYBox.Opacity = customPosition ? 1d : 0.58d;
+        _obsViewModel.UpdateOverlayUrl(BuildObsOverlayUrl());
     }
 
     private string BuildObsOverlayUrl()

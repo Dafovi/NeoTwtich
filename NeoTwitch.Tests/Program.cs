@@ -1905,6 +1905,31 @@ static class ObsViewModelTests
         TestAssert.Equal(1d, viewModel.ScenesOpacity);
         TestAssert.Equal(2, viewModel.SceneRows.Count);
 
+        var config = AppConfig.CreateDefault();
+        config.Obs.OverlayWidth = 1280;
+        config.Obs.OverlayHeight = 720;
+        config.Obs.OverlayMediaWidth = 320;
+        config.Obs.OverlayMediaHeight = 180;
+        config.Obs.OverlayPositionMode = "Custom";
+        config.Obs.OverlayX = 20;
+        config.Obs.OverlayY = 40;
+        viewModel.LoadOverlayConfig(config, "http://localhost:1234/overlay");
+
+        TestAssert.Equal("http://localhost:1234/overlay", viewModel.OverlayUrl);
+        TestAssert.Equal("1280", viewModel.OverlayWidthText);
+        TestAssert.Equal("720", viewModel.OverlayHeightText);
+        TestAssert.Equal("320", viewModel.OverlayMediaWidthText);
+        TestAssert.Equal("180", viewModel.OverlayMediaHeightText);
+        TestAssert.Equal("Custom", viewModel.OverlayPositionMode);
+        TestAssert.Equal("20", viewModel.OverlayXText);
+        TestAssert.Equal("40", viewModel.OverlayYText);
+        TestAssert.True(viewModel.IsCustomOverlayPosition);
+        TestAssert.Equal(1d, viewModel.OverlayCoordinateOpacity);
+
+        viewModel.OverlayPositionMode = "Center";
+        TestAssert.False(viewModel.IsCustomOverlayPosition);
+        TestAssert.Equal(0.58d, viewModel.OverlayCoordinateOpacity);
+
         viewModel.UpdateStatus(
             new ObsStatusText("Desconectado", "", "Sin escena", "127.0.0.1", "4455", "", "0", "Desactivado"),
             isScenesEnabled: false);

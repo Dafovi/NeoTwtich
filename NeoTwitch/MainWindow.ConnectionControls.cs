@@ -1,6 +1,5 @@
 using WpfButton = System.Windows.Controls.Button;
 using WpfCheckBox = System.Windows.Controls.CheckBox;
-using WpfComboBox = System.Windows.Controls.ComboBox;
 using WpfTextBlock = System.Windows.Controls.TextBlock;
 using WpfTextBox = System.Windows.Controls.TextBox;
 
@@ -14,10 +13,6 @@ public partial class MainWindow
     private WpfTextBox ClientSecretBox => ConnectionsView.ClientSecretBox;
     private WpfTextBlock ClientSecretMaskText => ConnectionsView.ClientSecretMaskText;
     private WpfButton ClientSecretRevealButton => ConnectionsView.ClientSecretRevealButton;
-
-    private WpfCheckBox ArduinoEnabledCheck => ConnectionsView.ArduinoEnabledCheck;
-    private WpfComboBox PortComboBox => ConnectionsView.PortComboBox;
-    private WpfTextBox BaudRateBox => ConnectionsView.BaudRateBox;
 
     private WpfCheckBox AlexaEnabledCheck => ConnectionsView.AlexaEnabledCheck;
     private WpfTextBox AlexaRelayUrlBox => ConnectionsView.AlexaRelayUrlBox;

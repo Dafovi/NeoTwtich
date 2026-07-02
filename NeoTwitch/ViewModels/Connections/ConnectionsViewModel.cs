@@ -37,6 +37,9 @@ public sealed class ConnectionsViewModel : ObservableObject
     private string _obsConnectionHelpText = "";
     private string _twitchClientId = "";
     private string _twitchClientSecret = "";
+    private bool _arduinoEnabled;
+    private string _serialPort = "";
+    private string _baudRateText = "115200";
     private IEnumerable? _portChoices;
 
     public ConnectionsViewModel()
@@ -172,10 +175,35 @@ public sealed class ConnectionsViewModel : ObservableObject
         set => SetProperty(ref _twitchClientSecret, value ?? "");
     }
 
+    public bool ArduinoEnabled
+    {
+        get => _arduinoEnabled;
+        set => SetProperty(ref _arduinoEnabled, value);
+    }
+
+    public string SerialPort
+    {
+        get => _serialPort;
+        set => SetProperty(ref _serialPort, value ?? "");
+    }
+
+    public string BaudRateText
+    {
+        get => _baudRateText;
+        set => SetProperty(ref _baudRateText, value ?? "");
+    }
+
     public void LoadTwitchConfig(AppConfig config)
     {
         TwitchClientId = config.TwitchClientId;
         TwitchClientSecret = config.TwitchClientSecret;
+    }
+
+    public void LoadArduinoConfig(AppConfig config)
+    {
+        ArduinoEnabled = config.ArduinoEnabled;
+        SerialPort = config.SerialPort;
+        BaudRateText = config.BaudRate.ToString();
     }
 
     public void UpdateBadges(

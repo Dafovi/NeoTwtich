@@ -255,6 +255,7 @@
                                 <CheckBox x:Name="ArduinoEnabledCheck"
                                           Grid.Row="1"
                                           Content="Activar Arduino"
+                                          IsChecked="{Binding ArduinoEnabled, Mode=TwoWay, UpdateSourceTrigger=PropertyChanged}"
                                           Checked="GlobalSettingsChanged"
                                           Unchecked="GlobalSettingsChanged"
                                           Margin="0,14,0,8" />
@@ -273,6 +274,8 @@
                                                   ItemsSource="{Binding PortChoices}"
                                                   DisplayMemberPath="DisplayName"
                                                   SelectedValuePath="PortName"
+                                                  SelectedValue="{Binding SerialPort, Mode=TwoWay, UpdateSourceTrigger=PropertyChanged}"
+                                                  Text="{Binding SerialPort, Mode=TwoWay, UpdateSourceTrigger=PropertyChanged}"
                                                   IsEditable="True"
                                                   SelectionChanged="GlobalSettingsChanged"
                                                   DropDownOpened="PortComboBox_DropDownOpened"
@@ -283,6 +286,7 @@
                                         <TextBlock Text="Baudios"
                                                    Style="{StaticResource MutedText}" />
                                         <TextBox x:Name="BaudRateBox"
+                                                 Text="{Binding BaudRateText, Mode=TwoWay, UpdateSourceTrigger=PropertyChanged}"
                                                  TextChanged="GlobalSettingsChanged"
                                                  Margin="0,4,0,0" />
                                     </StackPanel>

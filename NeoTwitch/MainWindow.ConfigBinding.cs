@@ -57,9 +57,9 @@ public partial class MainWindow
             new GlobalSettingsFormValues(
                 _connectionsViewModel.TwitchClientId,
                 _connectionsViewModel.TwitchClientSecret,
-                PortComboBox.SelectedValue as string ?? PortComboBox.Text,
-                BaudRateBox.Text,
-                ArduinoEnabledCheck.IsChecked == true,
+                _connectionsViewModel.SerialPort,
+                _connectionsViewModel.BaudRateText,
+                _connectionsViewModel.ArduinoEnabled,
                 _settingsViewModel.AutoConnectTwitch,
                 _settingsViewModel.AutoConnectArduino,
                 _settingsViewModel.StartHidden,

@@ -11,10 +11,7 @@ public partial class MainWindow
     private void LoadConnectionConfigIntoUi()
     {
         _connectionsViewModel.LoadTwitchConfig(_config);
-        PortComboBox.SelectedValue = _config.SerialPort;
-        PortComboBox.Text = _config.SerialPort;
-        BaudRateBox.Text = _config.BaudRate.ToString();
-        ArduinoEnabledCheck.IsChecked = _config.ArduinoEnabled;
+        _connectionsViewModel.LoadArduinoConfig(_config);
         AlexaEnabledCheck.IsChecked = _config.Alexa.Enabled;
         AlexaRelayUrlBox.Text = _config.Alexa.RelayUrl;
         AlexaAuthTokenBox.Text = _config.Alexa.AuthToken;

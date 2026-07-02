@@ -2252,7 +2252,11 @@ static class ConnectionsViewModelTests
         var config = AppConfig.CreateDefault();
         config.TwitchClientId = "client-id";
         config.TwitchClientSecret = "secret";
+        config.ArduinoEnabled = true;
+        config.SerialPort = "COM7";
+        config.BaudRate = 57600;
         viewModel.LoadTwitchConfig(config);
+        viewModel.LoadArduinoConfig(config);
         var portChoices = new[] { "COM3" };
         viewModel.UpdatePortChoices(portChoices);
 
@@ -2260,6 +2264,9 @@ static class ConnectionsViewModelTests
         TestAssert.Equal("Arduino off", viewModel.ArduinoBadge.Text);
         TestAssert.Equal("client-id", viewModel.TwitchClientId);
         TestAssert.Equal("secret", viewModel.TwitchClientSecret);
+        TestAssert.True(viewModel.ArduinoEnabled);
+        TestAssert.Equal("COM7", viewModel.SerialPort);
+        TestAssert.Equal("57600", viewModel.BaudRateText);
         TestAssert.Equal("Alexa configurada", viewModel.AlexaStatusText);
         TestAssert.Equal("OBS desconectado", viewModel.ObsConnectionHelpText);
         TestAssert.Same(portChoices, viewModel.PortChoices);

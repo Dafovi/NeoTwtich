@@ -8,7 +8,7 @@ public partial class MainWindow
 {
     private void RefreshPortList(bool choosePreferred)
     {
-        var previousPort = ParsePort(PortComboBox.Text);
+        var previousPort = ParsePort(_connectionsViewModel.SerialPort);
 
         try
         {
@@ -34,8 +34,7 @@ public partial class MainWindow
 
         if (!string.IsNullOrWhiteSpace(selectedPort))
         {
-            PortComboBox.SelectedValue = selectedPort;
-            PortComboBox.Text = selectedPort;
+            _connectionsViewModel.SerialPort = selectedPort;
         }
     }
 

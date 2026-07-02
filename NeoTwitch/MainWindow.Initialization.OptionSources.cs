@@ -24,10 +24,6 @@ public partial class MainWindow
             _obsMediaKindOptions,
             _mediaSourceModeOptions);
 
-        RuleObsMediaAssetBox.DisplayMemberPath = nameof(MediaAssetConfig.DisplayName);
-        RuleObsMediaAssetBox.SelectedValuePath = nameof(MediaAssetConfig.Id);
-        RuleObsMediaGroupBox.DisplayMemberPath = nameof(MediaGroupConfig.Name);
-        RuleObsMediaGroupBox.SelectedValuePath = nameof(MediaGroupConfig.Id);
     }
 
     private void InitializeLibraryOptionSources()

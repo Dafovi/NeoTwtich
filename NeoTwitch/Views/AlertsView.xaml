@@ -1421,6 +1421,9 @@
                                                                 <TextBlock Text="Archivo"
                                                                            Style="{StaticResource MutedText}" />
                                                                 <ComboBox x:Name="RuleObsMediaAssetBox"
+                                                                          ItemsSource="{Binding ObsMediaAssetChoices}"
+                                                                          DisplayMemberPath="DisplayName"
+                                                                          SelectedValuePath="Id"
                                                                           SelectionChanged="RuleFieldChanged" />
                                                             </StackPanel>
 
@@ -1429,6 +1432,9 @@
                                                                 <TextBlock Text="Grupo"
                                                                            Style="{StaticResource MutedText}" />
                                                                 <ComboBox x:Name="RuleObsMediaGroupBox"
+                                                                          ItemsSource="{Binding ObsMediaGroupChoices}"
+                                                                          DisplayMemberPath="Name"
+                                                                          SelectedValuePath="Id"
                                                                           SelectionChanged="RuleFieldChanged" />
                                                             </StackPanel>
 

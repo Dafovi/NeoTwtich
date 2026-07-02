@@ -522,6 +522,11 @@ static class AlertsViewModelTests
         var targetPins = new[] { "pin 6" };
         viewModel.UpdateTargetPinChoices(targetPins);
         TestAssert.Same(targetPins, viewModel.TargetPinChoices);
+        var obsAssets = new[] { "imagen" };
+        var obsGroups = new[] { "grupo-imagen" };
+        viewModel.UpdateObsMediaChoices(obsAssets, obsGroups);
+        TestAssert.Same(obsAssets, viewModel.ObsMediaAssetChoices);
+        TestAssert.Same(obsGroups, viewModel.ObsMediaGroupChoices);
 
         var actions = new List<string>();
         viewModel.ConfigureActions(

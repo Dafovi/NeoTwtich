@@ -24,12 +24,6 @@ public partial class MainWindow
             _config.ImageGroups,
             _config.VideoGroups);
 
-        RuleObsMediaAssetBox.ItemsSource = choices.Assets;
-        RuleObsMediaGroupBox.ItemsSource = choices.Groups;
-
-        RuleObsMediaAssetBox.DisplayMemberPath = nameof(MediaAssetConfig.DisplayName);
-        RuleObsMediaAssetBox.SelectedValuePath = nameof(MediaAssetConfig.Id);
-        RuleObsMediaGroupBox.DisplayMemberPath = nameof(MediaGroupConfig.Name);
-        RuleObsMediaGroupBox.SelectedValuePath = nameof(MediaGroupConfig.Id);
+        _alertsViewModel.UpdateObsMediaChoices(choices.Assets, choices.Groups);
     }
 }

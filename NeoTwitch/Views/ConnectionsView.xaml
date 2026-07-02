@@ -360,6 +360,7 @@
                                 <CheckBox x:Name="AlexaEnabledCheck"
                                           Grid.Row="1"
                                           Content="Activar integracion con Alexa"
+                                          IsChecked="{Binding AlexaEnabled, Mode=TwoWay, UpdateSourceTrigger=PropertyChanged}"
                                           Checked="AlexaSettingsChanged"
                                           Unchecked="AlexaSettingsChanged"
                                           Margin="0,18,0,8" />
@@ -378,6 +379,7 @@
                                             <TextBox x:Name="AlexaRelayUrlBox"
                                                      Margin="0"
                                                      Padding="10,6,76,6"
+                                                     Text="{Binding AlexaRelayUrl, Mode=TwoWay, UpdateSourceTrigger=PropertyChanged}"
                                                      TextChanged="AlexaSettingsChanged"
                                                      ToolTip="Endpoint HTTPS que recibe eventos de Neo Twitch y los envia a Alexa." />
                                             <TextBlock x:Name="AlexaRelayUrlMaskText"
@@ -406,6 +408,7 @@
                                             <TextBox x:Name="AlexaAuthTokenBox"
                                                      Margin="0"
                                                      Padding="10,6,76,6"
+                                                     Text="{Binding AlexaAuthToken, Mode=TwoWay, UpdateSourceTrigger=PropertyChanged}"
                                                      TextChanged="AlexaSettingsChanged"
                                                      ToolTip="Token/API key opcional para proteger el relay." />
                                             <TextBlock x:Name="AlexaAuthTokenMaskText"

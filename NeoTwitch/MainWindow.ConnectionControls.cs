@@ -14,7 +14,6 @@ public partial class MainWindow
     private WpfTextBlock ClientSecretMaskText => ConnectionsView.ClientSecretMaskText;
     private WpfButton ClientSecretRevealButton => ConnectionsView.ClientSecretRevealButton;
 
-    private WpfCheckBox AlexaEnabledCheck => ConnectionsView.AlexaEnabledCheck;
     private WpfTextBox AlexaRelayUrlBox => ConnectionsView.AlexaRelayUrlBox;
     private WpfTextBlock AlexaRelayUrlMaskText => ConnectionsView.AlexaRelayUrlMaskText;
     private WpfButton AlexaRelayUrlRevealButton => ConnectionsView.AlexaRelayUrlRevealButton;

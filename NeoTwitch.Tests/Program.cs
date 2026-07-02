@@ -2255,8 +2255,12 @@ static class ConnectionsViewModelTests
         config.ArduinoEnabled = true;
         config.SerialPort = "COM7";
         config.BaudRate = 57600;
+        config.Alexa.Enabled = true;
+        config.Alexa.RelayUrl = "https://relay.example";
+        config.Alexa.AuthToken = "alexa-token";
         viewModel.LoadTwitchConfig(config);
         viewModel.LoadArduinoConfig(config);
+        viewModel.LoadAlexaConfig(config);
         var portChoices = new[] { "COM3" };
         viewModel.UpdatePortChoices(portChoices);
 
@@ -2267,6 +2271,9 @@ static class ConnectionsViewModelTests
         TestAssert.True(viewModel.ArduinoEnabled);
         TestAssert.Equal("COM7", viewModel.SerialPort);
         TestAssert.Equal("57600", viewModel.BaudRateText);
+        TestAssert.True(viewModel.AlexaEnabled);
+        TestAssert.Equal("https://relay.example", viewModel.AlexaRelayUrl);
+        TestAssert.Equal("alexa-token", viewModel.AlexaAuthToken);
         TestAssert.Equal("Alexa configurada", viewModel.AlexaStatusText);
         TestAssert.Equal("OBS desconectado", viewModel.ObsConnectionHelpText);
         TestAssert.Same(portChoices, viewModel.PortChoices);

@@ -12,9 +12,7 @@ public partial class MainWindow
     {
         _connectionsViewModel.LoadTwitchConfig(_config);
         _connectionsViewModel.LoadArduinoConfig(_config);
-        AlexaEnabledCheck.IsChecked = _config.Alexa.Enabled;
-        AlexaRelayUrlBox.Text = _config.Alexa.RelayUrl;
-        AlexaAuthTokenBox.Text = _config.Alexa.AuthToken;
+        _connectionsViewModel.LoadAlexaConfig(_config);
         ObsEnabledCheck.IsChecked = _config.Obs.Enabled;
         ObsHostBox.Text = _config.Obs.Host;
         ObsPortBox.Text = _config.Obs.Port.ToString();

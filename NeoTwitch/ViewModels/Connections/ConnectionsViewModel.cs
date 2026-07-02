@@ -40,6 +40,9 @@ public sealed class ConnectionsViewModel : ObservableObject
     private bool _arduinoEnabled;
     private string _serialPort = "";
     private string _baudRateText = "115200";
+    private bool _alexaEnabled;
+    private string _alexaRelayUrl = "";
+    private string _alexaAuthToken = "";
     private IEnumerable? _portChoices;
 
     public ConnectionsViewModel()
@@ -193,6 +196,24 @@ public sealed class ConnectionsViewModel : ObservableObject
         set => SetProperty(ref _baudRateText, value ?? "");
     }
 
+    public bool AlexaEnabled
+    {
+        get => _alexaEnabled;
+        set => SetProperty(ref _alexaEnabled, value);
+    }
+
+    public string AlexaRelayUrl
+    {
+        get => _alexaRelayUrl;
+        set => SetProperty(ref _alexaRelayUrl, value ?? "");
+    }
+
+    public string AlexaAuthToken
+    {
+        get => _alexaAuthToken;
+        set => SetProperty(ref _alexaAuthToken, value ?? "");
+    }
+
     public void LoadTwitchConfig(AppConfig config)
     {
         TwitchClientId = config.TwitchClientId;
@@ -204,6 +225,13 @@ public sealed class ConnectionsViewModel : ObservableObject
         ArduinoEnabled = config.ArduinoEnabled;
         SerialPort = config.SerialPort;
         BaudRateText = config.BaudRate.ToString();
+    }
+
+    public void LoadAlexaConfig(AppConfig config)
+    {
+        AlexaEnabled = config.Alexa.Enabled;
+        AlexaRelayUrl = config.Alexa.RelayUrl;
+        AlexaAuthToken = config.Alexa.AuthToken;
     }
 
     public void UpdateBadges(

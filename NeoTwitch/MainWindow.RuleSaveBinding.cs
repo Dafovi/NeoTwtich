@@ -18,12 +18,6 @@ public partial class MainWindow
         }
 
         var editor = _alertsViewModel.Editor;
-        var mediaKind = RuleObsMediaKindBox.SelectedValue is ObsMediaKind selectedMediaKind
-            ? selectedMediaKind
-            : ObsMediaKind.Image;
-        var mediaSourceMode = RuleObsMediaSourceModeBox.SelectedValue is MediaSourceMode selectedMediaSourceMode
-            ? selectedMediaSourceMode
-            : MediaSourceMode.Single;
         RefreshRuleObsMediaChoices();
 
         var pattern = PatternBox.SelectedValue is LightPattern selectedPattern
@@ -42,17 +36,17 @@ public partial class MainWindow
                 editor.SendChatMessage,
                 editor.ChatMessageTemplate,
                 editor.SendAlexaEvent,
-                ObsSceneCheck.IsChecked == true,
-                RuleObsSceneBox.SelectedValue as string ?? RuleObsSceneBox.Text,
-                ObsSceneDelayBox.Text,
-                ObsReturnCheck.IsChecked == true,
-                ObsReturnDelayBox.Text,
-                ObsMediaCheck.IsChecked == true,
-                mediaKind,
-                mediaSourceMode,
-                RuleObsMediaAssetBox.SelectedValue as string ?? "",
-                RuleObsMediaGroupBox.SelectedValue as string ?? "",
-                ObsMediaDurationBox.Text,
+                editor.SendObsScene,
+                editor.ObsSceneName,
+                editor.ObsSceneDelayText,
+                editor.ObsReturnToPreviousScene,
+                editor.ObsReturnDelayText,
+                editor.SendObsMedia,
+                editor.ObsMediaKind,
+                editor.ObsMediaSourceMode,
+                editor.ObsMediaAssetId,
+                editor.ObsMediaGroupId,
+                editor.ObsMediaDurationText,
                 editor.UseLights,
                 editor.PlayAudio,
                 _ruleAudioMode,

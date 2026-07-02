@@ -2385,7 +2385,18 @@ static class RuleEditorViewModelTests
             ChatMessageTemplate = "Rave @{user}",
             SendAlexaEvent = true,
             UseLights = true,
-            PlayAudio = true
+            PlayAudio = true,
+            SendObsScene = true,
+            ObsSceneName = "Gameplay",
+            ObsSceneDelayMs = 500,
+            ObsReturnToPreviousScene = false,
+            ObsReturnDelayMs = 7000,
+            SendObsMedia = true,
+            ObsMediaKind = ObsMediaKind.Video,
+            ObsMediaSourceMode = MediaSourceMode.Group,
+            ObsMediaAssetId = "video-1",
+            ObsMediaGroupId = "videos",
+            ObsMediaDurationMs = 9000
         };
 
         viewModel.LoadBasicFields(rule);
@@ -2401,6 +2412,17 @@ static class RuleEditorViewModelTests
         TestAssert.True(viewModel.SendAlexaEvent);
         TestAssert.True(viewModel.UseLights);
         TestAssert.True(viewModel.PlayAudio);
+        TestAssert.True(viewModel.SendObsScene);
+        TestAssert.Equal("Gameplay", viewModel.ObsSceneName);
+        TestAssert.Equal("500", viewModel.ObsSceneDelayText);
+        TestAssert.False(viewModel.ObsReturnToPreviousScene);
+        TestAssert.Equal("7000", viewModel.ObsReturnDelayText);
+        TestAssert.True(viewModel.SendObsMedia);
+        TestAssert.Equal(ObsMediaKind.Video, viewModel.ObsMediaKind);
+        TestAssert.Equal(MediaSourceMode.Group, viewModel.ObsMediaSourceMode);
+        TestAssert.Equal("video-1", viewModel.ObsMediaAssetId);
+        TestAssert.Equal("videos", viewModel.ObsMediaGroupId);
+        TestAssert.Equal("9000", viewModel.ObsMediaDurationText);
 
         viewModel.Clear();
 
@@ -2415,6 +2437,17 @@ static class RuleEditorViewModelTests
         TestAssert.False(viewModel.SendAlexaEvent);
         TestAssert.False(viewModel.UseLights);
         TestAssert.False(viewModel.PlayAudio);
+        TestAssert.False(viewModel.SendObsScene);
+        TestAssert.Equal("", viewModel.ObsSceneName);
+        TestAssert.Equal("0", viewModel.ObsSceneDelayText);
+        TestAssert.True(viewModel.ObsReturnToPreviousScene);
+        TestAssert.Equal("15000", viewModel.ObsReturnDelayText);
+        TestAssert.False(viewModel.SendObsMedia);
+        TestAssert.Equal(ObsMediaKind.Image, viewModel.ObsMediaKind);
+        TestAssert.Equal(MediaSourceMode.Single, viewModel.ObsMediaSourceMode);
+        TestAssert.Equal("", viewModel.ObsMediaAssetId);
+        TestAssert.Equal("", viewModel.ObsMediaGroupId);
+        TestAssert.Equal("5000", viewModel.ObsMediaDurationText);
     }
 }
 

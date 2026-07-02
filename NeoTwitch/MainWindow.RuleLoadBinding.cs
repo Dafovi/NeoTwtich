@@ -25,18 +25,7 @@ public partial class MainWindow
             _editingRule = rule;
             _alertsViewModel.Editor.LoadBasicFields(rule);
             UpdateEventKindTileSelection();
-            ObsSceneCheck.IsChecked = rule.SendObsScene;
-            RuleObsSceneBox.SelectedValue = rule.ObsSceneName;
-            ObsSceneDelayBox.Text = rule.ObsSceneDelayMs.ToString();
-            ObsReturnCheck.IsChecked = rule.ObsReturnToPreviousScene;
-            ObsReturnDelayBox.Text = rule.ObsReturnDelayMs.ToString();
-            ObsMediaCheck.IsChecked = rule.SendObsMedia;
-            RuleObsMediaKindBox.SelectedValue = rule.ObsMediaKind;
-            RuleObsMediaSourceModeBox.SelectedValue = rule.ObsMediaSourceMode;
             RefreshRuleObsMediaChoices();
-            RuleObsMediaAssetBox.SelectedValue = rule.ObsMediaAssetId;
-            RuleObsMediaGroupBox.SelectedValue = rule.ObsMediaGroupId;
-            ObsMediaDurationBox.Text = rule.ObsMediaDurationMs.ToString();
             _ruleAudioMode = rule.AudioSourceMode;
             RuleAudioAssetBox.SelectedValue = rule.AudioAssetId;
             RuleAudioGroupBox.SelectedValue = rule.AudioGroupId;

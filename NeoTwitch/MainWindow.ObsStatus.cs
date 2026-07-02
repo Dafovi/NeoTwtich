@@ -85,7 +85,7 @@ public partial class MainWindow
             && !string.IsNullOrWhiteSpace(rule.ObsSceneName)
             && _obsSceneRows.Any(scene => string.Equals(scene.Name, rule.ObsSceneName, StringComparison.OrdinalIgnoreCase)))
         {
-            RuleObsSceneBox.SelectedValue = rule.ObsSceneName;
+            _alertsViewModel.Editor.ObsSceneName = rule.ObsSceneName;
         }
 
         RefreshRulesView();
@@ -100,7 +100,7 @@ public partial class MainWindow
 
     private void RefreshObsSceneChoices()
     {
-        var selected = RuleObsSceneBox.SelectedValue as string ?? "";
+        var selected = _alertsViewModel.Editor.ObsSceneName;
         var choices = ObsSceneViewService.BuildChoices(_obsSceneRows, _text.Get(UiTextKeys.ObsKeepCurrentScene));
         _obsSceneChoices.Clear();
         foreach (var choice in choices)
@@ -108,6 +108,6 @@ public partial class MainWindow
             _obsSceneChoices.Add(choice);
         }
 
-        RuleObsSceneBox.SelectedValue = ObsSceneViewService.ResolveSelectedSceneName(selected, _obsSceneChoices);
+        _alertsViewModel.Editor.ObsSceneName = ObsSceneViewService.ResolveSelectedSceneName(selected, _obsSceneChoices);
     }
 }

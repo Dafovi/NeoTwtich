@@ -27,7 +27,7 @@ public partial class MainWindow
             return;
         }
 
-        RuleObsMediaKindBox.SelectedValue = kind;
+        _alertsViewModel.Editor.ObsMediaKind = kind;
         RefreshRuleObsMediaChoices();
         UpdateRuleObsMediaModeSelection();
         UpdateRuleOptionVisibility();
@@ -44,7 +44,7 @@ public partial class MainWindow
             return;
         }
 
-        RuleObsMediaSourceModeBox.SelectedValue = mode;
+        _alertsViewModel.Editor.ObsMediaSourceMode = mode;
         UpdateRuleObsMediaModeSelection();
         UpdateRuleOptionVisibility();
         if (SaveCurrentRuleFromFields())

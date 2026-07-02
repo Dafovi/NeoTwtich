@@ -26,12 +26,8 @@ public partial class MainWindow
         }
 
         var palette = _config.DarkMode ? ThemePalette.Dark : ThemePalette.Light;
-        var mediaKind = RuleObsMediaKindBox.SelectedValue is ObsMediaKind kind
-            ? kind
-            : ObsMediaKind.Image;
-        var sourceMode = RuleObsMediaSourceModeBox.SelectedValue is MediaSourceMode mode
-            ? mode
-            : MediaSourceMode.Single;
+        var mediaKind = _alertsViewModel.Editor.ObsMediaKind;
+        var sourceMode = _alertsViewModel.Editor.ObsMediaSourceMode;
 
         ApplyRuleModeButtonTheme(RuleObsImageModeButton, mediaKind == ObsMediaKind.Image, UiAccentCatalog.ObsImage, palette);
         ApplyRuleModeButtonTheme(RuleObsVideoModeButton, mediaKind == ObsMediaKind.Video, UiAccentCatalog.ObsVideo, palette);

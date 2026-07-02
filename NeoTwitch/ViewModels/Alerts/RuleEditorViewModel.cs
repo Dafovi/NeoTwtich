@@ -16,6 +16,17 @@ public sealed class RuleEditorViewModel : ObservableObject
     private bool _sendAlexaEvent;
     private bool _useLights;
     private bool _playAudio;
+    private bool _sendObsScene;
+    private string _obsSceneName = "";
+    private string _obsSceneDelayText = "0";
+    private bool _obsReturnToPreviousScene = true;
+    private string _obsReturnDelayText = "15000";
+    private bool _sendObsMedia;
+    private ObsMediaKind _obsMediaKind = ObsMediaKind.Image;
+    private MediaSourceMode _obsMediaSourceMode = MediaSourceMode.Single;
+    private string _obsMediaAssetId = "";
+    private string _obsMediaGroupId = "";
+    private string _obsMediaDurationText = "5000";
 
     public bool IsEnabled
     {
@@ -83,6 +94,72 @@ public sealed class RuleEditorViewModel : ObservableObject
         set => SetProperty(ref _playAudio, value);
     }
 
+    public bool SendObsScene
+    {
+        get => _sendObsScene;
+        set => SetProperty(ref _sendObsScene, value);
+    }
+
+    public string ObsSceneName
+    {
+        get => _obsSceneName;
+        set => SetProperty(ref _obsSceneName, value ?? "");
+    }
+
+    public string ObsSceneDelayText
+    {
+        get => _obsSceneDelayText;
+        set => SetProperty(ref _obsSceneDelayText, value ?? "");
+    }
+
+    public bool ObsReturnToPreviousScene
+    {
+        get => _obsReturnToPreviousScene;
+        set => SetProperty(ref _obsReturnToPreviousScene, value);
+    }
+
+    public string ObsReturnDelayText
+    {
+        get => _obsReturnDelayText;
+        set => SetProperty(ref _obsReturnDelayText, value ?? "");
+    }
+
+    public bool SendObsMedia
+    {
+        get => _sendObsMedia;
+        set => SetProperty(ref _sendObsMedia, value);
+    }
+
+    public ObsMediaKind ObsMediaKind
+    {
+        get => _obsMediaKind;
+        set => SetProperty(ref _obsMediaKind, value);
+    }
+
+    public MediaSourceMode ObsMediaSourceMode
+    {
+        get => _obsMediaSourceMode;
+        set => SetProperty(ref _obsMediaSourceMode, value);
+    }
+
+    public string ObsMediaAssetId
+    {
+        get => _obsMediaAssetId;
+        set => SetProperty(ref _obsMediaAssetId, value ?? "");
+    }
+
+    public string ObsMediaGroupId
+    {
+        get => _obsMediaGroupId;
+        set => SetProperty(ref _obsMediaGroupId, value ?? "");
+    }
+
+    public string ObsMediaDurationText
+    {
+        get => _obsMediaDurationText;
+        set => SetProperty(ref _obsMediaDurationText, value ?? "");
+    }
+
     public void LoadBasicFields(EventRule rule)
     {
         IsEnabled = rule.IsEnabled;
@@ -96,6 +173,17 @@ public sealed class RuleEditorViewModel : ObservableObject
         SendAlexaEvent = rule.SendAlexaEvent;
         UseLights = rule.UseLights;
         PlayAudio = rule.PlayAudio;
+        SendObsScene = rule.SendObsScene;
+        ObsSceneName = rule.ObsSceneName;
+        ObsSceneDelayText = rule.ObsSceneDelayMs.ToString();
+        ObsReturnToPreviousScene = rule.ObsReturnToPreviousScene;
+        ObsReturnDelayText = rule.ObsReturnDelayMs.ToString();
+        SendObsMedia = rule.SendObsMedia;
+        ObsMediaKind = rule.ObsMediaKind;
+        ObsMediaSourceMode = rule.ObsMediaSourceMode;
+        ObsMediaAssetId = rule.ObsMediaAssetId;
+        ObsMediaGroupId = rule.ObsMediaGroupId;
+        ObsMediaDurationText = rule.ObsMediaDurationMs.ToString();
     }
 
     public void Clear()
@@ -111,5 +199,16 @@ public sealed class RuleEditorViewModel : ObservableObject
         SendAlexaEvent = false;
         UseLights = false;
         PlayAudio = false;
+        SendObsScene = false;
+        ObsSceneName = "";
+        ObsSceneDelayText = "0";
+        ObsReturnToPreviousScene = true;
+        ObsReturnDelayText = "15000";
+        SendObsMedia = false;
+        ObsMediaKind = ObsMediaKind.Image;
+        ObsMediaSourceMode = MediaSourceMode.Single;
+        ObsMediaAssetId = "";
+        ObsMediaGroupId = "";
+        ObsMediaDurationText = "5000";
     }
 }

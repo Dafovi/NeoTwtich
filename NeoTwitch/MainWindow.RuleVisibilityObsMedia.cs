@@ -13,9 +13,7 @@ public partial class MainWindow
             return;
         }
 
-        var kind = RuleObsMediaKindBox.SelectedValue is ObsMediaKind selectedKind
-            ? selectedKind
-            : ObsMediaKind.Image;
+        var kind = _alertsViewModel.Editor.ObsMediaKind;
 
         var choices = RuleObsMediaChoiceService.Resolve(
             kind,

@@ -1306,6 +1306,7 @@
                                                         <CheckBox x:Name="ObsSceneCheck"
                                                                   Grid.Column="2"
                                                                   Content=""
+                                                                  IsChecked="{Binding Editor.SendObsScene, Mode=TwoWay, UpdateSourceTrigger=PropertyChanged}"
                                                                   Checked="RuleFieldChanged"
                                                                   Unchecked="RuleFieldChanged" />
                                                     </Grid>
@@ -1318,6 +1319,7 @@
                                                                       ItemsSource="{Binding ObsSceneChoices}"
                                                                       DisplayMemberPath="Label"
                                                                       SelectedValuePath="Name"
+                                                                      SelectedValue="{Binding Editor.ObsSceneName, Mode=TwoWay, UpdateSourceTrigger=PropertyChanged}"
                                                                       Margin="0,4,0,0"
                                                                       SelectionChanged="RuleFieldChanged" />
 
@@ -1334,12 +1336,14 @@
                                                                           Content="Volver a la escena anterior"
                                                                           VerticalAlignment="Center"
                                                                           MinHeight="34"
+                                                                          IsChecked="{Binding Editor.ObsReturnToPreviousScene, Mode=TwoWay, UpdateSourceTrigger=PropertyChanged}"
                                                                           Checked="RuleFieldChanged"
                                                                           Unchecked="RuleFieldChanged" />
                                                                 <StackPanel Grid.Column="2">
                                                                     <TextBlock Text="Esperar antes (ms)"
                                                                                Style="{StaticResource MutedText}" />
                                                                     <TextBox x:Name="ObsSceneDelayBox"
+                                                                             Text="{Binding Editor.ObsSceneDelayText, Mode=TwoWay, UpdateSourceTrigger=PropertyChanged}"
                                                                              TextChanged="RuleFieldChanged" />
                                                                 </StackPanel>
                                                                 <StackPanel x:Name="ObsReturnDelayPanel"
@@ -1347,6 +1351,7 @@
                                                                     <TextBlock Text="Regresar despues de (ms)"
                                                                                Style="{StaticResource MutedText}" />
                                                                     <TextBox x:Name="ObsReturnDelayBox"
+                                                                             Text="{Binding Editor.ObsReturnDelayText, Mode=TwoWay, UpdateSourceTrigger=PropertyChanged}"
                                                                              TextChanged="RuleFieldChanged" />
                                                                 </StackPanel>
                                                             </Grid>
@@ -1362,6 +1367,7 @@
                                                         <CheckBox x:Name="ObsMediaCheck"
                                                                   Content="Mostrar imagen o video"
                                                                   Margin="0,14,0,0"
+                                                                  IsChecked="{Binding Editor.SendObsMedia, Mode=TwoWay, UpdateSourceTrigger=PropertyChanged}"
                                                                   Checked="RuleFieldChanged"
                                                                   Unchecked="RuleFieldChanged" />
 
@@ -1391,6 +1397,7 @@
                                                                       ItemsSource="{Binding ObsMediaKindChoices}"
                                                                       DisplayMemberPath="Label"
                                                                       SelectedValuePath="Value"
+                                                                      SelectedValue="{Binding Editor.ObsMediaKind, Mode=TwoWay, UpdateSourceTrigger=PropertyChanged}"
                                                                       Visibility="Collapsed"
                                                                       SelectionChanged="RuleFieldChanged" />
 
@@ -1418,6 +1425,7 @@
                                                                       ItemsSource="{Binding ObsMediaSourceModeChoices}"
                                                                       DisplayMemberPath="Label"
                                                                       SelectedValuePath="Value"
+                                                                      SelectedValue="{Binding Editor.ObsMediaSourceMode, Mode=TwoWay, UpdateSourceTrigger=PropertyChanged}"
                                                                       Visibility="Collapsed"
                                                                       SelectionChanged="RuleFieldChanged" />
 
@@ -1425,6 +1433,7 @@
                                                                 <TextBlock Text="Duracion (ms)"
                                                                            Style="{StaticResource MutedText}" />
                                                                 <TextBox x:Name="ObsMediaDurationBox"
+                                                                         Text="{Binding Editor.ObsMediaDurationText, Mode=TwoWay, UpdateSourceTrigger=PropertyChanged}"
                                                                          TextChanged="RuleFieldChanged" />
                                                             </StackPanel>
 
@@ -1436,6 +1445,7 @@
                                                                           ItemsSource="{Binding ObsMediaAssetChoices}"
                                                                           DisplayMemberPath="DisplayName"
                                                                           SelectedValuePath="Id"
+                                                                          SelectedValue="{Binding Editor.ObsMediaAssetId, Mode=TwoWay, UpdateSourceTrigger=PropertyChanged}"
                                                                           SelectionChanged="RuleFieldChanged" />
                                                             </StackPanel>
 
@@ -1447,6 +1457,7 @@
                                                                           ItemsSource="{Binding ObsMediaGroupChoices}"
                                                                           DisplayMemberPath="Name"
                                                                           SelectedValuePath="Id"
+                                                                          SelectedValue="{Binding Editor.ObsMediaGroupId, Mode=TwoWay, UpdateSourceTrigger=PropertyChanged}"
                                                                           SelectionChanged="RuleFieldChanged" />
                                                             </StackPanel>
 

@@ -18,16 +18,12 @@ public partial class MainWindow
         var alexaAvailable = _config.Alexa.IsConfigured;
         var sendAlexa = editor.SendAlexaEvent;
         var obsAvailable = _config.Obs.IsConfigured;
-        var sendObsScene = ObsSceneCheck.IsChecked == true;
-        var selectedObsSceneName = RuleObsSceneBox.SelectedValue as string ?? "";
-        var returnObsScene = ObsReturnCheck.IsChecked == true;
-        var sendObsMedia = ObsMediaCheck.IsChecked == true;
-        var obsMediaKind = RuleObsMediaKindBox.SelectedValue is ObsMediaKind selectedObsMediaKind
-            ? selectedObsMediaKind
-            : ObsMediaKind.Image;
-        var obsMediaSourceMode = RuleObsMediaSourceModeBox.SelectedValue is MediaSourceMode selectedObsMediaSourceMode
-            ? selectedObsMediaSourceMode
-            : MediaSourceMode.Single;
+        var sendObsScene = editor.SendObsScene;
+        var selectedObsSceneName = editor.ObsSceneName;
+        var returnObsScene = editor.ObsReturnToPreviousScene;
+        var sendObsMedia = editor.SendObsMedia;
+        var obsMediaKind = editor.ObsMediaKind;
+        var obsMediaSourceMode = editor.ObsMediaSourceMode;
         var obsMediaChoices = RuleObsMediaChoiceService.Resolve(
             obsMediaKind,
             _config.ImageLibrary,

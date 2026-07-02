@@ -26,9 +26,6 @@ public partial class MainWindow
             _alertsViewModel.Editor.LoadBasicFields(rule);
             UpdateEventKindTileSelection();
             RefreshRuleObsMediaChoices();
-            _ruleAudioMode = rule.AudioSourceMode;
-            RuleAudioAssetBox.SelectedValue = rule.AudioAssetId;
-            RuleAudioGroupBox.SelectedValue = rule.AudioGroupId;
             PatternBox.SelectedValue = rule.Pattern;
             TargetPinsBox.Text = rule.TargetPins;
             RefreshRulePinChoices();

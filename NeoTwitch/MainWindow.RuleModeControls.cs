@@ -11,7 +11,7 @@ public partial class MainWindow
             return;
         }
 
-        _ruleAudioMode = mode;
+        _alertsViewModel.Editor.AudioSourceMode = mode;
         UpdateRuleAudioModeSelection();
         UpdateRuleOptionVisibility();
         if (SaveCurrentRuleFromFields())

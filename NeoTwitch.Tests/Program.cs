@@ -2396,7 +2396,10 @@ static class RuleEditorViewModelTests
             ObsMediaSourceMode = MediaSourceMode.Group,
             ObsMediaAssetId = "video-1",
             ObsMediaGroupId = "videos",
-            ObsMediaDurationMs = 9000
+            ObsMediaDurationMs = 9000,
+            AudioSourceMode = AudioSourceMode.Group,
+            AudioAssetId = "audio-1",
+            AudioGroupId = "audios"
         };
 
         viewModel.LoadBasicFields(rule);
@@ -2423,6 +2426,9 @@ static class RuleEditorViewModelTests
         TestAssert.Equal("video-1", viewModel.ObsMediaAssetId);
         TestAssert.Equal("videos", viewModel.ObsMediaGroupId);
         TestAssert.Equal("9000", viewModel.ObsMediaDurationText);
+        TestAssert.Equal(AudioSourceMode.Group, viewModel.AudioSourceMode);
+        TestAssert.Equal("audio-1", viewModel.AudioAssetId);
+        TestAssert.Equal("audios", viewModel.AudioGroupId);
 
         viewModel.Clear();
 
@@ -2448,6 +2454,9 @@ static class RuleEditorViewModelTests
         TestAssert.Equal("", viewModel.ObsMediaAssetId);
         TestAssert.Equal("", viewModel.ObsMediaGroupId);
         TestAssert.Equal("5000", viewModel.ObsMediaDurationText);
+        TestAssert.Equal(AudioSourceMode.Single, viewModel.AudioSourceMode);
+        TestAssert.Equal("", viewModel.AudioAssetId);
+        TestAssert.Equal("", viewModel.AudioGroupId);
     }
 }
 

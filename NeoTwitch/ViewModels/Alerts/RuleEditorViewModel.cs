@@ -27,6 +27,9 @@ public sealed class RuleEditorViewModel : ObservableObject
     private string _obsMediaAssetId = "";
     private string _obsMediaGroupId = "";
     private string _obsMediaDurationText = "5000";
+    private AudioSourceMode _audioSourceMode = AudioSourceMode.Single;
+    private string _audioAssetId = "";
+    private string _audioGroupId = "";
 
     public bool IsEnabled
     {
@@ -160,6 +163,24 @@ public sealed class RuleEditorViewModel : ObservableObject
         set => SetProperty(ref _obsMediaDurationText, value ?? "");
     }
 
+    public AudioSourceMode AudioSourceMode
+    {
+        get => _audioSourceMode;
+        set => SetProperty(ref _audioSourceMode, value);
+    }
+
+    public string AudioAssetId
+    {
+        get => _audioAssetId;
+        set => SetProperty(ref _audioAssetId, value ?? "");
+    }
+
+    public string AudioGroupId
+    {
+        get => _audioGroupId;
+        set => SetProperty(ref _audioGroupId, value ?? "");
+    }
+
     public void LoadBasicFields(EventRule rule)
     {
         IsEnabled = rule.IsEnabled;
@@ -184,6 +205,9 @@ public sealed class RuleEditorViewModel : ObservableObject
         ObsMediaAssetId = rule.ObsMediaAssetId;
         ObsMediaGroupId = rule.ObsMediaGroupId;
         ObsMediaDurationText = rule.ObsMediaDurationMs.ToString();
+        AudioSourceMode = rule.AudioSourceMode;
+        AudioAssetId = rule.AudioAssetId;
+        AudioGroupId = rule.AudioGroupId;
     }
 
     public void Clear()
@@ -210,5 +234,8 @@ public sealed class RuleEditorViewModel : ObservableObject
         ObsMediaAssetId = "";
         ObsMediaGroupId = "";
         ObsMediaDurationText = "5000";
+        AudioSourceMode = AudioSourceMode.Single;
+        AudioAssetId = "";
+        AudioGroupId = "";
     }
 }

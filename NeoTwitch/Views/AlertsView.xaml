@@ -1159,6 +1159,7 @@
                                                                           ItemsSource="{Binding AudioAssetChoices}"
                                                                           DisplayMemberPath="DisplayName"
                                                                           SelectedValuePath="Id"
+                                                                          SelectedValue="{Binding Editor.AudioAssetId, Mode=TwoWay, UpdateSourceTrigger=PropertyChanged}"
                                                                           SelectionChanged="RuleFieldChanged" />
                                                             </StackPanel>
 
@@ -1172,6 +1173,7 @@
                                                                           ItemsSource="{Binding AudioGroupChoices}"
                                                                           DisplayMemberPath="Name"
                                                                           SelectedValuePath="Id"
+                                                                          SelectedValue="{Binding Editor.AudioGroupId, Mode=TwoWay, UpdateSourceTrigger=PropertyChanged}"
                                                                           SelectionChanged="RuleFieldChanged" />
                                                             </StackPanel>
 

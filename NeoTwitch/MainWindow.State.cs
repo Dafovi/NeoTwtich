@@ -62,7 +62,6 @@ public partial class MainWindow
     private string _videoSearchText = "";
     private string _videoFilter = "ALL";
     private string _videoGroupFilterId = "";
-    private AudioSourceMode _ruleAudioMode = AudioSourceMode.Single;
     private bool _refreshingAudioLibrary;
     private bool _refreshingImageLibrary;
     private bool _refreshingVideoLibrary;

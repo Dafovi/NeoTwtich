@@ -14,8 +14,9 @@ public partial class MainWindow
         }
 
         var palette = _config.DarkMode ? ThemePalette.Dark : ThemePalette.Light;
-        ApplyRuleModeButtonTheme(RuleSingleAudioModeButton, _ruleAudioMode == AudioSourceMode.Single, UiAccentCatalog.AudioSingle, palette);
-        ApplyRuleModeButtonTheme(RuleGroupAudioModeButton, _ruleAudioMode == AudioSourceMode.Group, UiAccentCatalog.AudioGroup, palette);
+        var sourceMode = _alertsViewModel.Editor.AudioSourceMode;
+        ApplyRuleModeButtonTheme(RuleSingleAudioModeButton, sourceMode == AudioSourceMode.Single, UiAccentCatalog.AudioSingle, palette);
+        ApplyRuleModeButtonTheme(RuleGroupAudioModeButton, sourceMode == AudioSourceMode.Group, UiAccentCatalog.AudioGroup, palette);
     }
 
     private void UpdateRuleObsMediaModeSelection()

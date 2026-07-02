@@ -39,7 +39,7 @@ public partial class MainWindow
             arduinoAvailable,
             useLights,
             playAudio,
-            _ruleAudioMode,
+            editor.AudioSourceMode,
             _config.AudioLibrary.Count > 0,
             _config.AudioGroups.Count > 0,
             sendChat,

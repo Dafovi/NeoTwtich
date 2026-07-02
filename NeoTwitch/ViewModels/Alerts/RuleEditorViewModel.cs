@@ -11,6 +11,11 @@ public sealed class RuleEditorViewModel : ObservableObject
     private string _customRewardTitle = "";
     private string _chatCommand = "";
     private string _minimumBitsText = "1";
+    private bool _sendChatMessage;
+    private string _chatMessageTemplate = "";
+    private bool _sendAlexaEvent;
+    private bool _useLights;
+    private bool _playAudio;
 
     public bool IsEnabled
     {
@@ -48,6 +53,36 @@ public sealed class RuleEditorViewModel : ObservableObject
         set => SetProperty(ref _minimumBitsText, value ?? "");
     }
 
+    public bool SendChatMessage
+    {
+        get => _sendChatMessage;
+        set => SetProperty(ref _sendChatMessage, value);
+    }
+
+    public string ChatMessageTemplate
+    {
+        get => _chatMessageTemplate;
+        set => SetProperty(ref _chatMessageTemplate, value ?? "");
+    }
+
+    public bool SendAlexaEvent
+    {
+        get => _sendAlexaEvent;
+        set => SetProperty(ref _sendAlexaEvent, value);
+    }
+
+    public bool UseLights
+    {
+        get => _useLights;
+        set => SetProperty(ref _useLights, value);
+    }
+
+    public bool PlayAudio
+    {
+        get => _playAudio;
+        set => SetProperty(ref _playAudio, value);
+    }
+
     public void LoadBasicFields(EventRule rule)
     {
         IsEnabled = rule.IsEnabled;
@@ -56,6 +91,11 @@ public sealed class RuleEditorViewModel : ObservableObject
         CustomRewardTitle = rule.CustomRewardTitle;
         ChatCommand = rule.ChatCommand;
         MinimumBitsText = rule.MinimumBits.ToString();
+        SendChatMessage = rule.SendChatMessage;
+        ChatMessageTemplate = rule.ChatMessageTemplate;
+        SendAlexaEvent = rule.SendAlexaEvent;
+        UseLights = rule.UseLights;
+        PlayAudio = rule.PlayAudio;
     }
 
     public void Clear()
@@ -66,5 +106,10 @@ public sealed class RuleEditorViewModel : ObservableObject
         CustomRewardTitle = "";
         ChatCommand = "";
         MinimumBitsText = "1";
+        SendChatMessage = false;
+        ChatMessageTemplate = "";
+        SendAlexaEvent = false;
+        UseLights = false;
+        PlayAudio = false;
     }
 }

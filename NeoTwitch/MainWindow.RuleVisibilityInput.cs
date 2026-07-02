@@ -10,12 +10,13 @@ public partial class MainWindow
     private RuleOptionVisibilityInput BuildRuleOptionVisibilityInput()
     {
         var kind = _alertsViewModel.Editor.EventKind;
+        var editor = _alertsViewModel.Editor;
         var arduinoAvailable = _config.ArduinoEnabled;
-        var useLights = arduinoAvailable && UseLightsCheck.IsChecked == true;
-        var playAudio = PlayAudioCheck.IsChecked == true;
-        var sendChat = ChatMessageCheck.IsChecked == true;
+        var useLights = arduinoAvailable && editor.UseLights;
+        var playAudio = editor.PlayAudio;
+        var sendChat = editor.SendChatMessage;
         var alexaAvailable = _config.Alexa.IsConfigured;
-        var sendAlexa = AlexaEventCheck.IsChecked == true;
+        var sendAlexa = editor.SendAlexaEvent;
         var obsAvailable = _config.Obs.IsConfigured;
         var sendObsScene = ObsSceneCheck.IsChecked == true;
         var selectedObsSceneName = RuleObsSceneBox.SelectedValue as string ?? "";

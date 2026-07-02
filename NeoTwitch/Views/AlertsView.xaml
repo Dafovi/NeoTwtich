@@ -479,6 +479,7 @@
                                                         <CheckBox x:Name="UseLightsCheck"
                                                                   Grid.Column="2"
                                                                   Content=""
+                                                                  IsChecked="{Binding Editor.UseLights, Mode=TwoWay, UpdateSourceTrigger=PropertyChanged}"
                                                                   Checked="RuleFieldChanged"
                                                                   Unchecked="RuleFieldChanged" />
                                                     </Grid>
@@ -1114,6 +1115,7 @@
                                                         <CheckBox x:Name="PlayAudioCheck"
                                                                   Grid.Column="2"
                                                                   Content=""
+                                                                  IsChecked="{Binding Editor.PlayAudio, Mode=TwoWay, UpdateSourceTrigger=PropertyChanged}"
                                                                   Checked="RuleFieldChanged"
                                                                   Unchecked="RuleFieldChanged" />
                                                     </Grid>
@@ -1213,6 +1215,7 @@
                                                         <CheckBox x:Name="ChatMessageCheck"
                                                                   Grid.Column="2"
                                                                   Content=""
+                                                                  IsChecked="{Binding Editor.SendChatMessage, Mode=TwoWay, UpdateSourceTrigger=PropertyChanged}"
                                                                   Checked="RuleFieldChanged"
                                                                   Unchecked="RuleFieldChanged" />
                                                     </Grid>
@@ -1224,6 +1227,7 @@
                                                                        Style="{StaticResource MutedText}" />
                                                             <TextBox x:Name="ChatMessageBox"
                                                                      Margin="0,4,0,0"
+                                                                     Text="{Binding Editor.ChatMessageTemplate, Mode=TwoWay, UpdateSourceTrigger=PropertyChanged}"
                                                                      TextChanged="RuleFieldChanged"
                                                                      ToolTip="Variables: {user}, {bits}, {reward}, {viewers}, {message}, {event}" />
                                                     </StackPanel>
@@ -1258,6 +1262,7 @@
                                                         <CheckBox x:Name="AlexaEventCheck"
                                                                   Grid.Column="2"
                                                                   Content=""
+                                                                  IsChecked="{Binding Editor.SendAlexaEvent, Mode=TwoWay, UpdateSourceTrigger=PropertyChanged}"
                                                                   Checked="RuleFieldChanged"
                                                                   Unchecked="RuleFieldChanged" />
                                                     </Grid>

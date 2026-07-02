@@ -25,9 +25,6 @@ public partial class MainWindow
             _editingRule = rule;
             _alertsViewModel.Editor.LoadBasicFields(rule);
             UpdateEventKindTileSelection();
-            ChatMessageCheck.IsChecked = rule.SendChatMessage;
-            ChatMessageBox.Text = rule.ChatMessageTemplate;
-            AlexaEventCheck.IsChecked = rule.SendAlexaEvent;
             ObsSceneCheck.IsChecked = rule.SendObsScene;
             RuleObsSceneBox.SelectedValue = rule.ObsSceneName;
             ObsSceneDelayBox.Text = rule.ObsSceneDelayMs.ToString();
@@ -40,8 +37,6 @@ public partial class MainWindow
             RuleObsMediaAssetBox.SelectedValue = rule.ObsMediaAssetId;
             RuleObsMediaGroupBox.SelectedValue = rule.ObsMediaGroupId;
             ObsMediaDurationBox.Text = rule.ObsMediaDurationMs.ToString();
-            UseLightsCheck.IsChecked = rule.UseLights;
-            PlayAudioCheck.IsChecked = rule.PlayAudio;
             _ruleAudioMode = rule.AudioSourceMode;
             RuleAudioAssetBox.SelectedValue = rule.AudioAssetId;
             RuleAudioGroupBox.SelectedValue = rule.AudioGroupId;

@@ -2380,7 +2380,12 @@ static class RuleEditorViewModelTests
             EventKind = TwitchEventKind.ChatCommand,
             CustomRewardTitle = "Canje raro",
             ChatCommand = "!rave",
-            MinimumBits = 250
+            MinimumBits = 250,
+            SendChatMessage = true,
+            ChatMessageTemplate = "Rave @{user}",
+            SendAlexaEvent = true,
+            UseLights = true,
+            PlayAudio = true
         };
 
         viewModel.LoadBasicFields(rule);
@@ -2391,6 +2396,11 @@ static class RuleEditorViewModelTests
         TestAssert.Equal("Canje raro", viewModel.CustomRewardTitle);
         TestAssert.Equal("!rave", viewModel.ChatCommand);
         TestAssert.Equal("250", viewModel.MinimumBitsText);
+        TestAssert.True(viewModel.SendChatMessage);
+        TestAssert.Equal("Rave @{user}", viewModel.ChatMessageTemplate);
+        TestAssert.True(viewModel.SendAlexaEvent);
+        TestAssert.True(viewModel.UseLights);
+        TestAssert.True(viewModel.PlayAudio);
 
         viewModel.Clear();
 
@@ -2400,6 +2410,11 @@ static class RuleEditorViewModelTests
         TestAssert.Equal("", viewModel.CustomRewardTitle);
         TestAssert.Equal("", viewModel.ChatCommand);
         TestAssert.Equal("1", viewModel.MinimumBitsText);
+        TestAssert.False(viewModel.SendChatMessage);
+        TestAssert.Equal("", viewModel.ChatMessageTemplate);
+        TestAssert.False(viewModel.SendAlexaEvent);
+        TestAssert.False(viewModel.UseLights);
+        TestAssert.False(viewModel.PlayAudio);
     }
 }
 

@@ -75,7 +75,7 @@ public partial class MainWindow
             _ruleLedPreviewTimer.Stop();
         }
 
-        if (UseLightsCheck.IsChecked != true || !_config.ArduinoEnabled)
+        if (!_alertsViewModel.Editor.UseLights || !_config.ArduinoEnabled)
         {
             SetRuleLedPreviewAll("#334155");
         }
@@ -83,7 +83,7 @@ public partial class MainWindow
 
     private bool ShouldRunRuleLedPreview()
     {
-        return UseLightsCheck.IsChecked == true
+        return _alertsViewModel.Editor.UseLights
             && _config.ArduinoEnabled
             && MainTabs.SelectedIndex == 2
             && LightConfigurationPanel.IsExpanded

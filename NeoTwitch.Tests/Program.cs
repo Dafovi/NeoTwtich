@@ -1552,6 +1552,12 @@ static class SettingsViewModelTests
         viewModel.UpdateAppState("Estado: aviso", System.Windows.Media.Brushes.Orange, "/icon.png");
         var themeChoices = new[] { "System" };
         viewModel.UpdateThemeModeChoices(themeChoices);
+        var config = AppConfig.CreateDefault();
+        config.StartHidden = true;
+        config.StartWithWindows = true;
+        config.ThemeMode = "Dark";
+        config.CloseToTray = false;
+        viewModel.LoadPreferences(config);
 
         TestAssert.Equal("settings.json", viewModel.SettingsPathText);
         TestAssert.Equal("backup manual", viewModel.BackupPathText);
@@ -1559,6 +1565,10 @@ static class SettingsViewModelTests
         TestAssert.Equal("Estado: aviso", viewModel.DiagnosticStatusText);
         TestAssert.Equal("/icon.png", viewModel.AppStateIconPath);
         TestAssert.Same(themeChoices, viewModel.ThemeModeChoices);
+        TestAssert.True(viewModel.StartHidden);
+        TestAssert.True(viewModel.StartWithWindows);
+        TestAssert.Equal("Dark", viewModel.ThemeMode);
+        TestAssert.False(viewModel.CloseToTray);
     }
 }
 

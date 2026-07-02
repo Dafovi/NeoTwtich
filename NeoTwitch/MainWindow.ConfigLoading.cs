@@ -37,10 +37,7 @@ public partial class MainWindow
     {
         AutoTwitchCheck.IsChecked = _config.AutoConnectTwitch;
         AutoArduinoCheck.IsChecked = _config.AutoConnectArduino;
-        StartHiddenCheck.IsChecked = _config.StartHidden;
-        StartWithWindowsCheck.IsChecked = _config.StartWithWindows;
-        ThemeModeBox.SelectedValue = _config.ThemeMode;
-        CloseToTrayCheck.IsChecked = _config.CloseToTray;
+        _settingsViewModel.LoadPreferences(_config);
         _audioLibraryViewModel.SetVolume(_config.AlertVolumePercent, notify: false);
         _videoLibraryViewModel.SetVolume(_config.VideoVolumePercent, notify: false);
     }

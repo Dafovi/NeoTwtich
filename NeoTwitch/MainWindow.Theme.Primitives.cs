@@ -15,7 +15,7 @@ public partial class MainWindow
             return;
         }
 
-        var closeToTray = CloseToTrayCheck.IsChecked == true;
+        var closeToTray = _settingsViewModel.CloseToTray;
         if (CloseToTrayRadio.IsChecked != closeToTray)
         {
             CloseToTrayRadio.IsChecked = closeToTray;

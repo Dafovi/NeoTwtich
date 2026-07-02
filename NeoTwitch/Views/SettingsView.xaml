@@ -83,6 +83,7 @@
                                     <CheckBox x:Name="StartHiddenCheck"
                                               Grid.Column="2"
                                               Content=""
+                                              IsChecked="{Binding StartHidden, Mode=TwoWay, UpdateSourceTrigger=PropertyChanged}"
                                               Checked="GlobalSettingsChanged"
                                               Unchecked="GlobalSettingsChanged" />
                                 </Grid>
@@ -122,6 +123,7 @@
                                     <CheckBox x:Name="StartWithWindowsCheck"
                                               Grid.Column="2"
                                               Content=""
+                                              IsChecked="{Binding StartWithWindows, Mode=TwoWay, UpdateSourceTrigger=PropertyChanged}"
                                               Checked="GlobalSettingsChanged"
                                               Unchecked="GlobalSettingsChanged" />
                                 </Grid>
@@ -163,6 +165,7 @@
                                               ItemsSource="{Binding ThemeModeChoices}"
                                               DisplayMemberPath="Label"
                                               SelectedValuePath="Value"
+                                              SelectedValue="{Binding ThemeMode, Mode=TwoWay, UpdateSourceTrigger=PropertyChanged}"
                                               SelectionChanged="ThemeModeChanged" />
                                 </Grid>
                             </StackPanel>
@@ -268,7 +271,8 @@
                                                TextWrapping="Wrap"
                                                Margin="0,6,0,14" />
                                     <CheckBox x:Name="CloseToTrayCheck"
-                                              Visibility="Collapsed" />
+                                              Visibility="Collapsed"
+                                              IsChecked="{Binding CloseToTray, Mode=TwoWay, UpdateSourceTrigger=PropertyChanged}" />
                                     <Grid>
                                         <Grid.ColumnDefinitions>
                                             <ColumnDefinition Width="*" />

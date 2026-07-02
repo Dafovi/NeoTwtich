@@ -43,7 +43,7 @@ public partial class MainWindow
             return;
         }
 
-        CloseToTrayCheck.IsChecked = string.Equals(parameter?.ToString(), "Tray", StringComparison.OrdinalIgnoreCase);
+        _settingsViewModel.CloseToTray = string.Equals(parameter?.ToString(), "Tray", StringComparison.OrdinalIgnoreCase);
         ApplyGlobalSettingsChange();
     }
 

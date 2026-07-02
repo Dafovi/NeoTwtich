@@ -1,4 +1,5 @@
 using System.Collections;
+using NeoTwitch.Models;
 using NeoTwitch.ViewModels.Core;
 using WpfBrush = System.Windows.Media.Brush;
 using WpfBrushes = System.Windows.Media.Brushes;
@@ -14,6 +15,10 @@ public sealed class SettingsViewModel : ObservableObject
     private string _appStateIconPath = "/Assets/Icons/appstate_ok.png";
     private WpfBrush _diagnosticStatusBrush = WpfBrushes.LimeGreen;
     private IEnumerable? _themeModeChoices;
+    private bool _startHidden;
+    private bool _startWithWindows;
+    private string _themeMode = "System";
+    private bool _closeToTray = true;
     private Action _importSettings = Noop;
     private Action _exportSettings = Noop;
     private Action _createBackup = Noop;
@@ -87,6 +92,38 @@ public sealed class SettingsViewModel : ObservableObject
     {
         get => _themeModeChoices;
         private set => SetProperty(ref _themeModeChoices, value);
+    }
+
+    public bool StartHidden
+    {
+        get => _startHidden;
+        set => SetProperty(ref _startHidden, value);
+    }
+
+    public bool StartWithWindows
+    {
+        get => _startWithWindows;
+        set => SetProperty(ref _startWithWindows, value);
+    }
+
+    public string ThemeMode
+    {
+        get => _themeMode;
+        set => SetProperty(ref _themeMode, value ?? "System");
+    }
+
+    public bool CloseToTray
+    {
+        get => _closeToTray;
+        set => SetProperty(ref _closeToTray, value);
+    }
+
+    public void LoadPreferences(AppConfig config)
+    {
+        StartHidden = config.StartHidden;
+        StartWithWindows = config.StartWithWindows;
+        ThemeMode = config.ThemeMode;
+        CloseToTray = config.CloseToTray;
     }
 
     public void ConfigureActions(

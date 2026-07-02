@@ -2258,9 +2258,14 @@ static class ConnectionsViewModelTests
         config.Alexa.Enabled = true;
         config.Alexa.RelayUrl = "https://relay.example";
         config.Alexa.AuthToken = "alexa-token";
+        config.Obs.Enabled = true;
+        config.Obs.Host = "192.168.0.20";
+        config.Obs.Port = 4456;
+        config.Obs.Password = "obs-password";
         viewModel.LoadTwitchConfig(config);
         viewModel.LoadArduinoConfig(config);
         viewModel.LoadAlexaConfig(config);
+        viewModel.LoadObsConnectionConfig(config);
         var portChoices = new[] { "COM3" };
         viewModel.UpdatePortChoices(portChoices);
 
@@ -2274,6 +2279,10 @@ static class ConnectionsViewModelTests
         TestAssert.True(viewModel.AlexaEnabled);
         TestAssert.Equal("https://relay.example", viewModel.AlexaRelayUrl);
         TestAssert.Equal("alexa-token", viewModel.AlexaAuthToken);
+        TestAssert.True(viewModel.ObsEnabled);
+        TestAssert.Equal("192.168.0.20", viewModel.ObsHost);
+        TestAssert.Equal("4456", viewModel.ObsPortText);
+        TestAssert.Equal("obs-password", viewModel.ObsPassword);
         TestAssert.Equal("Alexa configurada", viewModel.AlexaStatusText);
         TestAssert.Equal("OBS desconectado", viewModel.ObsConnectionHelpText);
         TestAssert.Same(portChoices, viewModel.PortChoices);

@@ -13,10 +13,7 @@ public partial class MainWindow
         _connectionsViewModel.LoadTwitchConfig(_config);
         _connectionsViewModel.LoadArduinoConfig(_config);
         _connectionsViewModel.LoadAlexaConfig(_config);
-        ObsEnabledCheck.IsChecked = _config.Obs.Enabled;
-        ObsHostBox.Text = _config.Obs.Host;
-        ObsPortBox.Text = _config.Obs.Port.ToString();
-        ObsPasswordBox.Text = _config.Obs.Password;
+        _connectionsViewModel.LoadObsConnectionConfig(_config);
         ObsOverlayWidthBox.Text = _config.Obs.OverlayWidth.ToString();
         ObsOverlayHeightBox.Text = _config.Obs.OverlayHeight.ToString();
         ObsOverlayMediaWidthBox.Text = _config.Obs.OverlayMediaWidth.ToString();

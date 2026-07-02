@@ -43,6 +43,10 @@ public sealed class ConnectionsViewModel : ObservableObject
     private bool _alexaEnabled;
     private string _alexaRelayUrl = "";
     private string _alexaAuthToken = "";
+    private bool _obsEnabled;
+    private string _obsHost = "127.0.0.1";
+    private string _obsPortText = "4455";
+    private string _obsPassword = "";
     private IEnumerable? _portChoices;
 
     public ConnectionsViewModel()
@@ -214,6 +218,30 @@ public sealed class ConnectionsViewModel : ObservableObject
         set => SetProperty(ref _alexaAuthToken, value ?? "");
     }
 
+    public bool ObsEnabled
+    {
+        get => _obsEnabled;
+        set => SetProperty(ref _obsEnabled, value);
+    }
+
+    public string ObsHost
+    {
+        get => _obsHost;
+        set => SetProperty(ref _obsHost, value ?? "");
+    }
+
+    public string ObsPortText
+    {
+        get => _obsPortText;
+        set => SetProperty(ref _obsPortText, value ?? "");
+    }
+
+    public string ObsPassword
+    {
+        get => _obsPassword;
+        set => SetProperty(ref _obsPassword, value ?? "");
+    }
+
     public void LoadTwitchConfig(AppConfig config)
     {
         TwitchClientId = config.TwitchClientId;
@@ -232,6 +260,14 @@ public sealed class ConnectionsViewModel : ObservableObject
         AlexaEnabled = config.Alexa.Enabled;
         AlexaRelayUrl = config.Alexa.RelayUrl;
         AlexaAuthToken = config.Alexa.AuthToken;
+    }
+
+    public void LoadObsConnectionConfig(AppConfig config)
+    {
+        ObsEnabled = config.Obs.Enabled;
+        ObsHost = config.Obs.Host;
+        ObsPortText = config.Obs.Port.ToString();
+        ObsPassword = config.Obs.Password;
     }
 
     public void UpdateBadges(

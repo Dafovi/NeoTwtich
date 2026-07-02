@@ -21,9 +21,6 @@ public partial class MainWindow
     private WpfTextBlock AlexaAuthTokenMaskText => ConnectionsView.AlexaAuthTokenMaskText;
     private WpfButton AlexaAuthTokenRevealButton => ConnectionsView.AlexaAuthTokenRevealButton;
 
-    private WpfCheckBox ObsEnabledCheck => ConnectionsView.ObsEnabledCheck;
-    private WpfTextBox ObsHostBox => ConnectionsView.ObsHostBox;
-    private WpfTextBox ObsPortBox => ConnectionsView.ObsPortBox;
     private WpfTextBox ObsPasswordBox => ConnectionsView.ObsPasswordBox;
     private WpfTextBlock ObsPasswordMaskText => ConnectionsView.ObsPasswordMaskText;
     private WpfButton ObsPasswordRevealButton => ConnectionsView.ObsPasswordRevealButton;

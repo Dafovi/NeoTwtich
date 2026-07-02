@@ -10,8 +10,7 @@ public partial class MainWindow
 {
     private void LoadConnectionConfigIntoUi()
     {
-        ClientIdBox.Text = _config.TwitchClientId;
-        ClientSecretBox.Text = _config.TwitchClientSecret;
+        _connectionsViewModel.LoadTwitchConfig(_config);
         PortComboBox.SelectedValue = _config.SerialPort;
         PortComboBox.Text = _config.SerialPort;
         BaudRateBox.Text = _config.BaudRate.ToString();

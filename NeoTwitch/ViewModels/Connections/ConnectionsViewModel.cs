@@ -1,5 +1,6 @@
 using System.Collections;
 using System.Windows.Media;
+using NeoTwitch.Models;
 using NeoTwitch.Services.Status;
 using NeoTwitch.Services.Ui;
 using NeoTwitch.ViewModels.Core;
@@ -34,6 +35,8 @@ public sealed class ConnectionsViewModel : ObservableObject
     private ConnectionButtonViewModel _obsTestButton = ConnectionButtonViewModel.From("Actualizar escenas", "Refresh", isEnabled: false);
     private string _alexaStatusText = "";
     private string _obsConnectionHelpText = "";
+    private string _twitchClientId = "";
+    private string _twitchClientSecret = "";
     private IEnumerable? _portChoices;
 
     public ConnectionsViewModel()
@@ -155,6 +158,24 @@ public sealed class ConnectionsViewModel : ObservableObject
     {
         get => _portChoices;
         private set => SetProperty(ref _portChoices, value);
+    }
+
+    public string TwitchClientId
+    {
+        get => _twitchClientId;
+        set => SetProperty(ref _twitchClientId, value ?? "");
+    }
+
+    public string TwitchClientSecret
+    {
+        get => _twitchClientSecret;
+        set => SetProperty(ref _twitchClientSecret, value ?? "");
+    }
+
+    public void LoadTwitchConfig(AppConfig config)
+    {
+        TwitchClientId = config.TwitchClientId;
+        TwitchClientSecret = config.TwitchClientSecret;
     }
 
     public void UpdateBadges(

@@ -55,8 +55,8 @@ public partial class MainWindow
         GlobalSettingsFormService.Apply(
             _config,
             new GlobalSettingsFormValues(
-                ClientIdBox.Text,
-                ClientSecretBox.Text,
+                _connectionsViewModel.TwitchClientId,
+                _connectionsViewModel.TwitchClientSecret,
                 PortComboBox.SelectedValue as string ?? PortComboBox.Text,
                 BaudRateBox.Text,
                 ArduinoEnabledCheck.IsChecked == true,

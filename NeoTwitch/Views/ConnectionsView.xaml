@@ -135,6 +135,7 @@
                                             <TextBox x:Name="ClientIdBox"
                                                      Margin="0"
                                                      Padding="10,6,76,6"
+                                                     Text="{Binding TwitchClientId, Mode=TwoWay, UpdateSourceTrigger=PropertyChanged}"
                                                      TextChanged="GlobalSettingsChanged" />
                                             <TextBlock x:Name="ClientIdMaskText"
                                                        Margin="1,1,72,1"
@@ -162,6 +163,7 @@
                                             <TextBox x:Name="ClientSecretBox"
                                                      Margin="0"
                                                      Padding="10,6,76,6"
+                                                     Text="{Binding TwitchClientSecret, Mode=TwoWay, UpdateSourceTrigger=PropertyChanged}"
                                                      TextChanged="GlobalSettingsChanged"
                                                      ToolTip="Se usa para refrescar el token de Twitch. Si lo dejas vacio, la app puede pedir autorizar de nuevo cuando expire." />
                                             <TextBlock x:Name="ClientSecretMaskText"

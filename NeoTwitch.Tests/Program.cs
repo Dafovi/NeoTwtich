@@ -1557,6 +1557,13 @@ static class SettingsViewModelTests
         config.StartWithWindows = true;
         config.ThemeMode = "Dark";
         config.CloseToTray = false;
+        config.AutoConnectTwitch = true;
+        config.AutoConnectArduino = true;
+        config.Obs.AutoReconnect = true;
+        config.MaxQueuedSameRuleAlerts = 2;
+        config.SameRuleQueueCooldownMs = 1500;
+        config.MaxQueuedDifferentRuleAlerts = 5;
+        config.DifferentRuleQueueCooldownMs = 2500;
         viewModel.LoadPreferences(config);
 
         TestAssert.Equal("settings.json", viewModel.SettingsPathText);
@@ -1569,6 +1576,13 @@ static class SettingsViewModelTests
         TestAssert.True(viewModel.StartWithWindows);
         TestAssert.Equal("Dark", viewModel.ThemeMode);
         TestAssert.False(viewModel.CloseToTray);
+        TestAssert.True(viewModel.AutoConnectTwitch);
+        TestAssert.True(viewModel.AutoConnectArduino);
+        TestAssert.True(viewModel.ObsAutoReconnect);
+        TestAssert.Equal("2", viewModel.MaxQueuedSameRuleAlertsText);
+        TestAssert.Equal("1500", viewModel.SameRuleQueueCooldownText);
+        TestAssert.Equal("5", viewModel.MaxQueuedDifferentRuleAlertsText);
+        TestAssert.Equal("2500", viewModel.DifferentRuleQueueCooldownText);
     }
 }
 

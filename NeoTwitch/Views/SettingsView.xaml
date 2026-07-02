@@ -391,11 +391,13 @@
                                         <TextBlock Text="Repetidas maximas en cola"
                                                    Style="{StaticResource MutedText}" />
                                         <TextBox x:Name="MaxQueuedSameRuleAlertsBox"
+                                                 Text="{Binding MaxQueuedSameRuleAlertsText, Mode=TwoWay, UpdateSourceTrigger=PropertyChanged}"
                                                  TextChanged="GlobalSettingsChanged"
                                                  ToolTip="Cuantas alertas de la misma regla pueden esperar mientras otra se reproduce. 1 es el valor recomendado." />
                                         <TextBlock Text="Tiempo minimo para repetir"
                                                    Style="{StaticResource MutedText}" />
                                         <TextBox x:Name="SameRuleQueueCooldownBox"
+                                                 Text="{Binding SameRuleQueueCooldownText, Mode=TwoWay, UpdateSourceTrigger=PropertyChanged}"
                                                  TextChanged="GlobalSettingsChanged"
                                                  ToolTip="Milisegundos desde que empezo una regla antes de permitir otra igual. Usa 0 para desactivar este filtro." />
                                     </StackPanel>
@@ -403,11 +405,13 @@
                                         <TextBlock Text="Distintas maximas en cola"
                                                    Style="{StaticResource MutedText}" />
                                         <TextBox x:Name="MaxQueuedDifferentRuleAlertsBox"
+                                                 Text="{Binding MaxQueuedDifferentRuleAlertsText, Mode=TwoWay, UpdateSourceTrigger=PropertyChanged}"
                                                  TextChanged="GlobalSettingsChanged"
                                                  ToolTip="Cuantas alertas de reglas distintas pueden esperar mientras otra se reproduce." />
                                         <TextBlock Text="Tiempo minimo para distintas"
                                                    Style="{StaticResource MutedText}" />
                                         <TextBox x:Name="DifferentRuleQueueCooldownBox"
+                                                 Text="{Binding DifferentRuleQueueCooldownText, Mode=TwoWay, UpdateSourceTrigger=PropertyChanged}"
                                                  TextChanged="GlobalSettingsChanged"
                                                  ToolTip="Milisegundos desde que empezo una regla antes de permitir otra distinta. Usa 0 para desactivar este filtro." />
                                     </StackPanel>
@@ -434,14 +438,17 @@
                                                Margin="0,0,0,10" />
                                     <CheckBox x:Name="AutoTwitchCheck"
                                               Content="Conectar Twitch al abrir"
+                                              IsChecked="{Binding AutoConnectTwitch, Mode=TwoWay, UpdateSourceTrigger=PropertyChanged}"
                                               Checked="GlobalSettingsChanged"
                                               Unchecked="GlobalSettingsChanged" />
                                     <CheckBox x:Name="AutoArduinoCheck"
                                               Content="Conectar Arduino al abrir"
+                                              IsChecked="{Binding AutoConnectArduino, Mode=TwoWay, UpdateSourceTrigger=PropertyChanged}"
                                               Checked="GlobalSettingsChanged"
                                               Unchecked="GlobalSettingsChanged" />
                                     <CheckBox x:Name="ObsAutoReconnectCheck"
                                               Content="Conectar OBS al abrir"
+                                              IsChecked="{Binding ObsAutoReconnect, Mode=TwoWay, UpdateSourceTrigger=PropertyChanged}"
                                               Checked="GlobalSettingsChanged"
                                               Unchecked="GlobalSettingsChanged" />
                                     <TextBlock Text="Estas opciones intentan conectar los servicios apenas abre Neo Twitch."

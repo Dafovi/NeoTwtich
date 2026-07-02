@@ -19,6 +19,13 @@ public sealed class SettingsViewModel : ObservableObject
     private bool _startWithWindows;
     private string _themeMode = "System";
     private bool _closeToTray = true;
+    private bool _autoConnectTwitch;
+    private bool _autoConnectArduino;
+    private bool _obsAutoReconnect;
+    private string _maxQueuedSameRuleAlertsText = "1";
+    private string _sameRuleQueueCooldownText = "0";
+    private string _maxQueuedDifferentRuleAlertsText = "3";
+    private string _differentRuleQueueCooldownText = "0";
     private Action _importSettings = Noop;
     private Action _exportSettings = Noop;
     private Action _createBackup = Noop;
@@ -118,12 +125,61 @@ public sealed class SettingsViewModel : ObservableObject
         set => SetProperty(ref _closeToTray, value);
     }
 
+    public bool AutoConnectTwitch
+    {
+        get => _autoConnectTwitch;
+        set => SetProperty(ref _autoConnectTwitch, value);
+    }
+
+    public bool AutoConnectArduino
+    {
+        get => _autoConnectArduino;
+        set => SetProperty(ref _autoConnectArduino, value);
+    }
+
+    public bool ObsAutoReconnect
+    {
+        get => _obsAutoReconnect;
+        set => SetProperty(ref _obsAutoReconnect, value);
+    }
+
+    public string MaxQueuedSameRuleAlertsText
+    {
+        get => _maxQueuedSameRuleAlertsText;
+        set => SetProperty(ref _maxQueuedSameRuleAlertsText, value ?? "");
+    }
+
+    public string SameRuleQueueCooldownText
+    {
+        get => _sameRuleQueueCooldownText;
+        set => SetProperty(ref _sameRuleQueueCooldownText, value ?? "");
+    }
+
+    public string MaxQueuedDifferentRuleAlertsText
+    {
+        get => _maxQueuedDifferentRuleAlertsText;
+        set => SetProperty(ref _maxQueuedDifferentRuleAlertsText, value ?? "");
+    }
+
+    public string DifferentRuleQueueCooldownText
+    {
+        get => _differentRuleQueueCooldownText;
+        set => SetProperty(ref _differentRuleQueueCooldownText, value ?? "");
+    }
+
     public void LoadPreferences(AppConfig config)
     {
         StartHidden = config.StartHidden;
         StartWithWindows = config.StartWithWindows;
         ThemeMode = config.ThemeMode;
         CloseToTray = config.CloseToTray;
+        AutoConnectTwitch = config.AutoConnectTwitch;
+        AutoConnectArduino = config.AutoConnectArduino;
+        ObsAutoReconnect = config.Obs.AutoReconnect;
+        MaxQueuedSameRuleAlertsText = config.MaxQueuedSameRuleAlerts.ToString();
+        SameRuleQueueCooldownText = config.SameRuleQueueCooldownMs.ToString();
+        MaxQueuedDifferentRuleAlertsText = config.MaxQueuedDifferentRuleAlerts.ToString();
+        DifferentRuleQueueCooldownText = config.DifferentRuleQueueCooldownMs.ToString();
     }
 
     public void ConfigureActions(

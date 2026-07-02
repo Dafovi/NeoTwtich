@@ -23,7 +23,6 @@ public partial class MainWindow
         ObsHostBox.Text = _config.Obs.Host;
         ObsPortBox.Text = _config.Obs.Port.ToString();
         ObsPasswordBox.Text = _config.Obs.Password;
-        ObsAutoReconnectCheck.IsChecked = _config.Obs.AutoReconnect;
         ObsOverlayWidthBox.Text = _config.Obs.OverlayWidth.ToString();
         ObsOverlayHeightBox.Text = _config.Obs.OverlayHeight.ToString();
         ObsOverlayMediaWidthBox.Text = _config.Obs.OverlayMediaWidth.ToString();
@@ -35,8 +34,6 @@ public partial class MainWindow
 
     private void LoadGlobalPreferencesIntoUi()
     {
-        AutoTwitchCheck.IsChecked = _config.AutoConnectTwitch;
-        AutoArduinoCheck.IsChecked = _config.AutoConnectArduino;
         _settingsViewModel.LoadPreferences(_config);
         _audioLibraryViewModel.SetVolume(_config.AlertVolumePercent, notify: false);
         _videoLibraryViewModel.SetVolume(_config.VideoVolumePercent, notify: false);
@@ -44,10 +41,6 @@ public partial class MainWindow
 
     private void LoadQueueConfigIntoUi()
     {
-        MaxQueuedSameRuleAlertsBox.Text = _config.MaxQueuedSameRuleAlerts.ToString();
-        SameRuleQueueCooldownBox.Text = _config.SameRuleQueueCooldownMs.ToString();
-        MaxQueuedDifferentRuleAlertsBox.Text = _config.MaxQueuedDifferentRuleAlerts.ToString();
-        DifferentRuleQueueCooldownBox.Text = _config.DifferentRuleQueueCooldownMs.ToString();
     }
 
     private void LoadBackgroundConfigIntoUi()

@@ -17,18 +17,14 @@ public partial class MainWindow
             {
                 _editingRule = null;
                 _loadedRuleSnapshot = null;
+                _alertsViewModel.Editor.Clear();
                 SetRuleDirtyState(false);
                 return;
             }
 
             _editingRule = rule;
-            RuleEnabledCheck.IsChecked = rule.IsEnabled;
-            RuleNameBox.Text = rule.Name;
-            EventKindBox.SelectedValue = rule.EventKind;
+            _alertsViewModel.Editor.LoadBasicFields(rule);
             UpdateEventKindTileSelection();
-            RewardTitleBox.Text = rule.CustomRewardTitle;
-            ChatCommandBox.Text = rule.ChatCommand;
-            MinimumBitsBox.Text = rule.MinimumBits.ToString();
             ChatMessageCheck.IsChecked = rule.SendChatMessage;
             ChatMessageBox.Text = rule.ChatMessageTemplate;
             AlexaEventCheck.IsChecked = rule.SendAlexaEvent;

@@ -1,5 +1,7 @@
 using System.Windows;
 using System.Windows.Controls;
+using System.Windows.Controls.Primitives;
+using System.Windows.Data;
 using NeoTwitch.Models;
 
 namespace NeoTwitch;
@@ -54,6 +56,8 @@ public partial class MainWindow
             return;
         }
 
+        UpdateRuleFieldBindingSource(sender);
+
         if (SaveCurrentRuleFromFields())
         {
             UpdateRuleDirtyStateFromSnapshot();
@@ -63,5 +67,24 @@ public partial class MainWindow
         UpdatePatternTileSelection();
         UpdateRuleOptionVisibility();
         UpdateRuleLedPreviewTimerState();
+    }
+
+    private static void UpdateRuleFieldBindingSource(object sender)
+    {
+        switch (sender)
+        {
+            case System.Windows.Controls.TextBox textBox:
+                textBox.GetBindingExpression(System.Windows.Controls.TextBox.TextProperty)?.UpdateSource();
+                break;
+            case ToggleButton toggleButton:
+                toggleButton.GetBindingExpression(ToggleButton.IsCheckedProperty)?.UpdateSource();
+                break;
+            case Selector selector:
+                selector.GetBindingExpression(Selector.SelectedValueProperty)?.UpdateSource();
+                break;
+            case RangeBase range:
+                range.GetBindingExpression(RangeBase.ValueProperty)?.UpdateSource();
+                break;
+        }
     }
 }

@@ -41,6 +41,7 @@ var tests = new (string Name, Action Body)[]
     ("EventRuleFilterService searches editable text", EventRuleFilterTests.SearchesEditableText),
     ("AlertsViewModel maps filters and count", AlertsViewModelTests.MapsFiltersAndCount),
     ("AlertsViewModel executes editor selector commands", AlertsViewModelTests.ExecutesEditorSelectorCommands),
+    ("RuleEditorViewModel maps basic fields", RuleEditorViewModelTests.MapsBasicFields),
     ("EventRulePresentationService builds row display metadata", EventRulePresentationTests.BuildsRowDisplayMetadata),
     ("EventRuleSnapshotService clones editable values independently", EventRuleSnapshotTests.CloneCopiesEditableValues),
     ("EventRuleSnapshotService detects editable changes", EventRuleSnapshotTests.DetectsEditableChanges),
@@ -2364,6 +2365,41 @@ static class LightsViewModelTests
         TestAssert.Same(patternChoices, viewModel.BackgroundPatternChoices);
         TestAssert.Same(strips, viewModel.LedStripsView.SourceCollection);
         TestAssert.Equal(0, viewModel.BackgroundLedPreviewDots.Count);
+    }
+}
+
+static class RuleEditorViewModelTests
+{
+    public static void MapsBasicFields()
+    {
+        var viewModel = new RuleEditorViewModel();
+        var rule = new EventRule
+        {
+            IsEnabled = false,
+            Name = "Comando rave",
+            EventKind = TwitchEventKind.ChatCommand,
+            CustomRewardTitle = "Canje raro",
+            ChatCommand = "!rave",
+            MinimumBits = 250
+        };
+
+        viewModel.LoadBasicFields(rule);
+
+        TestAssert.False(viewModel.IsEnabled);
+        TestAssert.Equal("Comando rave", viewModel.RuleNameText);
+        TestAssert.Equal(TwitchEventKind.ChatCommand, viewModel.EventKind);
+        TestAssert.Equal("Canje raro", viewModel.CustomRewardTitle);
+        TestAssert.Equal("!rave", viewModel.ChatCommand);
+        TestAssert.Equal("250", viewModel.MinimumBitsText);
+
+        viewModel.Clear();
+
+        TestAssert.True(viewModel.IsEnabled);
+        TestAssert.Equal("", viewModel.RuleNameText);
+        TestAssert.Equal(TwitchEventKind.Follow, viewModel.EventKind);
+        TestAssert.Equal("", viewModel.CustomRewardTitle);
+        TestAssert.Equal("", viewModel.ChatCommand);
+        TestAssert.Equal("1", viewModel.MinimumBitsText);
     }
 }
 

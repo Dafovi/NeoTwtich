@@ -120,6 +120,8 @@ public sealed class AlertsViewModel : ObservableObject
 
     public ObservableCollection<RuleLedPreviewDot> LedPreviewDots { get; } = [];
 
+    public RuleEditorViewModel Editor { get; } = new();
+
     public ICommand SelectStatusFilterCommand { get; }
 
     public ICommand AddRuleCommand { get; private set; } = new RelayCommand(NoOp);

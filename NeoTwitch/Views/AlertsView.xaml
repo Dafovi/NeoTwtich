@@ -273,6 +273,7 @@
                                                 <TextBlock Text="Nombre de la alerta"
                                                            Style="{StaticResource MutedText}" />
                                                 <TextBox x:Name="RuleNameBox"
+                                                         Text="{Binding Editor.RuleNameText, Mode=TwoWay, UpdateSourceTrigger=PropertyChanged}"
                                                          TextChanged="RuleFieldChanged" />
                                             </StackPanel>
                                             <StackPanel Grid.Column="2">
@@ -280,6 +281,7 @@
                                                            Style="{StaticResource MutedText}" />
                                                 <CheckBox x:Name="RuleEnabledCheck"
                                                           Content="Activa"
+                                                          IsChecked="{Binding Editor.IsEnabled, Mode=TwoWay, UpdateSourceTrigger=PropertyChanged}"
                                                           Checked="RuleFieldChanged"
                                                           Unchecked="RuleFieldChanged" />
                                             </StackPanel>
@@ -296,6 +298,7 @@
                                                   ItemsSource="{Binding EventKindChoices}"
                                                   DisplayMemberPath="Label"
                                                   SelectedValuePath="Value"
+                                                  SelectedValue="{Binding Editor.EventKind, Mode=TwoWay, UpdateSourceTrigger=PropertyChanged}"
                                                   Visibility="Collapsed"
                                                   SelectionChanged="RuleFieldChanged" />
 
@@ -417,6 +420,7 @@
                                                        Text="Canje especifico"
                                                        Style="{StaticResource MutedText}" />
                                             <TextBox x:Name="RewardTitleBox"
+                                                     Text="{Binding Editor.CustomRewardTitle, Mode=TwoWay, UpdateSourceTrigger=PropertyChanged}"
                                                      TextChanged="RuleFieldChanged"
                                                      ToolTip="Dejalo vacio para aceptar cualquier canje personalizado." />
 
@@ -424,6 +428,7 @@
                                                        Text="Bits minimos"
                                                        Style="{StaticResource MutedText}" />
                                             <TextBox x:Name="MinimumBitsBox"
+                                                     Text="{Binding Editor.MinimumBitsText, Mode=TwoWay, UpdateSourceTrigger=PropertyChanged}"
                                                      TextChanged="RuleFieldChanged"
                                                      ToolTip="Para bits, usa el mayor umbral que sea menor o igual a la cantidad recibida." />
                                         </StackPanel>
@@ -432,6 +437,7 @@
                                                    Text="Comando de chat"
                                                    Style="{StaticResource MutedText}" />
                                         <TextBox x:Name="ChatCommandBox"
+                                                 Text="{Binding Editor.ChatCommand, Mode=TwoWay, UpdateSourceTrigger=PropertyChanged}"
                                                  TextChanged="RuleFieldChanged"
                                                  ToolTip="Ejemplo: !baile. La regla se activa cuando el mensaje empieza con ese comando." />
 

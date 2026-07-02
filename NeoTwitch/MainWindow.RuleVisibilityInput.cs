@@ -9,9 +9,7 @@ public partial class MainWindow
 {
     private RuleOptionVisibilityInput BuildRuleOptionVisibilityInput()
     {
-        var kind = EventKindBox.SelectedValue is TwitchEventKind eventKind
-            ? eventKind
-            : TwitchEventKind.Follow;
+        var kind = _alertsViewModel.Editor.EventKind;
         var arduinoAvailable = _config.ArduinoEnabled;
         var useLights = arduinoAvailable && UseLightsCheck.IsChecked == true;
         var playAudio = PlayAudioCheck.IsChecked == true;

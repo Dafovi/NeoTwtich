@@ -12,12 +12,12 @@ public partial class MainWindow
             || _alertsViewModel.SelectedRule is not EventRule selectedRule
             || !ReferenceEquals(selectedRule, rule)
             || !_config.Rules.Contains(rule)
-            || EventKindBox.SelectedValue is not TwitchEventKind kind
-            || !Enum.IsDefined(kind))
+            || !Enum.IsDefined(_alertsViewModel.Editor.EventKind))
         {
             return false;
         }
 
+        var editor = _alertsViewModel.Editor;
         var mediaKind = RuleObsMediaKindBox.SelectedValue is ObsMediaKind selectedMediaKind
             ? selectedMediaKind
             : ObsMediaKind.Image;
@@ -33,12 +33,12 @@ public partial class MainWindow
         RuleEditorFormService.Apply(
             rule,
             new RuleEditorFormValues(
-                RuleEnabledCheck.IsChecked == true,
-                RuleNameBox.Text,
-                kind,
-                RewardTitleBox.Text,
-                ChatCommandBox.Text,
-                MinimumBitsBox.Text,
+                editor.IsEnabled,
+                editor.RuleNameText,
+                editor.EventKind,
+                editor.CustomRewardTitle,
+                editor.ChatCommand,
+                editor.MinimumBitsText,
                 ChatMessageCheck.IsChecked == true,
                 ChatMessageBox.Text,
                 AlexaEventCheck.IsChecked == true,

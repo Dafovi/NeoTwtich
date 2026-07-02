@@ -60,8 +60,13 @@ public partial class MainWindow
             return;
         }
 
-        EventKindBox.SelectedValue = kind;
+        _alertsViewModel.Editor.EventKind = kind;
         UpdateEventKindTileSelection();
+        UpdateRuleOptionVisibility();
+        if (SaveCurrentRuleFromFields())
+        {
+            UpdateRuleDirtyStateFromSnapshot();
+        }
     }
 
     private static bool TryParseEnumParameter<T>(object? parameter, out T value)

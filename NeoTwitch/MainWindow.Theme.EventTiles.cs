@@ -12,9 +12,7 @@ public partial class MainWindow
             return;
         }
 
-        var selectedKind = EventKindBox.SelectedValue is TwitchEventKind kind
-            ? kind
-            : TwitchEventKind.Follow;
+        var selectedKind = _alertsViewModel.Editor.EventKind;
         var palette = _config.DarkMode
             ? ThemePalette.Dark
             : ThemePalette.Light;

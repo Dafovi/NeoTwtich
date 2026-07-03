@@ -142,6 +142,8 @@ var tests = new (string Name, Action Body)[]
     ("UiAccentCatalog maps event and pattern colors", UiAccentCatalogTests.MapsEventAndPatternColors),
     ("UiBrushFactory creates frozen brushes", UiBrushFactoryTests.CreatesFrozenBrushes),
     ("ThemeResourceService applies palette resources", ThemeResourceTests.AppliesPaletteResources),
+    ("RuleTestValidationService blocks missing audio", RuleTestValidationTests.BlocksMissingAudio),
+    ("RuleTestValidationService reports non blocking issues", RuleTestValidationTests.ReportsNonBlockingIssues),
     ("RuleSimulationService normalizes chat command matching", RuleSimulationTests.MatchesChatCommandWithNormalization),
     ("RuleSimulationService builds representative test events", RuleSimulationTests.BuildsRepresentativeEvents)
 };
@@ -832,6 +834,51 @@ static class RuleSimulationTests
 
         TestAssert.Equal(TwitchEventKind.Follow, test.Kind);
         TestAssert.Contains("Simulacion", test.Title);
+    }
+}
+
+static class RuleTestValidationTests
+{
+    public static void BlocksMissingAudio()
+    {
+        var result = RuleTestValidationService.Validate(
+            new EventRule { PlayAudio = true },
+            new TwitchEvent { Kind = TwitchEventKind.Follow, UserName = "user" },
+            AppConfig.CreateDefault(),
+            hasOpenArduinoPort: true,
+            hasValidAudio: false);
+
+        TestAssert.False(result.CanRun);
+        TestAssert.Equal(1, result.Issues.Count);
+        TestAssert.Equal(RuleTestValidationIssueKind.MissingAudio, result.Issues[0].Kind);
+    }
+
+    public static void ReportsNonBlockingIssues()
+    {
+        var config = AppConfig.CreateDefault();
+        config.ArduinoEnabled = true;
+        config.SerialPort = "COM3";
+
+        var result = RuleTestValidationService.Validate(
+            new EventRule
+            {
+                EventKind = TwitchEventKind.ChatCommand,
+                ChatCommand = "!rave",
+                UseLights = true,
+                TargetPins = "pin-roto",
+                SendAlexaEvent = true
+            },
+            new TwitchEvent { Kind = TwitchEventKind.ChatCommand, UserName = "user", Message = "!baile" },
+            config,
+            hasOpenArduinoPort: false,
+            hasValidAudio: true);
+
+        TestAssert.True(result.CanRun);
+        TestAssert.Equal(4, result.Issues.Count);
+        TestAssert.Equal(RuleTestValidationIssueKind.ArduinoDisconnected, result.Issues[0].Kind);
+        TestAssert.Equal(RuleTestValidationIssueKind.InvalidPins, result.Issues[1].Kind);
+        TestAssert.Equal(RuleTestValidationIssueKind.AlexaNotConfigured, result.Issues[2].Kind);
+        TestAssert.Equal(RuleTestValidationIssueKind.ChatCommandMismatch, result.Issues[3].Kind);
     }
 }
 

@@ -104,40 +104,46 @@ public partial class MainWindow
 
     private bool ValidateSimulatedRun(EventRule rule, TwitchEvent twitchEvent)
     {
-        if (rule.PlayAudio && !RuleHasValidAudio(rule))
+        var result = RuleTestValidationService.Validate(
+            rule,
+            twitchEvent,
+            _config,
+            _lightController.HasOpenPort,
+            RuleHasValidAudio(rule));
+
+        foreach (var issue in result.Issues)
         {
-            var message = _text.Format(UiTextKeys.RuleTestMissingAudioPrompt, rule.Name);
-            AddLog(_text.Format(UiTextKeys.RuleTestSimulatorLog, message), ActivityLogKind.Important);
-            _dialog.ShowWarning(_text.Get(UiTextKeys.RuleTestSimulatorTitle), message);
-            return false;
+            PresentRuleTestValidationIssue(issue, rule);
         }
 
-        if (_config.ArduinoEnabled && rule.UseLights && !_lightController.HasOpenPort)
-        {
-            AddLog(
-                string.IsNullOrWhiteSpace(_config.SerialPort)
-                    ? _text.Get(UiTextKeys.RuleTestArduinoMissingComLog)
-                    : _text.Format(UiTextKeys.RuleTestArduinoDisconnectedLog, _config.SerialPort),
-                ActivityLogKind.Important);
-        }
+        return result.CanRun;
+    }
 
-        if (_config.ArduinoEnabled && rule.UseLights && !string.IsNullOrWhiteSpace(rule.TargetPins) && LightCommand.ParsePins(rule.TargetPins).Count == 0)
+    private void PresentRuleTestValidationIssue(RuleTestValidationIssue issue, EventRule rule)
+    {
+        switch (issue.Kind)
         {
-            AddLog(_text.Format(UiTextKeys.RuleTestInvalidPinsLog, rule.Name), ActivityLogKind.Important);
+            case RuleTestValidationIssueKind.MissingAudio:
+                var message = _text.Format(UiTextKeys.RuleTestMissingAudioPrompt, rule.Name);
+                AddLog(_text.Format(UiTextKeys.RuleTestSimulatorLog, message), ActivityLogKind.Important);
+                _dialog.ShowWarning(_text.Get(UiTextKeys.RuleTestSimulatorTitle), message);
+                break;
+            case RuleTestValidationIssueKind.ArduinoMissingCom:
+                AddLog(_text.Get(UiTextKeys.RuleTestArduinoMissingComLog), ActivityLogKind.Important);
+                break;
+            case RuleTestValidationIssueKind.ArduinoDisconnected:
+                AddLog(_text.Format(UiTextKeys.RuleTestArduinoDisconnectedLog, _config.SerialPort), ActivityLogKind.Important);
+                break;
+            case RuleTestValidationIssueKind.InvalidPins:
+                AddLog(_text.Format(UiTextKeys.RuleTestInvalidPinsLog, rule.Name), ActivityLogKind.Important);
+                break;
+            case RuleTestValidationIssueKind.AlexaNotConfigured:
+                AddLog(_text.Get(UiTextKeys.RuleTestAlexaNotConfiguredLog), ActivityLogKind.Important);
+                break;
+            case RuleTestValidationIssueKind.ChatCommandMismatch:
+                AddLog(_text.Get(UiTextKeys.RuleTestChatCommandMismatchLog), ActivityLogKind.Important);
+                break;
         }
-
-        if (rule.SendAlexaEvent && !_config.Alexa.IsConfigured)
-        {
-            AddLog(_text.Get(UiTextKeys.RuleTestAlexaNotConfiguredLog), ActivityLogKind.Important);
-        }
-
-        if (rule.EventKind == TwitchEventKind.ChatCommand
-            && !RuleSimulationService.MatchesChatCommand(rule, twitchEvent.Message))
-        {
-            AddLog(_text.Get(UiTextKeys.RuleTestChatCommandMismatchLog), ActivityLogKind.Important);
-        }
-
-        return true;
     }
 
     private async void StopTestButton_Click(object sender, RoutedEventArgs e)

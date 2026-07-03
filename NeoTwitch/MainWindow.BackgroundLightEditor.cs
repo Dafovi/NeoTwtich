@@ -86,9 +86,9 @@ public partial class MainWindow
         }
 
         var values = LightControlInputService.GetBackgroundPreset(preset);
-        BackgroundBrightnessSlider.Value = values.Brightness;
-        BackgroundCycleSlider.Value = values.CycleMs;
-        BackgroundStepSlider.Value = values.StepMs;
+        _lightsViewModel.BackgroundBrightness = values.Brightness;
+        _lightsViewModel.BackgroundCycleMs = values.CycleMs;
+        _lightsViewModel.BackgroundStepMs = values.StepMs;
 
         SaveBackgroundFromFields();
         SaveConfig();

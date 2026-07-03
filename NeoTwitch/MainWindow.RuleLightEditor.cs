@@ -15,15 +15,18 @@ public partial class MainWindow
         }
 
         var values = LightControlInputService.GetRulePreset(preset);
-        BrightnessSlider.Value = values.Brightness;
-        DurationSlider.Value = values.DurationMs;
-        CycleSlider.Value = values.CycleMs;
-        StepSlider.Value = values.StepMs;
+        _alertsViewModel.Editor.Brightness = values.Brightness;
+        _alertsViewModel.Editor.DurationMs = values.DurationMs;
+        _alertsViewModel.Editor.CycleMs = values.CycleMs;
+        _alertsViewModel.Editor.StepMs = values.StepMs;
 
         if (SaveCurrentRuleFromFields())
         {
             UpdateRuleDirtyStateFromSnapshot();
         }
+
+        UpdateSliderLabels();
+        UpdateRuleLedPreviewFrame();
     }
 
     private void AdjustRuleLightValue(object? parameter)

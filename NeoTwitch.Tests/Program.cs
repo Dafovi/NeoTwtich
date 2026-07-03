@@ -74,6 +74,7 @@ var tests = new (string Name, Action Body)[]
     ("AudioRuleAssetService detects rule asset usage", AudioRuleAssetTests.DetectsRuleAssetUsage),
     ("AudioLibraryMutationService removes assets and cleans rules", AudioLibraryMutationTests.RemovesAssetsAndCleansRules),
     ("MediaLibraryMutationService removes assets and cleans rules", MediaLibraryMutationTests.RemovesAssetsAndCleansRules),
+    ("LibraryAssetUsageService marks asset usage", LibraryAssetUsageTests.MarksAssetUsage),
     ("LibraryGroupService creates and reuses groups", LibraryGroupServiceTests.CreatesAndReusesGroups),
     ("LibraryGroupService clears group references", LibraryGroupServiceTests.ClearsGroupReferences),
     ("LibraryGroupRowFactoryService builds audio and media groups", LibraryGroupRowFactoryTests.BuildsAudioAndMediaGroups),
@@ -1487,6 +1488,23 @@ static class MediaLibraryMutationTests
         TestAssert.Equal("", config.Rules[0].ObsMediaAssetId);
         TestAssert.True(config.Rules[1].SendObsMedia);
         TestAssert.Equal("img1", config.Rules[1].ObsMediaAssetId);
+    }
+}
+
+static class LibraryAssetUsageTests
+{
+    public static void MarksAssetUsage()
+    {
+        var usedAt = new DateTimeOffset(2026, 6, 1, 12, 0, 0, TimeSpan.Zero);
+        var audio = new AudioAssetConfig();
+        var media = new MediaAssetConfig();
+
+        LibraryAssetUsageService.MarkAudioUsed(audio, TimeSpan.FromMilliseconds(1234.6), usedAt);
+        LibraryAssetUsageService.MarkMediaUsed(media, usedAt);
+
+        TestAssert.Equal(1235, audio.DurationMs);
+        TestAssert.Equal(usedAt, audio.LastUsedAt);
+        TestAssert.Equal(usedAt, media.LastUsedAt);
     }
 }
 

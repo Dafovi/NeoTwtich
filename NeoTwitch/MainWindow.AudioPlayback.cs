@@ -139,12 +139,7 @@ public partial class MainWindow
             return;
         }
 
-        if (duration is { TotalMilliseconds: > 0 })
-        {
-            audio.DurationMs = (int)Math.Round(duration.Value.TotalMilliseconds);
-        }
-
-        audio.LastUsedAt = DateTimeOffset.Now;
+        LibraryAssetUsageService.MarkAudioUsed(audio, duration);
         SaveConfig();
         RefreshAudioLibraryView();
     }

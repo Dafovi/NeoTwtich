@@ -118,7 +118,7 @@ public partial class MainWindow
             return;
         }
 
-        asset.LastUsedAt = DateTimeOffset.Now;
+        LibraryAssetUsageService.MarkMediaUsed(asset);
         SaveConfig();
         RefreshMediaLibraryView(kind == ObsMediaKind.Image ? MediaLibraryKind.Image : MediaLibraryKind.Video);
     }

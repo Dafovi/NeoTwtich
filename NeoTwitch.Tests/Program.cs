@@ -61,6 +61,8 @@ var tests = new (string Name, Action Body)[]
     ("LightControlInputService resolves presets", LightControlInputTests.ResolvesPresets),
     ("LightControlInputService parses and clamps values", LightControlInputTests.ParsesAndClampsValues),
     ("BackgroundLightRestoreService resolves retry attempts", BackgroundLightRestoreTests.ResolvesRetryAttempts),
+    ("BackgroundLightRestoreService resolves apply plan", BackgroundLightRestoreTests.ResolvesApplyPlan),
+    ("BackgroundLightRestoreService resolves restore plan", BackgroundLightRestoreTests.ResolvesRestorePlan),
     ("RulePinChoiceService builds pin choices", RulePinChoiceTests.BuildsPinChoices),
     ("SerialLightProtocol resolves commands", SerialLightProtocolTests.ResolvesCommands),
     ("SerialLightProtocol detects responses", SerialLightProtocolTests.DetectsResponses),
@@ -1141,6 +1143,49 @@ static class BackgroundLightRestoreTests
             arduinoEnabled: false,
             backgroundEnabled: true,
             retryArduino: true));
+    }
+
+    public static void ResolvesApplyPlan()
+    {
+        var config = AppConfig.CreateDefault();
+        var emptyPlan = BackgroundLightRestoreService.ResolveApplyPlan(config);
+
+        TestAssert.False(emptyPlan.HasAnyAction);
+        TestAssert.Equal(BackgroundArduinoAction.None, emptyPlan.ArduinoAction);
+        TestAssert.Equal(BackgroundAlexaAction.None, emptyPlan.AlexaAction);
+
+        config.ArduinoEnabled = true;
+        config.BackgroundEnabled = true;
+        config.BackgroundAlexaEnabled = true;
+
+        var plan = BackgroundLightRestoreService.ResolveApplyPlan(config);
+
+        TestAssert.True(plan.HasAnyAction);
+        TestAssert.Equal(BackgroundArduinoAction.ApplyBackground, plan.ArduinoAction);
+        TestAssert.Equal(BackgroundAlexaAction.SendOn, plan.AlexaAction);
+    }
+
+    public static void ResolvesRestorePlan()
+    {
+        var config = AppConfig.CreateDefault();
+        config.ArduinoEnabled = true;
+        config.BackgroundEnabled = true;
+        config.BackgroundAlexaEnabled = true;
+
+        var plan = BackgroundLightRestoreService.ResolveRestorePlan(config, retryArduino: true);
+
+        TestAssert.Equal(2, plan.ArduinoAttempts);
+        TestAssert.Equal(BackgroundArduinoAction.ApplyBackground, plan.ArduinoAction);
+        TestAssert.Equal(BackgroundAlexaAction.SendOn, plan.AlexaAction);
+
+        config.BackgroundEnabled = false;
+        config.BackgroundAlexaTurnOffAfterEvent = true;
+
+        plan = BackgroundLightRestoreService.ResolveRestorePlan(config, retryArduino: true);
+
+        TestAssert.Equal(1, plan.ArduinoAttempts);
+        TestAssert.Equal(BackgroundArduinoAction.StopLights, plan.ArduinoAction);
+        TestAssert.Equal(BackgroundAlexaAction.SendOff, plan.AlexaAction);
     }
 }
 

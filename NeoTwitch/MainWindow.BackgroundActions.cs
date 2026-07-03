@@ -11,20 +11,14 @@ public partial class MainWindow
 {
     private async Task ApplyBackgroundAsync()
     {
-        if (!_config.BackgroundEnabled && !_config.BackgroundAlexaEnabled)
+        var plan = BackgroundLightRestoreService.ResolveApplyPlan(_config);
+        if (!plan.HasAnyAction)
         {
             return;
         }
 
-        if (_config.ArduinoEnabled && _config.BackgroundEnabled)
-        {
-            await ApplyArduinoBackgroundAsync();
-        }
-
-        if (_config.BackgroundAlexaEnabled)
-        {
-            await SendBackgroundAlexaEventAsync(_config.BackgroundAlexaOnEventName, _text.Get(UiTextKeys.BackgroundAlexaOnTitle));
-        }
+        await ExecuteBackgroundArduinoActionAsync(plan.ArduinoAction);
+        await ExecuteBackgroundAlexaActionAsync(plan.AlexaAction);
     }
 
     private async Task ApplyArduinoBackgroundAsync()
@@ -79,40 +73,47 @@ public partial class MainWindow
 
     private async Task RestoreBackgroundStateAsync(bool retryArduino = true)
     {
-        await RestoreArduinoBackgroundStateWithRetriesAsync(retryArduino);
-
-        if (_config.BackgroundAlexaTurnOffAfterEvent)
-        {
-            await SendBackgroundAlexaEventAsync(_config.BackgroundAlexaOffEventName, _text.Get(UiTextKeys.BackgroundAlexaOffTitle));
-        }
-        else if (_config.BackgroundAlexaEnabled)
-        {
-            await SendBackgroundAlexaEventAsync(_config.BackgroundAlexaOnEventName, _text.Get(UiTextKeys.BackgroundAlexaOnTitle));
-        }
+        var plan = BackgroundLightRestoreService.ResolveRestorePlan(_config, retryArduino);
+        await RestoreArduinoBackgroundStateWithRetriesAsync(plan);
+        await ExecuteBackgroundAlexaActionAsync(plan.AlexaAction);
     }
 
-    private async Task RestoreArduinoBackgroundStateWithRetriesAsync(bool retryArduino)
+    private async Task RestoreArduinoBackgroundStateWithRetriesAsync(BackgroundRestorePlan plan)
     {
-        var attempts = BackgroundLightRestoreService.ResolveArduinoRestoreAttempts(
-            _config.ArduinoEnabled,
-            _config.BackgroundEnabled,
-            retryArduino);
-
-        for (var attempt = 1; attempt <= attempts; attempt++)
+        for (var attempt = 1; attempt <= plan.ArduinoAttempts; attempt++)
         {
-            if (_config.ArduinoEnabled && _config.BackgroundEnabled)
-            {
-                await ApplyArduinoBackgroundAsync();
-            }
-            else if (_config.ArduinoEnabled)
-            {
-                await StopLightsAsync(LightCommand.ResolveTargets(_config, ""));
-            }
+            await ExecuteBackgroundArduinoActionAsync(plan.ArduinoAction);
 
-            if (attempt < attempts)
+            if (attempt < plan.ArduinoAttempts)
             {
                 await Task.Delay(180);
             }
+        }
+    }
+
+    private async Task ExecuteBackgroundArduinoActionAsync(BackgroundArduinoAction action)
+    {
+        switch (action)
+        {
+            case BackgroundArduinoAction.ApplyBackground:
+                await ApplyArduinoBackgroundAsync();
+                break;
+            case BackgroundArduinoAction.StopLights:
+                await StopLightsAsync(LightCommand.ResolveTargets(_config, ""));
+                break;
+        }
+    }
+
+    private async Task ExecuteBackgroundAlexaActionAsync(BackgroundAlexaAction action)
+    {
+        switch (action)
+        {
+            case BackgroundAlexaAction.SendOn:
+                await SendBackgroundAlexaEventAsync(_config.BackgroundAlexaOnEventName, _text.Get(UiTextKeys.BackgroundAlexaOnTitle));
+                break;
+            case BackgroundAlexaAction.SendOff:
+                await SendBackgroundAlexaEventAsync(_config.BackgroundAlexaOffEventName, _text.Get(UiTextKeys.BackgroundAlexaOffTitle));
+                break;
         }
     }
 

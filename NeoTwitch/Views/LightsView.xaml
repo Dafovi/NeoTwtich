@@ -494,6 +494,7 @@
                                                           HorizontalAlignment="Center"
                                                           VerticalAlignment="Top" />
                                                     <TextBlock x:Name="BackgroundBrightnessValueText"
+                                                               Text="{Binding BackgroundBrightnessPercentText}"
                                                                FontSize="24"
                                                                FontWeight="SemiBold"
                                                                Margin="0,36,0,0"

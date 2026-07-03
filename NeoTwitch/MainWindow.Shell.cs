@@ -105,17 +105,15 @@ public partial class MainWindow
 
     private void UpdateSliderLabels()
     {
-        var brightnessPercent = CircularProgressGeometryService.ToPercent(_alertsViewModel.Editor.Brightness, BrightnessSlider.Maximum);
-        var backgroundBrightnessPercent = CircularProgressGeometryService.ToPercent(_lightsViewModel.BackgroundBrightness, BackgroundBrightnessSlider.Maximum);
+        var brightnessPercent = _alertsViewModel.Editor.BrightnessPercent;
+        var backgroundBrightnessPercent = _lightsViewModel.BackgroundBrightnessPercent;
 
         _updatingLightValueFields = true;
         try
         {
-            BrightnessValueText.Text = $"{brightnessPercent}%";
             DurationValueText.Text = ((int)Math.Round(_alertsViewModel.Editor.DurationMs)).ToString();
             CycleValueText.Text = ((int)Math.Round(_alertsViewModel.Editor.CycleMs)).ToString();
             StepValueText.Text = ((int)Math.Round(_alertsViewModel.Editor.StepMs)).ToString();
-            BackgroundBrightnessValueText.Text = $"{backgroundBrightnessPercent}%";
             BackgroundCycleValueText.Text = ((int)Math.Round(_lightsViewModel.BackgroundCycleMs)).ToString();
             BackgroundStepValueText.Text = ((int)Math.Round(_lightsViewModel.BackgroundStepMs)).ToString();
         }

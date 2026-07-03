@@ -11,6 +11,8 @@ namespace NeoTwitch.ViewModels.Lights;
 
 public sealed class LightsViewModel : ObservableObject
 {
+    private const double BrightnessMaximum = 255d;
+
     private readonly CollectionViewSource _ledStripsViewSource = new();
     private string _arduinoDeviceText = "";
     private string _arduinoPortText = "";
@@ -176,8 +178,21 @@ public sealed class LightsViewModel : ObservableObject
     public double BackgroundBrightness
     {
         get => _backgroundBrightness;
-        set => SetProperty(ref _backgroundBrightness, value);
+        set
+        {
+            if (SetProperty(ref _backgroundBrightness, value))
+            {
+                OnPropertyChanged(nameof(BackgroundBrightnessPercent));
+                OnPropertyChanged(nameof(BackgroundBrightnessPercentText));
+            }
+        }
     }
+
+    public int BackgroundBrightnessPercent => BrightnessMaximum <= 0d
+        ? 0
+        : (int)Math.Round(Math.Clamp(BackgroundBrightness / BrightnessMaximum, 0d, 1d) * 100d);
+
+    public string BackgroundBrightnessPercentText => $"{BackgroundBrightnessPercent}%";
 
     public double BackgroundCycleMs
     {

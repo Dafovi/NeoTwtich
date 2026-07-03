@@ -45,7 +45,6 @@ public partial class MainWindow
     private WpfButton TertiaryColorButton => AlertsView.TertiaryColorButton;
     private WpfTextBox TertiaryColorBox => AlertsView.TertiaryColorBox;
     private WpfGrid BrightnessGrid => AlertsView.BrightnessGrid;
-    private WpfTextBlock BrightnessValueText => AlertsView.BrightnessValueText;
     private WpfPath BrightnessArc => AlertsView.BrightnessArc;
     private WpfSlider BrightnessSlider => AlertsView.BrightnessSlider;
     private WpfGrid DurationGrid => AlertsView.DurationGrid;

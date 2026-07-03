@@ -826,6 +826,7 @@
                                                                                       HorizontalAlignment="Center"
                                                                                       VerticalAlignment="Top" />
                                                                                 <TextBlock x:Name="BrightnessValueText"
+                                                                                           Text="{Binding Editor.BrightnessPercentText}"
                                                                                            FontSize="24"
                                                                                            FontWeight="SemiBold"
                                                                                            Margin="0,36,0,0"

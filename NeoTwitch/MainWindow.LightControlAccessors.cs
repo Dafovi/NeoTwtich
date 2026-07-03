@@ -30,7 +30,6 @@ public partial class MainWindow
     private WpfButton BackgroundPatternRaveTileButton => LightsView.BackgroundPatternRaveTileButton;
     private WpfGrid BackgroundColorOptionsGrid => LightsView.BackgroundColorOptionsGrid;
     private WpfGrid BackgroundBrightnessPanel => LightsView.BackgroundBrightnessPanel;
-    private WpfTextBlock BackgroundBrightnessValueText => LightsView.BackgroundBrightnessValueText;
     private WpfPath BackgroundBrightnessArc => LightsView.BackgroundBrightnessArc;
     private WpfSlider BackgroundBrightnessSlider => LightsView.BackgroundBrightnessSlider;
     private WpfTextBlock BackgroundPrimaryColorLabel => LightsView.BackgroundPrimaryColorLabel;

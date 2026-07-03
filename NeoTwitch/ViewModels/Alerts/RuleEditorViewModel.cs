@@ -5,6 +5,8 @@ namespace NeoTwitch.ViewModels.Alerts;
 
 public sealed class RuleEditorViewModel : ObservableObject
 {
+    private const double BrightnessMaximum = 255d;
+
     private bool _isEnabled = true;
     private string _ruleNameText = "";
     private TwitchEventKind _eventKind = TwitchEventKind.Follow;
@@ -223,8 +225,21 @@ public sealed class RuleEditorViewModel : ObservableObject
     public double Brightness
     {
         get => _brightness;
-        set => SetProperty(ref _brightness, value);
+        set
+        {
+            if (SetProperty(ref _brightness, value))
+            {
+                OnPropertyChanged(nameof(BrightnessPercent));
+                OnPropertyChanged(nameof(BrightnessPercentText));
+            }
+        }
     }
+
+    public int BrightnessPercent => BrightnessMaximum <= 0d
+        ? 0
+        : (int)Math.Round(Math.Clamp(Brightness / BrightnessMaximum, 0d, 1d) * 100d);
+
+    public string BrightnessPercentText => $"{BrightnessPercent}%";
 
     public double DurationMs
     {

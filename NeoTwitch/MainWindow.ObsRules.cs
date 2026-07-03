@@ -15,15 +15,19 @@ public partial class MainWindow
 {
     private async Task<ObsMediaHideRequest?> SendRuleObsMediaAsync(EventRule rule, CancellationToken cancellationToken)
     {
-        if (!ObsRulePlanService.ShouldSendMedia(rule, _config.Obs.IsConfigured))
-        {
-            return null;
-        }
+        var asset = ObsRulePlanService.ShouldSendMedia(rule, _config.Obs.IsConfigured)
+            ? ResolveRuleObsMediaAsset(rule)
+            : null;
+        var plan = ObsRulePlanService.BuildMediaExecutionPlan(
+            rule,
+            _config,
+            _obsService.CurrentScene,
+            asset,
+            NeoTwitchProduct.Obs.AlertImageSourceName,
+            NeoTwitchProduct.Obs.AlertVideoSourceName);
 
-        var asset = ResolveRuleObsMediaAsset(rule);
-        if (asset is null)
+        if (!HandleObsMediaPlanStatus(rule, plan))
         {
-            AddLog(_text.Format(UiTextKeys.ObsRuleMissingMediaLog, rule.Name), ActivityLogKind.Important);
             return null;
         }
 
@@ -39,37 +43,24 @@ public partial class MainWindow
                 return null;
             }
 
-            var sceneName = ObsRulePlanService.ResolveMediaSceneName(rule, _obsService.CurrentScene);
-
-            if (string.IsNullOrWhiteSpace(sceneName))
-            {
-                AddLog(_text.Get(UiTextKeys.ObsRuleMissingSceneLog), ActivityLogKind.Important);
-                return null;
-            }
-
-            var sourceName = ObsRulePlanService.ResolveAlertSourceName(
-                rule.ObsMediaKind,
-                NeoTwitchProduct.Obs.AlertImageSourceName,
-                NeoTwitchProduct.Obs.AlertVideoSourceName);
-            var mediaDuration = MediaRuleAssetService.ResolveRuleMediaDuration(rule, asset);
             var result = await _obsService.ShowMediaSourceAsync(
-                sceneName,
-                sourceName,
-                asset.FilePath,
+                plan.SceneName,
+                plan.SourceName,
+                plan.Asset!.FilePath,
                 rule.ObsMediaKind,
                 _config.Obs,
-                rule.ObsMediaKind == ObsMediaKind.Video ? _config.VideoVolumePercent : null,
+                plan.VolumePercent,
                 cancellationToken);
 
             ApplyObsResult(result);
-            WriteObsOverlayState(asset, rule.ObsMediaKind, mediaDuration);
-            MarkObsMediaAssetUsed(rule.ObsMediaKind, asset);
-            AddLog(_text.Format(UiTextKeys.ObsRuleMediaShownLog, asset.DisplayName, sceneName), ActivityLogKind.Obs);
+            WriteObsOverlayState(plan.Asset, rule.ObsMediaKind, plan.Duration);
+            MarkObsMediaAssetUsed(rule.ObsMediaKind, plan.Asset);
+            AddLog(_text.Format(UiTextKeys.ObsRuleMediaShownLog, plan.Asset.DisplayName, plan.SceneName), ActivityLogKind.Obs);
 
             return ObsRulePlanService.BuildMediaHideRequest(
-                sceneName,
-                sourceName,
-                mediaDuration,
+                plan.SceneName,
+                plan.SourceName,
+                plan.Duration,
                 DateTimeOffset.UtcNow);
         }
         catch (OperationCanceledException)
@@ -83,6 +74,25 @@ public partial class MainWindow
             AddLog($"OBS: {ex.Message}", ActivityLogKind.Important);
             UpdateObsStatusText();
             return null;
+        }
+    }
+
+    private bool HandleObsMediaPlanStatus(EventRule rule, ObsRuleMediaExecutionPlan plan)
+    {
+        switch (plan.Status)
+        {
+            case ObsRuleMediaPlanStatus.Disabled:
+                return false;
+            case ObsRuleMediaPlanStatus.MissingAsset:
+                AddLog(_text.Format(UiTextKeys.ObsRuleMissingMediaLog, rule.Name), ActivityLogKind.Important);
+                return false;
+            case ObsRuleMediaPlanStatus.MissingScene:
+                AddLog(_text.Get(UiTextKeys.ObsRuleMissingSceneLog), ActivityLogKind.Important);
+                return false;
+            case ObsRuleMediaPlanStatus.Ready:
+                return true;
+            default:
+                return false;
         }
     }
 

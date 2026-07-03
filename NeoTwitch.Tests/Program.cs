@@ -57,6 +57,7 @@ var tests = new (string Name, Action Body)[]
     ("AlertExecutionPlanService resolves light command and reconnect state", AlertExecutionPlanTests.ResolvesLightCommandAndReconnectState),
     ("ObsRulePlanService resolves scene restore", ObsRulePlanTests.ResolvesSceneRestore),
     ("ObsRulePlanService resolves media plans", ObsRulePlanTests.ResolvesMediaPlans),
+    ("ObsRulePlanService builds media execution plan", ObsRulePlanTests.BuildsMediaExecutionPlan),
     ("LightControlInputService resolves presets", LightControlInputTests.ResolvesPresets),
     ("LightControlInputService parses and clamps values", LightControlInputTests.ParsesAndClampsValues),
     ("BackgroundLightRestoreService resolves retry attempts", BackgroundLightRestoreTests.ResolvesRetryAttempts),
@@ -1013,6 +1014,67 @@ static class ObsRulePlanTests
         TestAssert.Equal("source", media.SourceName);
         TestAssert.Equal(media.Duration, aligned!.Delay);
         TestAssert.Equal(media.StartedAt, aligned.StartedAt);
+    }
+
+    public static void BuildsMediaExecutionPlan()
+    {
+        var config = AppConfig.CreateDefault();
+        config.Obs.Enabled = true;
+        config.Obs.Host = "127.0.0.1";
+        config.VideoVolumePercent = 42;
+        var asset = new MediaAssetConfig
+        {
+            Name = "Boom",
+            FilePath = @"C:\stream\boom.mp4",
+            DurationMs = 2500
+        };
+        var rule = new EventRule
+        {
+            SendObsMedia = true,
+            ObsMediaKind = ObsMediaKind.Video,
+            SendObsScene = false
+        };
+
+        var plan = ObsRulePlanService.BuildMediaExecutionPlan(
+            rule,
+            config,
+            "Gameplay",
+            asset,
+            "image-source",
+            "video-source");
+
+        TestAssert.True(plan.IsReady);
+        TestAssert.Equal(ObsRuleMediaPlanStatus.Ready, plan.Status);
+        TestAssert.Same(asset, plan.Asset);
+        TestAssert.Equal("Gameplay", plan.SceneName);
+        TestAssert.Equal("video-source", plan.SourceName);
+        TestAssert.Equal(2500d, plan.Duration.TotalMilliseconds);
+        TestAssert.Equal(42, plan.VolumePercent);
+
+        var disabledRule = new EventRule
+        {
+            SendObsMedia = false,
+            ObsMediaKind = ObsMediaKind.Video
+        };
+        var disabled = ObsRulePlanService.BuildMediaExecutionPlan(
+            disabledRule,
+            config,
+            "Gameplay",
+            asset,
+            "image-source",
+            "video-source");
+
+        TestAssert.Equal(ObsRuleMediaPlanStatus.Disabled, disabled.Status);
+
+        var missingScene = ObsRulePlanService.BuildMediaExecutionPlan(
+            rule,
+            config,
+            "",
+            asset,
+            "image-source",
+            "video-source");
+
+        TestAssert.Equal(ObsRuleMediaPlanStatus.MissingScene, missingScene.Status);
     }
 }
 

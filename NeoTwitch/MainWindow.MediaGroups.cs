@@ -53,20 +53,9 @@ public partial class MainWindow
             return;
         }
 
-        if (kind == MediaLibraryKind.Image)
-        {
-            _imageGroupFilterId = group.Id;
-            _imageFilter = "ALL";
-            _imageSearchText = "";
-            _imageLibraryViewModel.SetFilters("", _imageFilter, notify: false);
-        }
-        else
-        {
-            _videoGroupFilterId = group.Id;
-            _videoFilter = "ALL";
-            _videoSearchText = "";
-            _videoLibraryViewModel.SetFilters("", _videoFilter, notify: false);
-        }
+        var viewModel = GetMediaLibraryViewModel(kind);
+        viewModel.SetGroupFilter(group.Id);
+        viewModel.SetFilters("", LibraryScreenViewModel<MediaLibraryRow, MediaGroupRow>.AllFilter, notify: false, clearGroupFilter: false);
 
         UpdateMediaFilterButtons(kind);
         RefreshMediaLibraryView(kind);
@@ -102,13 +91,10 @@ public partial class MainWindow
         LibraryGroupService.ClearGroupFromAssets(library, group.Id);
 
         groups.Remove(group);
-        if (kind == MediaLibraryKind.Image && string.Equals(_imageGroupFilterId, group.Id, StringComparison.OrdinalIgnoreCase))
+        var viewModel = GetMediaLibraryViewModel(kind);
+        if (string.Equals(viewModel.GroupFilterId, group.Id, StringComparison.OrdinalIgnoreCase))
         {
-            _imageGroupFilterId = "";
-        }
-        else if (kind == MediaLibraryKind.Video && string.Equals(_videoGroupFilterId, group.Id, StringComparison.OrdinalIgnoreCase))
-        {
-            _videoGroupFilterId = "";
+            viewModel.SetGroupFilter("");
         }
 
         SaveConfig();

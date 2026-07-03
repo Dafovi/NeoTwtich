@@ -36,20 +36,6 @@ public partial class MainWindow
             return;
         }
 
-        var viewModel = GetMediaLibraryViewModel(kind);
-        if (kind == MediaLibraryKind.Image)
-        {
-            _imageSearchText = viewModel.SearchText.Trim();
-            _imageFilter = viewModel.Filter;
-            _imageGroupFilterId = "";
-        }
-        else
-        {
-            _videoSearchText = viewModel.SearchText.Trim();
-            _videoFilter = viewModel.Filter;
-            _videoGroupFilterId = "";
-        }
-
         UpdateMediaFilterButtons(kind);
         RefreshMediaLibraryView(kind);
     }

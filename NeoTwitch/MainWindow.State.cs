@@ -53,15 +53,6 @@ public partial class MainWindow
     private DateTimeOffset _lastArduinoReconnectAttempt = DateTimeOffset.MinValue;
     private string _twitchConnectionError = "";
     private string _obsConnectionError = "";
-    private string _audioSearchText = "";
-    private string _audioFilter = "ALL";
-    private string _audioGroupFilterId = "";
-    private string _imageSearchText = "";
-    private string _imageFilter = "ALL";
-    private string _imageGroupFilterId = "";
-    private string _videoSearchText = "";
-    private string _videoFilter = "ALL";
-    private string _videoGroupFilterId = "";
     private bool _refreshingAudioLibrary;
     private bool _refreshingImageLibrary;
     private bool _refreshingVideoLibrary;

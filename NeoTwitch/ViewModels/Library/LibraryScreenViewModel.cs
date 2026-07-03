@@ -15,6 +15,7 @@ public sealed class LibraryScreenViewModel<TAssetRow, TGroupRow> : ObservableObj
     private string _footerText = "";
     private string _searchText = "";
     private string _filter = AllFilter;
+    private string _groupFilterId = "";
     private string _newAssetPath = "";
     private string _newAssetName = "";
     private string _newAssetAlertId = "";
@@ -72,6 +73,12 @@ public sealed class LibraryScreenViewModel<TAssetRow, TGroupRow> : ObservableObj
     {
         get => _filter;
         private set => SetProperty(ref _filter, NormalizeFilter(value));
+    }
+
+    public string GroupFilterId
+    {
+        get => _groupFilterId;
+        private set => SetProperty(ref _groupFilterId, value ?? "");
     }
 
     public string AssetCountText
@@ -193,13 +200,17 @@ public sealed class LibraryScreenViewModel<TAssetRow, TGroupRow> : ObservableObj
         }
     }
 
-    public void SetFilters(string searchText, string filter, bool notify = true)
+    public void SetFilters(string searchText, string filter, bool notify = true, bool clearGroupFilter = true)
     {
         _suppressFilterEvents = !notify;
         try
         {
             var changed = SetProperty(ref _searchText, searchText ?? "", nameof(SearchText));
             changed |= SetProperty(ref _filter, NormalizeFilter(filter), nameof(Filter));
+            if (clearGroupFilter)
+            {
+                changed |= SetProperty(ref _groupFilterId, "", nameof(GroupFilterId));
+            }
 
             if (changed && notify)
             {
@@ -210,6 +221,11 @@ public sealed class LibraryScreenViewModel<TAssetRow, TGroupRow> : ObservableObj
         {
             _suppressFilterEvents = false;
         }
+    }
+
+    public void SetGroupFilter(string? groupId)
+    {
+        GroupFilterId = groupId ?? "";
     }
 
     public void SetNewAssetPath(string path, string suggestedName)

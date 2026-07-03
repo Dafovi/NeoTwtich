@@ -3,6 +3,7 @@ using NeoTwitch.Models;
 using NeoTwitch.Services.Library;
 using NeoTwitch.Services.Text;
 using NeoTwitch.ViewModels.Activity;
+using NeoTwitch.ViewModels.Library;
 using WpfMessageBox = System.Windows.MessageBox;
 
 namespace NeoTwitch;
@@ -51,10 +52,8 @@ public partial class MainWindow
             return;
         }
 
-        _audioGroupFilterId = group.Id;
-        _audioFilter = "ALL";
-        _audioSearchText = "";
-        _audioLibraryViewModel.SetFilters("", _audioFilter, notify: false);
+        _audioLibraryViewModel.SetGroupFilter(group.Id);
+        _audioLibraryViewModel.SetFilters("", LibraryScreenViewModel<AudioLibraryRow, AudioGroupRow>.AllFilter, notify: false, clearGroupFilter: false);
         UpdateAudioFilterButtons();
         RefreshAudioLibraryView();
         AddLog(_text.Format(UiTextKeys.LibraryShowingGroupLog, _text.Get(UiTextKeys.AudioTitle), group.Name), ActivityLogKind.Audio);
@@ -88,9 +87,9 @@ public partial class MainWindow
         LibraryGroupService.ClearAudioGroupFromRules(_config.Rules, group.Id);
 
         _config.AudioGroups.Remove(group);
-        if (string.Equals(_audioGroupFilterId, group.Id, StringComparison.OrdinalIgnoreCase))
+        if (string.Equals(_audioLibraryViewModel.GroupFilterId, group.Id, StringComparison.OrdinalIgnoreCase))
         {
-            _audioGroupFilterId = "";
+            _audioLibraryViewModel.SetGroupFilter("");
         }
 
         SaveConfig();

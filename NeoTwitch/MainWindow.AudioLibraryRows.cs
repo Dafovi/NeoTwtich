@@ -24,9 +24,9 @@ public partial class MainWindow
     {
         return LibraryRowFilterService.MatchesAudio(
             row,
-            _audioGroupFilterId,
-            _audioFilter,
-            _audioSearchText,
+            _audioLibraryViewModel.GroupFilterId,
+            _audioLibraryViewModel.Filter,
+            _audioLibraryViewModel.SearchText.Trim(),
             _text.Get(UiTextKeys.LibraryNoGroup));
     }
 
@@ -40,7 +40,7 @@ public partial class MainWindow
         var palette = _config.DarkMode ? ThemePalette.Dark : ThemePalette.Light;
         foreach (var button in new[] { AudioFilterAllButton, AudioFilterWithAlertButton, AudioFilterNoGroupButton })
         {
-            var active = string.Equals(button.Tag?.ToString(), _audioFilter, StringComparison.OrdinalIgnoreCase);
+            var active = string.Equals(button.Tag?.ToString(), _audioLibraryViewModel.Filter, StringComparison.OrdinalIgnoreCase);
             FilterButtonThemeService.Apply(button, active, "#14B8A6", palette);
         }
     }

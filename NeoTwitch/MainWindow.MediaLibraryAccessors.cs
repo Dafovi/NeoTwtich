@@ -25,17 +25,17 @@ public partial class MainWindow
 
     private string GetMediaSearchText(MediaLibraryKind kind)
     {
-        return kind == MediaLibraryKind.Image ? _imageSearchText : _videoSearchText;
+        return GetMediaLibraryViewModel(kind).SearchText.Trim();
     }
 
     private string GetMediaFilter(MediaLibraryKind kind)
     {
-        return kind == MediaLibraryKind.Image ? _imageFilter : _videoFilter;
+        return GetMediaLibraryViewModel(kind).Filter;
     }
 
     private string GetMediaGroupFilterId(MediaLibraryKind kind)
     {
-        return kind == MediaLibraryKind.Image ? _imageGroupFilterId : _videoGroupFilterId;
+        return GetMediaLibraryViewModel(kind).GroupFilterId;
     }
 
     private void SetMediaRefreshing(MediaLibraryKind kind, bool refreshing)

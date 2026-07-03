@@ -14,9 +14,6 @@ public partial class MainWindow
             return;
         }
 
-        _audioSearchText = _audioLibraryViewModel.SearchText.Trim();
-        _audioFilter = _audioLibraryViewModel.Filter;
-        _audioGroupFilterId = "";
         UpdateAudioFilterButtons();
         RefreshAudioLibraryView();
     }
@@ -58,7 +55,7 @@ public partial class MainWindow
                 _config.AudioLibrary,
                 _config.AudioGroups,
                 rows.Length,
-                _audioGroupFilterId,
+                _audioLibraryViewModel.GroupFilterId,
                 groupsById,
                 _text.Get(UiTextKeys.AudioFooterNoun),
                 GetLibrarySummaryLabels());

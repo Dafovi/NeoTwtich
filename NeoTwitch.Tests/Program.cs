@@ -1466,6 +1466,18 @@ static class LibraryScreenViewModelTests
         TestAssert.Equal("ALL", viewModel.Filter);
         TestAssert.Equal(2, filterChanges);
 
+        viewModel.SetGroupFilter("grupo-activo");
+        viewModel.SetFilters("", "ALL", notify: false, clearGroupFilter: false);
+
+        TestAssert.Equal("grupo-activo", viewModel.GroupFilterId);
+
+        viewModel.SetFilters("bits", "NO_GROUP");
+
+        TestAssert.Equal("", viewModel.GroupFilterId);
+        TestAssert.Equal("bits", viewModel.SearchText);
+        TestAssert.Equal("NO_GROUP", viewModel.Filter);
+        TestAssert.Equal(3, filterChanges);
+
         var volumeChanges = new List<int>();
         viewModel.ConfigureVolume(volumeChanges.Add);
         viewModel.SetVolume(42.6, notify: false);

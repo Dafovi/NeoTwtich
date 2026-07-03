@@ -7,20 +7,6 @@ namespace NeoTwitch;
 
 public partial class MainWindow
 {
-    internal void TargetPinsChoiceBox_SelectionChanged(object sender, SelectionChangedEventArgs e)
-    {
-        if (_initializingComponent || _loadingRule)
-        {
-            return;
-        }
-
-        _alertsViewModel.Editor.TargetPins = TargetPinsChoiceBox.SelectedValue?.ToString() ?? "";
-        if (SaveCurrentRuleFromFields())
-        {
-            UpdateRuleDirtyStateFromSnapshot();
-        }
-    }
-
     private void SelectRuleLightPreset(object? parameter)
     {
         if (parameter?.ToString() is not { Length: > 0 } preset)
@@ -108,11 +94,6 @@ public partial class MainWindow
 
     private void RefreshRulePinChoices()
     {
-        if (TargetPinsChoiceBox is null)
-        {
-            return;
-        }
-
         var choices = RulePinChoiceService.BuildChoices(_config.LedStrips, _alertsViewModel.Editor.TargetPins);
 
         var wasLoading = _loadingRule;
@@ -121,12 +102,6 @@ public partial class MainWindow
         {
             _alertsViewModel.UpdateTargetPinChoices(choices.Options);
             _alertsViewModel.Editor.TargetPins = choices.CurrentPins;
-            TargetPinsChoiceBox.SelectedValue = choices.CurrentPins;
-
-            if (TargetPinsChoiceBox.SelectedIndex < 0)
-            {
-                TargetPinsChoiceBox.SelectedIndex = 0;
-            }
         }
         finally
         {

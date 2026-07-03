@@ -22,8 +22,6 @@ public partial class AlertsView : NeoTwitchView
 
     private void RuleFieldChanged(object sender, RoutedPropertyChangedEventArgs<double> e) => Host?.RuleFieldChanged(sender, e);
 
-    private void TargetPinsChoiceBox_SelectionChanged(object sender, SelectionChangedEventArgs e) => Host?.TargetPinsChoiceBox_SelectionChanged(sender, e);
-
     private void LightNumberBox_TextChanged(object sender, TextChangedEventArgs e) => Host?.LightNumberBox_TextChanged(sender, e);
 
     private void RuleLedPreviewPanel_IsVisibleChanged(object sender, DependencyPropertyChangedEventArgs e) => Host?.RuleLedPreviewPanel_IsVisibleChanged(sender, e);

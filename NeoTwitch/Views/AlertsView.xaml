@@ -505,7 +505,8 @@
                                                                       ItemsSource="{Binding TargetPinChoices}"
                                                                       DisplayMemberPath="Label"
                                                                       SelectedValuePath="Value"
-                                                                      SelectionChanged="TargetPinsChoiceBox_SelectionChanged"
+                                                                      SelectedValue="{Binding Editor.TargetPins, Mode=TwoWay, UpdateSourceTrigger=PropertyChanged}"
+                                                                      SelectionChanged="RuleFieldChanged"
                                                                       Margin="0,4,0,8" />
                                                             <TextBox x:Name="TargetPinsBox"
                                                                      Visibility="Collapsed"

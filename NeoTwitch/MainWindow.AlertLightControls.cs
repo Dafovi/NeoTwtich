@@ -23,7 +23,6 @@ public partial class MainWindow
     private WpfSeparator LightOptionsSeparator => AlertsView.LightOptionsSeparator;
     private WpfTextBlock TargetPinsLabel => AlertsView.TargetPinsLabel;
     private WpfComboBox TargetPinsChoiceBox => AlertsView.TargetPinsChoiceBox;
-    private WpfTextBox TargetPinsBox => AlertsView.TargetPinsBox;
     private WpfStackPanel PatternGrid => AlertsView.PatternGrid;
     private WpfComboBox PatternBox => AlertsView.PatternBox;
     private WpfButton PatternSolidTileButton => AlertsView.PatternSolidTileButton;

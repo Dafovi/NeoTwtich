@@ -11,7 +11,14 @@ public sealed record FilePickerRequest(
     string? InitialDirectory = null,
     bool OverwritePrompt = false);
 
-public sealed class FilePickerService
+public interface IFilePickerService
+{
+    string? OpenFile(FilePickerRequest request);
+
+    string? SaveFile(FilePickerRequest request);
+}
+
+public sealed class FilePickerService : IFilePickerService
 {
     public string? OpenFile(FilePickerRequest request)
     {

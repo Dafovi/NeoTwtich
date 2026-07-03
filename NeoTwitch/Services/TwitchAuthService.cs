@@ -14,11 +14,11 @@ public sealed class TwitchAuthService
     public static readonly string[] RequiredScopes = Protocol.RequiredScopes;
 
     private readonly HttpClient _http = new();
-    private readonly ExternalLauncherService _externalLauncher;
+    private readonly IExternalLauncherService _externalLauncher;
     private readonly JsonSerializerOptions _jsonOptions = new(JsonSerializerDefaults.Web);
     private readonly IUiTextService _text;
 
-    public TwitchAuthService(IUiTextService text, ExternalLauncherService externalLauncher)
+    public TwitchAuthService(IUiTextService text, IExternalLauncherService externalLauncher)
     {
         _text = text;
         _externalLauncher = externalLauncher;

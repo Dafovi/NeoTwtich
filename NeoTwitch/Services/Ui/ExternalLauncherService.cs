@@ -2,7 +2,14 @@ using System.Diagnostics;
 
 namespace NeoTwitch.Services.Ui;
 
-public sealed class ExternalLauncherService
+public interface IExternalLauncherService
+{
+    void Open(string target);
+
+    void Launch(string fileName, string arguments = "", string? workingDirectory = null);
+}
+
+public sealed class ExternalLauncherService : IExternalLauncherService
 {
     public void Open(string target)
     {

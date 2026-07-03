@@ -7,10 +7,10 @@ namespace NeoTwitch.Services;
 
 public sealed class AppUpdateService
 {
-    private readonly ExternalLauncherService _externalLauncher;
+    private readonly IExternalLauncherService _externalLauncher;
     private readonly VersionCheckService _versionCheckService;
 
-    public AppUpdateService(IUiTextService text, ExternalLauncherService externalLauncher)
+    public AppUpdateService(IUiTextService text, IExternalLauncherService externalLauncher)
     {
         _externalLauncher = externalLauncher;
         _versionCheckService = new VersionCheckService(text);

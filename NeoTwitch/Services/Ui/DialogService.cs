@@ -13,7 +13,18 @@ public enum DialogChoice
     Cancel
 }
 
-public sealed class DialogService
+public interface IDialogService
+{
+    void ShowInformation(string title, string message);
+
+    void ShowWarning(string title, string message);
+
+    bool Confirm(string title, string message);
+
+    DialogChoice ConfirmWithCancel(string title, string message);
+}
+
+public sealed class DialogService : IDialogService
 {
     public void ShowInformation(string title, string message)
     {

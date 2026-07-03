@@ -28,10 +28,10 @@ public sealed class AppServices
         DashboardSummaryService dashboardSummary,
         RuleSimulationService ruleSimulation,
         AlertQueueService alertQueue,
-        DialogService dialog,
-        FilePickerService filePicker,
-        ExternalLauncherService externalLauncher,
-        ClipboardService clipboard)
+        IDialogService dialog,
+        IFilePickerService filePicker,
+        IExternalLauncherService externalLauncher,
+        IClipboardService clipboard)
     {
         SettingsStore = settingsStore;
         AudioPlayer = audioPlayer;
@@ -90,13 +90,13 @@ public sealed class AppServices
 
     public AlertQueueService AlertQueue { get; }
 
-    public DialogService Dialog { get; }
+    public IDialogService Dialog { get; }
 
-    public FilePickerService FilePicker { get; }
+    public IFilePickerService FilePicker { get; }
 
-    public ExternalLauncherService ExternalLauncher { get; }
+    public IExternalLauncherService ExternalLauncher { get; }
 
-    public ClipboardService Clipboard { get; }
+    public IClipboardService Clipboard { get; }
 
     public static AppServices CreateDefault()
     {

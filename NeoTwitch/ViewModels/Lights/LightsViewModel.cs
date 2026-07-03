@@ -16,6 +16,10 @@ public sealed class LightsViewModel : ObservableObject
     private string _arduinoPortText = "";
     private string _arduinoLedCountText = "";
     private string _arduinoPinsText = "";
+    private bool _isStripEditorEnabled;
+    private string _selectedStripName = "";
+    private string _selectedStripPinText = "";
+    private string _selectedStripLedCountText = "";
     private IEnumerable? _backgroundPatternChoices;
     private bool _backgroundEnabled;
     private string _backgroundTargetPins = "";
@@ -101,6 +105,30 @@ public sealed class LightsViewModel : ObservableObject
     {
         get => _arduinoPinsText;
         private set => SetProperty(ref _arduinoPinsText, value);
+    }
+
+    public bool IsStripEditorEnabled
+    {
+        get => _isStripEditorEnabled;
+        private set => SetProperty(ref _isStripEditorEnabled, value);
+    }
+
+    public string SelectedStripName
+    {
+        get => _selectedStripName;
+        set => SetProperty(ref _selectedStripName, value ?? "");
+    }
+
+    public string SelectedStripPinText
+    {
+        get => _selectedStripPinText;
+        set => SetProperty(ref _selectedStripPinText, value ?? "");
+    }
+
+    public string SelectedStripLedCountText
+    {
+        get => _selectedStripLedCountText;
+        set => SetProperty(ref _selectedStripLedCountText, value ?? "");
     }
 
     public IEnumerable? BackgroundPatternChoices
@@ -212,6 +240,23 @@ public sealed class LightsViewModel : ObservableObject
         ArduinoPortText = status.Port;
         ArduinoLedCountText = status.LedCount;
         ArduinoPinsText = status.Pins;
+    }
+
+    public void LoadSelectedStrip(LedStripConfig? strip)
+    {
+        IsStripEditorEnabled = strip is not null;
+
+        if (strip is null)
+        {
+            SelectedStripName = "";
+            SelectedStripPinText = "";
+            SelectedStripLedCountText = "";
+            return;
+        }
+
+        SelectedStripName = strip.Name;
+        SelectedStripPinText = strip.Pin.ToString();
+        SelectedStripLedCountText = strip.LedCount.ToString();
     }
 
     public void UpdateBackgroundPatternChoices(IEnumerable? choices)

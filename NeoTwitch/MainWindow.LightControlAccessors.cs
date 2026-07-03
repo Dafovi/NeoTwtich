@@ -16,11 +16,7 @@ namespace NeoTwitch;
 
 public partial class MainWindow
 {
-    private WpfStackPanel StripEditorPanel => LightsView.StripEditorPanel;
     private WpfListBox StripsList => LightsView.StripsList;
-    private WpfTextBox StripNameBox => LightsView.StripNameBox;
-    private WpfTextBox StripPinBox => LightsView.StripPinBox;
-    private WpfTextBox StripLedCountBox => LightsView.StripLedCountBox;
     private WpfCheckBox BackgroundEnabledCheck => LightsView.BackgroundEnabledCheck;
     private WpfTextBox BackgroundPinsBox => LightsView.BackgroundPinsBox;
     private WpfStackPanel BackgroundPatternGrid => LightsView.BackgroundPatternGrid;

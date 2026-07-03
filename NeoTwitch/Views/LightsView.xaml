@@ -94,7 +94,8 @@
                             <ScrollViewer VerticalScrollBarVisibility="Auto"
                                           HorizontalScrollBarVisibility="Disabled">
                                 <StackPanel x:Name="ArduinoBackgroundPanel">
-                                    <StackPanel x:Name="StripEditorPanel">
+                                    <StackPanel x:Name="StripEditorPanel"
+                                                IsEnabled="{Binding IsStripEditorEnabled}">
                                         <TextBlock Text="Pines de salida"
                                                    FontSize="18"
                                                    Style="{StaticResource TitleText}"
@@ -145,7 +146,9 @@
                                         </ListBox>
 
                                         <TextBlock Text="Nombre" Style="{StaticResource MutedText}" />
-                                        <TextBox x:Name="StripNameBox" TextChanged="StripFieldChanged" />
+                                        <TextBox x:Name="StripNameBox"
+                                                 Text="{Binding SelectedStripName, Mode=TwoWay, UpdateSourceTrigger=PropertyChanged}"
+                                                 TextChanged="StripFieldChanged" />
 
                                         <Grid>
                                             <Grid.ColumnDefinitions>
@@ -156,12 +159,15 @@
                                             <StackPanel>
                                                 <TextBlock Text="Pin Arduino" Style="{StaticResource MutedText}" />
                                                 <TextBox x:Name="StripPinBox"
+                                                         Text="{Binding SelectedStripPinText, Mode=TwoWay, UpdateSourceTrigger=PropertyChanged}"
                                                          TextChanged="StripFieldChanged"
                                                          ToolTip="Pin digital donde esta conectado DIN de la tira." />
                                             </StackPanel>
                                             <StackPanel Grid.Column="2">
                                                 <TextBlock Text="Cantidad de LEDs" Style="{StaticResource MutedText}" />
-                                                <TextBox x:Name="StripLedCountBox" TextChanged="StripFieldChanged" />
+                                                <TextBox x:Name="StripLedCountBox"
+                                                         Text="{Binding SelectedStripLedCountText, Mode=TwoWay, UpdateSourceTrigger=PropertyChanged}"
+                                                         TextChanged="StripFieldChanged" />
                                             </StackPanel>
                                         </Grid>
                                     </StackPanel>

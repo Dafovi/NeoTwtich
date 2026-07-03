@@ -2457,6 +2457,7 @@ static class LightsViewModelTests
         var strips = new[] { new LedStripConfig { Name = "Principal", Pin = 6, LedCount = 30 } };
         viewModel.SetLedStripsSource(strips);
         viewModel.RefreshLedStrips();
+        viewModel.LoadSelectedStrip(strips[0]);
 
         TestAssert.Equal("add,duplicate,remove,apply,stop,sketch,guide,pattern:Pulse,adjust:Step:10,preset:Medium,color:Secondary", string.Join(",", actions));
         TestAssert.Equal("Arduino Uno", viewModel.ArduinoDeviceText);
@@ -2474,6 +2475,13 @@ static class LightsViewModelTests
         TestAssert.Equal(120d, viewModel.BackgroundCycleMs);
         TestAssert.Equal(450d, viewModel.BackgroundStepMs);
         TestAssert.Same(strips, viewModel.LedStripsView.SourceCollection);
+        TestAssert.True(viewModel.IsStripEditorEnabled);
+        TestAssert.Equal("Principal", viewModel.SelectedStripName);
+        TestAssert.Equal("6", viewModel.SelectedStripPinText);
+        TestAssert.Equal("30", viewModel.SelectedStripLedCountText);
+        viewModel.LoadSelectedStrip(null);
+        TestAssert.False(viewModel.IsStripEditorEnabled);
+        TestAssert.Equal("", viewModel.SelectedStripName);
         TestAssert.Equal(0, viewModel.BackgroundLedPreviewDots.Count);
     }
 }

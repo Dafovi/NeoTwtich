@@ -11,16 +11,7 @@ public partial class MainWindow
 
         try
         {
-            StripEditorPanel.IsEnabled = StripsList.SelectedItem is LedStripConfig;
-
-            if (StripsList.SelectedItem is not LedStripConfig strip)
-            {
-                return;
-            }
-
-            StripNameBox.Text = strip.Name;
-            StripPinBox.Text = strip.Pin.ToString();
-            StripLedCountBox.Text = strip.LedCount.ToString();
+            _lightsViewModel.LoadSelectedStrip(StripsList.SelectedItem as LedStripConfig);
         }
         finally
         {
@@ -36,11 +27,11 @@ public partial class MainWindow
             return;
         }
 
-        strip.Name = string.IsNullOrWhiteSpace(StripNameBox.Text)
+        strip.Name = string.IsNullOrWhiteSpace(_lightsViewModel.SelectedStripName)
             ? "Tira LED"
-            : StripNameBox.Text.Trim();
-        strip.Pin = ParseInt(StripPinBox.Text, 6, 0, 53);
-        strip.LedCount = ParseInt(StripLedCountBox.Text, 30, 1, 600);
+            : _lightsViewModel.SelectedStripName.Trim();
+        strip.Pin = ParseInt(_lightsViewModel.SelectedStripPinText, 6, 0, 53);
+        strip.LedCount = ParseInt(_lightsViewModel.SelectedStripLedCountText, 30, 1, 600);
 
         _lightsViewModel.RefreshLedStrips();
         RefreshRulesView();

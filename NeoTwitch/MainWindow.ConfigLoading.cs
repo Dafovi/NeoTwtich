@@ -24,10 +24,6 @@ public partial class MainWindow
         _videoLibraryViewModel.SetVolume(_config.VideoVolumePercent, notify: false);
     }
 
-    private void LoadQueueConfigIntoUi()
-    {
-    }
-
     private void LoadBackgroundConfigIntoUi()
     {
         _lightsViewModel.LoadBackground(_config);

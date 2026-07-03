@@ -18,7 +18,6 @@ public partial class MainWindow
         {
             LoadConnectionConfigIntoUi();
             LoadGlobalPreferencesIntoUi();
-            LoadQueueConfigIntoUi();
             LoadBackgroundConfigIntoUi();
             BindConfigCollectionsIntoUi();
             RefreshObsSceneChoices();

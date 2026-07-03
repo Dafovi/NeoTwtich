@@ -1,5 +1,6 @@
 using NeoTwitch.Models;
 using NeoTwitch.Services.Lights;
+using NeoTwitch.ViewModels.Shell;
 
 namespace NeoTwitch;
 
@@ -84,7 +85,7 @@ public partial class MainWindow
     {
         return _alertsViewModel.Editor.UseLights
             && _config.ArduinoEnabled
-            && MainTabs.SelectedIndex == 2
+            && _shellViewModel.SelectedTabIndex == ShellViewModel.AlertsTabIndex
             && LightConfigurationPanel.IsExpanded
             && RuleLedPreviewPanel.IsVisible;
     }

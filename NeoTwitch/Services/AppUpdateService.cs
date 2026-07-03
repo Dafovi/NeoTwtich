@@ -1,16 +1,18 @@
-using System.Diagnostics;
 using System.IO;
 using NeoTwitch.Services.Text;
+using NeoTwitch.Services.Ui;
 using NeoTwitch.Shared;
 
 namespace NeoTwitch.Services;
 
 public sealed class AppUpdateService
 {
+    private readonly ExternalLauncherService _externalLauncher;
     private readonly VersionCheckService _versionCheckService;
 
-    public AppUpdateService(IUiTextService text)
+    public AppUpdateService(IUiTextService text, ExternalLauncherService externalLauncher)
     {
+        _externalLauncher = externalLauncher;
         _versionCheckService = new VersionCheckService(text);
     }
 
@@ -39,22 +41,15 @@ public sealed class AppUpdateService
     public void LaunchInstallerUpdate(string installerPath, VersionCheckResult result)
     {
         var launcherPath = PrepareInstallerLauncher(installerPath);
-        Process.Start(new ProcessStartInfo
-        {
-            FileName = launcherPath,
-            Arguments = $"--update --target \"{CurrentInstallPath}\" --version \"V{result.LatestVersion}\"",
-            WorkingDirectory = Path.GetDirectoryName(launcherPath),
-            UseShellExecute = true
-        });
+        _externalLauncher.Launch(
+            launcherPath,
+            $"--update --target \"{CurrentInstallPath}\" --version \"V{result.LatestVersion}\"",
+            Path.GetDirectoryName(launcherPath));
     }
 
     public void OpenReleasePage(string releaseUrl)
     {
-        Process.Start(new ProcessStartInfo
-        {
-            FileName = releaseUrl,
-            UseShellExecute = true
-        });
+        _externalLauncher.Open(releaseUrl);
     }
 
     private static string PrepareInstallerLauncher(string installerPath)

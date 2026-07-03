@@ -29,7 +29,8 @@ public sealed class AppServices
         RuleSimulationService ruleSimulation,
         AlertQueueService alertQueue,
         DialogService dialog,
-        FilePickerService filePicker)
+        FilePickerService filePicker,
+        ExternalLauncherService externalLauncher)
     {
         SettingsStore = settingsStore;
         AudioPlayer = audioPlayer;
@@ -50,6 +51,7 @@ public sealed class AppServices
         AlertQueue = alertQueue;
         Dialog = dialog;
         FilePicker = filePicker;
+        ExternalLauncher = externalLauncher;
     }
 
     public SettingsStore SettingsStore { get; }
@@ -90,16 +92,19 @@ public sealed class AppServices
 
     public FilePickerService FilePicker { get; }
 
+    public ExternalLauncherService ExternalLauncher { get; }
+
     public static AppServices CreateDefault()
     {
         var activityLog = new ActivityLogService();
         var text = UiTextService.CreateDefault();
-        var updateService = new AppUpdateService(text);
+        var externalLauncher = new ExternalLauncherService();
+        var updateService = new AppUpdateService(text, externalLauncher);
         return new AppServices(
             new SettingsStore(text),
             new AudioPlayerService(text),
             new SerialLightController(text),
-            new TwitchAuthService(text),
+            new TwitchAuthService(text, externalLauncher),
             new TwitchChatService(text),
             new AlexaRelayService(text),
             new ObsWebSocketService(text),
@@ -114,6 +119,7 @@ public sealed class AppServices
             new RuleSimulationService(text),
             new AlertQueueService(),
             new DialogService(),
-            new FilePickerService());
+            new FilePickerService(),
+            externalLauncher);
     }
 }

@@ -47,4 +47,5 @@ public partial class MainWindow
     private Services.Alerts.AlertQueueService _alertQueue => _services.AlertQueue;
     private Services.Ui.DialogService _dialog => _services.Dialog;
     private Services.Ui.FilePickerService _filePicker => _services.FilePicker;
+    private Services.Ui.ExternalLauncherService _externalLauncher => _services.ExternalLauncher;
 }

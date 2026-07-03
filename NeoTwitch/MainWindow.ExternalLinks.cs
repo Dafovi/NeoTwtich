@@ -1,4 +1,3 @@
-using System.Diagnostics;
 using System.Windows;
 using NeoTwitch.Shared;
 using NeoTwitch.ViewModels.Activity;
@@ -10,11 +9,7 @@ public partial class MainWindow
 {
     private void OpenTwitchConsole()
     {
-        Process.Start(new ProcessStartInfo
-        {
-            FileName = NeoTwitchProduct.Links.TwitchDeveloperApps,
-            UseShellExecute = true
-        });
+        _externalLauncher.Open(NeoTwitchProduct.Links.TwitchDeveloperApps);
         AddLog("Twitch Console abierta para revisar el Client ID.", ActivityLogKind.Twitch);
     }
 
@@ -30,41 +25,25 @@ public partial class MainWindow
             return;
         }
 
-        Process.Start(new ProcessStartInfo
-        {
-            FileName = NeoTwitchProduct.Links.TwitchChannel(channel),
-            UseShellExecute = true
-        });
+        _externalLauncher.Open(NeoTwitchProduct.Links.TwitchChannel(channel));
         AddLog($"Twitch: abriendo perfil de {channel}.", ActivityLogKind.Twitch);
     }
 
     private void OpenAlexaConsole()
     {
-        Process.Start(new ProcessStartInfo
-        {
-            FileName = NeoTwitchProduct.Links.AlexaDeveloperConsole,
-            UseShellExecute = true
-        });
+        _externalLauncher.Open(NeoTwitchProduct.Links.AlexaDeveloperConsole);
         AddLog("Alexa Developer Console abierta.", ActivityLogKind.Alexa);
     }
 
     private void OpenArduinoSketch()
     {
-        Process.Start(new ProcessStartInfo
-        {
-            FileName = NeoTwitchProduct.Links.ArduinoSketch,
-            UseShellExecute = true
-        });
+        _externalLauncher.Open(NeoTwitchProduct.Links.ArduinoSketch);
         AddLog("Arduino: abriendo sketch NeoPixel.", ActivityLogKind.Arduino);
     }
 
     private void OpenArduinoGuide()
     {
-        Process.Start(new ProcessStartInfo
-        {
-            FileName = NeoTwitchProduct.Links.ArduinoGuide,
-            UseShellExecute = true
-        });
+        _externalLauncher.Open(NeoTwitchProduct.Links.ArduinoGuide);
         AddLog("Arduino: abriendo guia de conexion.", ActivityLogKind.Arduino);
     }
 }

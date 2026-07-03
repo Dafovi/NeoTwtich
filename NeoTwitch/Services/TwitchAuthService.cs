@@ -1,10 +1,10 @@
-using System.Diagnostics;
 using System.Net.Http;
 using System.Net.Http.Headers;
 using System.Text.Json;
 using System.Text.Json.Serialization;
 using NeoTwitch.Models;
 using NeoTwitch.Services.Text;
+using NeoTwitch.Services.Ui;
 using Protocol = NeoTwitch.Services.TwitchAuthProtocol;
 
 namespace NeoTwitch.Services;
@@ -14,12 +14,14 @@ public sealed class TwitchAuthService
     public static readonly string[] RequiredScopes = Protocol.RequiredScopes;
 
     private readonly HttpClient _http = new();
+    private readonly ExternalLauncherService _externalLauncher;
     private readonly JsonSerializerOptions _jsonOptions = new(JsonSerializerDefaults.Web);
     private readonly IUiTextService _text;
 
-    public TwitchAuthService(IUiTextService text)
+    public TwitchAuthService(IUiTextService text, ExternalLauncherService externalLauncher)
     {
         _text = text;
+        _externalLauncher = externalLauncher;
     }
 
     public async Task<DeviceCodeSession> BeginDeviceFlowAsync(string clientId, CancellationToken cancellationToken)
@@ -51,11 +53,7 @@ public sealed class TwitchAuthService
 
     public void OpenVerificationPage(DeviceCodeSession session)
     {
-        Process.Start(new ProcessStartInfo
-        {
-            FileName = session.VerificationUri,
-            UseShellExecute = true
-        });
+        _externalLauncher.Open(session.VerificationUri);
     }
 
     public async Task<TwitchTokenInfo> PollForTokenAsync(string clientId, DeviceCodeSession session, Action<string> log, CancellationToken cancellationToken)

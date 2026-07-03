@@ -1,4 +1,3 @@
-using System.Diagnostics;
 using System.Windows;
 using NeoTwitch.Shared;
 using NeoTwitch.ViewModels.Activity;
@@ -10,11 +9,7 @@ public partial class MainWindow
 {
     private void OpenObsGuide()
     {
-        Process.Start(new ProcessStartInfo
-        {
-            FileName = NeoTwitchProduct.Obs.WebSocketGuideUrl,
-            UseShellExecute = true
-        });
+        _externalLauncher.Open(NeoTwitchProduct.Obs.WebSocketGuideUrl);
         AddLog("OBS: abriendo guia de obs-websocket.", ActivityLogKind.Obs);
     }
 

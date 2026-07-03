@@ -73,6 +73,7 @@ var tests = new (string Name, Action Body)[]
     ("AudioRuleAssetService resolves group assets with existing files", AudioRuleAssetTests.ResolvesGroupAssetsWithExistingFiles),
     ("AudioRuleAssetService detects rule asset usage", AudioRuleAssetTests.DetectsRuleAssetUsage),
     ("AudioLibraryMutationService removes assets and cleans rules", AudioLibraryMutationTests.RemovesAssetsAndCleansRules),
+    ("MediaLibraryMutationService removes assets and cleans rules", MediaLibraryMutationTests.RemovesAssetsAndCleansRules),
     ("LibraryGroupService creates and reuses groups", LibraryGroupServiceTests.CreatesAndReusesGroups),
     ("LibraryGroupService clears group references", LibraryGroupServiceTests.ClearsGroupReferences),
     ("LibraryGroupRowFactoryService builds audio and media groups", LibraryGroupRowFactoryTests.BuildsAudioAndMediaGroups),
@@ -1447,6 +1448,45 @@ static class AudioLibraryMutationTests
         TestAssert.False(config.Rules[0].PlayAudio);
         TestAssert.Equal("", config.Rules[1].AudioAssetId);
         TestAssert.True(config.Rules[1].PlayAudio);
+    }
+}
+
+static class MediaLibraryMutationTests
+{
+    public static void RemovesAssetsAndCleansRules()
+    {
+        var config = AppConfig.CreateDefault();
+        config.ImageLibrary.Clear();
+        config.VideoLibrary.Clear();
+        config.Rules.Clear();
+        config.ImageLibrary.Add(new MediaAssetConfig { Id = "img1", FilePath = @"C:\media\follow.png" });
+        config.ImageLibrary.Add(new MediaAssetConfig { Id = "img2", FilePath = @"C:\media\raid.png" });
+        config.Rules.Add(new EventRule
+        {
+            SendObsMedia = true,
+            ObsMediaKind = ObsMediaKind.Image,
+            ObsMediaSourceMode = MediaSourceMode.Single,
+            ObsMediaAssetId = "img1"
+        });
+        config.Rules.Add(new EventRule
+        {
+            SendObsMedia = true,
+            ObsMediaKind = ObsMediaKind.Image,
+            ObsMediaSourceMode = MediaSourceMode.Group,
+            ObsMediaAssetId = "img1",
+            ObsMediaGroupId = "g1"
+        });
+
+        var result = MediaLibraryMutationService.RemoveMediaAsset(config, MediaLibraryKind.Image, "IMG1");
+
+        TestAssert.True(result.Removed);
+        TestAssert.Equal(1, config.ImageLibrary.Count);
+        TestAssert.Equal("img2", config.ImageLibrary[0].Id);
+        TestAssert.Equal(1, result.UpdatedRuleCount);
+        TestAssert.False(config.Rules[0].SendObsMedia);
+        TestAssert.Equal("", config.Rules[0].ObsMediaAssetId);
+        TestAssert.True(config.Rules[1].SendObsMedia);
+        TestAssert.Equal("img1", config.Rules[1].ObsMediaAssetId);
     }
 }
 

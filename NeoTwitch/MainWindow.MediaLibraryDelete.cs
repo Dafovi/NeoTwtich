@@ -1,4 +1,5 @@
 using NeoTwitch.Services.Text;
+using NeoTwitch.Services.Library;
 using NeoTwitch.ViewModels.Library;
 
 namespace NeoTwitch;
@@ -25,7 +26,7 @@ public partial class MainWindow
             return;
         }
 
-        library.Remove(asset);
+        MediaLibraryMutationService.RemoveMediaAsset(_config, kind, asset.Id);
         SaveConfig();
         RefreshMediaLibraryView(kind);
     }

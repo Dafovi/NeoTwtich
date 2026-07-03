@@ -67,9 +67,14 @@ public partial class MainWindow
                 }
             }
 
-            var useLights = _config.ArduinoEnabled && rule.UseLights;
+            var plan = AlertExecutionPlanService.Build(
+                rule,
+                _config,
+                _lightController.HasOpenPort,
+                playback?.Duration,
+                obsMediaHide?.Duration);
 
-            if (!useLights)
+            if (!plan.UseLights)
             {
                 playback?.Play();
                 if (playback is not null)
@@ -80,25 +85,18 @@ public partial class MainWindow
                 return;
             }
 
-            if (useLights && !_lightController.HasOpenPort && !string.IsNullOrWhiteSpace(_config.SerialPort))
+            if (plan.ShouldReconnectArduino)
             {
                 await ConnectArduinoAsync();
             }
 
-            shouldRestoreBackground = true;
-            var targets = LightCommand.ResolveTargets(_config, rule.TargetPins);
-            if (useLights)
-            {
-                await StopLightsAsync(LightCommand.ResolveTargets(_config, ""));
-                await Task.Delay(LightStopSettleMs);
-            }
+            shouldRestoreBackground = plan.ShouldRestoreBackground;
+            await StopLightsAsync(plan.AllLightTargets);
+            await Task.Delay(LightStopSettleMs);
 
-            var syncedDurationMs = AlertDurationService.ResolveSynchronizedEffectDurationMs(playback?.Duration, obsMediaHide?.Duration);
-
-            LightCommand? command = null;
-            if (useLights)
+            var command = plan.LightCommand;
+            if (command is not null)
             {
-                command = LightCommand.FromRule(rule, _config, syncedDurationMs);
                 await _lightController.SendAsync(command, AddLog, CancellationToken.None);
                 UpdateStatusText();
             }
@@ -108,7 +106,7 @@ public partial class MainWindow
 
             if (command is not null)
             {
-                await StopLightsAsync(targets);
+                await StopLightsAsync(plan.RuleLightTargets);
                 AddLog($"Luces: {DisplayNameService.For(rule.Pattern, _text)} por {command.DurationMs} ms para {DisplayNameService.For(twitchEvent.Kind, _text)}.");
             }
         }

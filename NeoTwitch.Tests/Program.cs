@@ -53,6 +53,8 @@ var tests = new (string Name, Action Body)[]
     ("EventRuleMatcherService keeps highest bits threshold", EventRuleMatcherTests.KeepsHighestBitsThreshold),
     ("AlertDurationService resolves maximum positive duration", AlertDurationTests.ResolvesMaximumPositiveDuration),
     ("AlertDurationService clamps synchronized durations", AlertDurationTests.ClampsSynchronizedDurations),
+    ("AlertExecutionPlanService disables lights when Arduino is disabled", AlertExecutionPlanTests.DisablesLightsWhenArduinoIsDisabled),
+    ("AlertExecutionPlanService resolves light command and reconnect state", AlertExecutionPlanTests.ResolvesLightCommandAndReconnectState),
     ("ObsRulePlanService resolves scene restore", ObsRulePlanTests.ResolvesSceneRestore),
     ("ObsRulePlanService resolves media plans", ObsRulePlanTests.ResolvesMediaPlans),
     ("LightControlInputService resolves presets", LightControlInputTests.ResolvesPresets),
@@ -891,6 +893,72 @@ static class AlertDurationTests
 
         var tooLong = AlertDurationService.ResolveSynchronizedEffectDurationMs(TimeSpan.FromMilliseconds(ApplicationLimits.MaxAlertDurationMs + 10_000));
         TestAssert.Equal(ApplicationLimits.MaxAlertDurationMs, tooLong);
+    }
+}
+
+static class AlertExecutionPlanTests
+{
+    public static void DisablesLightsWhenArduinoIsDisabled()
+    {
+        var config = AppConfig.CreateDefault();
+        config.ArduinoEnabled = false;
+        var rule = new EventRule
+        {
+            UseLights = true,
+            TargetPins = "6"
+        };
+
+        var plan = AlertExecutionPlanService.Build(
+            rule,
+            config,
+            hasOpenArduinoPort: false,
+            playbackDuration: TimeSpan.FromSeconds(3),
+            obsMediaDuration: TimeSpan.FromSeconds(5));
+
+        TestAssert.False(plan.UseLights);
+        TestAssert.False(plan.ShouldReconnectArduino);
+        TestAssert.False(plan.ShouldRestoreBackground);
+        TestAssert.Equal(0, plan.AllLightTargets.Count);
+        TestAssert.Equal(0, plan.RuleLightTargets.Count);
+        TestAssert.Same(null, plan.LightCommand);
+        TestAssert.Equal(5000, plan.SynchronizedDurationMs);
+    }
+
+    public static void ResolvesLightCommandAndReconnectState()
+    {
+        var config = AppConfig.CreateDefault();
+        config.ArduinoEnabled = true;
+        config.SerialPort = "COM3";
+        config.LedStrips =
+        [
+            new LedStripConfig { Pin = 2, LedCount = 10 },
+            new LedStripConfig { Pin = 4, LedCount = 20 }
+        ];
+        var rule = new EventRule
+        {
+            UseLights = true,
+            TargetPins = "4",
+            Pattern = LightPattern.Rave,
+            Brightness = 75,
+            DurationMs = 1000
+        };
+
+        var plan = AlertExecutionPlanService.Build(
+            rule,
+            config,
+            hasOpenArduinoPort: false,
+            playbackDuration: TimeSpan.FromSeconds(2),
+            obsMediaDuration: TimeSpan.FromSeconds(4));
+
+        TestAssert.True(plan.UseLights);
+        TestAssert.True(plan.ShouldReconnectArduino);
+        TestAssert.True(plan.ShouldRestoreBackground);
+        TestAssert.Equal(2, plan.AllLightTargets.Count);
+        TestAssert.Equal(1, plan.RuleLightTargets.Count);
+        TestAssert.Equal(4, plan.RuleLightTargets[0].Pin);
+        TestAssert.Equal(4000, plan.SynchronizedDurationMs);
+        TestAssert.Equal(4000, plan.LightCommand!.DurationMs);
+        TestAssert.Equal(LightPattern.Rave, plan.LightCommand.Pattern);
     }
 }
 

@@ -1,7 +1,6 @@
-using System.Windows;
 using NeoTwitch.Models;
 using NeoTwitch.Services.Alerts;
-using WpfMessageBox = System.Windows.MessageBox;
+using NeoTwitch.Services.Ui;
 using static NeoTwitch.Services.Text.UiTextFormatter;
 
 namespace NeoTwitch;
@@ -30,19 +29,16 @@ public partial class MainWindow
         }
 
         var ruleName = FirstNonEmpty(_editingRule?.Name ?? "", "esta alerta");
-        var result = WpfMessageBox.Show(
-            this,
-            $"Hay cambios sin guardar en '{ruleName}'.\n\nQuieres guardarlos antes de continuar?",
+        var result = _dialog.ConfirmWithCancel(
             "Cambios sin guardar",
-            MessageBoxButton.YesNoCancel,
-            MessageBoxImage.Warning);
+            $"Hay cambios sin guardar en '{ruleName}'.\n\nQuieres guardarlos antes de continuar?");
 
-        if (result == MessageBoxResult.Cancel)
+        if (result == DialogChoice.Cancel)
         {
             return false;
         }
 
-        if (result == MessageBoxResult.Yes)
+        if (result == DialogChoice.Yes)
         {
             SavePendingRuleChanges();
             return true;

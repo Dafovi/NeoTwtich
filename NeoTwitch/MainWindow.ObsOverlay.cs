@@ -2,7 +2,6 @@ using System.Windows;
 using System.Windows.Controls;
 using NeoTwitch.Models;
 using NeoTwitch.ViewModels.Activity;
-using WpfMessageBox = System.Windows.MessageBox;
 
 namespace NeoTwitch;
 
@@ -34,7 +33,7 @@ public partial class MainWindow
         catch (Exception ex)
         {
             AddLog($"OBS overlay: {ex.Message}", ActivityLogKind.Important);
-            WpfMessageBox.Show(this, ex.Message, "OBS", MessageBoxButton.OK, MessageBoxImage.Warning);
+            _dialog.ShowWarning("OBS", ex.Message);
         }
     }
 

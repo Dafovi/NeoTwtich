@@ -4,7 +4,6 @@ using NeoTwitch.Services;
 using NeoTwitch.Services.Text;
 using NeoTwitch.ViewModels.Activity;
 using WpfClipboard = System.Windows.Clipboard;
-using WpfMessageBox = System.Windows.MessageBox;
 
 namespace NeoTwitch;
 
@@ -44,7 +43,7 @@ public partial class MainWindow
             _twitchConnectionError = ex.Message;
             UpdateStatusText();
             AddLog($"Twitch: {ex.Message}");
-            WpfMessageBox.Show(this, ex.Message, _text.Get(UiTextKeys.TwitchTitle), MessageBoxButton.OK, MessageBoxImage.Warning);
+            _dialog.ShowWarning(_text.Get(UiTextKeys.TwitchTitle), ex.Message);
         }
     }
 
@@ -63,12 +62,9 @@ public partial class MainWindow
             var session = await _authService.BeginDeviceFlowAsync(_config.TwitchClientId, CancellationToken.None);
             WpfClipboard.SetText(session.UserCode);
             _authService.OpenVerificationPage(session);
-            WpfMessageBox.Show(
-                this,
-                _text.Format(UiTextKeys.TwitchAuthorizePrompt, session.UserCode),
+            _dialog.ShowInformation(
                 _text.Get(UiTextKeys.TwitchLoginTitle),
-                MessageBoxButton.OK,
-                MessageBoxImage.Information);
+                _text.Format(UiTextKeys.TwitchAuthorizePrompt, session.UserCode));
 
             _config.Token = await _authService.PollForTokenAsync(_config.TwitchClientId, session, AddLog, CancellationToken.None);
             _config.Channel = await _authService.GetCurrentUserAsync(_config, CancellationToken.None);

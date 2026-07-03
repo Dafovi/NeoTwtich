@@ -1,7 +1,5 @@
-using System.Windows;
 using NeoTwitch.ViewModels.Activity;
 using NeoTwitch.ViewModels.Obs;
-using WpfMessageBox = System.Windows.MessageBox;
 
 namespace NeoTwitch;
 
@@ -30,7 +28,7 @@ public partial class MainWindow
         {
             _obsConnectionError = ex.Message;
             AddLog($"OBS: {ex.Message}", ActivityLogKind.Important);
-            WpfMessageBox.Show(this, ex.Message, "OBS", MessageBoxButton.OK, MessageBoxImage.Warning);
+            _dialog.ShowWarning("OBS", ex.Message);
             UpdateObsStatusText();
         }
     }
@@ -84,7 +82,7 @@ public partial class MainWindow
         {
             _obsConnectionError = ex.Message;
             AddLog($"OBS: {ex.Message}", ActivityLogKind.Important);
-            WpfMessageBox.Show(this, ex.Message, "OBS", MessageBoxButton.OK, MessageBoxImage.Warning);
+            _dialog.ShowWarning("OBS", ex.Message);
         }
         finally
         {

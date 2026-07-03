@@ -5,7 +5,6 @@ using NeoTwitch.Services.Alerts;
 using NeoTwitch.Services.Text;
 using NeoTwitch.Services.Ui;
 using NeoTwitch.ViewModels.Activity;
-using WpfMessageBox = System.Windows.MessageBox;
 using static NeoTwitch.Services.Text.UiTextFormatter;
 
 namespace NeoTwitch;
@@ -34,7 +33,7 @@ public partial class MainWindow
         {
             CrashReporter.Log(ex, _text.Get(UiTextKeys.RuleTestFailureCrash));
             AddLog(_text.Format(UiTextKeys.RuleTestFailureLog, ex.Message), ActivityLogKind.Important);
-            WpfMessageBox.Show(this, ex.Message, _text.Get(UiTextKeys.RuleTestTitle), MessageBoxButton.OK, MessageBoxImage.Warning);
+            _dialog.ShowWarning(_text.Get(UiTextKeys.RuleTestTitle), ex.Message);
             UpdateRuleTestButtonState();
         }
     }
@@ -62,7 +61,7 @@ public partial class MainWindow
                 DisplayNameService.For(rule.EventKind, _text),
                 DisplayNameService.For(simulatedEvent.Kind, _text));
             AddLog(_text.Format(UiTextKeys.RuleTestSimulatorLog, message), ActivityLogKind.Important);
-            WpfMessageBox.Show(this, message, _text.Get(UiTextKeys.RuleTestSimulatorTitle), MessageBoxButton.OK, MessageBoxImage.Warning);
+            _dialog.ShowWarning(_text.Get(UiTextKeys.RuleTestSimulatorTitle), message);
             return;
         }
 
@@ -109,7 +108,7 @@ public partial class MainWindow
         {
             var message = _text.Format(UiTextKeys.RuleTestMissingAudioPrompt, rule.Name);
             AddLog(_text.Format(UiTextKeys.RuleTestSimulatorLog, message), ActivityLogKind.Important);
-            WpfMessageBox.Show(this, message, _text.Get(UiTextKeys.RuleTestSimulatorTitle), MessageBoxButton.OK, MessageBoxImage.Warning);
+            _dialog.ShowWarning(_text.Get(UiTextKeys.RuleTestSimulatorTitle), message);
             return false;
         }
 

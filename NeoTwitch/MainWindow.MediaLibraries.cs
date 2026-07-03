@@ -12,8 +12,6 @@ using NeoTwitch.ViewModels.Activity;
 using NeoTwitch.ViewModels.Library;
 using NeoTwitch.ViewModels.Obs;
 using static NeoTwitch.Services.Ui.UiBrushFactory;
-using WpfMessageBox = System.Windows.MessageBox;
-using WpfOpenFileDialog = Microsoft.Win32.OpenFileDialog;
 
 namespace NeoTwitch;
 

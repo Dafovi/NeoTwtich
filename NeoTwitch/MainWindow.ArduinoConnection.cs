@@ -1,6 +1,4 @@
-using System.Windows;
 using NeoTwitch.Models;
-using WpfMessageBox = System.Windows.MessageBox;
 
 namespace NeoTwitch;
 
@@ -22,7 +20,7 @@ public partial class MainWindow
         catch (Exception ex)
         {
             AddLog($"Arduino: {ex.Message}");
-            WpfMessageBox.Show(this, ex.Message, "Arduino", MessageBoxButton.OK, MessageBoxImage.Warning);
+            _dialog.ShowWarning("Arduino", ex.Message);
         }
     }
 

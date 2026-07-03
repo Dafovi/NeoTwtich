@@ -1,8 +1,6 @@
-using System.Windows;
 using NeoTwitch.Services;
 using NeoTwitch.Services.Text;
 using NeoTwitch.ViewModels.Activity;
-using WpfMessageBox = System.Windows.MessageBox;
 
 namespace NeoTwitch;
 
@@ -26,14 +24,8 @@ public partial class MainWindow
             var prompt = canUpdateInPlace
                 ? _text.Format(UiTextKeys.UpdatePromptInPlace, result.CurrentVersion, result.LatestVersion)
                 : _text.Format(UiTextKeys.UpdatePromptReleasePage, result.CurrentVersion, result.LatestVersion);
-            var answer = WpfMessageBox.Show(
-                this,
-                prompt,
-                _text.Get(UiTextKeys.UpdateAvailableTitle),
-                MessageBoxButton.YesNo,
-                MessageBoxImage.Information);
 
-            if (answer == MessageBoxResult.Yes)
+            if (_dialog.Confirm(_text.Get(UiTextKeys.UpdateAvailableTitle), prompt))
             {
                 if (canUpdateInPlace)
                 {

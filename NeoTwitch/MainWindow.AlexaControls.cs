@@ -2,7 +2,6 @@ using System.Windows;
 using NeoTwitch.Models;
 using NeoTwitch.Services;
 using NeoTwitch.ViewModels.Activity;
-using WpfMessageBox = System.Windows.MessageBox;
 using WpfButton = System.Windows.Controls.Button;
 using WpfCheckBox = System.Windows.Controls.CheckBox;
 using WpfGrid = System.Windows.Controls.Grid;
@@ -58,7 +57,7 @@ public partial class MainWindow
             _alexaRelayConnected = false;
             CrashReporter.Log(ex, "No se pudo enviar la prueba de Alexa.");
             AddLog($"Alexa: {ex.Message}", ActivityLogKind.Important);
-            WpfMessageBox.Show(this, ex.Message, "Alexa", MessageBoxButton.OK, MessageBoxImage.Warning);
+            _dialog.ShowWarning("Alexa", ex.Message);
         }
         finally
         {

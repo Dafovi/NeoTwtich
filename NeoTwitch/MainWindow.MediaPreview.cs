@@ -7,7 +7,6 @@ using NeoTwitch.Services.Text;
 using NeoTwitch.ViewModels.Activity;
 using NeoTwitch.ViewModels.Library;
 using NeoTwitch.ViewModels.Obs;
-using WpfMessageBox = System.Windows.MessageBox;
 
 namespace NeoTwitch;
 
@@ -35,7 +34,7 @@ public partial class MainWindow
         if (!_config.Obs.IsConfigured || !_obsService.IsConnected)
         {
             AddLog(_text.Get(UiTextKeys.MediaObsConnectRequiredLog), ActivityLogKind.Important);
-            WpfMessageBox.Show(this, _text.Get(UiTextKeys.MediaObsConnectRequiredPrompt), "OBS", MessageBoxButton.OK, MessageBoxImage.Information);
+            _dialog.ShowInformation("OBS", _text.Get(UiTextKeys.MediaObsConnectRequiredPrompt));
             return;
         }
 
@@ -90,7 +89,7 @@ public partial class MainWindow
             CrashReporter.Log(ex, $"No se pudo probar medio OBS '{asset.DisplayName}'.");
             AddLog($"OBS: {ex.Message}", ActivityLogKind.Important);
             UpdateObsStatusText();
-            WpfMessageBox.Show(this, ex.Message, "OBS", MessageBoxButton.OK, MessageBoxImage.Warning);
+            _dialog.ShowWarning("OBS", ex.Message);
             await StopMediaPreviewAsync();
         }
     }

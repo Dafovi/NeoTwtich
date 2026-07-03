@@ -1,7 +1,5 @@
-using System.Windows;
 using NeoTwitch.Models;
 using NeoTwitch.Services;
-using WpfMessageBox = System.Windows.MessageBox;
 
 namespace NeoTwitch;
 
@@ -61,7 +59,7 @@ public partial class MainWindow
 
     private void RemoveRule(EventRule rule)
     {
-        if (WpfMessageBox.Show(this, $"Eliminar la alerta '{rule.Name}'?", "Alertas", MessageBoxButton.YesNo, MessageBoxImage.Question) != MessageBoxResult.Yes)
+        if (!_dialog.Confirm("Alertas", $"Eliminar la alerta '{rule.Name}'?"))
         {
             return;
         }

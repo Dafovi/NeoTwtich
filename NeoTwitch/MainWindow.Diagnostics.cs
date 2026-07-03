@@ -1,4 +1,3 @@
-using System.Windows;
 using NeoTwitch.Services;
 using NeoTwitch.Services.Diagnostics;
 using NeoTwitch.Services.Status;
@@ -7,7 +6,6 @@ using NeoTwitch.Services.Ui;
 using NeoTwitch.Views;
 using NeoTwitch.ViewModels.Activity;
 using NeoTwitch.ViewModels.Status;
-using WpfMessageBox = System.Windows.MessageBox;
 using static NeoTwitch.Services.Ui.UiBrushFactory;
 
 namespace NeoTwitch;
@@ -38,7 +36,7 @@ public partial class MainWindow
             CrashReporter.Log(ex, _text.Get(UiTextKeys.DiagnosticsFailureCrash));
             AddLog(_text.Format(UiTextKeys.DiagnosticsFailureLog, ex.Message), ActivityLogKind.Important);
             UpdateSettingsAppState(ConnectionVisualState.Disconnected);
-            WpfMessageBox.Show(this, ex.Message, _text.Get(UiTextKeys.DiagnosticsTitle), MessageBoxButton.OK, MessageBoxImage.Warning);
+            _dialog.ShowWarning(_text.Get(UiTextKeys.DiagnosticsTitle), ex.Message);
         }
     }
 

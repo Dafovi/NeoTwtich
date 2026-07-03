@@ -2,7 +2,6 @@ using System.Diagnostics;
 using System.Windows;
 using NeoTwitch.Shared;
 using NeoTwitch.ViewModels.Activity;
-using WpfMessageBox = System.Windows.MessageBox;
 using static NeoTwitch.Services.Text.UiTextFormatter;
 
 namespace NeoTwitch;
@@ -27,12 +26,7 @@ public partial class MainWindow
 
         if (string.IsNullOrWhiteSpace(channel))
         {
-            WpfMessageBox.Show(
-                this,
-                "Conecta Twitch primero para abrir el perfil del canal.",
-                "Twitch",
-                MessageBoxButton.OK,
-                MessageBoxImage.Information);
+            _dialog.ShowInformation("Twitch", "Conecta Twitch primero para abrir el perfil del canal.");
             return;
         }
 

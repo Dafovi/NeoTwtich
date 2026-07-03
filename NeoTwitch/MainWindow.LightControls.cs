@@ -1,7 +1,5 @@
-using System.Windows;
 using NeoTwitch.Models;
 using NeoTwitch.Services;
-using WpfMessageBox = System.Windows.MessageBox;
 
 namespace NeoTwitch;
 
@@ -37,7 +35,7 @@ public partial class MainWindow
 
         if (_config.LedStrips.Count == 1)
         {
-            WpfMessageBox.Show(this, "Deja al menos una tira configurada.", "Luces de fondo", MessageBoxButton.OK, MessageBoxImage.Information);
+            _dialog.ShowInformation("Luces de fondo", "Deja al menos una tira configurada.");
             return;
         }
 

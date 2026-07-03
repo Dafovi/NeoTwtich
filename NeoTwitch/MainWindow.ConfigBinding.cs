@@ -26,7 +26,7 @@ public partial class MainWindow
 
             if (_config.Rules.Count > 0)
             {
-                RulesList.SelectedIndex = 0;
+                _alertsViewModel.SelectedRule = _alertsViewModel.FirstVisibleRule() ?? _config.Rules[0];
             }
 
             if (_config.LedStrips.Count > 0)

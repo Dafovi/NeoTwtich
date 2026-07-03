@@ -57,20 +57,33 @@ public partial class MainWindow
             return;
         }
 
-        var slider = delta.Target switch
+        var current = delta.Target switch
         {
-            "Brightness" => BackgroundBrightnessSlider,
-            "Cycle" => BackgroundCycleSlider,
-            "Step" => BackgroundStepSlider,
-            _ => null
+            "Brightness" => _lightsViewModel.BackgroundBrightness,
+            "Cycle" => _lightsViewModel.BackgroundCycleMs,
+            "Step" => _lightsViewModel.BackgroundStepMs,
+            _ => double.NaN
         };
 
-        if (slider is null)
+        if (double.IsNaN(current) || !LightControlInputService.TryGetBackgroundRange(delta.Target, out var range))
         {
             return;
         }
 
-        slider.Value = LightControlInputService.AdjustValue(slider.Value, delta.Amount, slider.Minimum, slider.Maximum);
+        var value = LightControlInputService.AdjustValue(current, delta.Amount, range.Minimum, range.Maximum);
+        switch (delta.Target)
+        {
+            case "Brightness":
+                _lightsViewModel.BackgroundBrightness = value;
+                break;
+            case "Cycle":
+                _lightsViewModel.BackgroundCycleMs = value;
+                break;
+            case "Step":
+                _lightsViewModel.BackgroundStepMs = value;
+                break;
+        }
+
         SaveBackgroundFromFields();
         SaveConfig();
         UpdateSliderLabels();

@@ -955,11 +955,21 @@ static class LightControlInputTests
         var normal = LightControlInputService.GetRulePreset("");
         var fast = LightControlInputService.GetRulePreset("Fast");
         var backgroundSoft = LightControlInputService.GetBackgroundPreset("Soft");
+        var hasRuleRange = LightControlInputService.TryGetRuleRange("Duration", out var ruleRange);
+        var hasBackgroundRange = LightControlInputService.TryGetBackgroundRange("Step", out var backgroundRange);
+        var unknownRange = LightControlInputService.TryGetRuleRange("Nada", out _);
 
         TestAssert.Equal(180d, normal.Brightness);
         TestAssert.Equal(2200d, fast.DurationMs);
         TestAssert.Equal(110d, backgroundSoft.Brightness);
         TestAssert.Equal(260d, backgroundSoft.StepMs);
+        TestAssert.True(hasRuleRange);
+        TestAssert.Equal(250d, ruleRange.Minimum);
+        TestAssert.Equal(60000d, ruleRange.Maximum);
+        TestAssert.True(hasBackgroundRange);
+        TestAssert.Equal(10d, backgroundRange.Minimum);
+        TestAssert.Equal(5000d, backgroundRange.Maximum);
+        TestAssert.False(unknownRange);
     }
 
     public static void ParsesAndClampsValues()

@@ -45,6 +45,33 @@ public static class LightControlInputService
         return Math.Clamp(current + delta, minimum, maximum);
     }
 
+    public static bool TryGetRuleRange(string target, out LightValueRange range)
+    {
+        range = target switch
+        {
+            "Brightness" => new LightValueRange(0, 255),
+            "Duration" => new LightValueRange(250, 60000),
+            "Cycle" => new LightValueRange(10, 2000),
+            "Step" => new LightValueRange(10, 5000),
+            _ => new LightValueRange(0, 0)
+        };
+
+        return !string.IsNullOrWhiteSpace(target) && range.Maximum > range.Minimum;
+    }
+
+    public static bool TryGetBackgroundRange(string target, out LightValueRange range)
+    {
+        range = target switch
+        {
+            "Brightness" => new LightValueRange(0, 255),
+            "Cycle" => new LightValueRange(10, 2000),
+            "Step" => new LightValueRange(10, 5000),
+            _ => new LightValueRange(0, 0)
+        };
+
+        return !string.IsNullOrWhiteSpace(target) && range.Maximum > range.Minimum;
+    }
+
     public static bool TryParseSliderText(string text, double minimum, double maximum, out double value)
     {
         value = 0;
@@ -63,3 +90,5 @@ public sealed record RuleLightPresetValues(double Brightness, double DurationMs,
 public sealed record BackgroundLightPresetValues(double Brightness, double CycleMs, double StepMs);
 
 public sealed record LightSliderDelta(string Target, double Amount);
+
+public sealed record LightValueRange(double Minimum, double Maximum);

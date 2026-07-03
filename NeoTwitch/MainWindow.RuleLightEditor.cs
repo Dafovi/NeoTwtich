@@ -41,21 +41,37 @@ public partial class MainWindow
             return;
         }
 
-        var slider = delta.Target switch
+        var current = delta.Target switch
         {
-            "Brightness" => BrightnessSlider,
-            "Duration" => DurationSlider,
-            "Cycle" => CycleSlider,
-            "Step" => StepSlider,
-            _ => null
+            "Brightness" => _alertsViewModel.Editor.Brightness,
+            "Duration" => _alertsViewModel.Editor.DurationMs,
+            "Cycle" => _alertsViewModel.Editor.CycleMs,
+            "Step" => _alertsViewModel.Editor.StepMs,
+            _ => double.NaN
         };
 
-        if (slider is null)
+        if (double.IsNaN(current) || !LightControlInputService.TryGetRuleRange(delta.Target, out var range))
         {
             return;
         }
 
-        slider.Value = LightControlInputService.AdjustValue(slider.Value, delta.Amount, slider.Minimum, slider.Maximum);
+        var value = LightControlInputService.AdjustValue(current, delta.Amount, range.Minimum, range.Maximum);
+        switch (delta.Target)
+        {
+            case "Brightness":
+                _alertsViewModel.Editor.Brightness = value;
+                break;
+            case "Duration":
+                _alertsViewModel.Editor.DurationMs = value;
+                break;
+            case "Cycle":
+                _alertsViewModel.Editor.CycleMs = value;
+                break;
+            case "Step":
+                _alertsViewModel.Editor.StepMs = value;
+                break;
+        }
+
         if (SaveCurrentRuleFromFields())
         {
             UpdateRuleDirtyStateFromSnapshot();

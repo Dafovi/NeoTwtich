@@ -3,7 +3,6 @@ using NeoTwitch.Models;
 using NeoTwitch.Services;
 using NeoTwitch.Services.Text;
 using NeoTwitch.ViewModels.Activity;
-using WpfClipboard = System.Windows.Clipboard;
 
 namespace NeoTwitch;
 
@@ -60,7 +59,7 @@ public partial class MainWindow
         try
         {
             var session = await _authService.BeginDeviceFlowAsync(_config.TwitchClientId, CancellationToken.None);
-            WpfClipboard.SetText(session.UserCode);
+            _clipboard.SetText(session.UserCode);
             _authService.OpenVerificationPage(session);
             _dialog.ShowInformation(
                 _text.Get(UiTextKeys.TwitchLoginTitle),

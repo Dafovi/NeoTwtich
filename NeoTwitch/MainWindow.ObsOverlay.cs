@@ -27,7 +27,7 @@ public partial class MainWindow
         try
         {
             var url = BuildObsOverlayUrl();
-            System.Windows.Clipboard.SetText(url);
+            _clipboard.SetText(url);
             AddLog("OBS: enlace de overlay copiado.", ActivityLogKind.Obs);
         }
         catch (Exception ex)

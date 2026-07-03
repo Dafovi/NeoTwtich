@@ -30,7 +30,8 @@ public sealed class AppServices
         AlertQueueService alertQueue,
         DialogService dialog,
         FilePickerService filePicker,
-        ExternalLauncherService externalLauncher)
+        ExternalLauncherService externalLauncher,
+        ClipboardService clipboard)
     {
         SettingsStore = settingsStore;
         AudioPlayer = audioPlayer;
@@ -52,6 +53,7 @@ public sealed class AppServices
         Dialog = dialog;
         FilePicker = filePicker;
         ExternalLauncher = externalLauncher;
+        Clipboard = clipboard;
     }
 
     public SettingsStore SettingsStore { get; }
@@ -94,6 +96,8 @@ public sealed class AppServices
 
     public ExternalLauncherService ExternalLauncher { get; }
 
+    public ClipboardService Clipboard { get; }
+
     public static AppServices CreateDefault()
     {
         var activityLog = new ActivityLogService();
@@ -120,6 +124,7 @@ public sealed class AppServices
             new AlertQueueService(),
             new DialogService(),
             new FilePickerService(),
-            externalLauncher);
+            externalLauncher,
+            new ClipboardService());
     }
 }

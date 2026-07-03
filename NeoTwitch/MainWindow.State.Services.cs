@@ -48,4 +48,5 @@ public partial class MainWindow
     private Services.Ui.DialogService _dialog => _services.Dialog;
     private Services.Ui.FilePickerService _filePicker => _services.FilePicker;
     private Services.Ui.ExternalLauncherService _externalLauncher => _services.ExternalLauncher;
+    private Services.Ui.ClipboardService _clipboard => _services.Clipboard;
 }

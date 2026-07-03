@@ -1,10 +1,8 @@
-using System.Windows;
 using NeoTwitch.Models;
 using NeoTwitch.Services;
 using NeoTwitch.Services.Library;
 using NeoTwitch.Services.Text;
 using NeoTwitch.ViewModels.Activity;
-using WpfMessageBox = System.Windows.MessageBox;
 
 namespace NeoTwitch;
 
@@ -58,7 +56,7 @@ public partial class MainWindow
             return;
         }
 
-        if (WpfMessageBox.Show(this, _text.Format(UiTextKeys.LibraryDeleteAssetPrompt, audio.DisplayName), _text.Get(UiTextKeys.AudioTitle), MessageBoxButton.YesNo, MessageBoxImage.Question) != MessageBoxResult.Yes)
+        if (!_dialog.Confirm(_text.Get(UiTextKeys.AudioTitle), _text.Format(UiTextKeys.LibraryDeleteAssetPrompt, audio.DisplayName)))
         {
             return;
         }

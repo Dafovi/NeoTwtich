@@ -3,6 +3,7 @@ using NeoTwitch.Services.Alerts;
 using NeoTwitch.Services.Dashboard;
 using NeoTwitch.Services.Diagnostics;
 using NeoTwitch.Services.Text;
+using NeoTwitch.Services.Ui;
 using NeoTwitch.ViewModels.Activity;
 
 namespace NeoTwitch.Services;
@@ -26,7 +27,9 @@ public sealed class AppServices
         ActivityViewModel activityViewModel,
         DashboardSummaryService dashboardSummary,
         RuleSimulationService ruleSimulation,
-        AlertQueueService alertQueue)
+        AlertQueueService alertQueue,
+        DialogService dialog,
+        FilePickerService filePicker)
     {
         SettingsStore = settingsStore;
         AudioPlayer = audioPlayer;
@@ -45,6 +48,8 @@ public sealed class AppServices
         DashboardSummary = dashboardSummary;
         RuleSimulation = ruleSimulation;
         AlertQueue = alertQueue;
+        Dialog = dialog;
+        FilePicker = filePicker;
     }
 
     public SettingsStore SettingsStore { get; }
@@ -81,6 +86,10 @@ public sealed class AppServices
 
     public AlertQueueService AlertQueue { get; }
 
+    public DialogService Dialog { get; }
+
+    public FilePickerService FilePicker { get; }
+
     public static AppServices CreateDefault()
     {
         var activityLog = new ActivityLogService();
@@ -103,6 +112,8 @@ public sealed class AppServices
             new ActivityViewModel(activityLog),
             new DashboardSummaryService(),
             new RuleSimulationService(text),
-            new AlertQueueService());
+            new AlertQueueService(),
+            new DialogService(),
+            new FilePickerService());
     }
 }

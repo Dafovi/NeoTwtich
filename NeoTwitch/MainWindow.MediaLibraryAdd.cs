@@ -1,12 +1,10 @@
 using System.IO;
-using System.Windows;
 using NeoTwitch.Models;
 using NeoTwitch.Services.Library;
 using NeoTwitch.Services.Text;
+using NeoTwitch.Services.Ui;
 using NeoTwitch.ViewModels.Activity;
 using NeoTwitch.ViewModels.Library;
-using WpfMessageBox = System.Windows.MessageBox;
-using WpfOpenFileDialog = Microsoft.Win32.OpenFileDialog;
 
 namespace NeoTwitch;
 
@@ -14,24 +12,22 @@ public partial class MainWindow
 {
     private void BrowseNewMedia(MediaLibraryKind kind)
     {
-        var dialog = new WpfOpenFileDialog
-        {
-            Filter = _text.Get(MediaLibraryKindCatalog.Get(kind).FileDialogFilterKey),
-            CheckFileExists = true
-        };
-
-        if (dialog.ShowDialog(this) != true)
+        var title = MediaLibraryTitle(kind);
+        var fileName = _filePicker.OpenFile(new FilePickerRequest(
+            title,
+            _text.Get(MediaLibraryKindCatalog.Get(kind).FileDialogFilterKey)));
+        if (string.IsNullOrWhiteSpace(fileName))
         {
             return;
         }
 
         if (kind == MediaLibraryKind.Image)
         {
-            _imageLibraryViewModel.SetNewAssetPath(dialog.FileName, Path.GetFileNameWithoutExtension(dialog.FileName));
+            _imageLibraryViewModel.SetNewAssetPath(fileName, Path.GetFileNameWithoutExtension(fileName));
         }
         else
         {
-            _videoLibraryViewModel.SetNewAssetPath(dialog.FileName, Path.GetFileNameWithoutExtension(dialog.FileName));
+            _videoLibraryViewModel.SetNewAssetPath(fileName, Path.GetFileNameWithoutExtension(fileName));
         }
     }
 
@@ -42,7 +38,7 @@ public partial class MainWindow
         var title = MediaLibraryTitle(kind);
         if (string.IsNullOrWhiteSpace(path) || !File.Exists(path))
         {
-            WpfMessageBox.Show(this, _text.Format(UiTextKeys.MediaPickValidFile, title.ToLowerInvariant()), title, MessageBoxButton.OK, MessageBoxImage.Information);
+            _dialog.ShowInformation(title, _text.Format(UiTextKeys.MediaPickValidFile, title.ToLowerInvariant()));
             return;
         }
 

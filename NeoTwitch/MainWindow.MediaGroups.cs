@@ -1,10 +1,8 @@
-using System.Windows;
 using NeoTwitch.Models;
 using NeoTwitch.Services.Library;
 using NeoTwitch.Services.Text;
 using NeoTwitch.ViewModels.Activity;
 using NeoTwitch.ViewModels.Library;
-using WpfMessageBox = System.Windows.MessageBox;
 
 namespace NeoTwitch;
 
@@ -17,7 +15,7 @@ public partial class MainWindow
         var name = viewModel.NewGroupName.Trim();
         if (string.IsNullOrWhiteSpace(name))
         {
-            WpfMessageBox.Show(this, _text.Get(UiTextKeys.LibraryWriteGroupName), title, MessageBoxButton.OK, MessageBoxImage.Information);
+            _dialog.ShowInformation(title, _text.Get(UiTextKeys.LibraryWriteGroupName));
             return;
         }
 
@@ -78,12 +76,9 @@ public partial class MainWindow
         var library = GetMediaLibrary(kind);
         var count = LibraryGroupService.CountAssetsInGroup(library, group.Id);
         var title = MediaLibraryTitle(kind);
-        if (WpfMessageBox.Show(
-                this,
-                _text.Format(UiTextKeys.LibraryDeleteGroupPrompt, group.Name, count),
+        if (!_dialog.Confirm(
                 title,
-                MessageBoxButton.YesNo,
-                MessageBoxImage.Question) != MessageBoxResult.Yes)
+                _text.Format(UiTextKeys.LibraryDeleteGroupPrompt, group.Name, count)))
         {
             return;
         }

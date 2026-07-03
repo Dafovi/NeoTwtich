@@ -1,7 +1,5 @@
-using System.Windows;
 using NeoTwitch.Services.Text;
 using NeoTwitch.ViewModels.Library;
-using WpfMessageBox = System.Windows.MessageBox;
 
 namespace NeoTwitch;
 
@@ -22,7 +20,7 @@ public partial class MainWindow
         }
 
         var title = MediaLibraryTitle(kind);
-        if (WpfMessageBox.Show(this, _text.Format(UiTextKeys.LibraryDeleteAssetPrompt, asset.DisplayName), title, MessageBoxButton.YesNo, MessageBoxImage.Question) != MessageBoxResult.Yes)
+        if (!_dialog.Confirm(title, _text.Format(UiTextKeys.LibraryDeleteAssetPrompt, asset.DisplayName)))
         {
             return;
         }

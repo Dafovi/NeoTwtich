@@ -1,12 +1,10 @@
 using System.IO;
-using System.Windows;
 using System.Windows.Controls;
 using System.Windows.Threading;
 using NeoTwitch.Models;
 using NeoTwitch.Services.Text;
+using NeoTwitch.Services.Ui;
 using NeoTwitch.ViewModels.Activity;
-using WpfMessageBox = System.Windows.MessageBox;
-using WpfOpenFileDialog = Microsoft.Win32.OpenFileDialog;
 
 namespace NeoTwitch;
 
@@ -45,18 +43,15 @@ public partial class MainWindow
 
     private void BrowseNewAudio()
     {
-        var dialog = new WpfOpenFileDialog
-        {
-            Filter = "Audio|*.wav;*.mp3;*.wma;*.aac;*.m4a|Todos los archivos|*.*",
-            CheckFileExists = true
-        };
-
-        if (dialog.ShowDialog(this) != true)
+        var fileName = _filePicker.OpenFile(new FilePickerRequest(
+            _text.Get(UiTextKeys.AudioTitle),
+            "Audio|*.wav;*.mp3;*.wma;*.aac;*.m4a|Todos los archivos|*.*"));
+        if (string.IsNullOrWhiteSpace(fileName))
         {
             return;
         }
 
-        _audioLibraryViewModel.SetNewAssetPath(dialog.FileName, Path.GetFileNameWithoutExtension(dialog.FileName));
+        _audioLibraryViewModel.SetNewAssetPath(fileName, Path.GetFileNameWithoutExtension(fileName));
     }
 
     private async void SaveNewAudio()
@@ -64,7 +59,7 @@ public partial class MainWindow
         var path = _audioLibraryViewModel.NewAssetPath;
         if (string.IsNullOrWhiteSpace(path) || !File.Exists(path))
         {
-            WpfMessageBox.Show(this, _text.Get(UiTextKeys.AudioPickValidFile), _text.Get(UiTextKeys.AudioTitle), MessageBoxButton.OK, MessageBoxImage.Information);
+            _dialog.ShowInformation(_text.Get(UiTextKeys.AudioTitle), _text.Get(UiTextKeys.AudioPickValidFile));
             return;
         }
 

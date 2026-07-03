@@ -45,4 +45,6 @@ public partial class MainWindow
     private Services.Dashboard.DashboardSummaryService _dashboardSummary => _services.DashboardSummary;
     private Services.Alerts.RuleSimulationService _ruleSimulation => _services.RuleSimulation;
     private Services.Alerts.AlertQueueService _alertQueue => _services.AlertQueue;
+    private Services.Ui.DialogService _dialog => _services.Dialog;
+    private Services.Ui.FilePickerService _filePicker => _services.FilePicker;
 }

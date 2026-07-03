@@ -1,10 +1,8 @@
-using System.Windows;
 using NeoTwitch.Models;
 using NeoTwitch.Services.Library;
 using NeoTwitch.Services.Text;
 using NeoTwitch.ViewModels.Activity;
 using NeoTwitch.ViewModels.Library;
-using WpfMessageBox = System.Windows.MessageBox;
 
 namespace NeoTwitch;
 
@@ -15,7 +13,7 @@ public partial class MainWindow
         var name = _audioLibraryViewModel.NewGroupName.Trim();
         if (string.IsNullOrWhiteSpace(name))
         {
-            WpfMessageBox.Show(this, _text.Get(UiTextKeys.LibraryWriteGroupName), _text.Get(UiTextKeys.AudioTitle), MessageBoxButton.OK, MessageBoxImage.Information);
+            _dialog.ShowInformation(_text.Get(UiTextKeys.AudioTitle), _text.Get(UiTextKeys.LibraryWriteGroupName));
             return;
         }
 
@@ -73,12 +71,9 @@ public partial class MainWindow
         }
 
         var audioCount = LibraryGroupService.CountAssetsInGroup(_config.AudioLibrary, group.Id);
-        if (WpfMessageBox.Show(
-                this,
-                _text.Format(UiTextKeys.LibraryDeleteGroupPrompt, group.Name, audioCount),
+        if (!_dialog.Confirm(
                 _text.Get(UiTextKeys.AudioTitle),
-                MessageBoxButton.YesNo,
-                MessageBoxImage.Question) != MessageBoxResult.Yes)
+                _text.Format(UiTextKeys.LibraryDeleteGroupPrompt, group.Name, audioCount)))
         {
             return;
         }

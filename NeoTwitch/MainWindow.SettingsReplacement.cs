@@ -1,6 +1,4 @@
-using System.Windows;
 using NeoTwitch.ViewModels.Activity;
-using WpfMessageBox = System.Windows.MessageBox;
 
 namespace NeoTwitch;
 
@@ -8,12 +6,7 @@ public partial class MainWindow
 {
     private bool ConfirmSettingsReplacement(string title, string message)
     {
-        return WpfMessageBox.Show(
-            this,
-            message,
-            title,
-            MessageBoxButton.YesNo,
-            MessageBoxImage.Question) == MessageBoxResult.Yes;
+        return _dialog.Confirm(title, message);
     }
 
     private async Task ReplaceSettingsFromFileAsync(
@@ -32,11 +25,6 @@ public partial class MainWindow
         _config = _settingsStore.Import(path);
         LoadConfigIntoUi();
         AddLog(logMessage, ActivityLogKind.Important);
-        WpfMessageBox.Show(
-            this,
-            successMessage,
-            title,
-            MessageBoxButton.OK,
-            MessageBoxImage.Information);
+        _dialog.ShowInformation(title, successMessage);
     }
 }

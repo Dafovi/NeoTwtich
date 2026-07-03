@@ -66,8 +66,7 @@
 
                                 <ListBox x:Name="LegacyStripsList"
                                          BorderBrush="{DynamicResource ThemeBorderBrush}"
-                                         MinHeight="220"
-                                         SelectionChanged="StripsList_SelectionChanged">
+                                         MinHeight="220">
                                     <ListBox.ItemTemplate>
                                         <DataTemplate>
                                             <Border Padding="9" Margin="2,3" CornerRadius="7">
@@ -104,13 +103,13 @@
 
                                         <ListBox x:Name="StripsList"
                                                  ItemsSource="{Binding LedStripsView}"
+                                                 SelectedItem="{Binding SelectedStrip, Mode=TwoWay}"
                                                  BorderBrush="{DynamicResource ThemeBorderBrush}"
                                                  Background="Transparent"
                                                  BorderThickness="0"
                                                  MaxHeight="150"
                                                  ScrollViewer.VerticalScrollBarVisibility="Auto"
-                                                 ScrollViewer.HorizontalScrollBarVisibility="Disabled"
-                                                 SelectionChanged="StripsList_SelectionChanged">
+                                                 ScrollViewer.HorizontalScrollBarVisibility="Disabled">
                                             <ListBox.ItemTemplate>
                                                 <DataTemplate>
                                                     <Border BorderBrush="{DynamicResource ThemeBorderBrush}"

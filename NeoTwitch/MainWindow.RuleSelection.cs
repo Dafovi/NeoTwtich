@@ -1,5 +1,4 @@
 using System.Windows;
-using System.Windows.Controls;
 using System.Windows.Controls.Primitives;
 using System.Windows.Data;
 using NeoTwitch.Models;
@@ -39,7 +38,7 @@ public partial class MainWindow
         LoadSelectedRuleIntoUi();
     }
 
-    internal void StripsList_SelectionChanged(object sender, SelectionChangedEventArgs e)
+    private void LightsSelectedStripChanged(object? sender, EventArgs e)
     {
         if (_initializingComponent || _loadingUi)
         {

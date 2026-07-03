@@ -22,6 +22,7 @@ public sealed class LightsViewModel : ObservableObject
     private string _selectedStripName = "";
     private string _selectedStripPinText = "";
     private string _selectedStripLedCountText = "";
+    private LedStripConfig? _selectedStrip;
     private IEnumerable? _backgroundPatternChoices;
     private bool _backgroundEnabled;
     private string _backgroundTargetPins = "";
@@ -58,6 +59,8 @@ public sealed class LightsViewModel : ObservableObject
         SelectBackgroundLightPresetCommand = new RelayCommand(parameter => _selectBackgroundLightPreset(parameter));
         PickBackgroundLightColorCommand = new RelayCommand(parameter => _pickBackgroundLightColor(parameter));
     }
+
+    public event EventHandler? SelectedStripChanged;
 
     public RelayCommand AddStripCommand { get; }
 
@@ -131,6 +134,18 @@ public sealed class LightsViewModel : ObservableObject
     {
         get => _selectedStripLedCountText;
         set => SetProperty(ref _selectedStripLedCountText, value ?? "");
+    }
+
+    public LedStripConfig? SelectedStrip
+    {
+        get => _selectedStrip;
+        set
+        {
+            if (SetProperty(ref _selectedStrip, value))
+            {
+                SelectedStripChanged?.Invoke(this, EventArgs.Empty);
+            }
+        }
     }
 
     public IEnumerable? BackgroundPatternChoices

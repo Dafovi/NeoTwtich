@@ -11,26 +11,26 @@ public partial class MainWindow
     {
         var strip = ConfigurationItemFactory.CreateLedStrip(_config.LedStrips, _text);
         _config.LedStrips.Add(strip);
-        StripsList.SelectedItem = strip;
+        _lightsViewModel.SelectedStrip = strip;
         SaveConfig();
     }
 
     private void DuplicateStrip()
     {
-        if (StripsList.SelectedItem is not LedStripConfig strip)
+        if (_lightsViewModel.SelectedStrip is not LedStripConfig strip)
         {
             return;
         }
 
         var copy = strip.Duplicate();
         _config.LedStrips.Add(copy);
-        StripsList.SelectedItem = copy;
+        _lightsViewModel.SelectedStrip = copy;
         SaveConfig();
     }
 
     private void RemoveStrip()
     {
-        if (StripsList.SelectedItem is not LedStripConfig strip)
+        if (_lightsViewModel.SelectedStrip is not LedStripConfig strip)
         {
             return;
         }
@@ -41,9 +41,9 @@ public partial class MainWindow
             return;
         }
 
-        var index = StripsList.SelectedIndex;
+        var index = _config.LedStrips.IndexOf(strip);
         _config.LedStrips.Remove(strip);
-        StripsList.SelectedIndex = Math.Clamp(index - 1, 0, _config.LedStrips.Count - 1);
+        _lightsViewModel.SelectedStrip = _config.LedStrips[Math.Clamp(index - 1, 0, _config.LedStrips.Count - 1)];
         SaveConfig();
     }
 

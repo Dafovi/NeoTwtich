@@ -5,7 +5,6 @@ using WpfComboBox = System.Windows.Controls.ComboBox;
 using WpfDockPanel = System.Windows.Controls.DockPanel;
 using WpfGrid = System.Windows.Controls.Grid;
 using WpfItemsControl = System.Windows.Controls.ItemsControl;
-using WpfListBox = System.Windows.Controls.ListBox;
 using WpfPath = System.Windows.Shapes.Path;
 using WpfSlider = System.Windows.Controls.Slider;
 using WpfStackPanel = System.Windows.Controls.StackPanel;
@@ -16,7 +15,6 @@ namespace NeoTwitch;
 
 public partial class MainWindow
 {
-    private WpfListBox StripsList => LightsView.StripsList;
     private WpfCheckBox BackgroundEnabledCheck => LightsView.BackgroundEnabledCheck;
     private WpfTextBox BackgroundPinsBox => LightsView.BackgroundPinsBox;
     private WpfStackPanel BackgroundPatternGrid => LightsView.BackgroundPatternGrid;

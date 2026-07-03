@@ -10,8 +10,6 @@ public partial class LightsView : NeoTwitchView
         InitializeComponent();
     }
 
-    private void StripsList_SelectionChanged(object sender, SelectionChangedEventArgs e) => Host?.StripsList_SelectionChanged(sender, e);
-
     private void StripFieldChanged(object sender, TextChangedEventArgs e) => Host?.StripFieldChanged(sender, e);
 
     private void BackgroundFieldChanged(object sender, RoutedEventArgs e) => Host?.BackgroundFieldChanged(sender, e);

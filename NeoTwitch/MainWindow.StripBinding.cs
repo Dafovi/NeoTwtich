@@ -11,7 +11,7 @@ public partial class MainWindow
 
         try
         {
-            _lightsViewModel.LoadSelectedStrip(StripsList.SelectedItem as LedStripConfig);
+            _lightsViewModel.LoadSelectedStrip(_lightsViewModel.SelectedStrip);
         }
         finally
         {
@@ -22,7 +22,7 @@ public partial class MainWindow
 
     private void SaveCurrentStripFromFields()
     {
-        if (_loadingStrip || StripsList.SelectedItem is not LedStripConfig strip)
+        if (_loadingStrip || _lightsViewModel.SelectedStrip is not LedStripConfig strip)
         {
             return;
         }

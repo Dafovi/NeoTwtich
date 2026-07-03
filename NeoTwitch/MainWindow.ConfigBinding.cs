@@ -31,7 +31,7 @@ public partial class MainWindow
 
             if (_config.LedStrips.Count > 0)
             {
-                StripsList.SelectedIndex = 0;
+                _lightsViewModel.SelectedStrip = _config.LedStrips[0];
             }
 
             LoadSelectedRuleIntoUi();

@@ -77,6 +77,7 @@ public partial class MainWindow
                 AdjustBackgroundLightValue,
                 SelectBackgroundLightPreset,
                 PickBackgroundLightColor);
+            _lightsViewModel.SelectedStripChanged += LightsSelectedStripChanged;
             _settingsViewModel = new SettingsViewModel();
             _audioLibraryViewModel = new LibraryScreenViewModel<AudioLibraryRow, AudioGroupRow>();
             _imageLibraryViewModel = new LibraryScreenViewModel<MediaLibraryRow, MediaGroupRow>();

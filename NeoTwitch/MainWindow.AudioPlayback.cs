@@ -67,13 +67,7 @@ public partial class MainWindow
             ClearAudioPreviewState(audio.Id);
         }
 
-        _config.AudioLibrary.Remove(audio);
-        foreach (var rule in _config.Rules.Where(rule => string.Equals(rule.AudioAssetId, audio.Id, StringComparison.OrdinalIgnoreCase)))
-        {
-            rule.AudioAssetId = "";
-            rule.AudioPath = "";
-            rule.PlayAudio = rule.AudioSourceMode == AudioSourceMode.Group && !string.IsNullOrWhiteSpace(rule.AudioGroupId);
-        }
+        AudioLibraryMutationService.RemoveAudioAsset(_config, audio.Id);
 
         SaveConfig();
         RefreshAudioLibraryView();

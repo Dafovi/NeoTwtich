@@ -72,6 +72,7 @@ var tests = new (string Name, Action Body)[]
     ("AudioRuleAssetService resolves single assets", AudioRuleAssetTests.ResolvesSingleAssets),
     ("AudioRuleAssetService resolves group assets with existing files", AudioRuleAssetTests.ResolvesGroupAssetsWithExistingFiles),
     ("AudioRuleAssetService detects rule asset usage", AudioRuleAssetTests.DetectsRuleAssetUsage),
+    ("AudioLibraryMutationService removes assets and cleans rules", AudioLibraryMutationTests.RemovesAssetsAndCleansRules),
     ("LibraryGroupService creates and reuses groups", LibraryGroupServiceTests.CreatesAndReusesGroups),
     ("LibraryGroupService clears group references", LibraryGroupServiceTests.ClearsGroupReferences),
     ("LibraryGroupRowFactoryService builds audio and media groups", LibraryGroupRowFactoryTests.BuildsAudioAndMediaGroups),
@@ -1408,6 +1409,44 @@ static class AudioRuleAssetTests
                 AudioAssetId = "a1"
             },
             audio));
+    }
+}
+
+static class AudioLibraryMutationTests
+{
+    public static void RemovesAssetsAndCleansRules()
+    {
+        var config = AppConfig.CreateDefault();
+        config.AudioLibrary.Clear();
+        config.Rules.Clear();
+        config.AudioLibrary.Add(new AudioAssetConfig { Id = "a1", FilePath = @"C:\audio\follow.mp3" });
+        config.AudioLibrary.Add(new AudioAssetConfig { Id = "a2", FilePath = @"C:\audio\raid.mp3" });
+        config.Rules.Add(new EventRule
+        {
+            PlayAudio = true,
+            AudioSourceMode = AudioSourceMode.Single,
+            AudioAssetId = "a1",
+            AudioPath = @"C:\legacy\follow.mp3"
+        });
+        config.Rules.Add(new EventRule
+        {
+            PlayAudio = true,
+            AudioSourceMode = AudioSourceMode.Group,
+            AudioAssetId = "a1",
+            AudioGroupId = "g1"
+        });
+
+        var result = AudioLibraryMutationService.RemoveAudioAsset(config, "A1");
+
+        TestAssert.True(result.Removed);
+        TestAssert.Equal(1, config.AudioLibrary.Count);
+        TestAssert.Equal("a2", config.AudioLibrary[0].Id);
+        TestAssert.Equal(2, result.UpdatedRuleCount);
+        TestAssert.Equal("", config.Rules[0].AudioAssetId);
+        TestAssert.Equal("", config.Rules[0].AudioPath);
+        TestAssert.False(config.Rules[0].PlayAudio);
+        TestAssert.Equal("", config.Rules[1].AudioAssetId);
+        TestAssert.True(config.Rules[1].PlayAudio);
     }
 }
 

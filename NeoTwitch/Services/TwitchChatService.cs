@@ -9,12 +9,15 @@ namespace NeoTwitch.Services;
 
 public sealed class TwitchChatService : IDisposable
 {
-    private readonly HttpClient _http = new();
+    private readonly HttpClient _http;
+    private readonly bool _ownsHttpClient;
     private readonly IUiTextService _text;
 
-    public TwitchChatService(IUiTextService text)
+    public TwitchChatService(IUiTextService text, HttpClient? httpClient = null)
     {
         _text = text;
+        _http = httpClient ?? new HttpClient();
+        _ownsHttpClient = httpClient is null;
     }
 
     public async Task SendMessageAsync(AppConfig config, string message, CancellationToken cancellationToken)
@@ -82,6 +85,9 @@ public sealed class TwitchChatService : IDisposable
 
     public void Dispose()
     {
-        _http.Dispose();
+        if (_ownsHttpClient)
+        {
+            _http.Dispose();
+        }
     }
 }

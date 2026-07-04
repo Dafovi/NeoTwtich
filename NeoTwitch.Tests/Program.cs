@@ -57,6 +57,7 @@ var tests = new (string Name, Action Body)[]
     ("EventRuleMatcherService matches chat command tokens", EventRuleMatcherTests.MatchesChatCommandTokens),
     ("TwitchEventSubSubscriptionPlanner builds unique definitions", TwitchEventSubSubscriptionPlannerTests.BuildsUniqueDefinitions),
     ("TwitchEventSubMessageParser parses welcome and events", TwitchEventSubMessageParserTests.ParsesWelcomeAndEvents),
+    ("TwitchChatService sends chat API payload", TwitchChatServiceTests.SendsChatApiPayload),
     ("AlertDurationService resolves maximum positive duration", AlertDurationTests.ResolvesMaximumPositiveDuration),
     ("AlertDurationService clamps synchronized durations", AlertDurationTests.ClampsSynchronizedDurations),
     ("AlertQueueService uses injected clock for cooldowns", AlertQueueTests.UsesInjectedClockForCooldowns),
@@ -1099,6 +1100,58 @@ static class TwitchEventSubMessageParserTests
         TestAssert.Equal("Alguien", gift.UserName);
         TestAssert.Equal(3, gift.ViewerCount);
         TestAssert.Contains("regalo 3", gift.Title);
+    }
+}
+
+static class TwitchChatServiceTests
+{
+    public static void SendsChatApiPayload()
+    {
+        var handler = new CapturingHttpHandler();
+        using var http = new HttpClient(handler);
+        var service = new TwitchChatService(UiTextService.CreateDefault(), http);
+        var config = TestConfig.CreateDefault();
+        config.TwitchClientId = "client-id";
+        config.Token.AccessToken = "access-token";
+        config.Channel.UserId = "user-123";
+        config.Channel.Login = "canal";
+
+        service.SendMessageAsync(config, "Hola chat", CancellationToken.None).GetAwaiter().GetResult();
+
+        TestAssert.Equal(TwitchEventSubProtocol.ChatMessagesApiUrl, handler.RequestUri);
+        TestAssert.Equal("Bearer access-token", handler.Authorization);
+        TestAssert.Equal("client-id", handler.ClientId);
+        TestAssert.Contains("\"broadcaster_id\":\"user-123\"", handler.RequestBody);
+        TestAssert.Contains("\"sender_id\":\"user-123\"", handler.RequestBody);
+        TestAssert.Contains("\"message\":\"Hola chat\"", handler.RequestBody);
+    }
+
+    private sealed class CapturingHttpHandler : HttpMessageHandler
+    {
+        public string RequestUri { get; private set; } = "";
+
+        public string Authorization { get; private set; } = "";
+
+        public string ClientId { get; private set; } = "";
+
+        public string RequestBody { get; private set; } = "";
+
+        protected override async Task<HttpResponseMessage> SendAsync(HttpRequestMessage request, CancellationToken cancellationToken)
+        {
+            RequestUri = request.RequestUri?.ToString() ?? "";
+            Authorization = request.Headers.Authorization?.ToString() ?? "";
+            ClientId = request.Headers.TryGetValues("Client-Id", out var values)
+                ? values.FirstOrDefault() ?? ""
+                : "";
+            RequestBody = request.Content is null
+                ? ""
+                : await request.Content.ReadAsStringAsync(cancellationToken);
+
+            return new HttpResponseMessage(System.Net.HttpStatusCode.OK)
+            {
+                Content = new StringContent("{}")
+            };
+        }
     }
 }
 

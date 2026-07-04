@@ -68,6 +68,7 @@ var tests = new (string Name, Action Body)[]
     ("BackgroundLightRestoreService resolves apply plan", BackgroundLightRestoreTests.ResolvesApplyPlan),
     ("BackgroundLightRestoreService resolves restore plan", BackgroundLightRestoreTests.ResolvesRestorePlan),
     ("RulePinChoiceService builds pin choices", RulePinChoiceTests.BuildsPinChoices),
+    ("SerialPortDiscoveryService orders port infos", SerialPortDiscoveryTests.OrdersPortInfos),
     ("SerialPortNameService cleans friendly port names", SerialPortNameTests.CleansFriendlyPortNames),
     ("SerialLightProtocol resolves commands", SerialLightProtocolTests.ResolvesCommands),
     ("SerialLightProtocol detects responses", SerialLightProtocolTests.DetectsResponses),
@@ -1545,6 +1546,26 @@ static class SerialPortNameTests
         TestAssert.Equal("Arduino Uno", SerialPortNameService.CleanFriendlyName("Arduino Uno (COM3)", "COM3"));
         TestAssert.Equal("USB Serial Device", SerialPortNameService.CleanFriendlyName("USB\\VID_2341;USB Serial Device (COM7)", "COM7"));
         TestAssert.Equal("COM9", SerialPortNameService.CleanFriendlyName(null, "COM9"));
+    }
+}
+
+static class SerialPortDiscoveryTests
+{
+    public static void OrdersPortInfos()
+    {
+        var ports = SerialPortDiscoveryService.BuildPortInfos(
+            ["COM1", "COM7", "COM3", "COM7"],
+            new Dictionary<string, string>(StringComparer.OrdinalIgnoreCase)
+            {
+                ["COM1"] = "Puerto del sistema",
+                ["COM7"] = "USB Serial",
+                ["COM3"] = "Arduino Uno"
+            });
+
+        TestAssert.Equal(3, ports.Count);
+        TestAssert.Equal("COM3", ports[0].PortName);
+        TestAssert.True(ports[0].IsLikelyArduino);
+        TestAssert.Equal("COM1", ports[^1].PortName);
     }
 }
 

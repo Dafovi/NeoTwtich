@@ -112,7 +112,7 @@ public sealed class AppServices
         return new AppServices(
             new SettingsStore(text, timeProvider),
             new AudioPlayerService(text),
-            new SerialLightController(text),
+            new SerialLightController(text, timeProvider),
             new TwitchAuthService(text, externalLauncher, timeProvider),
             new TwitchChatService(text),
             new AlexaRelayService(text, timeProvider),

@@ -15,12 +15,14 @@ public sealed class SerialLightController : IDisposable
     private string _port = "";
     private readonly SemaphoreSlim _gate = new(1, 1);
     private readonly IUiTextService _text;
+    private readonly TimeProvider _timeProvider;
     private int _baudRate = 115200;
     private bool? _ackSupported;
 
-    public SerialLightController(IUiTextService text)
+    public SerialLightController(IUiTextService text, TimeProvider timeProvider)
     {
         _text = text;
+        _timeProvider = timeProvider;
     }
 
     public bool HasOpenPort => _handle is { IsInvalid: false, IsClosed: false };
@@ -184,12 +186,12 @@ public sealed class SerialLightController : IDisposable
             return;
         }
 
-        var deadline = DateTimeOffset.UtcNow.AddMilliseconds(AckTimeoutMs);
+        var deadline = _timeProvider.GetUtcNow().AddMilliseconds(AckTimeoutMs);
 
-        while (DateTimeOffset.UtcNow < deadline)
+        while (_timeProvider.GetUtcNow() < deadline)
         {
             cancellationToken.ThrowIfCancellationRequested();
-            var line = ReadLine(_handle, deadline, cancellationToken);
+            var line = ReadLine(_handle, deadline, _timeProvider, cancellationToken);
             if (string.IsNullOrWhiteSpace(line))
             {
                 continue;
@@ -222,12 +224,16 @@ public sealed class SerialLightController : IDisposable
         log(_text.Format(UiTextKeys.SerialNoCommandAckLog, commandName));
     }
 
-    private static string? ReadLine(SafeFileHandle handle, DateTimeOffset deadline, CancellationToken cancellationToken)
+    private static string? ReadLine(
+        SafeFileHandle handle,
+        DateTimeOffset deadline,
+        TimeProvider timeProvider,
+        CancellationToken cancellationToken)
     {
         var buffer = new byte[1];
         var line = new StringBuilder();
 
-        while (DateTimeOffset.UtcNow < deadline)
+        while (timeProvider.GetUtcNow() < deadline)
         {
             cancellationToken.ThrowIfCancellationRequested();
             if (!WindowsSerialPortApi.TryRead(handle, buffer, out var read))

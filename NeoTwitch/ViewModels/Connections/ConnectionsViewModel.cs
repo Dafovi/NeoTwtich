@@ -1,8 +1,6 @@
 using System.Collections;
-using System.Windows.Media;
 using NeoTwitch.Models;
 using NeoTwitch.Services.Status;
-using NeoTwitch.Services.Ui;
 using NeoTwitch.ViewModels.Core;
 
 namespace NeoTwitch.ViewModels.Connections;
@@ -347,44 +345,5 @@ public sealed class ConnectionsViewModel : ObservableObject
 
     private static void Noop()
     {
-    }
-}
-
-public sealed record ConnectionBadgeViewModel(
-    string Text,
-    SolidColorBrush ForegroundBrush,
-    SolidColorBrush BackgroundBrush,
-    SolidColorBrush BorderBrush)
-{
-    public static ConnectionBadgeViewModel From(ConnectionStateVisual visual)
-    {
-        return From(visual.Text, visual.Color);
-    }
-
-    public static ConnectionBadgeViewModel From(string text, string color)
-    {
-        return new ConnectionBadgeViewModel(
-            text,
-            UiBrushFactory.FrozenBrushFrom(color),
-            UiBrushFactory.TranslucentBrushFrom(color),
-            UiBrushFactory.FrozenBrushFrom(color));
-    }
-}
-
-public sealed record ConnectionButtonViewModel(
-    bool IsEnabled,
-    string Text,
-    Geometry IconGeometry)
-{
-    public static ConnectionButtonViewModel From(ConnectionButtonState state)
-    {
-        return From(state.Content, state.IconKey, state.IsEnabled);
-    }
-
-    public static ConnectionButtonViewModel From(string text, string iconKey, bool isEnabled)
-    {
-        var geometry = Geometry.Parse(IconPathCatalog.Get(iconKey));
-        geometry.Freeze();
-        return new ConnectionButtonViewModel(isEnabled, text, geometry);
     }
 }

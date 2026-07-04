@@ -89,7 +89,9 @@ var tests = new (string Name, Action Body)[]
     ("AudioRuleAssetService resolves single assets", AudioRuleAssetTests.ResolvesSingleAssets),
     ("AudioRuleAssetService resolves group assets with existing files", AudioRuleAssetTests.ResolvesGroupAssetsWithExistingFiles),
     ("AudioRuleAssetService detects rule asset usage", AudioRuleAssetTests.DetectsRuleAssetUsage),
+    ("AudioLibraryAddService adds asset and links rule", AudioLibraryAddTests.AddsAssetAndLinksRule),
     ("AudioLibraryMutationService removes assets and cleans rules", AudioLibraryMutationTests.RemovesAssetsAndCleansRules),
+    ("MediaLibraryAddService adds video metadata", MediaLibraryAddTests.AddsVideoMetadata),
     ("MediaLibraryMutationService removes assets and cleans rules", MediaLibraryMutationTests.RemovesAssetsAndCleansRules),
     ("LibraryAssetUsageService marks asset usage", LibraryAssetUsageTests.MarksAssetUsage),
     ("LibraryGroupService creates and reuses groups", LibraryGroupServiceTests.CreatesAndReusesGroups),
@@ -2163,6 +2165,36 @@ static class AudioLibraryMutationTests
     }
 }
 
+static class AudioLibraryAddTests
+{
+    public static void AddsAssetAndLinksRule()
+    {
+        var config = TestConfig.CreateDefault();
+        config.AudioLibrary.Clear();
+        config.Rules.Clear();
+        var rule = new EventRule { Id = "rule-1", PlayAudio = false };
+        config.Rules.Add(rule);
+
+        var result = AudioLibraryAddService.AddOrUpdateAsync(
+            config,
+            new AudioAssetAddRequest(@"C:\audio\follow.mp3", "", "group-1", "rule-1"),
+            _ => Task.FromResult<TimeSpan?>(TimeSpan.FromMilliseconds(3456.4)),
+            _ => true).GetAwaiter().GetResult();
+
+        TestAssert.True(result.Saved);
+        TestAssert.True(result.Created);
+        TestAssert.Equal(1, config.AudioLibrary.Count);
+        TestAssert.Equal("follow", config.AudioLibrary[0].Name);
+        TestAssert.Equal("group-1", config.AudioLibrary[0].GroupId);
+        TestAssert.Equal(3456, config.AudioLibrary[0].DurationMs);
+        TestAssert.True(rule.PlayAudio);
+        TestAssert.Equal(AudioSourceMode.Single, rule.AudioSourceMode);
+        TestAssert.Equal(config.AudioLibrary[0].Id, rule.AudioAssetId);
+        TestAssert.Equal(@"C:\audio\follow.mp3", rule.AudioPath);
+        TestAssert.Same(rule, result.LinkedRule);
+    }
+}
+
 static class MediaLibraryMutationTests
 {
     public static void RemovesAssetsAndCleansRules()
@@ -2199,6 +2231,29 @@ static class MediaLibraryMutationTests
         TestAssert.Equal("", config.Rules[0].ObsMediaAssetId);
         TestAssert.True(config.Rules[1].SendObsMedia);
         TestAssert.Equal("img1", config.Rules[1].ObsMediaAssetId);
+    }
+}
+
+static class MediaLibraryAddTests
+{
+    public static void AddsVideoMetadata()
+    {
+        var config = TestConfig.CreateDefault();
+        config.VideoLibrary.Clear();
+
+        var result = MediaLibraryAddService.AddOrUpdate(
+            config,
+            MediaLibraryKind.Video,
+            new MediaAssetAddRequest(@"C:\media\boom.mp4", "Boom", "group-2"),
+            videoDurationProbe: _ => 7890,
+            fileExists: _ => true);
+
+        TestAssert.True(result.Saved);
+        TestAssert.True(result.Created);
+        TestAssert.Equal(1, config.VideoLibrary.Count);
+        TestAssert.Equal("Boom", config.VideoLibrary[0].Name);
+        TestAssert.Equal("group-2", config.VideoLibrary[0].GroupId);
+        TestAssert.Equal(7890, config.VideoLibrary[0].DurationMs);
     }
 }
 

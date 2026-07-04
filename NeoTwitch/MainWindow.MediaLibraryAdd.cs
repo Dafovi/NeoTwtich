@@ -42,28 +42,15 @@ public partial class MainWindow
             return;
         }
 
-        var library = GetMediaLibrary(kind);
-        var existing = library.FirstOrDefault(asset => string.Equals(asset.FilePath, path, StringComparison.OrdinalIgnoreCase));
-        var asset = existing ?? new MediaAssetConfig { FilePath = path };
-        asset.Name = string.IsNullOrWhiteSpace(viewModel.NewAssetName)
-            ? Path.GetFileNameWithoutExtension(path)
-            : viewModel.NewAssetName.Trim();
-        asset.GroupId = viewModel.NewAssetGroupId;
-
-        if (kind == MediaLibraryKind.Image)
+        var result = MediaLibraryAddService.AddOrUpdate(
+            _config,
+            kind,
+            new MediaAssetAddRequest(path, viewModel.NewAssetName, viewModel.NewAssetGroupId));
+        var asset = result.Asset;
+        if (asset is null)
         {
-            var size = MediaMetadataService.ProbeImageSize(path);
-            asset.Width = size.Width;
-            asset.Height = size.Height;
-        }
-        else
-        {
-            asset.DurationMs = MediaMetadataService.ProbeVideoDurationMs(path);
-        }
-
-        if (existing is null)
-        {
-            library.Add(asset);
+            _dialog.ShowInformation(title, _text.Format(UiTextKeys.MediaPickValidFile, title.ToLowerInvariant()));
+            return;
         }
 
         ClearNewMediaForm(kind);

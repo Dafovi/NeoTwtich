@@ -2,6 +2,7 @@ using System.IO;
 using System.Windows.Controls;
 using System.Windows.Threading;
 using NeoTwitch.Models;
+using NeoTwitch.Services.Library;
 using NeoTwitch.Services.Text;
 using NeoTwitch.Services.Ui;
 using NeoTwitch.ViewModels.Activity;
@@ -63,38 +64,24 @@ public partial class MainWindow
             return;
         }
 
-        var existing = _config.AudioLibrary.FirstOrDefault(audio =>
-            string.Equals(audio.FilePath, path, StringComparison.OrdinalIgnoreCase));
-        var audio = existing ?? new AudioAssetConfig { FilePath = path };
-        audio.Name = string.IsNullOrWhiteSpace(_audioLibraryViewModel.NewAssetName)
-            ? Path.GetFileNameWithoutExtension(path)
-            : _audioLibraryViewModel.NewAssetName.Trim();
-        audio.GroupId = _audioLibraryViewModel.NewAssetGroupId;
-
-        var duration = await _audioPlayer.ProbeDurationAsync(path);
-        if (duration is { TotalMilliseconds: > 0 })
+        var result = await AudioLibraryAddService.AddOrUpdateAsync(
+            _config,
+            new AudioAssetAddRequest(
+                path,
+                _audioLibraryViewModel.NewAssetName,
+                _audioLibraryViewModel.NewAssetGroupId,
+                _audioLibraryViewModel.NewAssetAlertId),
+            _audioPlayer.ProbeDurationAsync);
+        var audio = result.Asset;
+        if (audio is null)
         {
-            audio.DurationMs = (int)Math.Round(duration.Value.TotalMilliseconds);
+            _dialog.ShowInformation(_text.Get(UiTextKeys.AudioTitle), _text.Get(UiTextKeys.AudioPickValidFile));
+            return;
         }
 
-        if (existing is null)
+        if (ReferenceEquals(_alertsViewModel.SelectedRule, result.LinkedRule))
         {
-            _config.AudioLibrary.Add(audio);
-        }
-
-        var selectedRuleId = _audioLibraryViewModel.NewAssetAlertId;
-        var rule = _config.Rules.FirstOrDefault(item => string.Equals(item.Id, selectedRuleId, StringComparison.OrdinalIgnoreCase));
-        if (rule is not null)
-        {
-            rule.PlayAudio = true;
-            rule.AudioSourceMode = AudioSourceMode.Single;
-            rule.AudioAssetId = audio.Id;
-            rule.AudioGroupId = "";
-            rule.AudioPath = audio.FilePath;
-            if (ReferenceEquals(_alertsViewModel.SelectedRule, rule))
-            {
-                LoadSelectedRuleIntoUi();
-            }
+            LoadSelectedRuleIntoUi();
         }
 
         _audioLibraryViewModel.ClearNewAssetForm();

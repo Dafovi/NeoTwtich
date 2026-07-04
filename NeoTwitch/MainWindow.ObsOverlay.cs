@@ -28,12 +28,12 @@ public partial class MainWindow
         {
             var url = BuildObsOverlayUrl();
             _clipboard.SetText(url);
-            AddLog("OBS: enlace de overlay copiado.", ActivityLogKind.Obs);
+            AddLog(_text.Get(Services.Text.UiTextKeys.ObsOverlayCopiedLog), ActivityLogKind.Obs);
         }
         catch (Exception ex)
         {
-            AddLog($"OBS overlay: {ex.Message}", ActivityLogKind.Important);
-            _dialog.ShowWarning("OBS", ex.Message);
+            AddLog(_text.Format(Services.Text.UiTextKeys.ObsOverlayFailureLog, ex.Message), ActivityLogKind.Important);
+            _dialog.ShowWarning(_text.Get(Services.Text.UiTextKeys.ObsTitle), ex.Message);
         }
     }
 
@@ -78,7 +78,7 @@ public partial class MainWindow
         }
         catch (Exception ex)
         {
-            AddLog($"OBS overlay: {ex.Message}", ActivityLogKind.Important);
+            AddLog(_text.Format(Services.Text.UiTextKeys.ObsOverlayFailureLog, ex.Message), ActivityLogKind.Important);
         }
     }
 
@@ -90,7 +90,7 @@ public partial class MainWindow
         }
         catch (Exception ex)
         {
-            AddLog($"OBS overlay: {ex.Message}", ActivityLogKind.Important);
+            AddLog(_text.Format(Services.Text.UiTextKeys.ObsOverlayFailureLog, ex.Message), ActivityLogKind.Important);
         }
     }
 }

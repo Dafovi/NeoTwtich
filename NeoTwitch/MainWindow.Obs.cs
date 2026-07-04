@@ -10,7 +10,7 @@ public partial class MainWindow
     private void OpenObsGuide()
     {
         _externalLauncher.Open(NeoTwitchProduct.Obs.WebSocketGuideUrl);
-        AddLog("OBS: abriendo guia de obs-websocket.", ActivityLogKind.Obs);
+        AddLog(_text.Get(Services.Text.UiTextKeys.ObsOpenGuideLog), ActivityLogKind.Obs);
     }
 
     internal async void ObsSettingsChanged(object sender, RoutedEventArgs e)
@@ -29,7 +29,7 @@ public partial class MainWindow
         {
             await _obsService.DisconnectAsync();
             _obsViewModel.ClearScenes();
-            AddLog("OBS desconectado porque cambio la configuracion de conexion.", ActivityLogKind.Obs);
+            AddLog(_text.Get(Services.Text.UiTextKeys.ObsDisconnectedConfigChangedLog), ActivityLogKind.Obs);
         }
 
         _obsConnectionError = "";
@@ -56,7 +56,7 @@ public partial class MainWindow
                 await _obsService.DisconnectAsync();
                 _obsConnectionError = "";
                 _obsViewModel.ClearScenes();
-                AddLog("OBS desconectado.", ActivityLogKind.Obs);
+                AddLog(_text.Get(Services.Text.UiTextKeys.ObsDisconnectedLog), ActivityLogKind.Obs);
                 UpdateObsStatusText();
                 return;
             }
@@ -67,7 +67,7 @@ public partial class MainWindow
         {
             _obsConnectionError = ex.Message;
             AddLog($"OBS: {ex.Message}", ActivityLogKind.Important);
-            _dialog.ShowWarning("OBS", ex.Message);
+            _dialog.ShowWarning(_text.Get(Services.Text.UiTextKeys.ObsTitle), ex.Message);
             UpdateObsStatusText();
         }
     }
@@ -93,13 +93,13 @@ public partial class MainWindow
             UpdateObsStatusText();
             var result = await _obsService.RefreshScenesAsync(CancellationToken.None);
             ApplyObsResult(result);
-            AddLog("OBS: escenas actualizadas.", ActivityLogKind.Obs);
+            AddLog(_text.Get(Services.Text.UiTextKeys.ObsScenesUpdatedLog), ActivityLogKind.Obs);
         }
         catch (Exception ex)
         {
             _obsConnectionError = ex.Message;
             AddLog($"OBS: {ex.Message}", ActivityLogKind.Important);
-            _dialog.ShowWarning("OBS", ex.Message);
+            _dialog.ShowWarning(_text.Get(Services.Text.UiTextKeys.ObsTitle), ex.Message);
         }
         finally
         {
@@ -112,7 +112,7 @@ public partial class MainWindow
     {
         if (!_config.Obs.Enabled)
         {
-            AddLog("OBS esta desactivado en Conexiones.", ActivityLogKind.Obs);
+            AddLog(_text.Get(Services.Text.UiTextKeys.ObsDisabledLog), ActivityLogKind.Obs);
             UpdateObsStatusText();
             return;
         }
@@ -125,7 +125,11 @@ public partial class MainWindow
         {
             var result = await _obsService.ConnectAsync(_config.Obs, CancellationToken.None);
             ApplyObsResult(result);
-            AddLog($"OBS conectado. Escena actual: {FirstNonEmpty(result.CurrentScene, "sin escena")}.", ActivityLogKind.Obs);
+            AddLog(
+                _text.Format(
+                    Services.Text.UiTextKeys.ObsConnectedSceneLog,
+                    FirstNonEmpty(result.CurrentScene, _text.Get(Services.Text.UiTextKeys.ObsNoScene))),
+                ActivityLogKind.Obs);
         }
         finally
         {

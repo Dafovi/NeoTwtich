@@ -22,13 +22,13 @@ public partial class MainWindow
 
             var result = await _obsService.SetCurrentProgramSceneAsync(sceneName, CancellationToken.None);
             ApplyObsResult(result);
-            AddLog($"OBS: escena cambiada a {sceneName}.", ActivityLogKind.Obs);
+            AddLog(_text.Format(Services.Text.UiTextKeys.ObsSceneChangedLog, sceneName), ActivityLogKind.Obs);
         }
         catch (Exception ex)
         {
             _obsConnectionError = ex.Message;
             AddLog($"OBS: {ex.Message}", ActivityLogKind.Important);
-            _dialog.ShowWarning("OBS", ex.Message);
+            _dialog.ShowWarning(_text.Get(Services.Text.UiTextKeys.ObsTitle), ex.Message);
             UpdateObsStatusText();
         }
     }
@@ -65,7 +65,7 @@ public partial class MainWindow
             previousScene = _obsService.CurrentScene;
             var result = await _obsService.SetCurrentProgramSceneAsync(sceneName, CancellationToken.None);
             ApplyObsResult(result);
-            AddLog($"OBS: probando escena '{sceneName}' por 5 segundos.", ActivityLogKind.Obs);
+            AddLog(_text.Format(Services.Text.UiTextKeys.ObsScenePreviewStartedLog, sceneName), ActivityLogKind.Obs);
 
             await Task.Delay(TimeSpan.FromSeconds(5));
 
@@ -75,14 +75,14 @@ public partial class MainWindow
             {
                 result = await _obsService.SetCurrentProgramSceneAsync(previousScene, CancellationToken.None);
                 ApplyObsResult(result);
-                AddLog($"OBS: prueba finalizada, regreso a '{previousScene}'.", ActivityLogKind.Obs);
+                AddLog(_text.Format(Services.Text.UiTextKeys.ObsScenePreviewRestoredLog, previousScene), ActivityLogKind.Obs);
             }
         }
         catch (Exception ex)
         {
             _obsConnectionError = ex.Message;
             AddLog($"OBS: {ex.Message}", ActivityLogKind.Important);
-            _dialog.ShowWarning("OBS", ex.Message);
+            _dialog.ShowWarning(_text.Get(Services.Text.UiTextKeys.ObsTitle), ex.Message);
         }
         finally
         {

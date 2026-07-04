@@ -36,13 +36,13 @@ public partial class MainWindow
             var targetScene = ObsRulePlanService.ResolveTargetScene(rule);
             var result = await _obsService.SetCurrentProgramSceneAsync(targetScene, cancellationToken);
             ApplyObsResult(result);
-            AddLog($"OBS: escena '{targetScene}' enviada para '{rule.Name}'.", ActivityLogKind.Obs);
+            AddLog(_text.Format(Services.Text.UiTextKeys.ObsRuleSceneSentLog, targetScene, rule.Name), ActivityLogKind.Obs);
 
             return ObsRulePlanService.BuildSceneRestoreRequest(
                 rule,
                 previousScene,
                 targetScene,
-                DateTimeOffset.UtcNow);
+                _timeProvider.GetUtcNow());
         }
         catch (OperationCanceledException)
         {
@@ -69,7 +69,7 @@ public partial class MainWindow
         {
             if (!restoreImmediately)
             {
-                var remaining = restore.Delay - (DateTimeOffset.UtcNow - restore.StartedAt);
+                var remaining = restore.Delay - (_timeProvider.GetUtcNow() - restore.StartedAt);
                 if (remaining > TimeSpan.Zero)
                 {
                     await Task.Delay(remaining);
@@ -93,7 +93,7 @@ public partial class MainWindow
 
             var result = await _obsService.SetCurrentProgramSceneAsync(restore.PreviousScene, CancellationToken.None);
             ApplyObsResult(result);
-            AddLog($"OBS: escena restaurada a '{restore.PreviousScene}'.", ActivityLogKind.Obs);
+            AddLog(_text.Format(Services.Text.UiTextKeys.ObsRuleSceneRestoredLog, restore.PreviousScene), ActivityLogKind.Obs);
         }
         catch (Exception ex)
         {

@@ -10,56 +10,26 @@ public static class ActivityLogPresentationService
         var statusText = ChooseStatusText(message, kind);
         var activityIconPath = ChooseActivityIconPath(message, kind, sourceKey);
         var title = BuildTitle(message, kind);
+        var source = ActivityLogSourceCatalog.Get(sourceKey);
 
         return new ActivityLogPresentation(
             SourceKey: sourceKey,
             FilterKey: sourceKey,
             IsImportant: kind == ActivityLogKind.Important || !string.Equals(statusText, "OK", StringComparison.OrdinalIgnoreCase),
-            SourceName: SourceDisplayName(sourceKey),
+            SourceName: source.DisplayName,
             Category: ActivityLogClassifier.ResolveCategory(message, kind),
             Title: title,
             Description: BuildDescription(message, title),
             AccentColor: ChooseAccentColor(message, kind),
-            SourceAccentColor: ChooseSourceAccentColor(sourceKey),
-            SourceIconPath: ChooseServiceIconPath(sourceKey),
-            SourceIconKey: ChooseSourceIconKey(sourceKey),
+            SourceAccentColor: source.AccentColor,
+            SourceIconPath: source.IconPath,
+            SourceIconKey: source.IconKey,
             StatusText: statusText,
             StatusAccentColor: StatusAccent(statusText),
             StatusIconPath: ChooseStatusIconPath(statusText, sourceKey),
             ActivityIconPath: activityIconPath,
             ActivityIconUsesOriginalImage: IsServiceIconPath(activityIconPath),
             ActivityIconKey: ChooseIconKey(message, kind));
-    }
-
-    private static string ChooseSourceAccentColor(string sourceKey)
-    {
-        return sourceKey.ToUpperInvariant() switch
-        {
-            "TWITCH" => "#9146FF",
-            "ARDUINO" => "#00878F",
-            "ALEXA" => "#2FB4E9",
-            "AUDIO" => "#B56CFF",
-            "OBS" => "#22C55E",
-            "EVENTO" => "#22C55E",
-            "SISTEMA" => "#94A3B8",
-            "IMPORTANTE" => "#FFB020",
-            _ => "#14B8A6"
-        };
-    }
-
-    private static string SourceDisplayName(string sourceKey)
-    {
-        return sourceKey switch
-        {
-            "TWITCH" => "Twitch",
-            "ARDUINO" => "Arduino",
-            "ALEXA" => "Alexa",
-            "AUDIO" => "Audio",
-            "OBS" => "OBS",
-            "EVENTO" => "Evento",
-            "IMPORTANTE" => "Importante",
-            _ => "Sistema"
-        };
     }
 
     private static string BuildTitle(string message, ActivityLogKind kind)
@@ -252,19 +222,6 @@ public static class ActivityLogPresentationService
         return kind == ActivityLogKind.Important ? "#FFB020" : "#AFA4CC";
     }
 
-    private static string ChooseServiceIconPath(string sourceKey)
-    {
-        return sourceKey switch
-        {
-            "TWITCH" => "Assets/Icons/service_twitch.png",
-            "ARDUINO" => "Assets/Icons/service_arduino.png",
-            "ALEXA" => "Assets/Icons/service_alexa.png",
-            "AUDIO" => "Assets/Icons/service_audio.png",
-            "OBS" => "Assets/ServiceObs.png",
-            _ => ""
-        };
-    }
-
     private static string ChooseActivityIconPath(string message, ActivityLogKind kind, string sourceKey)
     {
         var text = message.ToLowerInvariant();
@@ -299,24 +256,13 @@ public static class ActivityLogPresentationService
             return "Assets/Icons/status_important.png";
         }
 
-        return ChooseServiceIconPath(sourceKey);
+        return ActivityLogSourceCatalog.Get(sourceKey).IconPath;
     }
 
     private static bool IsServiceIconPath(string iconPath)
     {
         return iconPath.Contains("/service_", StringComparison.OrdinalIgnoreCase)
             || iconPath.Contains("\\service_", StringComparison.OrdinalIgnoreCase);
-    }
-
-    private static string ChooseSourceIconKey(string sourceKey)
-    {
-        return sourceKey switch
-        {
-            "EVENTO" => "Event",
-            "IMPORTANTE" => "Warning",
-            "SISTEMA" => "Settings",
-            _ => "Activity"
-        };
     }
 
     private static string ChooseStatusText(string message, ActivityLogKind kind)

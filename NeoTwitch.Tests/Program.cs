@@ -113,6 +113,7 @@ var tests = new (string Name, Action Body)[]
     ("ActivityLogService trims activity and dashboard entries", ActivityLogServiceTests.TrimsActivityAndDashboardEntries),
     ("ActivityLogService filters entries and search text", ActivityLogServiceTests.FiltersEntriesAndSearchText),
     ("ActivityLogClassifier resolves sources and categories", ActivityLogClassifierTests.ResolvesSourcesAndCategories),
+    ("ActivityLogSourceCatalog maps source metadata", ActivityLogSourceCatalogTests.MapsSourceMetadata),
     ("ActivityLogPresentationService classifies display metadata", ActivityLogPresentationTests.ClassifiesDisplayMetadata),
     ("ActivityViewModel filters entries view", ActivityViewModelTests.FiltersEntriesView),
     ("ActivityViewModel maps filter properties", ActivityViewModelTests.MapsFilterProperties),
@@ -2700,6 +2701,26 @@ static class ActivityLogPresentationTests
         TestAssert.Equal("Error", arduinoError.StatusText);
         TestAssert.True(arduinoError.IsImportant);
         TestAssert.Equal("Assets/Icons/status_error.png", arduinoError.StatusIconPath);
+    }
+}
+
+static class ActivityLogSourceCatalogTests
+{
+    public static void MapsSourceMetadata()
+    {
+        var twitch = ActivityLogSourceCatalog.Get("TWITCH");
+        TestAssert.Equal("Twitch", twitch.DisplayName);
+        TestAssert.Equal("#9146FF", twitch.AccentColor);
+        TestAssert.Equal("Assets/Icons/service_twitch.png", twitch.IconPath);
+        TestAssert.Equal("Activity", twitch.IconKey);
+
+        var eventSource = ActivityLogSourceCatalog.Get("EVENTO");
+        TestAssert.Equal("Evento", eventSource.DisplayName);
+        TestAssert.Equal("Event", eventSource.IconKey);
+
+        var unknown = ActivityLogSourceCatalog.Get("desconocido");
+        TestAssert.Equal("Sistema", unknown.DisplayName);
+        TestAssert.Equal("#14B8A6", unknown.AccentColor);
     }
 }
 

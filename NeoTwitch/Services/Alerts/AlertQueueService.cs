@@ -6,15 +6,17 @@ public sealed class AlertQueueService
 {
     private readonly object _sync = new();
     private readonly TimeProvider _timeProvider;
+    private readonly Func<string> _idFactory;
     private readonly List<QueuedAlertSlot> _pendingSlots = [];
     private readonly Dictionary<string, DateTimeOffset> _lastRuleStartTimes = new(StringComparer.OrdinalIgnoreCase);
     private string _runningRuleId = "";
     private string _lastStartedRuleId = "";
     private DateTimeOffset _lastAlertStartAt = DateTimeOffset.MinValue;
 
-    public AlertQueueService(TimeProvider timeProvider)
+    public AlertQueueService(TimeProvider timeProvider, Func<string>? idFactory = null)
     {
         _timeProvider = timeProvider;
+        _idFactory = idFactory ?? (() => Guid.NewGuid().ToString("N"));
     }
 
     public QueuedAlertSlot? TryReserve(
@@ -77,7 +79,7 @@ public sealed class AlertQueueService
                 return null;
             }
 
-            var slot = new QueuedAlertSlot(Guid.NewGuid().ToString("N"), rule.Id, rule.Name, twitchEvent.Kind);
+            var slot = new QueuedAlertSlot(_idFactory(), rule.Id, rule.Name, twitchEvent.Kind);
             _pendingSlots.Add(slot);
             reason = "";
             return slot;

@@ -1316,7 +1316,8 @@ static class AlertQueueTests
     public static void UsesInjectedClockForCooldowns()
     {
         var timeProvider = new FixedTimeProvider(new DateTimeOffset(2026, 6, 1, 12, 0, 0, TimeSpan.Zero));
-        var queue = new AlertQueueService(timeProvider);
+        var nextId = 0;
+        var queue = new AlertQueueService(timeProvider, () => $"slot-{++nextId}");
         var rule = new EventRule
         {
             Id = "rule-follow",
@@ -1338,9 +1339,11 @@ static class AlertQueueTests
         var allowed = queue.TryReserve(rule, twitchEvent, effectIsRunning: false, options, out var allowedReason);
 
         TestAssert.True(first is not null, firstReason);
+        TestAssert.Equal("slot-1", first!.Id);
         TestAssert.Equal<QueuedAlertSlot?>(null, blocked);
         TestAssert.Contains("enfriamiento", blockedReason);
         TestAssert.True(allowed is not null, allowedReason);
+        TestAssert.Equal("slot-2", allowed!.Id);
     }
 }
 

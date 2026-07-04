@@ -1,5 +1,6 @@
 using NeoTwitch.Models;
 using NeoTwitch.Services.Alerts;
+using NeoTwitch.Services.Text;
 using NeoTwitch.Services.Ui;
 using static NeoTwitch.Services.Text.UiTextFormatter;
 
@@ -18,7 +19,7 @@ public partial class MainWindow
         CaptureCurrentRuleSnapshot();
         SetRuleDirtyState(false);
         ScheduleTwitchSubscriptionRefreshIfNeeded();
-        AddLog("Alerta guardada.");
+        AddLog(_text.Get(UiTextKeys.RuleSavedLog));
     }
 
     private bool ResolvePendingRuleChanges()
@@ -28,10 +29,10 @@ public partial class MainWindow
             return true;
         }
 
-        var ruleName = FirstNonEmpty(_editingRule?.Name ?? "", "esta alerta");
+        var ruleName = FirstNonEmpty(_editingRule?.Name ?? "", _text.Get(UiTextKeys.RuleUnsavedFallbackName));
         var result = _dialog.ConfirmWithCancel(
-            "Cambios sin guardar",
-            $"Hay cambios sin guardar en '{ruleName}'.\n\nQuieres guardarlos antes de continuar?");
+            _text.Get(UiTextKeys.RuleUnsavedChangesTitle),
+            _text.Format(UiTextKeys.RuleUnsavedChangesPrompt, ruleName));
 
         if (result == DialogChoice.Cancel)
         {

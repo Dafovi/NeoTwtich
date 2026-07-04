@@ -68,6 +68,13 @@ public static class UiTextKeys
     public const string ConfigurationFallbackRuleName = "configuration.fallback_rule_name";
     public const string ConfigurationFallbackLedStripName = "configuration.fallback_led_strip_name";
     public const string RuleDeletePrompt = "rule.delete_prompt";
+    public const string RuleSavedLog = "rule.saved_log";
+    public const string RuleUnsavedFallbackName = "rule.unsaved_fallback_name";
+    public const string RuleUnsavedChangesTitle = "rule.unsaved_changes_title";
+    public const string RuleUnsavedChangesPrompt = "rule.unsaved_changes_prompt";
+    public const string RuleSavePendingTooltip = "rule.save_pending_tooltip";
+    public const string RuleSaveCleanTooltip = "rule.save_clean_tooltip";
+    public const string RuleCountText = "rule.count_text";
     public const string LightsKeepOneStripPrompt = "lights.keep_one_strip_prompt";
 
     public const string ExternalTwitchConsoleOpenedLog = "external.twitch_console_opened_log";

@@ -245,8 +245,8 @@ public sealed partial class AlertsViewModel : ObservableObject
     public double SaveButtonOpacity => HasUnsavedChanges ? 1d : 0.68d;
 
     public string SaveButtonToolTip => HasUnsavedChanges
-        ? "Hay cambios pendientes por guardar"
-        : "No hay cambios pendientes";
+        ? _text.Get(UiTextKeys.RuleSavePendingTooltip)
+        : _text.Get(UiTextKeys.RuleSaveCleanTooltip);
 
     public bool IsAllStatusSelected => StatusFilter == EventRuleFilterService.AllStatus;
 
@@ -356,7 +356,10 @@ public sealed partial class AlertsViewModel : ObservableObject
 
     public void UpdateRulesCount(int visibleCount, int totalCount)
     {
-        RulesCountText = $"Mostrando {Math.Max(0, visibleCount)} de {Math.Max(0, totalCount)} alertas";
+        RulesCountText = _text.Format(
+            UiTextKeys.RuleCountText,
+            Math.Max(0, visibleCount),
+            Math.Max(0, totalCount));
     }
 
     public void SetEditorEnabled(bool isEnabled)

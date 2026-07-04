@@ -115,7 +115,7 @@ public sealed class AppServices
             new SerialLightController(text),
             new TwitchAuthService(text, externalLauncher),
             new TwitchChatService(text),
-            new AlexaRelayService(text),
+            new AlexaRelayService(text, timeProvider),
             new ObsWebSocketService(text),
             new ObsOverlayService(timeProvider),
             new WindowsStartupService(text),

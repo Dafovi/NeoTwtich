@@ -10,19 +10,22 @@ namespace NeoTwitch.Services;
 public sealed class AlexaRelayService
 {
     private readonly IUiTextService _text;
-    private readonly HttpClient _http = new()
-    {
-        Timeout = TimeSpan.FromSeconds(10)
-    };
+    private readonly HttpClient _http;
+    private readonly TimeProvider _timeProvider;
 
     private readonly JsonSerializerOptions _jsonOptions = new(JsonSerializerDefaults.Web)
     {
         WriteIndented = false
     };
 
-    public AlexaRelayService(IUiTextService text)
+    public AlexaRelayService(IUiTextService text, TimeProvider timeProvider, HttpClient? httpClient = null)
     {
         _text = text;
+        _timeProvider = timeProvider;
+        _http = httpClient ?? new HttpClient
+        {
+            Timeout = TimeSpan.FromSeconds(10)
+        };
     }
 
     public async Task SendRuleEventAsync(AppConfig config, EventRule rule, TwitchEvent twitchEvent, CancellationToken cancellationToken)
@@ -44,7 +47,7 @@ public sealed class AlexaRelayService
             twitchEvent.ViewerCount,
             twitchEvent.Message ?? "",
             twitchEvent.Title,
-            DateTimeOffset.UtcNow);
+            _timeProvider.GetUtcNow());
 
         await SendPayloadAsync(config, payload, cancellationToken);
     }
@@ -67,7 +70,7 @@ public sealed class AlexaRelayService
             null,
             "",
             _text.Get(UiTextKeys.AlexaRelayTestTitle),
-            DateTimeOffset.UtcNow);
+            _timeProvider.GetUtcNow());
 
         await SendPayloadAsync(config, payload, cancellationToken);
     }
@@ -95,7 +98,7 @@ public sealed class AlexaRelayService
             null,
             "",
             title,
-            DateTimeOffset.UtcNow);
+            _timeProvider.GetUtcNow());
 
         await SendPayloadAsync(config, payload, cancellationToken);
     }

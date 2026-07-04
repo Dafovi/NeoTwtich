@@ -74,6 +74,7 @@ var tests = new (string Name, Action Body)[]
     ("BackgroundLightRestoreService resolves retry attempts", BackgroundLightRestoreTests.ResolvesRetryAttempts),
     ("BackgroundLightRestoreService resolves apply plan", BackgroundLightRestoreTests.ResolvesApplyPlan),
     ("BackgroundLightRestoreService resolves restore plan", BackgroundLightRestoreTests.ResolvesRestorePlan),
+    ("AlexaRelayService sends deterministic test payload", AlexaRelayServiceTests.SendsDeterministicTestPayload),
     ("RulePinChoiceService builds pin choices", RulePinChoiceTests.BuildsPinChoices),
     ("SerialPortDiscoveryService orders port infos", SerialPortDiscoveryTests.OrdersPortInfos),
     ("SerialPortNameService cleans friendly port names", SerialPortNameTests.CleansFriendlyPortNames),
@@ -1686,6 +1687,51 @@ static class BackgroundLightRestoreTests
         TestAssert.Equal(1, plan.ArduinoAttempts);
         TestAssert.Equal(BackgroundArduinoAction.StopLights, plan.ArduinoAction);
         TestAssert.Equal(BackgroundAlexaAction.SendOff, plan.AlexaAction);
+    }
+}
+
+static class AlexaRelayServiceTests
+{
+    public static void SendsDeterministicTestPayload()
+    {
+        var now = new DateTimeOffset(2026, 6, 1, 12, 0, 0, TimeSpan.Zero);
+        var handler = new CapturingHttpHandler();
+        using var http = new HttpClient(handler);
+        var service = new AlexaRelayService(UiTextService.CreateDefault(), new FixedTimeProvider(now), http);
+        var config = TestConfig.CreateDefault();
+        config.Alexa.Enabled = true;
+        config.Alexa.RelayUrl = "https://relay.example/hook";
+        config.Alexa.AuthToken = " token-secreto ";
+
+        service.SendTestEventAsync(config, CancellationToken.None).GetAwaiter().GetResult();
+
+        TestAssert.Equal("https://relay.example/hook", handler.RequestUri);
+        TestAssert.Equal("Bearer token-secreto", handler.Authorization);
+        TestAssert.Contains("\"eventName\":\"seguidor\"", handler.RequestBody);
+        TestAssert.Contains("\"occurredAt\":\"2026-06-01T12:00:00+00:00\"", handler.RequestBody);
+    }
+
+    private sealed class CapturingHttpHandler : HttpMessageHandler
+    {
+        public string RequestUri { get; private set; } = "";
+
+        public string Authorization { get; private set; } = "";
+
+        public string RequestBody { get; private set; } = "";
+
+        protected override async Task<HttpResponseMessage> SendAsync(HttpRequestMessage request, CancellationToken cancellationToken)
+        {
+            RequestUri = request.RequestUri?.ToString() ?? "";
+            Authorization = request.Headers.Authorization?.ToString() ?? "";
+            RequestBody = request.Content is null
+                ? ""
+                : await request.Content.ReadAsStringAsync(cancellationToken);
+
+            return new HttpResponseMessage(System.Net.HttpStatusCode.OK)
+            {
+                Content = new StringContent("{}")
+            };
+        }
     }
 }
 

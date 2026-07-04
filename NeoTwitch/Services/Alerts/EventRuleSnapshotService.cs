@@ -14,8 +14,13 @@ public static class EventRuleSnapshotService
 
     public static EventRule Duplicate(EventRule rule, IUiTextService text)
     {
+        return Duplicate(rule, text, () => Guid.NewGuid().ToString("N"));
+    }
+
+    public static EventRule Duplicate(EventRule rule, IUiTextService text, Func<string> idFactory)
+    {
         var copy = Clone(rule);
-        copy.Id = Guid.NewGuid().ToString("N");
+        copy.Id = idFactory();
         copy.Name = $"{rule.Name} {text.Get(UiTextKeys.ConfigurationCopySuffix)}".Trim();
         return copy;
     }

@@ -690,10 +690,10 @@ static class EventRuleSnapshotTests
     public static void DuplicatesWithNewIdentity()
     {
         var source = CreateRichRule();
-        var copy = EventRuleSnapshotService.Duplicate(source, UiTextService.CreateDefault());
+        var copy = EventRuleSnapshotService.Duplicate(source, UiTextService.CreateDefault(), () => "copy-id");
 
         TestAssert.NotSame(source, copy);
-        TestAssert.False(string.Equals(source.Id, copy.Id, StringComparison.OrdinalIgnoreCase));
+        TestAssert.Equal("copy-id", copy.Id);
         TestAssert.Equal("Regla completa copia", copy.Name);
 
         copy.Id = source.Id;

@@ -171,10 +171,10 @@
                                         <ColumnDefinition Width="10" />
                                         <ColumnDefinition Width="120" />
                                     </Grid.ColumnDefinitions>
-                                    <TextBox x:Name="ObsOverlayUrlBox"
-                                             IsReadOnly="True"
-                                             Text="{Binding OverlayUrl}"
-                                             Margin="0" />
+                                     <TextBox x:Name="ObsOverlayUrlBox"
+                                              IsReadOnly="True"
+                                              Text="{Binding OverlayUrl, Mode=OneWay}"
+                                              Margin="0" />
                                     <Button Grid.Column="2"
                                             Content="Copiar"
                                             Margin="0"

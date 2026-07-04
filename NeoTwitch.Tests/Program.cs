@@ -125,6 +125,7 @@ var tests = new (string Name, Action Body)[]
     ("ObsViewModel executes configured actions", ObsViewModelTests.ExecutesConfiguredActions),
     ("DiagnosticReportService builds report without network", DiagnosticReportServiceTests.BuildsReportWithoutNetwork),
     ("DiagnosticReportService reports missing audio", DiagnosticReportServiceTests.ReportsMissingAudio),
+    ("AppUpdateService launches copied installer update", AppUpdateServiceTests.LaunchesCopiedInstallerUpdate),
     ("VersionCheckService parses latest release response", VersionCheckServiceTests.ParsesLatestReleaseResponse),
     ("VersionComparisonService compares normalized tags", VersionComparisonTests.ComparesNormalizedTags),
     ("ActivityLogService trims activity and dashboard entries", ActivityLogServiceTests.TrimsActivityAndDashboardEntries),
@@ -3173,6 +3174,77 @@ static class DiagnosticReportServiceTests
             IsUpdateAvailable: false)),
             Text,
             new FixedTimeProvider(new DateTimeOffset(2026, 6, 1, 12, 0, 0, TimeSpan.Zero)));
+    }
+}
+
+static class AppUpdateServiceTests
+{
+    public static void LaunchesCopiedInstallerUpdate()
+    {
+        var launcher = new CapturingExternalLauncher();
+        var createdDirectory = "";
+        var copiedFrom = "";
+        var copiedTo = "";
+        var copiedOverwrite = false;
+        using var http = new HttpClient(new StaticJsonHttpHandler("{}"));
+        var service = new AppUpdateService(
+            launcher,
+            new VersionCheckService(UiTextService.CreateDefault(), http),
+            idFactory: () => "fixed-id",
+            updaterDirectory: @"C:\updates",
+            createDirectory: path => createdDirectory = path,
+            copyFile: (from, to, overwrite) =>
+            {
+                copiedFrom = from;
+                copiedTo = to;
+                copiedOverwrite = overwrite;
+            });
+        var sourceInstaller = @"C:\Program Files\Neo Twitch\NeoTwitch.Installer.exe";
+
+        service.LaunchInstallerUpdate(
+            sourceInstaller,
+            new VersionCheckResult("2.2.3", "2.2.4", "https://example.test/release", IsUpdateAvailable: true));
+
+        var expectedLauncher = @"C:\updates\NeoTwitch.Installer.fixed-id.exe";
+        TestAssert.Equal(@"C:\updates", createdDirectory);
+        TestAssert.Equal(sourceInstaller, copiedFrom);
+        TestAssert.Equal(expectedLauncher, copiedTo);
+        TestAssert.True(copiedOverwrite);
+        TestAssert.Equal(expectedLauncher, launcher.FileName);
+        TestAssert.Contains("--update", launcher.Arguments);
+        TestAssert.Contains("--version \"V2.2.4\"", launcher.Arguments);
+        TestAssert.Equal(@"C:\updates", launcher.WorkingDirectory);
+    }
+
+    private sealed class CapturingExternalLauncher : IExternalLauncherService
+    {
+        public string FileName { get; private set; } = "";
+
+        public string Arguments { get; private set; } = "";
+
+        public string? WorkingDirectory { get; private set; }
+
+        public void Open(string target)
+        {
+        }
+
+        public void Launch(string fileName, string arguments = "", string? workingDirectory = null)
+        {
+            FileName = fileName;
+            Arguments = arguments;
+            WorkingDirectory = workingDirectory;
+        }
+    }
+
+    private sealed class StaticJsonHttpHandler(string json) : HttpMessageHandler
+    {
+        protected override Task<HttpResponseMessage> SendAsync(HttpRequestMessage request, CancellationToken cancellationToken)
+        {
+            return Task.FromResult(new HttpResponseMessage(System.Net.HttpStatusCode.OK)
+            {
+                Content = new StringContent(json)
+            });
+        }
     }
 }
 

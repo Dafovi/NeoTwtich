@@ -9,6 +9,16 @@ public sealed class ObsOverlayService
 {
     private const string HtmlFileName = "obs-overlay.html";
     private const string StateFileName = "obs-overlay-state.json";
+    private readonly string _directory;
+    private readonly TimeProvider _timeProvider;
+
+    public ObsOverlayService(TimeProvider timeProvider, string? directory = null)
+    {
+        _timeProvider = timeProvider;
+        _directory = string.IsNullOrWhiteSpace(directory)
+            ? ApplicationPaths.ObsOverlayDirectory
+            : directory;
+    }
 
     public string BuildOverlayUrl()
     {
@@ -38,7 +48,7 @@ public sealed class ObsOverlayService
             height = mediaHeight,
             x,
             y,
-            hideAt = DateTimeOffset.UtcNow.Add(duration).ToUnixTimeMilliseconds()
+            hideAt = _timeProvider.GetUtcNow().Add(duration).ToUnixTimeMilliseconds()
         };
 
         File.WriteAllText(GetStatePath(), JsonSerializer.Serialize(state));
@@ -50,22 +60,22 @@ public sealed class ObsOverlayService
         File.WriteAllText(GetStatePath(), "{\"visible\":false}");
     }
 
-    private static string GetDirectory()
+    private string GetDirectory()
     {
-        return ApplicationPaths.ObsOverlayDirectory;
+        return _directory;
     }
 
-    private static string GetHtmlPath()
+    private string GetHtmlPath()
     {
         return Path.Combine(GetDirectory(), HtmlFileName);
     }
 
-    private static string GetStatePath()
+    private string GetStatePath()
     {
         return Path.Combine(GetDirectory(), StateFileName);
     }
 
-    private static void EnsureFiles()
+    private void EnsureFiles()
     {
         var directory = GetDirectory();
         Directory.CreateDirectory(directory);

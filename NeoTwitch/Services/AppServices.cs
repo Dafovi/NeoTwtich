@@ -117,7 +117,7 @@ public sealed class AppServices
             new TwitchChatService(text),
             new AlexaRelayService(text),
             new ObsWebSocketService(text),
-            new ObsOverlayService(),
+            new ObsOverlayService(timeProvider),
             new WindowsStartupService(text),
             updateService,
             new DiagnosticReportService(updateService.CheckLatestAsync, text, timeProvider),

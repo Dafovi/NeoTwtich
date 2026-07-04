@@ -66,6 +66,7 @@ var tests = new (string Name, Action Body)[]
     ("ObsRulePlanService resolves scene restore", ObsRulePlanTests.ResolvesSceneRestore),
     ("ObsRulePlanService resolves media plans", ObsRulePlanTests.ResolvesMediaPlans),
     ("ObsRulePlanService builds media execution plan", ObsRulePlanTests.BuildsMediaExecutionPlan),
+    ("ObsOverlayService writes deterministic state", ObsOverlayServiceTests.WritesDeterministicState),
     ("ObsWebSocketRequestFactory builds protocol requests", ObsWebSocketRequestFactoryTests.BuildsProtocolRequests),
     ("ObsWebSocketResponseReader parses protocol responses", ObsWebSocketResponseReaderTests.ParsesProtocolResponses),
     ("LightControlInputService resolves presets", LightControlInputTests.ResolvesPresets),
@@ -1353,6 +1354,50 @@ static class ObsRulePlanTests
             "video-source");
 
         TestAssert.Equal(ObsRuleMediaPlanStatus.MissingScene, missingScene.Status);
+    }
+}
+
+static class ObsOverlayServiceTests
+{
+    public static void WritesDeterministicState()
+    {
+        var now = new DateTimeOffset(2026, 6, 1, 12, 0, 0, TimeSpan.Zero);
+        var directory = Path.Combine(Path.GetTempPath(), "NeoTwitchTests", Guid.NewGuid().ToString("N"));
+
+        try
+        {
+            var service = new ObsOverlayService(new FixedTimeProvider(now), directory);
+            var asset = new MediaAssetConfig
+            {
+                Name = "Alerta",
+                FilePath = Path.Combine(directory, "alerta.png")
+            };
+
+            service.WriteState(
+                asset,
+                ObsMediaKind.Image,
+                new ObsIntegrationConfig
+                {
+                    OverlayWidth = 1920,
+                    OverlayHeight = 1080,
+                    OverlayMediaWidth = 640,
+                    OverlayMediaHeight = 360
+                },
+                TimeSpan.FromSeconds(3));
+
+            var json = File.ReadAllText(Path.Combine(directory, "obs-overlay-state.json"));
+            var expectedHideAt = now.AddSeconds(3).ToUnixTimeMilliseconds();
+
+            TestAssert.Contains("\"visible\":true", json);
+            TestAssert.Contains($"\"hideAt\":{expectedHideAt}", json);
+        }
+        finally
+        {
+            if (Directory.Exists(directory))
+            {
+                Directory.Delete(directory, recursive: true);
+            }
+        }
     }
 }
 

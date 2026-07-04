@@ -6,9 +6,8 @@ namespace NeoTwitch.Services.Alerts;
 
 public static class EventRulePresentationService
 {
-    public static string BuildDisplayLabel(EventRule rule, IUiTextService? text = null)
+    public static string BuildDisplayLabel(EventRule rule, IUiTextService text)
     {
-        text ??= UiTextService.CreateDefault();
         var eventName = DisplayNameService.For(rule.EventKind, text);
         var label = string.IsNullOrWhiteSpace(rule.Name)
             ? eventName
@@ -22,9 +21,8 @@ public static class EventRulePresentationService
         };
     }
 
-    public static string BuildStatusText(EventRule rule, IUiTextService? text = null)
+    public static string BuildStatusText(EventRule rule, IUiTextService text)
     {
-        text ??= UiTextService.CreateDefault();
         return rule.IsEnabled
             ? text.Get(UiTextKeys.RuleRowStatusActive)
             : text.Get(UiTextKeys.RuleRowStatusInactive);
@@ -54,9 +52,8 @@ public static class EventRulePresentationService
         return UiAccentCatalog.ForEventKind(rule.EventKind);
     }
 
-    public static string BuildActionsSummary(EventRule rule, IUiTextService? text = null)
+    public static string BuildActionsSummary(EventRule rule, IUiTextService text)
     {
-        text ??= UiTextService.CreateDefault();
         List<string> actions = [];
         if (rule.UseLights)
         {
@@ -88,25 +85,22 @@ public static class EventRulePresentationService
             : string.Join(" / ", actions);
     }
 
-    public static string BuildLightsToolTip(EventRule rule, IUiTextService? text = null)
+    public static string BuildLightsToolTip(EventRule rule, IUiTextService text)
     {
-        text ??= UiTextService.CreateDefault();
         return rule.LightsActionAvailable
             ? text.Get(UiTextKeys.RuleRowLightsActive)
             : text.Get(UiTextKeys.RuleRowLightsUnavailable);
     }
 
-    public static string BuildAlexaToolTip(EventRule rule, IUiTextService? text = null)
+    public static string BuildAlexaToolTip(EventRule rule, IUiTextService text)
     {
-        text ??= UiTextService.CreateDefault();
         return rule.AlexaActionAvailable
             ? text.Get(UiTextKeys.RuleRowAlexaActive)
             : text.Get(UiTextKeys.RuleRowAlexaUnavailable);
     }
 
-    public static string BuildObsToolTip(EventRule rule, IUiTextService? text = null)
+    public static string BuildObsToolTip(EventRule rule, IUiTextService text)
     {
-        text ??= UiTextService.CreateDefault();
         return rule.ObsActionAvailable
             ? text.Get(UiTextKeys.RuleRowObsActive)
             : text.Get(UiTextKeys.RuleRowObsUnavailable);

@@ -608,6 +608,7 @@ static class EventRulePresentationTests
 {
     public static void BuildsRowDisplayMetadata()
     {
+        var text = UiTextService.CreateDefault();
         var rule = new EventRule
         {
             Name = "Bits cien",
@@ -620,11 +621,11 @@ static class EventRulePresentationTests
             ObsActionAvailable = false
         };
 
-        TestAssert.Equal("Bits cien - Bits >= 100 bits", EventRulePresentationService.BuildDisplayLabel(rule));
-        TestAssert.Equal("Inactiva", EventRulePresentationService.BuildStatusText(rule));
+        TestAssert.Equal("Bits cien - Bits >= 100 bits", EventRulePresentationService.BuildDisplayLabel(rule, text));
+        TestAssert.Equal("Inactiva", EventRulePresentationService.BuildStatusText(rule, text));
         TestAssert.Equal("#37C7F3", EventRulePresentationService.BuildEventAccentColor(rule));
-        TestAssert.Equal("Luces / Audio / OBS", EventRulePresentationService.BuildActionsSummary(rule));
-        TestAssert.Equal("OBS configurado, pero esta desactivado o incompleto", EventRulePresentationService.BuildObsToolTip(rule));
+        TestAssert.Equal("Luces / Audio / OBS", EventRulePresentationService.BuildActionsSummary(rule, text));
+        TestAssert.Equal("OBS configurado, pero esta desactivado o incompleto", EventRulePresentationService.BuildObsToolTip(rule, text));
     }
 }
 

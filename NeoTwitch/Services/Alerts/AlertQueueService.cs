@@ -5,11 +5,17 @@ namespace NeoTwitch.Services.Alerts;
 public sealed class AlertQueueService
 {
     private readonly object _sync = new();
+    private readonly TimeProvider _timeProvider;
     private readonly List<QueuedAlertSlot> _pendingSlots = [];
     private readonly Dictionary<string, DateTimeOffset> _lastRuleStartTimes = new(StringComparer.OrdinalIgnoreCase);
     private string _runningRuleId = "";
     private string _lastStartedRuleId = "";
     private DateTimeOffset _lastAlertStartAt = DateTimeOffset.MinValue;
+
+    public AlertQueueService(TimeProvider timeProvider)
+    {
+        _timeProvider = timeProvider;
+    }
 
     public QueuedAlertSlot? TryReserve(
         EventRule rule,
@@ -20,7 +26,7 @@ public sealed class AlertQueueService
     {
         lock (_sync)
         {
-            var now = DateTimeOffset.UtcNow;
+            var now = _timeProvider.GetUtcNow();
             var busy = effectIsRunning || _pendingSlots.Count > 0;
             var samePending = _pendingSlots.Count(slot => string.Equals(slot.RuleId, rule.Id, StringComparison.OrdinalIgnoreCase));
 
@@ -88,7 +94,7 @@ public sealed class AlertQueueService
         lock (_sync)
         {
             _pendingSlots.RemoveAll(candidate => string.Equals(candidate.Id, slot.Id, StringComparison.OrdinalIgnoreCase));
-            var now = DateTimeOffset.UtcNow;
+            var now = _timeProvider.GetUtcNow();
             _runningRuleId = slot.RuleId;
             _lastStartedRuleId = slot.RuleId;
             _lastAlertStartAt = now;

@@ -56,6 +56,7 @@ var tests = new (string Name, Action Body)[]
     ("TwitchEventSubMessageParser parses welcome and events", TwitchEventSubMessageParserTests.ParsesWelcomeAndEvents),
     ("AlertDurationService resolves maximum positive duration", AlertDurationTests.ResolvesMaximumPositiveDuration),
     ("AlertDurationService clamps synchronized durations", AlertDurationTests.ClampsSynchronizedDurations),
+    ("AlertQueueService uses injected clock for cooldowns", AlertQueueTests.UsesInjectedClockForCooldowns),
     ("LightCommand resolves fallback targets", LightCommandTests.ResolvesFallbackTargets),
     ("AlertExecutionPlanService disables lights when Arduino is disabled", AlertExecutionPlanTests.DisablesLightsWhenArduinoIsDisabled),
     ("AlertExecutionPlanService resolves light command and reconnect state", AlertExecutionPlanTests.ResolvesLightCommandAndReconnectState),
@@ -1065,6 +1066,39 @@ static class AlertDurationTests
 
         var tooLong = AlertDurationService.ResolveSynchronizedEffectDurationMs(TimeSpan.FromMilliseconds(ApplicationLimits.MaxAlertDurationMs + 10_000));
         TestAssert.Equal(ApplicationLimits.MaxAlertDurationMs, tooLong);
+    }
+}
+
+static class AlertQueueTests
+{
+    public static void UsesInjectedClockForCooldowns()
+    {
+        var timeProvider = new FixedTimeProvider(new DateTimeOffset(2026, 6, 1, 12, 0, 0, TimeSpan.Zero));
+        var queue = new AlertQueueService(timeProvider);
+        var rule = new EventRule
+        {
+            Id = "rule-follow",
+            Name = "Seguidor",
+            EventKind = TwitchEventKind.Follow
+        };
+        var twitchEvent = new TwitchEvent { Kind = TwitchEventKind.Follow };
+        var options = new AlertQueueOptions(
+            MaxQueuedSameRuleAlerts: 1,
+            SameRuleQueueCooldownMs: 1_000,
+            MaxQueuedDifferentRuleAlerts: 1,
+            DifferentRuleQueueCooldownMs: 0);
+
+        var first = queue.TryReserve(rule, twitchEvent, effectIsRunning: false, options, out var firstReason);
+        queue.MarkStarted(first);
+        queue.MarkFinished(first);
+        var blocked = queue.TryReserve(rule, twitchEvent, effectIsRunning: false, options, out var blockedReason);
+        timeProvider.Advance(TimeSpan.FromMilliseconds(1_001));
+        var allowed = queue.TryReserve(rule, twitchEvent, effectIsRunning: false, options, out var allowedReason);
+
+        TestAssert.True(first is not null, firstReason);
+        TestAssert.Equal<QueuedAlertSlot?>(null, blocked);
+        TestAssert.Contains("enfriamiento", blockedReason);
+        TestAssert.True(allowed is not null, allowedReason);
     }
 }
 
@@ -4063,9 +4097,16 @@ static class TestConfig
 
 sealed class FixedTimeProvider(DateTimeOffset utcNow) : TimeProvider
 {
+    private DateTimeOffset _utcNow = utcNow;
+
     public override DateTimeOffset GetUtcNow()
     {
-        return utcNow;
+        return _utcNow;
+    }
+
+    public void Advance(TimeSpan interval)
+    {
+        _utcNow = _utcNow.Add(interval);
     }
 }
 

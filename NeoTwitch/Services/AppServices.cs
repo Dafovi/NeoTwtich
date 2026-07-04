@@ -127,7 +127,7 @@ public sealed class AppServices
             new ActivityViewModel(activityLog),
             new DashboardSummaryService(),
             new RuleSimulationService(text),
-            new AlertQueueService(),
+            new AlertQueueService(timeProvider),
             new DialogService(),
             new FilePickerService(),
             externalLauncher,

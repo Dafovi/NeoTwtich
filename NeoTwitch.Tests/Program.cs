@@ -61,6 +61,7 @@ var tests = new (string Name, Action Body)[]
     ("ObsRulePlanService resolves media plans", ObsRulePlanTests.ResolvesMediaPlans),
     ("ObsRulePlanService builds media execution plan", ObsRulePlanTests.BuildsMediaExecutionPlan),
     ("ObsWebSocketRequestFactory builds protocol requests", ObsWebSocketRequestFactoryTests.BuildsProtocolRequests),
+    ("ObsWebSocketResponseReader parses protocol responses", ObsWebSocketResponseReaderTests.ParsesProtocolResponses),
     ("LightControlInputService resolves presets", LightControlInputTests.ResolvesPresets),
     ("LightControlInputService parses and clamps values", LightControlInputTests.ParsesAndClampsValues),
     ("BackgroundLightRestoreService resolves retry attempts", BackgroundLightRestoreTests.ResolvesRetryAttempts),
@@ -1270,6 +1271,110 @@ static class ObsWebSocketRequestFactoryTests
         var volumeRequest = ObsWebSocketRequestFactory.BuildInputVolumeRequest(" Video ", 125);
         TestAssert.Equal("Video", volumeRequest[ObsWebSocketProtocol.InputName]);
         TestAssert.Equal(1d, volumeRequest[ObsWebSocketProtocol.InputVolumeMul]);
+    }
+}
+
+static class ObsWebSocketResponseReaderTests
+{
+    public static void ParsesProtocolResponses()
+    {
+        using var hello = System.Text.Json.JsonDocument.Parse(
+            """
+            {
+              "op": 0,
+              "d": {
+                "rpcVersion": 1,
+                "authentication": {
+                  "salt": "salt-value",
+                  "challenge": "challenge-value"
+                }
+              }
+            }
+            """);
+
+        TestAssert.Equal(ObsWebSocketProtocol.OpHello, ObsWebSocketResponseReader.ReadOperation(hello));
+        TestAssert.Equal(1, ObsWebSocketResponseReader.ReadRpcVersion(hello));
+        TestAssert.True(ObsWebSocketResponseReader.TryReadAuthentication(hello, out var salt, out var challenge));
+        TestAssert.Equal("salt-value", salt);
+        TestAssert.Equal("challenge-value", challenge);
+
+        using var version = System.Text.Json.JsonDocument.Parse(
+            """
+            {
+              "d": {
+                "responseData": {
+                  "obsVersion": "30.1.2"
+                }
+              }
+            }
+            """);
+        TestAssert.Equal("30.1.2", ObsWebSocketResponseReader.ReadVersion(version));
+
+        using var scenes = System.Text.Json.JsonDocument.Parse(
+            """
+            {
+              "d": {
+                "responseData": {
+                  "currentProgramSceneName": "Gameplay",
+                  "scenes": [
+                    { "sceneName": "Gameplay" },
+                    { "sceneName": "" },
+                    { "sceneName": "BRB" }
+                  ]
+                }
+              }
+            }
+            """);
+        using var studioMode = System.Text.Json.JsonDocument.Parse(
+            """
+            {
+              "d": {
+                "responseData": {
+                  "studioModeEnabled": true
+                }
+              }
+            }
+            """);
+        var snapshot = ObsWebSocketResponseReader.ReadSceneSnapshot(scenes, studioMode);
+
+        TestAssert.Equal("Gameplay", snapshot.CurrentScene);
+        TestAssert.True(snapshot.StudioMode);
+        TestAssert.Equal(2, snapshot.Scenes.Count);
+        TestAssert.Equal("BRB", snapshot.Scenes[1].Name);
+
+        using var sceneItem = System.Text.Json.JsonDocument.Parse(
+            """
+            {
+              "d": {
+                "responseData": {
+                  "sceneItemId": 42
+                }
+              }
+            }
+            """);
+        TestAssert.Equal(42, ObsWebSocketResponseReader.ReadSceneItemId(sceneItem));
+
+        using var request = System.Text.Json.JsonDocument.Parse(
+            """
+            {
+              "op": 7,
+              "d": {
+                "requestId": "request-1",
+                "requestStatus": {
+                  "result": false,
+                  "code": 601,
+                  "comment": "Input already exists"
+                }
+              }
+            }
+            """);
+        var status = ObsWebSocketResponseReader.ReadRequestStatus(request);
+
+        TestAssert.Equal(ObsWebSocketProtocol.OpRequestResponse, ObsWebSocketResponseReader.ReadOperation(request));
+        TestAssert.Equal("request-1", ObsWebSocketResponseReader.ReadRequestId(request));
+        TestAssert.False(status.Succeeded);
+        TestAssert.Equal(601, status.Code);
+        TestAssert.Equal("Input already exists", status.Comment);
     }
 }
 

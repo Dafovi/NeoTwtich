@@ -57,19 +57,18 @@ public sealed class ObsWebSocketService : IAsyncDisposable
             await _socket.ConnectAsync(ObsWebSocketRequestFactory.BuildUri(config), token);
 
             using var hello = await ReceiveJsonAsync(token);
-            if (ReadInt(hello.RootElement, ObsProtocol.Op) != ObsProtocol.OpHello)
+            if (ObsWebSocketResponseReader.ReadOperation(hello) != ObsProtocol.OpHello)
             {
                 throw new InvalidOperationException(_text.Get(UiTextKeys.ObsUnexpectedHello));
             }
 
-            var helloData = hello.RootElement.GetProperty(ObsProtocol.Data);
-            var rpcVersion = ReadInt(helloData, ObsProtocol.RpcVersion, 1);
+            var rpcVersion = ObsWebSocketResponseReader.ReadRpcVersion(hello);
             var identify = new Dictionary<string, object?>
             {
                 [ObsProtocol.RpcVersion] = rpcVersion
             };
 
-            if (helloData.TryGetProperty(ObsProtocol.Authentication, out var auth))
+            if (ObsWebSocketResponseReader.TryReadAuthentication(hello, out var salt, out var challenge))
             {
                 if (string.IsNullOrWhiteSpace(config.Password))
                 {
@@ -78,13 +77,13 @@ public sealed class ObsWebSocketService : IAsyncDisposable
 
                 identify[ObsProtocol.Authentication] = ObsWebSocketRequestFactory.BuildAuthentication(
                     config.Password,
-                    ReadString(auth, ObsProtocol.Salt),
-                    ReadString(auth, ObsProtocol.Challenge));
+                    salt,
+                    challenge);
             }
 
             await SendAsync(new { op = ObsProtocol.OpIdentify, d = identify }, token);
             using var identified = await ReceiveJsonAsync(token);
-            if (ReadInt(identified.RootElement, ObsProtocol.Op) != ObsProtocol.OpIdentified)
+            if (ObsWebSocketResponseReader.ReadOperation(identified) != ObsProtocol.OpIdentified)
             {
                 throw new InvalidOperationException(_text.Get(UiTextKeys.ObsIdentificationFailure));
             }
@@ -312,25 +311,17 @@ public sealed class ObsWebSocketService : IAsyncDisposable
     private async Task<string> GetVersionAsync(CancellationToken cancellationToken)
     {
         using var response = await SendRequestAsync(ObsProtocol.GetVersion, null, cancellationToken);
-        var data = response.RootElement.GetProperty(ObsProtocol.Data).GetProperty(ObsProtocol.ResponseData);
-        return ReadString(data, ObsProtocol.ObsVersion);
+        return ObsWebSocketResponseReader.ReadVersion(response);
     }
 
     private async Task RefreshScenesCoreAsync(CancellationToken cancellationToken)
     {
         using var sceneResponse = await SendRequestAsync(ObsProtocol.GetSceneList, null, cancellationToken);
-        var sceneData = sceneResponse.RootElement.GetProperty(ObsProtocol.Data).GetProperty(ObsProtocol.ResponseData);
-        CurrentScene = ReadString(sceneData, ObsProtocol.CurrentProgramSceneName);
-        Scenes = sceneData.GetProperty(ObsProtocol.Scenes)
-            .EnumerateArray()
-            .Select(scene => new ObsSceneInfo(ReadString(scene, ObsProtocol.SceneName)))
-            .Where(scene => !string.IsNullOrWhiteSpace(scene.Name))
-            .ToArray();
-
         using var studioResponse = await SendRequestAsync(ObsProtocol.GetStudioModeEnabled, null, cancellationToken);
-        var studioData = studioResponse.RootElement.GetProperty(ObsProtocol.Data).GetProperty(ObsProtocol.ResponseData);
-        StudioMode = studioData.TryGetProperty(ObsProtocol.StudioModeEnabled, out var enabled)
-            && enabled.ValueKind == JsonValueKind.True;
+        var snapshot = ObsWebSocketResponseReader.ReadSceneSnapshot(sceneResponse, studioResponse);
+        CurrentScene = snapshot.CurrentScene;
+        Scenes = snapshot.Scenes;
+        StudioMode = snapshot.StudioMode;
     }
 
     private async Task EnsureSceneItemAsync(string sceneName, string sourceName, CancellationToken cancellationToken)
@@ -411,8 +402,7 @@ public sealed class ObsWebSocketService : IAsyncDisposable
                 [ObsProtocol.SourceName] = sourceName.Trim()
             },
             cancellationToken);
-        var data = response.RootElement.GetProperty(ObsProtocol.Data).GetProperty(ObsProtocol.ResponseData);
-        return ReadInt(data, ObsProtocol.SceneItemId);
+        return ObsWebSocketResponseReader.ReadSceneItemId(response);
     }
 
     private async Task<JsonDocument> SendRequestAsync(
@@ -439,26 +429,23 @@ public sealed class ObsWebSocketService : IAsyncDisposable
         while (true)
         {
             var response = await ReceiveJsonAsync(cancellationToken);
-            if (ReadInt(response.RootElement, ObsProtocol.Op) != ObsProtocol.OpRequestResponse)
+            if (ObsWebSocketResponseReader.ReadOperation(response) != ObsProtocol.OpRequestResponse)
             {
                 response.Dispose();
                 continue;
             }
 
-            var data = response.RootElement.GetProperty(ObsProtocol.Data);
-            if (!string.Equals(ReadString(data, ObsProtocol.RequestId), requestId, StringComparison.Ordinal))
+            if (!string.Equals(ObsWebSocketResponseReader.ReadRequestId(response), requestId, StringComparison.Ordinal))
             {
                 response.Dispose();
                 continue;
             }
 
-            var status = data.GetProperty(ObsProtocol.RequestStatus);
-            if (!status.TryGetProperty(ObsProtocol.RequestResult, out var result) || result.ValueKind != JsonValueKind.True)
+            var status = ObsWebSocketResponseReader.ReadRequestStatus(response);
+            if (!status.Succeeded)
             {
-                var code = status.TryGetProperty(ObsProtocol.RequestCode, out var codeElement) ? codeElement.GetInt32() : 0;
-                var comment = ReadString(status, ObsProtocol.RequestComment);
                 response.Dispose();
-                throw new InvalidOperationException(_text.Format(UiTextKeys.ObsRequestRejected, requestType, code, comment));
+                throw new InvalidOperationException(_text.Format(UiTextKeys.ObsRequestRejected, requestType, status.Code, status.Comment));
             }
 
             return response;
@@ -551,17 +538,4 @@ public sealed class ObsWebSocketService : IAsyncDisposable
         return new ObsConnectionResult(IsConnected, Version, CurrentScene, StudioMode, Scenes);
     }
 
-    private static int ReadInt(JsonElement element, string propertyName, int fallback = 0)
-    {
-        return element.TryGetProperty(propertyName, out var value) && value.TryGetInt32(out var number)
-            ? number
-            : fallback;
-    }
-
-    private static string ReadString(JsonElement element, string propertyName)
-    {
-        return element.TryGetProperty(propertyName, out var value) && value.ValueKind == JsonValueKind.String
-            ? value.GetString() ?? ""
-            : "";
-    }
 }

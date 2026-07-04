@@ -109,6 +109,7 @@ var tests = new (string Name, Action Body)[]
     ("ConnectionButtonStateService disables Twitch while busy", ConnectionButtonStateTests.DisablesTwitchWhileBusy),
     ("ConnectionButtonStateService maps OBS buttons", ConnectionButtonStateTests.MapsObsButtons),
     ("TwitchConnectionRecoveryService detects recoverable refresh errors", TwitchConnectionRecoveryTests.DetectsRecoverableRefreshErrors),
+    ("TwitchTokenRefreshPolicy resolves refresh windows", TwitchTokenRefreshPolicyTests.ResolvesRefreshWindows),
     ("ServiceNavigationVisibilityService hides optional service tabs", ServiceNavigationVisibilityTests.HidesOptionalServiceTabs),
     ("ShellViewModel maps navigation visibility", ShellViewModelTests.MapsNavigationVisibility),
     ("ShellViewModel maps profile and live state", ShellViewModelTests.MapsProfileAndLiveState),
@@ -4140,6 +4141,22 @@ static class TwitchConnectionRecoveryTests
         TestAssert.True(TwitchConnectionRecoveryService.IsRecoverableRefreshError(new InvalidOperationException("invalid refresh token")));
         TestAssert.False(TwitchConnectionRecoveryService.IsRecoverableRefreshError(new InvalidOperationException("Twitch no inicio el login")));
         TestAssert.False(TwitchConnectionRecoveryService.IsRecoverableRefreshError(new InvalidOperationException("No pude refrescar Twitch: timeout")));
+    }
+}
+
+static class TwitchTokenRefreshPolicyTests
+{
+    public static void ResolvesRefreshWindows()
+    {
+        var now = new DateTimeOffset(2026, 6, 1, 12, 0, 0, TimeSpan.Zero);
+
+        TestAssert.True(TwitchTokenRefreshPolicy.NeedsRefresh(new TwitchTokenInfo(), now));
+        TestAssert.True(TwitchTokenRefreshPolicy.NeedsRefresh(
+            new TwitchTokenInfo { AccessToken = "token", ExpiresAt = now.AddMinutes(4) },
+            now));
+        TestAssert.False(TwitchTokenRefreshPolicy.NeedsRefresh(
+            new TwitchTokenInfo { AccessToken = "token", ExpiresAt = now.AddMinutes(10) },
+            now));
     }
 }
 

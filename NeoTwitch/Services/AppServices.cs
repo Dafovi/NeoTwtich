@@ -113,7 +113,7 @@ public sealed class AppServices
             new SettingsStore(text, timeProvider),
             new AudioPlayerService(text),
             new SerialLightController(text),
-            new TwitchAuthService(text, externalLauncher),
+            new TwitchAuthService(text, externalLauncher, timeProvider),
             new TwitchChatService(text),
             new AlexaRelayService(text, timeProvider),
             new ObsWebSocketService(text),

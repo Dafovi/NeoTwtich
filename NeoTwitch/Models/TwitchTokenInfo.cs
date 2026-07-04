@@ -8,6 +8,4 @@ public sealed class TwitchTokenInfo
     public string[] Scopes { get; set; } = [];
 
     public bool HasToken => !string.IsNullOrWhiteSpace(AccessToken);
-
-    public bool NeedsRefresh => !HasToken || ExpiresAt <= DateTimeOffset.UtcNow.AddMinutes(5);
 }

@@ -71,7 +71,7 @@ public partial class MainWindow
                 plan.VolumePercent,
                 previewCts.Token);
             ApplyObsResult(result);
-            _mediaPreviewHideRequest = new ObsMediaHideRequest(plan.SceneName, plan.SourceName, plan.Duration, DateTimeOffset.UtcNow);
+            _mediaPreviewHideRequest = new ObsMediaHideRequest(plan.SceneName, plan.SourceName, plan.Duration, _timeProvider.GetUtcNow());
             WriteObsOverlayState(asset, plan.ObsKind, plan.Duration);
             MarkObsMediaAssetUsed(plan.ObsKind, asset);
             AddLog(_text.Format(UiTextKeys.MediaObsPreviewLog, MediaLibraryTitle(kind).ToLowerInvariant(), asset.DisplayName), ActivityLogKind.Obs);

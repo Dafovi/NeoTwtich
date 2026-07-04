@@ -17,11 +17,13 @@ public sealed class TwitchAuthService
     private readonly IExternalLauncherService _externalLauncher;
     private readonly JsonSerializerOptions _jsonOptions = new(JsonSerializerDefaults.Web);
     private readonly IUiTextService _text;
+    private readonly TimeProvider _timeProvider;
 
-    public TwitchAuthService(IUiTextService text, IExternalLauncherService externalLauncher)
+    public TwitchAuthService(IUiTextService text, IExternalLauncherService externalLauncher, TimeProvider timeProvider)
     {
         _text = text;
         _externalLauncher = externalLauncher;
+        _timeProvider = timeProvider;
     }
 
     public async Task<DeviceCodeSession> BeginDeviceFlowAsync(string clientId, CancellationToken cancellationToken)
@@ -58,9 +60,9 @@ public sealed class TwitchAuthService
 
     public async Task<TwitchTokenInfo> PollForTokenAsync(string clientId, DeviceCodeSession session, Action<string> log, CancellationToken cancellationToken)
     {
-        var deadline = DateTimeOffset.UtcNow.AddSeconds(session.ExpiresIn);
+        var deadline = _timeProvider.GetUtcNow().AddSeconds(session.ExpiresIn);
 
-        while (DateTimeOffset.UtcNow < deadline)
+        while (_timeProvider.GetUtcNow() < deadline)
         {
             cancellationToken.ThrowIfCancellationRequested();
             await Task.Delay(TimeSpan.FromSeconds(session.IntervalSeconds), cancellationToken);
@@ -105,7 +107,7 @@ public sealed class TwitchAuthService
 
     public async Task EnsureValidTokenAsync(AppConfig config, Action<string> log, CancellationToken cancellationToken)
     {
-        if (!config.Token.NeedsRefresh)
+        if (!TwitchTokenRefreshPolicy.NeedsRefresh(config.Token, _timeProvider.GetUtcNow()))
         {
             return;
         }
@@ -220,13 +222,13 @@ public sealed class TwitchAuthService
             first.TryGetProperty(Protocol.Json.GameName, out var gameName) ? gameName.GetString() ?? "" : "");
     }
 
-    private static TwitchTokenInfo ToTokenInfo(TokenResponse token)
+    private TwitchTokenInfo ToTokenInfo(TokenResponse token)
     {
         return new TwitchTokenInfo
         {
             AccessToken = token.AccessToken,
             RefreshToken = token.RefreshToken,
-            ExpiresAt = DateTimeOffset.UtcNow.AddSeconds(Math.Max(token.ExpiresIn, 60)),
+            ExpiresAt = _timeProvider.GetUtcNow().AddSeconds(Math.Max(token.ExpiresIn, 60)),
             Scopes = token.Scope ?? []
         };
     }

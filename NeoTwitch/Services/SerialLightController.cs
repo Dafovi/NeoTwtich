@@ -1,5 +1,4 @@
 using System.ComponentModel;
-using System.Runtime.InteropServices;
 using System.Text;
 using NeoTwitch.Models;
 using NeoTwitch.Services.Lights;
@@ -10,12 +9,6 @@ namespace NeoTwitch.Services;
 
 public sealed class SerialLightController : IDisposable
 {
-    private const uint GenericRead = 0x80000000;
-    private const uint GenericWrite = 0x40000000;
-    private const uint OpenExisting = 3;
-    private const uint FileAttributeNormal = 0x80;
-    private const uint PurgeRxAbort = 0x0002;
-    private const uint PurgeRxClear = 0x0008;
     private const int AckTimeoutMs = 650;
 
     private SafeFileHandle? _handle;
@@ -132,9 +125,8 @@ public sealed class SerialLightController : IDisposable
             }
 
             var bytes = Encoding.ASCII.GetBytes(line);
-            if (!WriteFile(_handle, bytes, (uint)bytes.Length, out var written, IntPtr.Zero) || written != bytes.Length)
+            if (!WindowsSerialPortApi.TryWrite(_handle, bytes, out var written, out var error) || written != bytes.Length)
             {
-                var error = Marshal.GetLastWin32Error();
                 log(_text.Format(UiTextKeys.SerialWriteFailureLog, _port, new Win32Exception(error).Message));
             }
             else
@@ -182,53 +174,7 @@ public sealed class SerialLightController : IDisposable
 
     private SafeFileHandle OpenAndConfigure(string port, int baudRate)
     {
-        var handle = CreateFile(
-            $@"\\.\{port}",
-            GenericRead | GenericWrite,
-            0,
-            IntPtr.Zero,
-            OpenExisting,
-            FileAttributeNormal,
-            IntPtr.Zero);
-
-        if (handle.IsInvalid)
-        {
-            throw new Win32Exception(Marshal.GetLastWin32Error(), _text.Format(UiTextKeys.SerialOpenFailure, port));
-        }
-
-        Configure(handle, baudRate);
-        return handle;
-    }
-
-    private void Configure(SafeFileHandle handle, int baudRate)
-    {
-        var dcb = new Dcb
-        {
-            DcbLength = (uint)Marshal.SizeOf<Dcb>()
-        };
-
-        if (!BuildCommDCB($"baud={baudRate} parity=N data=8 stop=1", ref dcb))
-        {
-            throw new Win32Exception(Marshal.GetLastWin32Error(), _text.Get(UiTextKeys.SerialPrepareFailure));
-        }
-
-        if (!SetCommState(handle, ref dcb))
-        {
-            throw new Win32Exception(Marshal.GetLastWin32Error(), _text.Get(UiTextKeys.SerialApplyFailure));
-        }
-
-        var timeouts = new CommTimeouts
-        {
-            ReadIntervalTimeout = 30,
-            ReadTotalTimeoutConstant = 80,
-            WriteTotalTimeoutConstant = 1000,
-            WriteTotalTimeoutMultiplier = 10
-        };
-
-        if (!SetCommTimeouts(handle, ref timeouts))
-        {
-            throw new Win32Exception(Marshal.GetLastWin32Error(), _text.Get(UiTextKeys.SerialTimeoutFailure));
-        }
+        return WindowsSerialPortApi.OpenAndConfigure(port, baudRate, _text);
     }
 
     private static string NormalizePortName(string value)
@@ -289,7 +235,7 @@ public sealed class SerialLightController : IDisposable
         while (DateTimeOffset.UtcNow < deadline)
         {
             cancellationToken.ThrowIfCancellationRequested();
-            if (!ReadFile(handle, buffer, 1, out var read, IntPtr.Zero))
+            if (!WindowsSerialPortApi.TryRead(handle, buffer, out var read))
             {
                 return null;
             }
@@ -316,75 +262,7 @@ public sealed class SerialLightController : IDisposable
 
     private static void ClearReadBuffer(SafeFileHandle handle)
     {
-        _ = PurgeComm(handle, PurgeRxAbort | PurgeRxClear);
-    }
-
-    [DllImport("kernel32.dll", CharSet = CharSet.Unicode, SetLastError = true)]
-    private static extern SafeFileHandle CreateFile(
-        string lpFileName,
-        uint dwDesiredAccess,
-        uint dwShareMode,
-        IntPtr lpSecurityAttributes,
-        uint dwCreationDisposition,
-        uint dwFlagsAndAttributes,
-        IntPtr hTemplateFile);
-
-    [DllImport("kernel32.dll", CharSet = CharSet.Unicode, SetLastError = true)]
-    private static extern bool BuildCommDCB(string lpDef, ref Dcb lpDcb);
-
-    [DllImport("kernel32.dll", SetLastError = true)]
-    private static extern bool SetCommState(SafeFileHandle hFile, ref Dcb lpDcb);
-
-    [DllImport("kernel32.dll", SetLastError = true)]
-    private static extern bool SetCommTimeouts(SafeFileHandle hFile, ref CommTimeouts lpCommTimeouts);
-
-    [DllImport("kernel32.dll", SetLastError = true)]
-    private static extern bool PurgeComm(SafeFileHandle hFile, uint dwFlags);
-
-    [DllImport("kernel32.dll", SetLastError = true)]
-    private static extern bool WriteFile(
-        SafeFileHandle hFile,
-        byte[] lpBuffer,
-        uint nNumberOfBytesToWrite,
-        out uint lpNumberOfBytesWritten,
-        IntPtr lpOverlapped);
-
-    [DllImport("kernel32.dll", SetLastError = true)]
-    private static extern bool ReadFile(
-        SafeFileHandle hFile,
-        byte[] lpBuffer,
-        uint nNumberOfBytesToRead,
-        out uint lpNumberOfBytesRead,
-        IntPtr lpOverlapped);
-
-    [StructLayout(LayoutKind.Sequential)]
-    private struct Dcb
-    {
-        public uint DcbLength;
-        public uint BaudRate;
-        public uint Flags;
-        public ushort WReserved;
-        public ushort XonLim;
-        public ushort XoffLim;
-        public byte ByteSize;
-        public byte Parity;
-        public byte StopBits;
-        public sbyte XonChar;
-        public sbyte XoffChar;
-        public sbyte ErrorChar;
-        public sbyte EofChar;
-        public sbyte EvtChar;
-        public ushort WReserved1;
-    }
-
-    [StructLayout(LayoutKind.Sequential)]
-    private struct CommTimeouts
-    {
-        public uint ReadIntervalTimeout;
-        public uint ReadTotalTimeoutMultiplier;
-        public uint ReadTotalTimeoutConstant;
-        public uint WriteTotalTimeoutMultiplier;
-        public uint WriteTotalTimeoutConstant;
+        WindowsSerialPortApi.ClearReadBuffer(handle);
     }
 }
 

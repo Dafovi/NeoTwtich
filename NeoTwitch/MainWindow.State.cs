@@ -1,6 +1,7 @@
 using System.Windows;
 using NeoTwitch.Models;
 using NeoTwitch.Services;
+using NeoTwitch.Services.Lights;
 using NeoTwitch.Services.Ui;
 using NeoTwitch.ViewModels.Library;
 using NeoTwitch.ViewModels.Obs;

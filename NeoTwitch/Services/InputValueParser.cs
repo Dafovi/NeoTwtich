@@ -1,3 +1,5 @@
+using NeoTwitch.Services.Lights;
+
 namespace NeoTwitch.Services;
 
 public static class InputValueParser

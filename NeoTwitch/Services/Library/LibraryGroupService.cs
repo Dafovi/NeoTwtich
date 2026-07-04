@@ -59,6 +59,21 @@ public static class LibraryGroupService
 
         return cleared;
     }
+
+    public static int ClearMediaGroupFromRules(IEnumerable<EventRule> rules, ObsMediaKind kind, string groupId)
+    {
+        var cleared = 0;
+        foreach (var rule in rules.Where(rule => rule.ObsMediaKind == kind
+                     && rule.ObsMediaSourceMode == MediaSourceMode.Group
+                     && string.Equals(rule.ObsMediaGroupId, groupId, StringComparison.OrdinalIgnoreCase)))
+        {
+            rule.ObsMediaGroupId = "";
+            rule.SendObsMedia = false;
+            cleared++;
+        }
+
+        return cleared;
+    }
 }
 
 public readonly record struct LibraryGroupMutation<TGroup>(

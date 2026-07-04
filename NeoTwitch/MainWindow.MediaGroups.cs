@@ -84,6 +84,7 @@ public partial class MainWindow
         }
 
         LibraryGroupService.ClearGroupFromAssets(library, group.Id);
+        LibraryGroupService.ClearMediaGroupFromRules(_config.Rules, MediaLibraryKindCatalog.Get(kind).ObsKind, group.Id);
 
         groups.Remove(group);
         var viewModel = GetMediaLibraryViewModel(kind);
@@ -94,5 +95,7 @@ public partial class MainWindow
 
         SaveConfig();
         RefreshMediaLibraryView(kind);
+        RefreshRulesView();
+        LoadSelectedRuleIntoUi();
     }
 }

@@ -1586,12 +1586,16 @@ static class LibraryGroupServiceTests
         {
             new() { AudioSourceMode = AudioSourceMode.Group, AudioGroupId = "g1", PlayAudio = true },
             new() { AudioSourceMode = AudioSourceMode.Single, AudioGroupId = "g1", PlayAudio = true },
-            new() { AudioSourceMode = AudioSourceMode.Group, AudioGroupId = "g2", PlayAudio = true }
+            new() { AudioSourceMode = AudioSourceMode.Group, AudioGroupId = "g2", PlayAudio = true },
+            new() { ObsMediaKind = ObsMediaKind.Image, ObsMediaSourceMode = MediaSourceMode.Group, ObsMediaGroupId = "g1", SendObsMedia = true },
+            new() { ObsMediaKind = ObsMediaKind.Video, ObsMediaSourceMode = MediaSourceMode.Group, ObsMediaGroupId = "g1", SendObsMedia = true },
+            new() { ObsMediaKind = ObsMediaKind.Image, ObsMediaSourceMode = MediaSourceMode.Single, ObsMediaGroupId = "g1", SendObsMedia = true }
         };
 
         var counted = LibraryGroupService.CountAssetsInGroup(assets, "g1");
         var clearedAssets = LibraryGroupService.ClearGroupFromAssets(assets, "g1");
         var clearedRules = LibraryGroupService.ClearAudioGroupFromRules(rules, "g1");
+        var clearedMediaRules = LibraryGroupService.ClearMediaGroupFromRules(rules, ObsMediaKind.Image, "g1");
 
         TestAssert.Equal(2, counted);
         TestAssert.Equal(2, clearedAssets);
@@ -1603,6 +1607,13 @@ static class LibraryGroupServiceTests
         TestAssert.False(rules[0].PlayAudio);
         TestAssert.Equal("g1", rules[1].AudioGroupId);
         TestAssert.True(rules[1].PlayAudio);
+        TestAssert.Equal(1, clearedMediaRules);
+        TestAssert.Equal("", rules[3].ObsMediaGroupId);
+        TestAssert.False(rules[3].SendObsMedia);
+        TestAssert.Equal("g1", rules[4].ObsMediaGroupId);
+        TestAssert.True(rules[4].SendObsMedia);
+        TestAssert.Equal("g1", rules[5].ObsMediaGroupId);
+        TestAssert.True(rules[5].SendObsMedia);
     }
 }
 

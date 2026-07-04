@@ -112,7 +112,8 @@ public static class ObsWebSocketRequestFactory
     public static Dictionary<string, object?> BuildSceneItemTransformRequest(
         string sceneName,
         int sceneItemId,
-        ObsIntegrationConfig config)
+        ObsIntegrationConfig config,
+        Func<int, int, int>? randomNext = null)
     {
         var mediaWidth = Math.Clamp(
             config.OverlayMediaWidth,
@@ -122,7 +123,7 @@ public static class ObsWebSocketRequestFactory
             config.OverlayMediaHeight,
             ApplicationLimits.MinObsOverlayMediaSize,
             Math.Max(ApplicationLimits.MinObsOverlayMediaSize, config.OverlayHeight));
-        var (positionX, positionY) = ResolveOverlayPosition(config, mediaWidth, mediaHeight);
+        var (positionX, positionY) = ResolveOverlayPosition(config, mediaWidth, mediaHeight, randomNext);
 
         return new Dictionary<string, object?>
         {
@@ -149,15 +150,12 @@ public static class ObsWebSocketRequestFactory
         };
     }
 
-    public static (int X, int Y) ResolveOverlayPosition(ObsIntegrationConfig config, int mediaWidth, int mediaHeight)
+    public static (int X, int Y) ResolveOverlayPosition(
+        ObsIntegrationConfig config,
+        int mediaWidth,
+        int mediaHeight,
+        Func<int, int, int>? randomNext = null)
     {
-        var maxX = Math.Max(0, config.OverlayWidth - mediaWidth);
-        var maxY = Math.Max(0, config.OverlayHeight - mediaHeight);
-        return config.OverlayPositionMode switch
-        {
-            ObsWebSocketProtocol.CustomPositionMode => (Math.Clamp(config.OverlayX, 0, maxX), Math.Clamp(config.OverlayY, 0, maxY)),
-            ObsWebSocketProtocol.RandomPositionMode => (Random.Shared.Next(0, maxX + 1), Random.Shared.Next(0, maxY + 1)),
-            _ => (maxX / 2, maxY / 2)
-        };
+        return ObsOverlayPositionService.Resolve(config, mediaWidth, mediaHeight, randomNext);
     }
 }

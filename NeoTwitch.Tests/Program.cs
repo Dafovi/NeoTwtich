@@ -70,6 +70,7 @@ var tests = new (string Name, Action Body)[]
     ("ObsRulePlanService resolves media plans", ObsRulePlanTests.ResolvesMediaPlans),
     ("ObsRulePlanService builds media execution plan", ObsRulePlanTests.BuildsMediaExecutionPlan),
     ("ObsOverlayService writes deterministic state", ObsOverlayServiceTests.WritesDeterministicState),
+    ("ObsOverlayPositionService resolves deterministic positions", ObsOverlayPositionServiceTests.ResolvesDeterministicPositions),
     ("ObsWebSocketRequestFactory builds protocol requests", ObsWebSocketRequestFactoryTests.BuildsProtocolRequests),
     ("ObsWebSocketResponseReader parses protocol responses", ObsWebSocketResponseReaderTests.ParsesProtocolResponses),
     ("LightControlInputService resolves presets", LightControlInputTests.ResolvesPresets),
@@ -1582,6 +1583,37 @@ static class ObsOverlayServiceTests
                 Directory.Delete(directory, recursive: true);
             }
         }
+    }
+}
+
+static class ObsOverlayPositionServiceTests
+{
+    public static void ResolvesDeterministicPositions()
+    {
+        var config = new ObsIntegrationConfig
+        {
+            OverlayWidth = 100,
+            OverlayHeight = 80,
+            OverlayMediaWidth = 30,
+            OverlayMediaHeight = 20,
+            OverlayPositionMode = ObsWebSocketProtocol.CustomPositionMode,
+            OverlayX = 999,
+            OverlayY = -1
+        };
+
+        var custom = ObsOverlayPositionService.Resolve(config, 30, 20);
+        TestAssert.Equal(70, custom.X);
+        TestAssert.Equal(0, custom.Y);
+
+        config.OverlayPositionMode = "Center";
+        var centered = ObsOverlayPositionService.Resolve(config, 30, 20);
+        TestAssert.Equal(35, centered.X);
+        TestAssert.Equal(30, centered.Y);
+
+        config.OverlayPositionMode = ObsWebSocketProtocol.RandomPositionMode;
+        var random = ObsOverlayPositionService.Resolve(config, 30, 20, (_, maxExclusive) => maxExclusive - 1);
+        TestAssert.Equal(70, random.X);
+        TestAssert.Equal(60, random.Y);
     }
 }
 

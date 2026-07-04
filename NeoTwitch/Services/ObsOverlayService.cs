@@ -1,6 +1,7 @@
 using System.IO;
 using System.Text.Json;
 using NeoTwitch.Models;
+using NeoTwitch.Services.Obs;
 using NeoTwitch.Shared;
 
 namespace NeoTwitch.Services;
@@ -11,13 +12,18 @@ public sealed class ObsOverlayService
     private const string StateFileName = "obs-overlay-state.json";
     private readonly string _directory;
     private readonly TimeProvider _timeProvider;
+    private readonly Func<int, int, int>? _randomNext;
 
-    public ObsOverlayService(TimeProvider timeProvider, string? directory = null)
+    public ObsOverlayService(
+        TimeProvider timeProvider,
+        string? directory = null,
+        Func<int, int, int>? randomNext = null)
     {
         _timeProvider = timeProvider;
         _directory = string.IsNullOrWhiteSpace(directory)
             ? ApplicationPaths.ObsOverlayDirectory
             : directory;
+        _randomNext = randomNext;
     }
 
     public string BuildOverlayUrl()
@@ -37,7 +43,7 @@ public sealed class ObsOverlayService
             config.OverlayMediaHeight,
             ApplicationLimits.MinObsOverlayMediaSize,
             Math.Max(ApplicationLimits.MinObsOverlayMediaSize, config.OverlayHeight));
-        var (x, y) = ResolvePosition(config, mediaWidth, mediaHeight);
+        var (x, y) = ObsOverlayPositionService.Resolve(config, mediaWidth, mediaHeight, _randomNext);
         var state = new
         {
             visible = true,
@@ -90,18 +96,6 @@ public sealed class ObsOverlayService
         {
             File.WriteAllText(statePath, "{}");
         }
-    }
-
-    private static (int X, int Y) ResolvePosition(ObsIntegrationConfig config, int mediaWidth, int mediaHeight)
-    {
-        var maxX = Math.Max(0, config.OverlayWidth - mediaWidth);
-        var maxY = Math.Max(0, config.OverlayHeight - mediaHeight);
-        return config.OverlayPositionMode switch
-        {
-            "Custom" => (Math.Clamp(config.OverlayX, 0, maxX), Math.Clamp(config.OverlayY, 0, maxY)),
-            "Random" => (Random.Shared.Next(0, maxX + 1), Random.Shared.Next(0, maxY + 1)),
-            _ => (maxX / 2, maxY / 2)
-        };
     }
 
     private static string OverlayHtml => $$"""

@@ -514,7 +514,21 @@ internal void MyButton_Click(object sender, RoutedEventArgs e)
 
 ## 18. Comandos utiles
 
-Build debug:
+Verificacion recomendada antes de probar manualmente:
+
+```powershell
+.\scripts\build.ps1 -Mode Verify
+```
+
+Este comando ejecuta las pruebas automatizadas, compila la solucion completa y abre el ejecutable unos segundos en modo seguro. Si durante ese arranque se escribe un `crash.log` nuevo, el comando falla. Esto ayuda a detectar errores de XAML o bindings antes de pasarle una version a alguien.
+
+Si necesitas correrlo en un equipo sin escritorio o con Neo Twitch ya abierto, puedes omitir la prueba visual:
+
+```powershell
+.\scripts\build.ps1 -Mode Verify -SkipSmokeTest
+```
+
+Build debug manual:
 
 ```powershell
 dotnet build .\NeoTwitch\NeoTwitch.csproj -c Debug

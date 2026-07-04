@@ -5,7 +5,9 @@ param(
 
     [string]$Runtime = "",
 
-    [switch]$Clean
+    [switch]$Clean,
+
+    [switch]$SkipSmokeTest
 )
 
 $ErrorActionPreference = "Stop"
@@ -29,6 +31,80 @@ function Invoke-DotNet {
     if ($LASTEXITCODE -ne 0) {
         throw "dotnet fallo con codigo $LASTEXITCODE."
     }
+}
+
+function Resolve-BuiltAppExecutable {
+    $projectDirectory = Split-Path -Parent $AppProject
+    $configuredPath = Join-Path $projectDirectory "bin\$DebugConfiguration\net10.0-windows\$($BuildConfig.appExecutable)"
+    if (Test-Path -LiteralPath $configuredPath) {
+        return (Resolve-Path -LiteralPath $configuredPath).Path
+    }
+
+    $buildOutput = Join-Path $projectDirectory "bin\$DebugConfiguration"
+    $candidate = Get-ChildItem -LiteralPath $buildOutput -Recurse -Filter $BuildConfig.appExecutable -ErrorAction SilentlyContinue |
+        Sort-Object LastWriteTime -Descending |
+        Select-Object -First 1
+
+    if ($null -eq $candidate) {
+        throw "No encontre el ejecutable de debug para la prueba de arranque."
+    }
+
+    return $candidate.FullName
+}
+
+function Invoke-AppSmokeTest {
+    if ($SkipSmokeTest -or $env:NEOTWITCH_SKIP_SMOKE_TEST -eq "1") {
+        Write-Host "Smoke test omitido." -ForegroundColor Yellow
+        return
+    }
+
+    $processName = [System.IO.Path]::GetFileNameWithoutExtension($BuildConfig.appExecutable)
+    $existingProcess = Get-Process -Name $processName -ErrorAction SilentlyContinue
+    if ($existingProcess) {
+        Write-Warning "Smoke test omitido porque Neo Twitch ya esta abierto."
+        return
+    }
+
+    $exe = Resolve-BuiltAppExecutable
+    $crashLog = Join-Path $env:APPDATA "NeoTwitch\crash.log"
+    $previousCrashWrite = if (Test-Path -LiteralPath $crashLog) {
+        (Get-Item -LiteralPath $crashLog).LastWriteTimeUtc
+    } else {
+        $null
+    }
+
+    Write-Host "Smoke test: $exe" -ForegroundColor Cyan
+    $process = Start-Process -FilePath $exe -ArgumentList @("--debug", "--no-autoconnect", "--no-start-hidden") -PassThru
+
+    try {
+        Start-Sleep -Seconds 5
+
+        $crashChanged = $false
+        if (Test-Path -LiteralPath $crashLog) {
+            $currentCrashWrite = (Get-Item -LiteralPath $crashLog).LastWriteTimeUtc
+            $crashChanged = $null -eq $previousCrashWrite -or $currentCrashWrite -gt $previousCrashWrite
+        }
+
+        if ($crashChanged) {
+            throw "La app escribio un nuevo crash.log durante el arranque: $crashLog"
+        }
+
+        if ($process.HasExited) {
+            throw "La app se cerro durante el smoke test con codigo $($process.ExitCode)."
+        }
+    }
+    finally {
+        if ($null -ne $process -and -not $process.HasExited) {
+            $null = $process.CloseMainWindow()
+            Start-Sleep -Seconds 1
+            if (-not $process.HasExited) {
+                $process.Kill()
+                $process.WaitForExit()
+            }
+        }
+    }
+
+    Write-Host "Smoke test listo: la app inicio sin crash de arranque." -ForegroundColor Green
 }
 
 function Publish-Portable {
@@ -112,6 +188,7 @@ switch ($Mode) {
     "Verify" {
         Invoke-DotNet @("run", "--project", $TestProject, "-c", $DebugConfiguration)
         Invoke-DotNet @("build", $Solution, "-c", $DebugConfiguration)
+        Invoke-AppSmokeTest
     }
     "Portable" {
         Publish-Portable $ArtifactRoot

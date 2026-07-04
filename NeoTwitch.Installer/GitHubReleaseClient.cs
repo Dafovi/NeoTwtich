@@ -7,15 +7,18 @@ using NeoTwitch.Shared;
 
 namespace NeoTwitch.Installer;
 
-internal sealed class GitHubReleaseClient
+internal sealed class GitHubReleaseClient : IDisposable
 {
-    private readonly HttpClient _http = new()
-    {
-        Timeout = TimeSpan.FromSeconds(30)
-    };
+    private readonly HttpClient _http;
+    private readonly bool _ownsHttp;
 
-    public GitHubReleaseClient()
+    public GitHubReleaseClient(HttpClient? httpClient = null)
     {
+        _http = httpClient ?? new HttpClient
+        {
+            Timeout = TimeSpan.FromSeconds(30)
+        };
+        _ownsHttp = httpClient is null;
         _http.DefaultRequestHeaders.UserAgent.Add(new ProductInfoHeaderValue(NeoTwitchProduct.GitHubInstallerUserAgent, NeoTwitchProduct.CurrentVersionText));
     }
 
@@ -107,6 +110,14 @@ internal sealed class GitHubReleaseClient
         }
 
         return 100;
+    }
+
+    public void Dispose()
+    {
+        if (_ownsHttp)
+        {
+            _http.Dispose();
+        }
     }
 
     private sealed record GitHubRelease(

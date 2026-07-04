@@ -10,7 +10,12 @@ namespace NeoTwitch.Installer;
 internal sealed class InstallerService
 {
     private const string WindowsRunKeyPath = @"Software\Microsoft\Windows\CurrentVersion\Run";
-    private readonly GitHubReleaseClient _releaseClient = new();
+    private readonly GitHubReleaseClient _releaseClient;
+
+    public InstallerService(GitHubReleaseClient? releaseClient = null)
+    {
+        _releaseClient = releaseClient ?? new GitHubReleaseClient();
+    }
 
     public async Task<InstallResult> InstallAsync(
         InstallerOptions options,

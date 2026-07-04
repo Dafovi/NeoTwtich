@@ -11,10 +11,12 @@ internal sealed class InstallerService
 {
     private const string WindowsRunKeyPath = @"Software\Microsoft\Windows\CurrentVersion\Run";
     private readonly GitHubReleaseClient _releaseClient;
+    private readonly TimeProvider _timeProvider;
 
-    public InstallerService(GitHubReleaseClient? releaseClient = null)
+    public InstallerService(GitHubReleaseClient? releaseClient = null, TimeProvider? timeProvider = null)
     {
         _releaseClient = releaseClient ?? new GitHubReleaseClient();
+        _timeProvider = timeProvider ?? TimeProvider.System;
     }
 
     public async Task<InstallResult> InstallAsync(
@@ -79,7 +81,7 @@ internal sealed class InstallerService
             progress.Report(new InstallProgress(86, "Configurando inicio con Windows"));
             ApplyStartWithWindows(options.StartWithWindows, appExePath);
             WriteAppStartWithWindowsSetting(options.StartWithWindows);
-            WriteInstallManifest(options.InstallPath, version);
+            WriteInstallManifest(options.InstallPath, version, _timeProvider.GetLocalNow());
 
             progress.Report(new InstallProgress(100, options.IsUpdate ? "Actualización completada" : "Instalación completada"));
             return new InstallResult(appExePath, version, releaseNotes);
@@ -277,14 +279,13 @@ internal sealed class InstallerService
         }));
     }
 
-    private static void WriteInstallManifest(string installPath, string version)
+    private static void WriteInstallManifest(string installPath, string version, DateTimeOffset installedAt)
     {
         var manifestPath = Path.Combine(installPath, "neo-twitch-install.json");
-        var installedAt = DateTimeOffset.Now.ToString("O");
         var content = $$"""
         {
           "version": "{{version}}",
-          "installedAt": "{{installedAt}}",
+          "installedAt": "{{installedAt:O}}",
           "installPath": "{{EscapeJson(installPath)}}"
         }
         """;

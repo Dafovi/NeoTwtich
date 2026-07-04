@@ -38,42 +38,7 @@ public static class ActivityLogPresentationService
 
         if (kind == ActivityLogKind.Event)
         {
-            if (text.Contains("bits", StringComparison.Ordinal))
-            {
-                return "Bits recibidos";
-            }
-
-            if (text.Contains("suscripcion", StringComparison.Ordinal) || text.Contains("suscribio", StringComparison.Ordinal))
-            {
-                return "Suscripcion";
-            }
-
-            if (text.Contains("raid", StringComparison.Ordinal))
-            {
-                return "Raid recibida";
-            }
-
-            if (text.Contains("siguio", StringComparison.Ordinal) || text.Contains("seguidor", StringComparison.Ordinal))
-            {
-                return "Nuevo seguidor";
-            }
-
-            if (text.Contains("canje", StringComparison.Ordinal))
-            {
-                return "Canje activado";
-            }
-
-            if (text.Contains("comando", StringComparison.Ordinal) || text.Contains("chat", StringComparison.Ordinal))
-            {
-                return "Comando de chat";
-            }
-
-            if (text.Contains("prueba", StringComparison.Ordinal))
-            {
-                return "Prueba de alerta";
-            }
-
-            return "Alerta activada";
+            return ActivityLogEventPresentationService.Build(message).Title;
         }
 
         if (ActivityLogClassifier.IsTwitchMessage(text, kind))
@@ -166,32 +131,7 @@ public static class ActivityLogPresentationService
 
         if (kind == ActivityLogKind.Event)
         {
-            if (text.Contains("bits", StringComparison.Ordinal))
-            {
-                return "#37C7F3";
-            }
-
-            if (text.Contains("suscripcion", StringComparison.Ordinal) || text.Contains("suscribio", StringComparison.Ordinal))
-            {
-                return "#B56CFF";
-            }
-
-            if (text.Contains("siguio", StringComparison.Ordinal) || text.Contains("seguidor", StringComparison.Ordinal))
-            {
-                return "#14B8A6";
-            }
-
-            if (text.Contains("chat", StringComparison.Ordinal) || text.Contains("comando", StringComparison.Ordinal))
-            {
-                return "#22C55E";
-            }
-
-            if (text.Contains("raid", StringComparison.Ordinal))
-            {
-                return "#F59E0B";
-            }
-
-            return "#00C7B7";
+            return ActivityLogEventPresentationService.Build(message).AccentColor;
         }
 
         if (ActivityLogClassifier.IsTwitchMessage(text, kind))
@@ -228,27 +168,7 @@ public static class ActivityLogPresentationService
 
         if (kind == ActivityLogKind.Event)
         {
-            if (text.Contains("bits", StringComparison.Ordinal))
-            {
-                return "Assets/Icons/action_bits.png";
-            }
-
-            if (text.Contains("suscripcion", StringComparison.Ordinal) || text.Contains("suscribio", StringComparison.Ordinal))
-            {
-                return "Assets/Icons/action_subscription.png";
-            }
-
-            if (text.Contains("siguio", StringComparison.Ordinal) || text.Contains("seguidor", StringComparison.Ordinal))
-            {
-                return "Assets/Icons/action_follower.png";
-            }
-
-            if (text.Contains("chat", StringComparison.Ordinal) || text.Contains("comando", StringComparison.Ordinal))
-            {
-                return "Assets/Icons/action_message.png";
-            }
-
-            return "Assets/Icons/activity_notification.png";
+            return ActivityLogEventPresentationService.Build(message).ActivityIconPath;
         }
 
         if (kind == ActivityLogKind.Important)
@@ -276,32 +196,7 @@ public static class ActivityLogPresentationService
 
         if (kind == ActivityLogKind.Event)
         {
-            if (text.Contains("bits", StringComparison.Ordinal))
-            {
-                return "Bits";
-            }
-
-            if (text.Contains("suscripcion", StringComparison.Ordinal) || text.Contains("suscribio", StringComparison.Ordinal))
-            {
-                return "Star";
-            }
-
-            if (text.Contains("siguio", StringComparison.Ordinal) || text.Contains("seguidor", StringComparison.Ordinal))
-            {
-                return "Users";
-            }
-
-            if (text.Contains("chat", StringComparison.Ordinal) || text.Contains("comando", StringComparison.Ordinal))
-            {
-                return "Chat";
-            }
-
-            if (text.Contains("raid", StringComparison.Ordinal))
-            {
-                return "Zap";
-            }
-
-            return "Event";
+            return ActivityLogEventPresentationService.Build(message).ActivityIconKey;
         }
 
         if (text.StartsWith("arduino", StringComparison.Ordinal))

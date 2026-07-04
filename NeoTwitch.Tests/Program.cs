@@ -135,6 +135,7 @@ var tests = new (string Name, Action Body)[]
     ("ActivityLogClassifier resolves sources and categories", ActivityLogClassifierTests.ResolvesSourcesAndCategories),
     ("ActivityLogSourceCatalog maps source metadata", ActivityLogSourceCatalogTests.MapsSourceMetadata),
     ("ActivityLogStatusService maps status metadata", ActivityLogStatusServiceTests.MapsStatusMetadata),
+    ("ActivityLogEventPresentationService maps event metadata", ActivityLogEventPresentationTests.MapsEventMetadata),
     ("ActivityLogPresentationService classifies display metadata", ActivityLogPresentationTests.ClassifiesDisplayMetadata),
     ("ActivityViewModel filters entries view", ActivityViewModelTests.FiltersEntriesView),
     ("ActivityViewModel maps filter properties", ActivityViewModelTests.MapsFilterProperties),
@@ -3398,6 +3399,24 @@ static class ActivityLogServiceTests
         {
             return localTime.ToUniversalTime();
         }
+    }
+}
+
+static class ActivityLogEventPresentationTests
+{
+    public static void MapsEventMetadata()
+    {
+        var bits = ActivityLogEventPresentationService.Build("100 bits");
+        var follow = ActivityLogEventPresentationService.Build("nuevo seguidor juan");
+        var raid = ActivityLogEventPresentationService.Build("raid recibida");
+
+        TestAssert.Equal("Bits recibidos", bits.Title);
+        TestAssert.Equal("#37C7F3", bits.AccentColor);
+        TestAssert.Equal("Bits", bits.ActivityIconKey);
+        TestAssert.Equal("Nuevo seguidor", follow.Title);
+        TestAssert.Equal("Users", follow.ActivityIconKey);
+        TestAssert.Equal("Raid recibida", raid.Title);
+        TestAssert.Equal("#F59E0B", raid.AccentColor);
     }
 }
 

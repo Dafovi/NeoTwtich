@@ -17,7 +17,7 @@ public partial class MainWindow
             var path = _filePicker.SaveFile(new FilePickerRequest(
                 _text.Get(UiTextKeys.SettingsExportTitle),
                 _text.Get(UiTextKeys.SettingsConfigFileFilter),
-                FileName: $"NeoTwitch-config-{DateTime.Now:yyyyMMdd-HHmmss}.json",
+                FileName: $"NeoTwitch-config-{_timeProvider.GetLocalNow().DateTime:yyyyMMdd-HHmmss}.json",
                 DefaultExtension: ".json",
                 OverwritePrompt: true));
 

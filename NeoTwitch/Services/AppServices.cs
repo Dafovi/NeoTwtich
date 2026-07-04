@@ -110,7 +110,7 @@ public sealed class AppServices
         var externalLauncher = new ExternalLauncherService();
         var updateService = new AppUpdateService(text, externalLauncher);
         return new AppServices(
-            new SettingsStore(text),
+            new SettingsStore(text, timeProvider),
             new AudioPlayerService(text),
             new SerialLightController(text),
             new TwitchAuthService(text, externalLauncher),

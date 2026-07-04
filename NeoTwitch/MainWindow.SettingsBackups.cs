@@ -16,7 +16,9 @@ public partial class MainWindow
             SaveConfig();
 
             Directory.CreateDirectory(_settingsStore.BackupDirectory);
-            var backupPath = Path.Combine(_settingsStore.BackupDirectory, $"settings-manual-{DateTime.Now:yyyyMMdd-HHmmss}.json");
+            var backupPath = Path.Combine(
+                _settingsStore.BackupDirectory,
+                $"settings-manual-{_timeProvider.GetLocalNow().DateTime:yyyyMMdd-HHmmss}.json");
             _settingsStore.Export(_config, backupPath);
             _settingsViewModel.UpdateBackupPathText(_text.Format(UiTextKeys.SettingsManualBackupText, backupPath));
             AddLog(_text.Format(UiTextKeys.SettingsBackupCreatedLog, backupPath));

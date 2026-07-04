@@ -14,11 +14,13 @@ public sealed class SettingsStore
         WriteIndented = true
     };
     private readonly IUiTextService _text;
+    private readonly TimeProvider _timeProvider;
     private bool _createdSessionBackup;
 
-    public SettingsStore(IUiTextService text)
+    public SettingsStore(IUiTextService text, TimeProvider timeProvider)
     {
         _text = text;
+        _timeProvider = timeProvider;
         _jsonOptions.Converters.Add(new JsonStringEnumConverter());
     }
 
@@ -109,7 +111,7 @@ public sealed class SettingsStore
             return;
         }
 
-        var timestamp = DateTime.Now.ToString("yyyyMMdd-HHmmss");
+        var timestamp = _timeProvider.GetLocalNow().DateTime.ToString("yyyyMMdd-HHmmss");
         var timestampedBackupPath = Path.Combine(BackupDirectory, $"settings-{timestamp}.json");
         File.Copy(SettingsPath, timestampedBackupPath, overwrite: true);
         _createdSessionBackup = true;

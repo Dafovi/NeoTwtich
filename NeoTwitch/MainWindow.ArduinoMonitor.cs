@@ -50,12 +50,13 @@ public partial class MainWindow
                 return;
             }
 
-            if (DateTimeOffset.Now - _lastArduinoReconnectAttempt < TimeSpan.FromSeconds(8))
+            var now = _timeProvider.GetUtcNow();
+            if (now - _lastArduinoReconnectAttempt < TimeSpan.FromSeconds(8))
             {
                 return;
             }
 
-            _lastArduinoReconnectAttempt = DateTimeOffset.Now;
+            _lastArduinoReconnectAttempt = now;
             AddLog($"Arduino: intentando reconectar automaticamente en {_config.SerialPort}.");
             await ConnectArduinoAsync();
             await ApplyBackgroundAsync();

@@ -16,11 +16,6 @@ public sealed class SettingsStore
     private readonly IUiTextService _text;
     private bool _createdSessionBackup;
 
-    public SettingsStore()
-        : this(UiTextService.CreateDefault())
-    {
-    }
-
     public SettingsStore(IUiTextService text)
     {
         _text = text;

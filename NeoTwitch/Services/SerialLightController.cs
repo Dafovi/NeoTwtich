@@ -18,11 +18,6 @@ public sealed class SerialLightController : IDisposable
     private int _baudRate = 115200;
     private bool? _ackSupported;
 
-    public SerialLightController()
-        : this(UiTextService.CreateDefault())
-    {
-    }
-
     public SerialLightController(IUiTextService text)
     {
         _text = text;

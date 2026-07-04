@@ -299,6 +299,8 @@ static class InputValueParserTests
 
 static class AppConfigNormalizerTests
 {
+    private static readonly IUiTextService Text = UiTextService.CreateDefault();
+
     public static void TrimsAndClampsLoadedSettings()
     {
         var config = new AppConfig
@@ -322,7 +324,7 @@ static class AppConfigNormalizerTests
             ]
         };
 
-        var normalized = AppConfigNormalizer.Normalize(config);
+        var normalized = AppConfigNormalizer.Normalize(config, Text);
 
         TestAssert.Equal("System", normalized.ThemeMode);
         TestAssert.Equal(ApplicationLimits.MinBaudRate, normalized.BaudRate);
@@ -352,7 +354,7 @@ static class AppConfigNormalizerTests
             ]
         };
 
-        var normalized = AppConfigNormalizer.Normalize(config);
+        var normalized = AppConfigNormalizer.Normalize(config, Text);
 
         TestAssert.Equal(1, normalized.AudioLibrary.Count);
         TestAssert.Equal("follow", normalized.AudioLibrary[0].Name);
@@ -2659,6 +2661,8 @@ static class ObsViewModelTests
 
 static class DiagnosticReportServiceTests
 {
+    private static readonly IUiTextService Text = UiTextService.CreateDefault();
+
     public static void BuildsReportWithoutNetwork()
     {
         var config = TestConfig.CreateDefault();
@@ -2713,7 +2717,8 @@ static class DiagnosticReportServiceTests
             NeoTwitchProduct.CurrentVersionText,
             NeoTwitchProduct.CurrentVersionText,
             "https://example.test/release",
-            IsUpdateAvailable: false)));
+            IsUpdateAvailable: false)),
+            Text);
     }
 }
 

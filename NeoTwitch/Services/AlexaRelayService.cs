@@ -20,11 +20,6 @@ public sealed class AlexaRelayService
         WriteIndented = false
     };
 
-    public AlexaRelayService()
-        : this(UiTextService.CreateDefault())
-    {
-    }
-
     public AlexaRelayService(IUiTextService text)
     {
         _text = text;

@@ -14,16 +14,6 @@ public sealed class DiagnosticReportService
     private readonly Func<CancellationToken, Task<VersionCheckResult>> _checkLatestAsync;
     private readonly IUiTextService _text;
 
-    public DiagnosticReportService(AppUpdateService updateService)
-        : this(updateService.CheckLatestAsync, UiTextService.CreateDefault())
-    {
-    }
-
-    public DiagnosticReportService(Func<CancellationToken, Task<VersionCheckResult>> checkLatestAsync)
-        : this(checkLatestAsync, UiTextService.CreateDefault())
-    {
-    }
-
     public DiagnosticReportService(
         Func<CancellationToken, Task<VersionCheckResult>> checkLatestAsync,
         IUiTextService text)

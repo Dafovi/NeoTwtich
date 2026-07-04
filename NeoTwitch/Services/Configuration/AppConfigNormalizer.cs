@@ -8,11 +8,6 @@ namespace NeoTwitch.Services.Configuration;
 
 public static class AppConfigNormalizer
 {
-    public static AppConfig Normalize(AppConfig config)
-    {
-        return Normalize(config, UiTextService.CreateDefault());
-    }
-
     public static AppConfig Normalize(AppConfig config, IUiTextService text)
     {
         config.TwitchClientId ??= "";

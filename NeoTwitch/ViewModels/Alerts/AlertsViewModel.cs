@@ -39,11 +39,6 @@ public sealed class AlertsViewModel : ObservableObject
     private IList<EventRule>? _rules;
     private INotifyCollectionChanged? _rulesCollection;
 
-    public AlertsViewModel(IReadOnlyList<UiOption<string>> categoryOptions)
-        : this(categoryOptions, UiTextService.CreateDefault())
-    {
-    }
-
     public AlertsViewModel(IReadOnlyList<UiOption<string>> categoryOptions, IUiTextService text)
     {
         CategoryOptions = categoryOptions;

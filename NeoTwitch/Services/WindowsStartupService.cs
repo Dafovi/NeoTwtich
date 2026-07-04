@@ -10,11 +10,6 @@ public sealed class WindowsStartupService
     private const string RunKeyPath = @"Software\Microsoft\Windows\CurrentVersion\Run";
     private readonly IUiTextService _text;
 
-    public WindowsStartupService()
-        : this(UiTextService.CreateDefault())
-    {
-    }
-
     public WindowsStartupService(IUiTextService text)
     {
         _text = text;

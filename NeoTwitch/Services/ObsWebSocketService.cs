@@ -18,11 +18,6 @@ public sealed class ObsWebSocketService : IAsyncDisposable
     private readonly IUiTextService _text;
     private ClientWebSocket? _socket;
 
-    public ObsWebSocketService()
-        : this(UiTextService.CreateDefault())
-    {
-    }
-
     public ObsWebSocketService(IUiTextService text)
     {
         _text = text;

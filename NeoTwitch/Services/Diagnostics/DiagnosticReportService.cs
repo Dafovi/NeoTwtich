@@ -13,13 +13,16 @@ public sealed class DiagnosticReportService
 {
     private readonly Func<CancellationToken, Task<VersionCheckResult>> _checkLatestAsync;
     private readonly IUiTextService _text;
+    private readonly TimeProvider _timeProvider;
 
     public DiagnosticReportService(
         Func<CancellationToken, Task<VersionCheckResult>> checkLatestAsync,
-        IUiTextService text)
+        IUiTextService text,
+        TimeProvider timeProvider)
     {
         _checkLatestAsync = checkLatestAsync;
         _text = text;
+        _timeProvider = timeProvider;
     }
 
     public async Task<DiagnosticResult> BuildAsync(DiagnosticReportContext context)
@@ -323,7 +326,7 @@ public sealed class DiagnosticReportService
         header.AppendLine(report.WarningCount == 0
             ? _text.Get(UiTextKeys.DiagnosticsReportStateOk)
             : _text.Format(UiTextKeys.DiagnosticsReportStateWarnings, report.WarningCount));
-        header.AppendLine(_text.Format(UiTextKeys.DiagnosticsReportDate, DateTime.Now));
+        header.AppendLine(_text.Format(UiTextKeys.DiagnosticsReportDate, _timeProvider.GetLocalNow().DateTime));
         header.AppendLine();
         header.Append(report.BuildBody());
         header.AppendLine();

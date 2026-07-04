@@ -61,7 +61,7 @@ public partial class MainWindow
                 plan.SceneName,
                 plan.SourceName,
                 plan.Duration,
-                DateTimeOffset.UtcNow);
+                _timeProvider.GetUtcNow());
         }
         catch (OperationCanceledException)
         {
@@ -118,7 +118,7 @@ public partial class MainWindow
             return;
         }
 
-        LibraryAssetUsageService.MarkMediaUsed(asset);
+        LibraryAssetUsageService.MarkMediaUsed(asset, _timeProvider);
         SaveConfig();
         RefreshMediaLibraryView(kind == ObsMediaKind.Image ? MediaLibraryKind.Image : MediaLibraryKind.Video);
     }
@@ -127,7 +127,7 @@ public partial class MainWindow
     {
         try
         {
-            var remaining = request.Duration - (DateTimeOffset.UtcNow - request.StartedAt);
+            var remaining = request.Duration - (_timeProvider.GetUtcNow() - request.StartedAt);
             if (remaining > TimeSpan.Zero)
             {
                 await Task.Delay(remaining, cancellationToken);

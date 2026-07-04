@@ -139,7 +139,7 @@ public partial class MainWindow
             return;
         }
 
-        LibraryAssetUsageService.MarkAudioUsed(audio, duration);
+        LibraryAssetUsageService.MarkAudioUsed(audio, duration, _timeProvider);
         SaveConfig();
         RefreshAudioLibraryView();
     }

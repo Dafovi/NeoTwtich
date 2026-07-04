@@ -23,6 +23,7 @@ public sealed class AppServices
         AppUpdateService updateService,
         DiagnosticReportService diagnosticReportService,
         IUiTextService text,
+        TimeProvider timeProvider,
         ActivityLogService activityLog,
         ActivityViewModel activityViewModel,
         DashboardSummaryService dashboardSummary,
@@ -45,6 +46,7 @@ public sealed class AppServices
         UpdateService = updateService;
         DiagnosticReportService = diagnosticReportService;
         Text = text;
+        TimeProvider = timeProvider;
         ActivityLog = activityLog;
         ActivityViewModel = activityViewModel;
         DashboardSummary = dashboardSummary;
@@ -80,6 +82,8 @@ public sealed class AppServices
 
     public IUiTextService Text { get; }
 
+    public TimeProvider TimeProvider { get; }
+
     public ActivityLogService ActivityLog { get; }
 
     public ActivityViewModel ActivityViewModel { get; }
@@ -100,7 +104,8 @@ public sealed class AppServices
 
     public static AppServices CreateDefault()
     {
-        var activityLog = new ActivityLogService();
+        var timeProvider = TimeProvider.System;
+        var activityLog = new ActivityLogService(timeProvider);
         var text = UiTextService.CreateDefault();
         var externalLauncher = new ExternalLauncherService();
         var updateService = new AppUpdateService(text, externalLauncher);
@@ -115,8 +120,9 @@ public sealed class AppServices
             new ObsOverlayService(),
             new WindowsStartupService(text),
             updateService,
-            new DiagnosticReportService(updateService.CheckLatestAsync, text),
+            new DiagnosticReportService(updateService.CheckLatestAsync, text, timeProvider),
             text,
+            timeProvider,
             activityLog,
             new ActivityViewModel(activityLog),
             new DashboardSummaryService(),

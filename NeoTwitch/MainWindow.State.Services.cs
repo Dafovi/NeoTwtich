@@ -39,6 +39,7 @@ public partial class MainWindow
     private WindowsStartupService _windowsStartupService => _services.WindowsStartupService;
     private AppUpdateService _updateService => _services.UpdateService;
     private DiagnosticReportService _diagnosticReportService => _services.DiagnosticReportService;
+    private TimeProvider _timeProvider => _services.TimeProvider;
     private IUiTextService _text => _services.Text;
     private Services.Activity.ActivityLogService _activityLog => _services.ActivityLog;
     private ActivityViewModel _activityViewModel => _services.ActivityViewModel;

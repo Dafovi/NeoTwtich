@@ -1845,11 +1845,12 @@ static class LibraryAssetUsageTests
     public static void MarksAssetUsage()
     {
         var usedAt = new DateTimeOffset(2026, 6, 1, 12, 0, 0, TimeSpan.Zero);
+        var timeProvider = new FixedTimeProvider(usedAt);
         var audio = new AudioAssetConfig();
         var media = new MediaAssetConfig();
 
-        LibraryAssetUsageService.MarkAudioUsed(audio, TimeSpan.FromMilliseconds(1234.6), usedAt);
-        LibraryAssetUsageService.MarkMediaUsed(media, usedAt);
+        LibraryAssetUsageService.MarkAudioUsed(audio, TimeSpan.FromMilliseconds(1234.6), timeProvider);
+        LibraryAssetUsageService.MarkMediaUsed(media, timeProvider);
 
         TestAssert.Equal(1235, audio.DurationMs);
         TestAssert.Equal(usedAt, audio.LastUsedAt);
@@ -2718,7 +2719,8 @@ static class DiagnosticReportServiceTests
             NeoTwitchProduct.CurrentVersionText,
             "https://example.test/release",
             IsUpdateAvailable: false)),
-            Text);
+            Text,
+            new FixedTimeProvider(new DateTimeOffset(2026, 6, 1, 12, 0, 0, TimeSpan.Zero)));
     }
 }
 
@@ -4056,6 +4058,14 @@ static class TestConfig
     public static AppConfig CreateDefault()
     {
         return DefaultAppConfigFactory.Create(Text);
+    }
+}
+
+sealed class FixedTimeProvider(DateTimeOffset utcNow) : TimeProvider
+{
+    public override DateTimeOffset GetUtcNow()
+    {
+        return utcNow;
     }
 }
 

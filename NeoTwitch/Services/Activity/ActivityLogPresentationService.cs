@@ -6,7 +6,7 @@ public static class ActivityLogPresentationService
 {
     public static ActivityLogPresentation Build(string message, ActivityLogKind kind)
     {
-        var sourceKey = ChooseSourceKey(message, kind);
+        var sourceKey = ActivityLogClassifier.ResolveSourceKey(message, kind);
         var statusText = ChooseStatusText(message, kind);
         var activityIconPath = ChooseActivityIconPath(message, kind, sourceKey);
         var title = BuildTitle(message, kind);
@@ -16,7 +16,7 @@ public static class ActivityLogPresentationService
             FilterKey: sourceKey,
             IsImportant: kind == ActivityLogKind.Important || !string.Equals(statusText, "OK", StringComparison.OrdinalIgnoreCase),
             SourceName: SourceDisplayName(sourceKey),
-            Category: BuildCategory(message, kind),
+            Category: ActivityLogClassifier.ResolveCategory(message, kind),
             Title: title,
             Description: BuildDescription(message, title),
             AccentColor: ChooseAccentColor(message, kind),
@@ -29,48 +29,6 @@ public static class ActivityLogPresentationService
             ActivityIconPath: activityIconPath,
             ActivityIconUsesOriginalImage: IsServiceIconPath(activityIconPath),
             ActivityIconKey: ChooseIconKey(message, kind));
-    }
-
-    private static string ChooseSourceKey(string message, ActivityLogKind kind)
-    {
-        var text = message.ToLowerInvariant();
-
-        if (kind == ActivityLogKind.Event)
-        {
-            return "EVENTO";
-        }
-
-        if (IsTwitchMessage(text, kind)
-            || text.StartsWith("chat", StringComparison.Ordinal)
-            || text.Contains("autorizado", StringComparison.Ordinal)
-            || text.Contains("escuchando eventos", StringComparison.Ordinal))
-        {
-            return "TWITCH";
-        }
-
-        if (IsArduinoMessage(text, kind)
-            || text.StartsWith("fondo", StringComparison.Ordinal)
-            || text.StartsWith("luces", StringComparison.Ordinal))
-        {
-            return "ARDUINO";
-        }
-
-        if (IsAlexaMessage(text, kind))
-        {
-            return "ALEXA";
-        }
-
-        if (IsAudioMessage(text, kind))
-        {
-            return "AUDIO";
-        }
-
-        if (IsObsMessage(text, kind))
-        {
-            return "OBS";
-        }
-
-        return "SISTEMA";
     }
 
     private static string ChooseSourceAccentColor(string sourceKey)
@@ -102,73 +60,6 @@ public static class ActivityLogPresentationService
             "IMPORTANTE" => "Importante",
             _ => "Sistema"
         };
-    }
-
-    private static string BuildCategory(string message, ActivityLogKind kind)
-    {
-        var text = message.ToLowerInvariant();
-
-        if (kind == ActivityLogKind.Event)
-        {
-            if (text.Contains("bits", StringComparison.Ordinal))
-            {
-                return "BITS";
-            }
-
-            if (text.Contains("suscripcion", StringComparison.Ordinal) || text.Contains("suscribio", StringComparison.Ordinal))
-            {
-                return "SUB";
-            }
-
-            if (text.Contains("siguio", StringComparison.Ordinal) || text.Contains("seguidor", StringComparison.Ordinal))
-            {
-                return "SEGUIDOR";
-            }
-
-            if (text.Contains("chat", StringComparison.Ordinal) || text.Contains("comando", StringComparison.Ordinal))
-            {
-                return "CHAT";
-            }
-
-            if (text.Contains("raid", StringComparison.Ordinal))
-            {
-                return "RAID";
-            }
-
-            if (text.Contains("canje", StringComparison.Ordinal))
-            {
-                return "CANJE";
-            }
-
-            return "EVENTO";
-        }
-
-        if (IsTwitchMessage(text, kind))
-        {
-            return "TWITCH";
-        }
-
-        if (IsArduinoMessage(text, kind))
-        {
-            return "ARDUINO";
-        }
-
-        if (IsAlexaMessage(text, kind))
-        {
-            return "ALEXA";
-        }
-
-        if (IsAudioMessage(text, kind))
-        {
-            return "AUDIO";
-        }
-
-        if (IsObsMessage(text, kind))
-        {
-            return "OBS";
-        }
-
-        return kind == ActivityLogKind.Important ? "IMPORTANTE" : "SISTEMA";
     }
 
     private static string BuildTitle(string message, ActivityLogKind kind)
@@ -215,29 +106,29 @@ public static class ActivityLogPresentationService
             return "Alerta activada";
         }
 
-        if (IsTwitchMessage(text, kind))
+        if (ActivityLogClassifier.IsTwitchMessage(text, kind))
         {
             return kind == ActivityLogKind.Important ? "Aviso de Twitch" : "Twitch";
         }
 
-        if (IsArduinoMessage(text, kind))
+        if (ActivityLogClassifier.IsArduinoMessage(text, kind))
         {
             return kind == ActivityLogKind.Important ? "Aviso de Arduino" : "Arduino";
         }
 
-        if (IsAlexaMessage(text, kind))
+        if (ActivityLogClassifier.IsAlexaMessage(text, kind))
         {
             return text.Contains("fondo", StringComparison.Ordinal)
                 ? "Rutina Alexa"
                 : kind == ActivityLogKind.Important ? "Aviso de Alexa" : "Alexa";
         }
 
-        if (IsAudioMessage(text, kind))
+        if (ActivityLogClassifier.IsAudioMessage(text, kind))
         {
             return kind == ActivityLogKind.Important ? "Aviso de audio" : "Audio";
         }
 
-        if (IsObsMessage(text, kind))
+        if (ActivityLogClassifier.IsObsMessage(text, kind))
         {
             return kind == ActivityLogKind.Important ? "Aviso de OBS" : "OBS";
         }
@@ -333,27 +224,27 @@ public static class ActivityLogPresentationService
             return "#00C7B7";
         }
 
-        if (IsTwitchMessage(text, kind))
+        if (ActivityLogClassifier.IsTwitchMessage(text, kind))
         {
             return "#9146FF";
         }
 
-        if (IsArduinoMessage(text, kind))
+        if (ActivityLogClassifier.IsArduinoMessage(text, kind))
         {
             return "#00878F";
         }
 
-        if (IsAlexaMessage(text, kind))
+        if (ActivityLogClassifier.IsAlexaMessage(text, kind))
         {
             return "#2FB4E9";
         }
 
-        if (IsAudioMessage(text, kind))
+        if (ActivityLogClassifier.IsAudioMessage(text, kind))
         {
             return "#B56CFF";
         }
 
-        if (IsObsMessage(text, kind))
+        if (ActivityLogClassifier.IsObsMessage(text, kind))
         {
             return "#22C55E";
         }
@@ -528,35 +419,6 @@ public static class ActivityLogPresentationService
         return "Activity";
     }
 
-    private static bool IsTwitchMessage(string text, ActivityLogKind kind)
-    {
-        return kind == ActivityLogKind.Twitch || text.StartsWith("twitch", StringComparison.Ordinal);
-    }
-
-    private static bool IsArduinoMessage(string text, ActivityLogKind kind)
-    {
-        return kind == ActivityLogKind.Arduino
-            || text.StartsWith("arduino", StringComparison.Ordinal)
-            || text.StartsWith("serial", StringComparison.Ordinal);
-    }
-
-    private static bool IsAlexaMessage(string text, ActivityLogKind kind)
-    {
-        return kind == ActivityLogKind.Alexa || text.StartsWith("alexa", StringComparison.Ordinal);
-    }
-
-    private static bool IsAudioMessage(string text, ActivityLogKind kind)
-    {
-        return kind == ActivityLogKind.Audio
-            || text.Contains("audio", StringComparison.Ordinal)
-            || text.Contains("sonido", StringComparison.Ordinal);
-    }
-
-    private static bool IsObsMessage(string text, ActivityLogKind kind)
-    {
-        return kind == ActivityLogKind.Obs
-            || text.StartsWith("obs", StringComparison.Ordinal);
-    }
 }
 
 public sealed record ActivityLogPresentation(

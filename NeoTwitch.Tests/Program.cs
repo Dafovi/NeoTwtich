@@ -109,6 +109,7 @@ var tests = new (string Name, Action Body)[]
     ("VersionComparisonService compares normalized tags", VersionComparisonTests.ComparesNormalizedTags),
     ("ActivityLogService trims activity and dashboard entries", ActivityLogServiceTests.TrimsActivityAndDashboardEntries),
     ("ActivityLogService filters entries and search text", ActivityLogServiceTests.FiltersEntriesAndSearchText),
+    ("ActivityLogClassifier resolves sources and categories", ActivityLogClassifierTests.ResolvesSourcesAndCategories),
     ("ActivityLogPresentationService classifies display metadata", ActivityLogPresentationTests.ClassifiesDisplayMetadata),
     ("ActivityViewModel filters entries view", ActivityViewModelTests.FiltersEntriesView),
     ("ActivityViewModel maps filter properties", ActivityViewModelTests.MapsFilterProperties),
@@ -2503,6 +2504,27 @@ static class ActivityLogPresentationTests
         TestAssert.Equal("Error", arduinoError.StatusText);
         TestAssert.True(arduinoError.IsImportant);
         TestAssert.Equal("Assets/Icons/status_error.png", arduinoError.StatusIconPath);
+    }
+}
+
+static class ActivityLogClassifierTests
+{
+    public static void ResolvesSourcesAndCategories()
+    {
+        TestAssert.Equal("TWITCH", ActivityLogClassifier.ResolveSourceKey("Chat: mensaje enviado", ActivityLogKind.Info));
+        TestAssert.Equal("ARDUINO", ActivityLogClassifier.ResolveSourceKey("Fondo aplicado", ActivityLogKind.Info));
+        TestAssert.Equal("OBS", ActivityLogClassifier.ResolveSourceKey("OBS: escena cambiada", ActivityLogKind.Info));
+        TestAssert.Equal("AUDIO", ActivityLogClassifier.ResolveSourceKey("Sonido reproducido", ActivityLogKind.Info));
+        TestAssert.Equal("SISTEMA", ActivityLogClassifier.ResolveSourceKey("Configuracion guardada", ActivityLogKind.Info));
+        TestAssert.Equal(ActivityLogKind.Twitch, ActivityLogClassifier.Classify("Twitch: conectado"));
+        TestAssert.Equal(ActivityLogKind.Arduino, ActivityLogClassifier.Classify("Puertos COM actualizados"));
+        TestAssert.Equal(ActivityLogKind.Event, ActivityLogClassifier.Classify("Juan envio 100 bits"));
+        TestAssert.Equal(ActivityLogKind.Important, ActivityLogClassifier.Classify("No se pudo leer configuracion"));
+
+        TestAssert.Equal("BITS", ActivityLogClassifier.ResolveCategory("100 bits enviados", ActivityLogKind.Event));
+        TestAssert.Equal("SUB", ActivityLogClassifier.ResolveCategory("Nueva suscripcion prime", ActivityLogKind.Event));
+        TestAssert.Equal("CHAT", ActivityLogClassifier.ResolveCategory("Comando de chat !rave", ActivityLogKind.Event));
+        TestAssert.Equal("IMPORTANTE", ActivityLogClassifier.ResolveCategory("Aviso general", ActivityLogKind.Important));
     }
 }
 

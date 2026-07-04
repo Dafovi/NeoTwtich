@@ -55,6 +55,7 @@ var tests = new (string Name, Action Body)[]
     ("TwitchEventSubMessageParser parses welcome and events", TwitchEventSubMessageParserTests.ParsesWelcomeAndEvents),
     ("AlertDurationService resolves maximum positive duration", AlertDurationTests.ResolvesMaximumPositiveDuration),
     ("AlertDurationService clamps synchronized durations", AlertDurationTests.ClampsSynchronizedDurations),
+    ("LightCommand resolves fallback targets", LightCommandTests.ResolvesFallbackTargets),
     ("AlertExecutionPlanService disables lights when Arduino is disabled", AlertExecutionPlanTests.DisablesLightsWhenArduinoIsDisabled),
     ("AlertExecutionPlanService resolves light command and reconnect state", AlertExecutionPlanTests.ResolvesLightCommandAndReconnectState),
     ("ObsRulePlanService resolves scene restore", ObsRulePlanTests.ResolvesSceneRestore),
@@ -1044,6 +1045,23 @@ static class AlertDurationTests
 
         var tooLong = AlertDurationService.ResolveSynchronizedEffectDurationMs(TimeSpan.FromMilliseconds(ApplicationLimits.MaxAlertDurationMs + 10_000));
         TestAssert.Equal(ApplicationLimits.MaxAlertDurationMs, tooLong);
+    }
+}
+
+static class LightCommandTests
+{
+    public static void ResolvesFallbackTargets()
+    {
+        var config = new AppConfig
+        {
+            LedStrips = []
+        };
+
+        var targets = LightCommand.ResolveTargets(config, "9");
+
+        TestAssert.Equal(1, targets.Count);
+        TestAssert.Equal(6, targets[0].Pin);
+        TestAssert.Equal(30, targets[0].LedCount);
     }
 }
 

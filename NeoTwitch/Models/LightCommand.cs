@@ -16,6 +16,9 @@ public sealed record LightCommand(
     int CycleMs,
     int StepMs)
 {
+    private const int DefaultTargetPin = 6;
+    private const int DefaultTargetLedCount = 30;
+
     public static LightCommand FromRule(EventRule rule, AppConfig config, int? durationOverrideMs = null)
     {
         return new LightCommand(
@@ -59,11 +62,12 @@ public sealed record LightCommand(
     public static IReadOnlyList<LightStripTarget> ResolveTargets(AppConfig config, string? targetPins)
     {
         var selectedPins = ParsePins(targetPins ?? "");
-        var strips = config.LedStrips.Count == 0
-            ? AppConfig.CreateDefault().LedStrips
-            : config.LedStrips;
+        if (config.LedStrips.Count == 0)
+        {
+            return [new LightStripTarget(DefaultTargetPin, DefaultTargetLedCount)];
+        }
 
-        var targets = strips
+        var targets = config.LedStrips
             .Where(strip => selectedPins.Count == 0 || selectedPins.Contains(strip.Pin))
             .GroupBy(strip => strip.Pin)
             .Select(group => group.First())
@@ -72,7 +76,7 @@ public sealed record LightCommand(
 
         return targets.Length > 0
             ? targets
-            : strips.Select(strip => new LightStripTarget(strip.Pin, strip.LedCount)).ToArray();
+            : config.LedStrips.Select(strip => new LightStripTarget(strip.Pin, strip.LedCount)).ToArray();
     }
 
     public static string NormalizeColor(string? color)

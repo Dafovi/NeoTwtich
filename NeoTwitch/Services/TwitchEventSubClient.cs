@@ -209,11 +209,9 @@ public sealed class TwitchEventSubClient : IDisposable
 
     private async Task CreateSubscriptionsAsync(string sessionId, AppConfig config, CancellationToken cancellationToken)
     {
-        var definitions = BuildSubscriptionDefinitions(config)
-            .DistinctBy(definition => definition.Type)
-            .ToArray();
+        var definitions = TwitchEventSubSubscriptionPlanner.BuildDefinitions(config);
 
-        if (definitions.Length == 0)
+        if (definitions.Count == 0)
         {
             _log(_text.Get(UiTextKeys.TwitchEventSubNoActiveRulesLog));
             return;
@@ -249,106 +247,6 @@ public sealed class TwitchEventSubClient : IDisposable
             {
                 _log(_text.Format(UiTextKeys.TwitchEventSubSubscriptionCreateFailureLog, definition.Type, responseText));
             }
-        }
-    }
-
-    private IEnumerable<EventSubDefinition> BuildSubscriptionDefinitions(AppConfig config)
-    {
-        var broadcasterId = config.Channel.UserId;
-        var activeKinds = config.Rules
-            .Where(rule => rule.IsEnabled)
-            .Select(rule => rule.EventKind)
-            .Where(kind => kind != TwitchEventKind.Test)
-            .Distinct()
-            .ToArray();
-
-        foreach (var kind in activeKinds)
-        {
-            foreach (var definition in BuildSubscriptionDefinitionsForKind(kind, broadcasterId))
-            {
-                yield return definition;
-            }
-        }
-    }
-
-    private IEnumerable<EventSubDefinition> BuildSubscriptionDefinitionsForKind(
-        TwitchEventKind kind,
-        string broadcasterId)
-    {
-        switch (kind)
-        {
-            case TwitchEventKind.Follow:
-                yield return new EventSubDefinition(
-                    Protocol.Events.Follow,
-                    Protocol.Versions.V2,
-                    new Dictionary<string, string>
-                    {
-                        [Protocol.Conditions.BroadcasterUserId] = broadcasterId,
-                        [Protocol.Conditions.ModeratorUserId] = broadcasterId
-                    });
-                yield break;
-            case TwitchEventKind.Subscription:
-                yield return new EventSubDefinition(
-                    Protocol.Events.Subscribe,
-                    Protocol.Versions.V1,
-                    new Dictionary<string, string>
-                    {
-                        [Protocol.Conditions.BroadcasterUserId] = broadcasterId
-                    });
-                yield return new EventSubDefinition(
-                    Protocol.Events.SubscriptionMessage,
-                    Protocol.Versions.V1,
-                    new Dictionary<string, string>
-                    {
-                        [Protocol.Conditions.BroadcasterUserId] = broadcasterId
-                    });
-                yield return new EventSubDefinition(
-                    Protocol.Events.SubscriptionGift,
-                    Protocol.Versions.V1,
-                    new Dictionary<string, string>
-                    {
-                        [Protocol.Conditions.BroadcasterUserId] = broadcasterId
-                    });
-                yield break;
-            case TwitchEventKind.Raid:
-                yield return new EventSubDefinition(
-                    Protocol.Events.Raid,
-                    Protocol.Versions.V1,
-                    new Dictionary<string, string>
-                    {
-                        [Protocol.Conditions.ToBroadcasterUserId] = broadcasterId
-                    });
-                yield break;
-            case TwitchEventKind.Cheer:
-                yield return new EventSubDefinition(
-                    Protocol.Events.Cheer,
-                    Protocol.Versions.V1,
-                    new Dictionary<string, string>
-                    {
-                        [Protocol.Conditions.BroadcasterUserId] = broadcasterId
-                    });
-                yield break;
-            case TwitchEventKind.ChatCommand:
-                yield return new EventSubDefinition(
-                    Protocol.Events.ChatMessage,
-                    Protocol.Versions.V1,
-                    new Dictionary<string, string>
-                    {
-                        [Protocol.Conditions.BroadcasterUserId] = broadcasterId,
-                        [Protocol.Conditions.UserId] = broadcasterId
-                    });
-                yield break;
-            case TwitchEventKind.ChannelPointRedemption:
-                yield return new EventSubDefinition(
-                    Protocol.Events.ChannelPointRedemption,
-                    Protocol.Versions.V1,
-                    new Dictionary<string, string>
-                    {
-                        [Protocol.Conditions.BroadcasterUserId] = broadcasterId
-                    });
-                yield break;
-            default:
-                throw new InvalidOperationException(_text.Format(UiTextKeys.TwitchEventSubUnsupportedEventKind, kind));
         }
     }
 
@@ -522,6 +420,4 @@ public sealed class TwitchEventSubClient : IDisposable
 
         return Encoding.UTF8.GetString(stream.ToArray());
     }
-
-    private sealed record EventSubDefinition(string Type, string Version, Dictionary<string, string> Condition);
 }

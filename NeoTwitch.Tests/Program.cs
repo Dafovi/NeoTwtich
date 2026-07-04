@@ -51,6 +51,7 @@ var tests = new (string Name, Action Body)[]
     ("RuleObsMediaChoiceService resolves image and video libraries", RuleObsMediaChoiceTests.ResolvesImageAndVideoLibraries),
     ("EventRuleMatcherService resolves normal event matches", EventRuleMatcherTests.ResolvesNormalEventMatches),
     ("EventRuleMatcherService keeps highest bits threshold", EventRuleMatcherTests.KeepsHighestBitsThreshold),
+    ("TwitchEventSubSubscriptionPlanner builds unique definitions", TwitchEventSubSubscriptionPlannerTests.BuildsUniqueDefinitions),
     ("AlertDurationService resolves maximum positive duration", AlertDurationTests.ResolvesMaximumPositiveDuration),
     ("AlertDurationService clamps synchronized durations", AlertDurationTests.ClampsSynchronizedDurations),
     ("AlertExecutionPlanService disables lights when Arduino is disabled", AlertExecutionPlanTests.DisablesLightsWhenArduinoIsDisabled),
@@ -922,6 +923,41 @@ static class EventRuleMatcherTests
 
         TestAssert.Equal(1, matches.Length);
         TestAssert.Equal("Bits 100", matches[0].Name);
+    }
+}
+
+static class TwitchEventSubSubscriptionPlannerTests
+{
+    public static void BuildsUniqueDefinitions()
+    {
+        var config = AppConfig.CreateDefault();
+        config.Channel.UserId = "broadcaster-1";
+        config.Rules =
+        [
+            new EventRule { IsEnabled = true, EventKind = TwitchEventKind.Follow },
+            new EventRule { IsEnabled = true, EventKind = TwitchEventKind.Subscription },
+            new EventRule { IsEnabled = true, EventKind = TwitchEventKind.Subscription },
+            new EventRule { IsEnabled = true, EventKind = TwitchEventKind.ChatCommand },
+            new EventRule { IsEnabled = false, EventKind = TwitchEventKind.Cheer },
+            new EventRule { IsEnabled = true, EventKind = TwitchEventKind.Test }
+        ];
+
+        var definitions = TwitchEventSubSubscriptionPlanner.BuildDefinitions(config);
+
+        TestAssert.Equal(5, definitions.Count);
+        TestAssert.True(definitions.Any(definition => definition.Type == TwitchEventSubProtocol.Events.Follow));
+        TestAssert.True(definitions.Any(definition => definition.Type == TwitchEventSubProtocol.Events.Subscribe));
+        TestAssert.True(definitions.Any(definition => definition.Type == TwitchEventSubProtocol.Events.SubscriptionMessage));
+        TestAssert.True(definitions.Any(definition => definition.Type == TwitchEventSubProtocol.Events.SubscriptionGift));
+        TestAssert.True(definitions.Any(definition => definition.Type == TwitchEventSubProtocol.Events.ChatMessage));
+
+        var follow = definitions.First(definition => definition.Type == TwitchEventSubProtocol.Events.Follow);
+        TestAssert.Equal(TwitchEventSubProtocol.Versions.V2, follow.Version);
+        TestAssert.Equal("broadcaster-1", follow.Condition[TwitchEventSubProtocol.Conditions.BroadcasterUserId]);
+        TestAssert.Equal("broadcaster-1", follow.Condition[TwitchEventSubProtocol.Conditions.ModeratorUserId]);
+
+        var chat = definitions.First(definition => definition.Type == TwitchEventSubProtocol.Events.ChatMessage);
+        TestAssert.Equal("broadcaster-1", chat.Condition[TwitchEventSubProtocol.Conditions.UserId]);
     }
 }
 

@@ -114,6 +114,7 @@ var tests = new (string Name, Action Body)[]
     ("VersionComparisonService compares normalized tags", VersionComparisonTests.ComparesNormalizedTags),
     ("ActivityLogService trims activity and dashboard entries", ActivityLogServiceTests.TrimsActivityAndDashboardEntries),
     ("ActivityLogService filters entries and search text", ActivityLogServiceTests.FiltersEntriesAndSearchText),
+    ("ActivityLogService uses injected clock", ActivityLogServiceTests.UsesInjectedClock),
     ("ActivityLogClassifier resolves sources and categories", ActivityLogClassifierTests.ResolvesSourcesAndCategories),
     ("ActivityLogSourceCatalog maps source metadata", ActivityLogSourceCatalogTests.MapsSourceMetadata),
     ("ActivityLogStatusService maps status metadata", ActivityLogStatusServiceTests.MapsStatusMetadata),
@@ -2748,6 +2749,27 @@ static class ActivityLogServiceTests
         activity.Clear();
         TestAssert.Equal(0, activity.Entries.Count);
         TestAssert.Equal(0, activity.DashboardEntries.Count);
+    }
+
+    public static void UsesInjectedClock()
+    {
+        var activity = new ActivityLogService(new FixedTimeProvider(
+            new DateTimeOffset(2026, 6, 15, 19, 42, 0, TimeSpan.FromHours(-5))));
+
+        var entry = activity.Add("Sistema: prueba", ActivityLogKind.Info);
+
+        TestAssert.Equal("19:42", entry.Time);
+    }
+
+    private sealed class FixedTimeProvider(DateTimeOffset localTime) : TimeProvider
+    {
+        public override TimeZoneInfo LocalTimeZone { get; } =
+            TimeZoneInfo.CreateCustomTimeZone("Test", localTime.Offset, "Test", "Test");
+
+        public override DateTimeOffset GetUtcNow()
+        {
+            return localTime.ToUniversalTime();
+        }
     }
 }
 

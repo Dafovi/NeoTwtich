@@ -21,6 +21,17 @@ public sealed class ActivityLogService
     ];
 
     private readonly HashSet<string> _enabledFilters = new(DefaultFilters, StringComparer.OrdinalIgnoreCase);
+    private readonly TimeProvider _timeProvider;
+
+    public ActivityLogService()
+        : this(TimeProvider.System)
+    {
+    }
+
+    public ActivityLogService(TimeProvider timeProvider)
+    {
+        _timeProvider = timeProvider;
+    }
 
     public ObservableCollection<ActivityLogEntry> Entries { get; } = [];
 
@@ -68,7 +79,7 @@ public sealed class ActivityLogService
 
     public ActivityLogEntry Add(string message, ActivityLogKind kind)
     {
-        var entry = new ActivityLogEntry(message, kind);
+        var entry = new ActivityLogEntry(message, kind, _timeProvider.GetLocalNow());
         Entries.Insert(0, entry);
         DashboardEntries.Insert(0, entry);
         Trim(Entries, MaxActivityEntries);

@@ -6,12 +6,12 @@ namespace NeoTwitch.ViewModels.Activity;
 
 public sealed class ActivityLogEntry
 {
-    public ActivityLogEntry(string message, ActivityLogKind kind)
+    public ActivityLogEntry(string message, ActivityLogKind kind, DateTimeOffset createdAt)
     {
         var presentation = ActivityLogPresentationService.Build(message, kind);
 
         Kind = kind;
-        Time = DateTime.Now.ToString("HH:mm");
+        Time = createdAt.ToString("HH:mm");
         Message = message;
         SourceKey = presentation.SourceKey;
         FilterKey = presentation.FilterKey;

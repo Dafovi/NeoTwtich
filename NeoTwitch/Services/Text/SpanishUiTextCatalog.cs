@@ -50,6 +50,7 @@ public static class SpanishUiTextCatalog
             [UiTextKeys.ConfigurationNewRuleName] = "Nueva regla",
             [UiTextKeys.ConfigurationNewRuleChatTemplate] = "Gracias @{user}!",
             [UiTextKeys.ConfigurationNewLedStripName] = "Nueva tira",
+            [UiTextKeys.ConfigurationCopySuffix] = "copia",
             [UiTextKeys.ConfigurationDefaultLedStripName] = "Arduino Tira led ws2812b",
             [UiTextKeys.ConfigurationDefaultFollowRuleName] = "Seguidor",
             [UiTextKeys.ConfigurationDefaultFollowChatTemplate] = "Gracias @{user}!",

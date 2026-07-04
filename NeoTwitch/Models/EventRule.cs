@@ -283,50 +283,6 @@ public sealed class EventRule : INotifyPropertyChanged
 
     public event PropertyChangedEventHandler? PropertyChanged;
 
-    public EventRule Duplicate()
-    {
-        return new EventRule
-        {
-            Id = Guid.NewGuid().ToString("N"),
-            Name = $"{Name} copia".Trim(),
-            IsEnabled = IsEnabled,
-            EventKind = EventKind,
-            CustomRewardTitle = CustomRewardTitle,
-            ChatCommand = ChatCommand,
-            MinimumBits = MinimumBits,
-            UseLights = UseLights,
-            PlayAudio = PlayAudio,
-            AudioPath = AudioPath,
-            AudioSourceMode = AudioSourceMode,
-            AudioAssetId = AudioAssetId,
-            AudioGroupId = AudioGroupId,
-            SendChatMessage = SendChatMessage,
-            ChatMessageTemplate = ChatMessageTemplate,
-            SendAlexaEvent = SendAlexaEvent,
-            AlexaEventName = AlexaEventName,
-            SendObsScene = SendObsScene,
-            ObsSceneName = ObsSceneName,
-            ObsSceneDelayMs = ObsSceneDelayMs,
-            ObsReturnToPreviousScene = ObsReturnToPreviousScene,
-            ObsReturnDelayMs = ObsReturnDelayMs,
-            SendObsMedia = SendObsMedia,
-            ObsMediaKind = ObsMediaKind,
-            ObsMediaSourceMode = ObsMediaSourceMode,
-            ObsMediaAssetId = ObsMediaAssetId,
-            ObsMediaGroupId = ObsMediaGroupId,
-            ObsMediaDurationMs = ObsMediaDurationMs,
-            Pattern = Pattern,
-            TargetPins = TargetPins,
-            PrimaryColor = PrimaryColor,
-            SecondaryColor = SecondaryColor,
-            TertiaryColor = TertiaryColor,
-            Brightness = Brightness,
-            DurationMs = DurationMs,
-            CycleMs = CycleMs,
-            StepMs = StepMs
-        };
-    }
-
     public override string ToString()
     {
         return string.IsNullOrWhiteSpace(Name) ? EventKind.ToString() : Name;

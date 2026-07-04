@@ -45,6 +45,7 @@ var tests = new (string Name, Action Body)[]
     ("RuleEditorViewModel maps basic fields", RuleEditorViewModelTests.MapsBasicFields),
     ("EventRulePresentationService builds row display metadata", EventRulePresentationTests.BuildsRowDisplayMetadata),
     ("EventRuleSnapshotService clones editable values independently", EventRuleSnapshotTests.CloneCopiesEditableValues),
+    ("EventRuleSnapshotService duplicates with new identity", EventRuleSnapshotTests.DuplicatesWithNewIdentity),
     ("EventRuleSnapshotService detects editable changes", EventRuleSnapshotTests.DetectsEditableChanges),
     ("RuleEditorValueService resolves fallback names", RuleEditorValueTests.ResolvesFallbackNames),
     ("RuleEditorValueService resolves legacy audio paths", RuleEditorValueTests.ResolvesLegacyAudioPaths),
@@ -653,6 +654,21 @@ static class EventRuleSnapshotTests
 
         clone.Name = "Otro nombre";
         TestAssert.Equal("Regla completa", source.Name);
+    }
+
+    public static void DuplicatesWithNewIdentity()
+    {
+        var source = CreateRichRule();
+        var copy = EventRuleSnapshotService.Duplicate(source, UiTextService.CreateDefault());
+
+        TestAssert.NotSame(source, copy);
+        TestAssert.False(string.Equals(source.Id, copy.Id, StringComparison.OrdinalIgnoreCase));
+        TestAssert.Equal("Regla completa copia", copy.Name);
+
+        copy.Id = source.Id;
+        copy.Name = source.Name;
+
+        TestAssert.True(EventRuleSnapshotService.HaveSameEditableValues(source, copy));
     }
 
     public static void DetectsEditableChanges()

@@ -46,6 +46,7 @@ public static class UiTextKeys
     public const string ConfigurationNewRuleName = "configuration.new_rule_name";
     public const string ConfigurationNewRuleChatTemplate = "configuration.new_rule_chat_template";
     public const string ConfigurationNewLedStripName = "configuration.new_led_strip_name";
+    public const string ConfigurationCopySuffix = "configuration.copy_suffix";
     public const string ConfigurationDefaultLedStripName = "configuration.default_led_strip_name";
     public const string ConfigurationDefaultFollowRuleName = "configuration.default_follow_rule_name";
     public const string ConfigurationDefaultFollowChatTemplate = "configuration.default_follow_chat_template";

@@ -1,4 +1,5 @@
 using NeoTwitch.Models;
+using NeoTwitch.Services.Text;
 
 namespace NeoTwitch.Services.Alerts;
 
@@ -9,6 +10,14 @@ public static class EventRuleSnapshotService
         var clone = new EventRule();
         CopyValues(rule, clone);
         return clone;
+    }
+
+    public static EventRule Duplicate(EventRule rule, IUiTextService text)
+    {
+        var copy = Clone(rule);
+        copy.Id = Guid.NewGuid().ToString("N");
+        copy.Name = $"{rule.Name} {text.Get(UiTextKeys.ConfigurationCopySuffix)}".Trim();
+        return copy;
     }
 
     public static void CopyValues(EventRule source, EventRule target)

@@ -1,5 +1,6 @@
 using NeoTwitch.Models;
 using NeoTwitch.Services;
+using NeoTwitch.Services.Alerts;
 
 namespace NeoTwitch;
 
@@ -33,7 +34,7 @@ public partial class MainWindow
             return;
         }
 
-        var copy = rule.Duplicate();
+        var copy = EventRuleSnapshotService.Duplicate(rule, _text);
         _config.Rules.Add(copy);
         ShowAllRuleFilters();
         RefreshRulesView();

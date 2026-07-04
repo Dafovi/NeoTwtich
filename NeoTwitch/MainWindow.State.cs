@@ -25,7 +25,7 @@ public partial class MainWindow
     private readonly IReadOnlyList<UiOption<ObsMediaKind>> _obsMediaKindOptions = UiOptionCatalog.ObsMediaKindOptions;
     private readonly IReadOnlyList<UiOption<MediaSourceMode>> _mediaSourceModeOptions = UiOptionCatalog.MediaSourceModeOptions;
 
-    private AppConfig _config = AppConfig.CreateDefault();
+    private AppConfig _config = new();
     private bool _initializingComponent;
     private bool _loadingUi;
     private bool _loadingRule;

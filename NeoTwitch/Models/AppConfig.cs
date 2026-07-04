@@ -48,6 +48,4 @@ public sealed class AppConfig
     public int BackgroundBrightness { get; set; } = 40;
     public int BackgroundCycleMs { get; set; } = 120;
     public int BackgroundStepMs { get; set; } = 400;
-
-    public static AppConfig CreateDefault() => NeoTwitch.Services.Configuration.DefaultAppConfigFactory.Create();
 }

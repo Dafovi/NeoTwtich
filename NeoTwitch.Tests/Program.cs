@@ -199,7 +199,7 @@ static class AppConfigTests
 {
     public static void DefaultRulesKeepStarterAlerts()
     {
-        var config = AppConfig.CreateDefault();
+        var config = TestConfig.CreateDefault();
 
         TestAssert.Equal(6, config.Rules.Count);
         TestAssert.Equal("Seguidor", config.Rules[0].Name);
@@ -219,7 +219,7 @@ static class AppConfigTests
 
     public static void DefaultServicesKeepOptionalIntegrationsDisabled()
     {
-        var config = AppConfig.CreateDefault();
+        var config = TestConfig.CreateDefault();
 
         TestAssert.True(config.AutoConnectTwitch);
         TestAssert.False(config.ArduinoEnabled);
@@ -365,7 +365,7 @@ static class GlobalSettingsFormTests
 {
     public static void AppliesNormalizedValues()
     {
-        var config = AppConfig.CreateDefault();
+        var config = TestConfig.CreateDefault();
 
         GlobalSettingsFormService.Apply(
             config,
@@ -871,7 +871,7 @@ static class RuleTestValidationTests
         var result = RuleTestValidationService.Validate(
             new EventRule { PlayAudio = true },
             new TwitchEvent { Kind = TwitchEventKind.Follow, UserName = "user" },
-            AppConfig.CreateDefault(),
+            TestConfig.CreateDefault(),
             hasOpenArduinoPort: true,
             hasValidAudio: false);
 
@@ -882,7 +882,7 @@ static class RuleTestValidationTests
 
     public static void ReportsNonBlockingIssues()
     {
-        var config = AppConfig.CreateDefault();
+        var config = TestConfig.CreateDefault();
         config.ArduinoEnabled = true;
         config.SerialPort = "COM3";
 
@@ -950,7 +950,7 @@ static class TwitchEventSubSubscriptionPlannerTests
 {
     public static void BuildsUniqueDefinitions()
     {
-        var config = AppConfig.CreateDefault();
+        var config = TestConfig.CreateDefault();
         config.Channel.UserId = "broadcaster-1";
         config.Rules =
         [
@@ -1083,7 +1083,7 @@ static class AlertExecutionPlanTests
 {
     public static void DisablesLightsWhenArduinoIsDisabled()
     {
-        var config = AppConfig.CreateDefault();
+        var config = TestConfig.CreateDefault();
         config.ArduinoEnabled = false;
         var rule = new EventRule
         {
@@ -1109,7 +1109,7 @@ static class AlertExecutionPlanTests
 
     public static void ResolvesLightCommandAndReconnectState()
     {
-        var config = AppConfig.CreateDefault();
+        var config = TestConfig.CreateDefault();
         config.ArduinoEnabled = true;
         config.SerialPort = "COM3";
         config.LedStrips =
@@ -1200,7 +1200,7 @@ static class ObsRulePlanTests
 
     public static void BuildsMediaExecutionPlan()
     {
-        var config = AppConfig.CreateDefault();
+        var config = TestConfig.CreateDefault();
         config.Obs.Enabled = true;
         config.Obs.Host = "127.0.0.1";
         config.VideoVolumePercent = 42;
@@ -1506,7 +1506,7 @@ static class BackgroundLightRestoreTests
 
     public static void ResolvesApplyPlan()
     {
-        var config = AppConfig.CreateDefault();
+        var config = TestConfig.CreateDefault();
         var emptyPlan = BackgroundLightRestoreService.ResolveApplyPlan(config);
 
         TestAssert.False(emptyPlan.HasAnyAction);
@@ -1526,7 +1526,7 @@ static class BackgroundLightRestoreTests
 
     public static void ResolvesRestorePlan()
     {
-        var config = AppConfig.CreateDefault();
+        var config = TestConfig.CreateDefault();
         config.ArduinoEnabled = true;
         config.BackgroundEnabled = true;
         config.BackgroundAlexaEnabled = true;
@@ -1761,7 +1761,7 @@ static class AudioLibraryMutationTests
 {
     public static void RemovesAssetsAndCleansRules()
     {
-        var config = AppConfig.CreateDefault();
+        var config = TestConfig.CreateDefault();
         config.AudioLibrary.Clear();
         config.Rules.Clear();
         config.AudioLibrary.Add(new AudioAssetConfig { Id = "a1", FilePath = @"C:\audio\follow.mp3" });
@@ -1799,7 +1799,7 @@ static class MediaLibraryMutationTests
 {
     public static void RemovesAssetsAndCleansRules()
     {
-        var config = AppConfig.CreateDefault();
+        var config = TestConfig.CreateDefault();
         config.ImageLibrary.Clear();
         config.VideoLibrary.Clear();
         config.Rules.Clear();
@@ -2247,7 +2247,7 @@ static class SettingsViewModelTests
         viewModel.UpdateAppState("Estado: aviso", System.Windows.Media.Brushes.Orange, "/icon.png");
         var themeChoices = new[] { "System" };
         viewModel.UpdateThemeModeChoices(themeChoices);
-        var config = AppConfig.CreateDefault();
+        var config = TestConfig.CreateDefault();
         config.StartHidden = true;
         config.StartWithWindows = true;
         config.ThemeMode = "Dark";
@@ -2600,7 +2600,7 @@ static class ObsViewModelTests
         TestAssert.Equal(1d, viewModel.ScenesOpacity);
         TestAssert.Equal(2, viewModel.SceneRows.Count);
 
-        var config = AppConfig.CreateDefault();
+        var config = TestConfig.CreateDefault();
         config.Obs.OverlayWidth = 1280;
         config.Obs.OverlayHeight = 720;
         config.Obs.OverlayMediaWidth = 320;
@@ -2657,7 +2657,7 @@ static class DiagnosticReportServiceTests
 {
     public static void BuildsReportWithoutNetwork()
     {
-        var config = AppConfig.CreateDefault();
+        var config = TestConfig.CreateDefault();
         var service = CreateService();
 
         var result = service.BuildAsync(new DiagnosticReportContext(
@@ -2678,7 +2678,7 @@ static class DiagnosticReportServiceTests
 
     public static void ReportsMissingAudio()
     {
-        var config = AppConfig.CreateDefault();
+        var config = TestConfig.CreateDefault();
         config.Rules.Clear();
         config.Rules.Add(new EventRule
         {
@@ -3054,7 +3054,7 @@ static class ConnectionsViewModelTests
             new ConnectionStateVisual("OBS error", "#F43F5E", "Assets/Icons/status_error.png"));
         viewModel.UpdateAlexaStatusText("Alexa configurada");
         viewModel.UpdateObsConnectionHelpText("OBS desconectado");
-        var config = AppConfig.CreateDefault();
+        var config = TestConfig.CreateDefault();
         config.TwitchClientId = "client-id";
         config.TwitchClientSecret = "secret";
         config.ArduinoEnabled = true;
@@ -3164,7 +3164,7 @@ static class AlexaViewModelTests
     {
         var viewModel = new AlexaViewModel();
         var actions = new List<string>();
-        var config = AppConfig.CreateDefault();
+        var config = TestConfig.CreateDefault();
         config.BackgroundAlexaEnabled = true;
         config.BackgroundAlexaTurnOffAfterEvent = true;
         config.BackgroundAlexaOnEventName = "fondo_on";
@@ -3223,7 +3223,7 @@ static class LightsViewModelTests
         viewModel.UpdateArduinoStatus(new LightsArduinoStatusText("Arduino Uno", "COM3", "300", "Pin 6"));
         var patternChoices = new[] { "Fijo" };
         viewModel.UpdateBackgroundPatternChoices(patternChoices);
-        var config = AppConfig.CreateDefault();
+        var config = TestConfig.CreateDefault();
         config.BackgroundEnabled = true;
         config.BackgroundTargetPins = "6, 7";
         config.BackgroundPattern = LightPattern.Rave;
@@ -3955,7 +3955,7 @@ static class ServiceNavigationVisibilityTests
 {
     public static void HidesOptionalServiceTabs()
     {
-        var config = AppConfig.CreateDefault();
+        var config = TestConfig.CreateDefault();
 
         var initial = ServiceNavigationVisibilityService.Resolve(config);
         TestAssert.False(initial.Lights);
@@ -3987,7 +3987,7 @@ static class ShellViewModelTests
             navigatedTo = tab;
             return true;
         });
-        var config = AppConfig.CreateDefault();
+        var config = TestConfig.CreateDefault();
 
         shell.ApplyServiceVisibility(config);
 
@@ -4037,6 +4037,16 @@ static class ShellViewModelTests
         TestAssert.Equal("300 LEDs", shell.ArduinoStatusText);
         TestAssert.Equal("Alexa lista", shell.AlexaConnectionText);
         TestAssert.Equal("Fondo activo", shell.AlexaSidebarStatusText);
+    }
+}
+
+static class TestConfig
+{
+    private static readonly IUiTextService Text = UiTextService.CreateDefault();
+
+    public static AppConfig CreateDefault()
+    {
+        return DefaultAppConfigFactory.Create(Text);
     }
 }
 

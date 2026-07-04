@@ -6,11 +6,6 @@ namespace NeoTwitch.Services.Configuration;
 
 public static class DefaultAppConfigFactory
 {
-    public static AppConfig Create()
-    {
-        return Create(UiTextService.CreateDefault());
-    }
-
     public static AppConfig Create(IUiTextService text)
     {
         return new AppConfig

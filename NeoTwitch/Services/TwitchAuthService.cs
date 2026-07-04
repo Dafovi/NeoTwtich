@@ -13,17 +13,22 @@ public sealed class TwitchAuthService
 {
     public static readonly string[] RequiredScopes = Protocol.RequiredScopes;
 
-    private readonly HttpClient _http = new();
+    private readonly HttpClient _http;
     private readonly IExternalLauncherService _externalLauncher;
     private readonly JsonSerializerOptions _jsonOptions = new(JsonSerializerDefaults.Web);
     private readonly IUiTextService _text;
     private readonly TimeProvider _timeProvider;
 
-    public TwitchAuthService(IUiTextService text, IExternalLauncherService externalLauncher, TimeProvider timeProvider)
+    public TwitchAuthService(
+        IUiTextService text,
+        IExternalLauncherService externalLauncher,
+        TimeProvider timeProvider,
+        HttpClient? httpClient = null)
     {
         _text = text;
         _externalLauncher = externalLauncher;
         _timeProvider = timeProvider;
+        _http = httpClient ?? new HttpClient();
     }
 
     public async Task<DeviceCodeSession> BeginDeviceFlowAsync(string clientId, CancellationToken cancellationToken)

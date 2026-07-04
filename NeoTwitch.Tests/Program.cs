@@ -57,6 +57,7 @@ var tests = new (string Name, Action Body)[]
     ("EventRuleMatcherService matches chat command tokens", EventRuleMatcherTests.MatchesChatCommandTokens),
     ("TwitchEventSubSubscriptionPlanner builds unique definitions", TwitchEventSubSubscriptionPlannerTests.BuildsUniqueDefinitions),
     ("TwitchEventSubMessageParser parses welcome and events", TwitchEventSubMessageParserTests.ParsesWelcomeAndEvents),
+    ("TwitchAuthService refreshes token with injected HTTP", TwitchAuthServiceTests.RefreshesTokenWithInjectedHttp),
     ("TwitchChatService sends chat API payload", TwitchChatServiceTests.SendsChatApiPayload),
     ("AlertDurationService resolves maximum positive duration", AlertDurationTests.ResolvesMaximumPositiveDuration),
     ("AlertDurationService clamps synchronized durations", AlertDurationTests.ClampsSynchronizedDurations),
@@ -1100,6 +1101,68 @@ static class TwitchEventSubMessageParserTests
         TestAssert.Equal("Alguien", gift.UserName);
         TestAssert.Equal(3, gift.ViewerCount);
         TestAssert.Contains("regalo 3", gift.Title);
+    }
+}
+
+static class TwitchAuthServiceTests
+{
+    public static void RefreshesTokenWithInjectedHttp()
+    {
+        var now = new DateTimeOffset(2026, 6, 1, 12, 0, 0, TimeSpan.Zero);
+        var handler = new RefreshTokenHttpHandler();
+        using var http = new HttpClient(handler);
+        var service = new TwitchAuthService(
+            UiTextService.CreateDefault(),
+            new NullExternalLauncher(),
+            new FixedTimeProvider(now),
+            http);
+        var config = TestConfig.CreateDefault();
+        config.TwitchClientId = "client-id";
+        config.Token = new TwitchTokenInfo
+        {
+            AccessToken = "old-token",
+            RefreshToken = "refresh-token",
+            ExpiresAt = now.AddMinutes(1)
+        };
+        var logs = new List<string>();
+
+        service.EnsureValidTokenAsync(config, logs.Add, CancellationToken.None).GetAwaiter().GetResult();
+
+        TestAssert.Contains("client_id=client-id", handler.RequestBody);
+        TestAssert.Contains("refresh_token=refresh-token", handler.RequestBody);
+        TestAssert.Equal("new-token", config.Token.AccessToken);
+        TestAssert.Equal("new-refresh", config.Token.RefreshToken);
+        TestAssert.Equal(now.AddSeconds(120), config.Token.ExpiresAt);
+        TestAssert.True(logs.Count > 0);
+    }
+
+    private sealed class RefreshTokenHttpHandler : HttpMessageHandler
+    {
+        public string RequestBody { get; private set; } = "";
+
+        protected override async Task<HttpResponseMessage> SendAsync(HttpRequestMessage request, CancellationToken cancellationToken)
+        {
+            RequestBody = request.Content is null
+                ? ""
+                : await request.Content.ReadAsStringAsync(cancellationToken);
+
+            return new HttpResponseMessage(System.Net.HttpStatusCode.OK)
+            {
+                Content = new StringContent(
+                    """{"access_token":"new-token","refresh_token":"new-refresh","expires_in":120,"scope":["channel:read:redemptions"]}""")
+            };
+        }
+    }
+
+    private sealed class NullExternalLauncher : IExternalLauncherService
+    {
+        public void Open(string target)
+        {
+        }
+
+        public void Launch(string fileName, string arguments = "", string? workingDirectory = null)
+        {
+        }
     }
 }
 

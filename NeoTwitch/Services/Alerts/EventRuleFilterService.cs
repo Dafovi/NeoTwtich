@@ -9,11 +9,6 @@ public static class EventRuleFilterService
     public const string ActiveStatus = "ACTIVE";
     public const string InactiveStatus = "INACTIVE";
 
-    public static bool Matches(EventRule rule, string statusFilter, string categoryFilter, string searchText)
-    {
-        return Matches(rule, statusFilter, categoryFilter, searchText, UiTextService.CreateDefault());
-    }
-
     public static bool Matches(EventRule rule, string statusFilter, string categoryFilter, string searchText, IUiTextService textService)
     {
         if (string.Equals(statusFilter, ActiveStatus, StringComparison.OrdinalIgnoreCase) && !rule.IsEnabled)

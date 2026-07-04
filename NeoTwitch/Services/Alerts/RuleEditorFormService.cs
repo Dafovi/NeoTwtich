@@ -10,14 +10,6 @@ public static class RuleEditorFormService
     public static void Apply(
         EventRule rule,
         RuleEditorFormValues values,
-        IEnumerable<AudioAssetConfig> audioLibrary)
-    {
-        Apply(rule, values, audioLibrary, UiTextService.CreateDefault());
-    }
-
-    public static void Apply(
-        EventRule rule,
-        RuleEditorFormValues values,
         IEnumerable<AudioAssetConfig> audioLibrary,
         IUiTextService text)
     {

@@ -5,11 +5,6 @@ namespace NeoTwitch.Services.Alerts;
 
 public static class RuleEditorValueService
 {
-    public static string ResolveRuleName(string? editorText, string? existingName, TwitchEventKind kind)
-    {
-        return ResolveRuleName(editorText, existingName, kind, UiTextService.CreateDefault());
-    }
-
     public static string ResolveRuleName(string? editorText, string? existingName, TwitchEventKind kind, IUiTextService text)
     {
         var editorValue = (editorText ?? "").Trim();

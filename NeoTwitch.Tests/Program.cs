@@ -427,6 +427,8 @@ static class GlobalSettingsFormTests
 
 static class EventRuleFilterTests
 {
+    private static readonly IUiTextService Text = UiTextService.CreateDefault();
+
     public static void FiltersStatusAndCategory()
     {
         var activeFollow = new EventRule
@@ -442,11 +444,11 @@ static class EventRuleFilterTests
             IsEnabled = false
         };
 
-        TestAssert.True(EventRuleFilterService.Matches(activeFollow, EventRuleFilterService.ActiveStatus, "", ""));
-        TestAssert.False(EventRuleFilterService.Matches(inactiveBits, EventRuleFilterService.ActiveStatus, "", ""));
-        TestAssert.True(EventRuleFilterService.Matches(inactiveBits, EventRuleFilterService.InactiveStatus, "", ""));
-        TestAssert.True(EventRuleFilterService.Matches(activeFollow, EventRuleFilterService.AllStatus, nameof(TwitchEventKind.Follow), ""));
-        TestAssert.False(EventRuleFilterService.Matches(activeFollow, EventRuleFilterService.AllStatus, nameof(TwitchEventKind.Cheer), ""));
+        TestAssert.True(EventRuleFilterService.Matches(activeFollow, EventRuleFilterService.ActiveStatus, "", "", Text));
+        TestAssert.False(EventRuleFilterService.Matches(inactiveBits, EventRuleFilterService.ActiveStatus, "", "", Text));
+        TestAssert.True(EventRuleFilterService.Matches(inactiveBits, EventRuleFilterService.InactiveStatus, "", "", Text));
+        TestAssert.True(EventRuleFilterService.Matches(activeFollow, EventRuleFilterService.AllStatus, nameof(TwitchEventKind.Follow), "", Text));
+        TestAssert.False(EventRuleFilterService.Matches(activeFollow, EventRuleFilterService.AllStatus, nameof(TwitchEventKind.Cheer), "", Text));
     }
 
     public static void SearchesEditableText()
@@ -459,10 +461,10 @@ static class EventRuleFilterTests
             ChatMessageTemplate = "Gracias @{user}"
         };
 
-        TestAssert.True(EventRuleFilterService.Matches(rule, EventRuleFilterService.AllStatus, "", "rave"));
-        TestAssert.True(EventRuleFilterService.Matches(rule, EventRuleFilterService.AllStatus, "", "!BAILE"));
-        TestAssert.True(EventRuleFilterService.Matches(rule, EventRuleFilterService.AllStatus, "", "gracias"));
-        TestAssert.False(EventRuleFilterService.Matches(rule, EventRuleFilterService.AllStatus, "", "inexistente"));
+        TestAssert.True(EventRuleFilterService.Matches(rule, EventRuleFilterService.AllStatus, "", "rave", Text));
+        TestAssert.True(EventRuleFilterService.Matches(rule, EventRuleFilterService.AllStatus, "", "!BAILE", Text));
+        TestAssert.True(EventRuleFilterService.Matches(rule, EventRuleFilterService.AllStatus, "", "gracias", Text));
+        TestAssert.False(EventRuleFilterService.Matches(rule, EventRuleFilterService.AllStatus, "", "inexistente", Text));
     }
 }
 
@@ -682,17 +684,19 @@ static class EventRuleSnapshotTests
 
 static class RuleEditorValueTests
 {
+    private static readonly IUiTextService Text = UiTextService.CreateDefault();
+
     public static void ResolvesFallbackNames()
     {
         TestAssert.Equal(
             "Mi alerta",
-            RuleEditorValueService.ResolveRuleName("  Mi alerta  ", "Anterior", TwitchEventKind.Follow));
+            RuleEditorValueService.ResolveRuleName("  Mi alerta  ", "Anterior", TwitchEventKind.Follow, Text));
         TestAssert.Equal(
             "Anterior",
-            RuleEditorValueService.ResolveRuleName(" ", "  Anterior  ", TwitchEventKind.Follow));
+            RuleEditorValueService.ResolveRuleName(" ", "  Anterior  ", TwitchEventKind.Follow, Text));
         TestAssert.Equal(
             DisplayNames.For(TwitchEventKind.Follow),
-            RuleEditorValueService.ResolveRuleName("", "", TwitchEventKind.Follow));
+            RuleEditorValueService.ResolveRuleName("", "", TwitchEventKind.Follow, Text));
     }
 
     public static void ResolvesLegacyAudioPaths()
@@ -761,7 +765,8 @@ static class RuleEditorFormTests
                 DurationMs: 1234.4,
                 CycleMs: 88.8,
                 StepMs: 9.2),
-            library);
+            library,
+            UiTextService.CreateDefault());
 
         TestAssert.True(rule.IsEnabled);
         TestAssert.Equal("Existente", rule.Name);

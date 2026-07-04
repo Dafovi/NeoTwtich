@@ -1,4 +1,5 @@
 using NeoTwitch.Models;
+using NeoTwitch.Services.Text;
 
 namespace NeoTwitch;
 
@@ -28,14 +29,14 @@ public partial class MainWindow
     {
         if (!_config.ArduinoEnabled)
         {
-            AddLog("Arduino esta desactivado en Conexiones.");
+            AddLog(_text.Get(UiTextKeys.ArduinoDisabledLog));
             UpdateStatusText();
             return;
         }
 
         if (string.IsNullOrWhiteSpace(_config.SerialPort))
         {
-            AddLog("No hay puerto COM configurado.");
+            AddLog(_text.Get(UiTextKeys.ArduinoMissingComLog));
             return;
         }
 

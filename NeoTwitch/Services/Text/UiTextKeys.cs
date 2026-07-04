@@ -27,6 +27,7 @@ public static class UiTextKeys
     public const string LibrarySummaryGroupFilter = "library.summary_group_filter";
 
     public const string AudioPickValidFile = "audio.pick_valid_file";
+    public const string AudioFileDialogFilter = "audio.file_dialog_filter";
     public const string AudioPlayingLog = "audio.playing_log";
     public const string AudioRuleMissingAudioLog = "audio.rule_missing_audio_log";
     public const string AudioFileMissingLog = "audio.file_missing_log";
@@ -76,6 +77,8 @@ public static class UiTextKeys
     public const string RuleSaveCleanTooltip = "rule.save_clean_tooltip";
     public const string RuleCountText = "rule.count_text";
     public const string LightsKeepOneStripPrompt = "lights.keep_one_strip_prompt";
+    public const string ArduinoDisabledLog = "arduino.disabled_log";
+    public const string ArduinoMissingComLog = "arduino.missing_com_log";
 
     public const string ExternalTwitchConsoleOpenedLog = "external.twitch_console_opened_log";
     public const string ExternalTwitchConnectFirstPrompt = "external.twitch_connect_first_prompt";
@@ -83,6 +86,15 @@ public static class UiTextKeys
     public const string ExternalAlexaConsoleOpenedLog = "external.alexa_console_opened_log";
     public const string ExternalArduinoSketchOpenedLog = "external.arduino_sketch_opened_log";
     public const string ExternalArduinoGuideOpenedLog = "external.arduino_guide_opened_log";
+
+    public const string AlexaTestSentLog = "alexa.test_sent_log";
+    public const string AlexaTestFailureCrash = "alexa.test_failure_crash";
+    public const string AlexaBackgroundOnTitle = "alexa.background_on_title";
+    public const string AlexaBackgroundOffTitle = "alexa.background_off_title";
+
+    public const string TwitchSubscriptionRefreshFailureCrash = "twitch.subscription_refresh_failure_crash";
+    public const string TwitchSubscriptionsRefreshingLog = "twitch.subscriptions_refreshing_log";
+    public const string TwitchSubscriptionsRefreshedLog = "twitch.subscriptions_refreshed_log";
 
     public const string RuleRowStatusActive = "rule_row.status_active";
     public const string RuleRowStatusInactive = "rule_row.status_inactive";

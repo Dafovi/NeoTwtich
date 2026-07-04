@@ -1,5 +1,6 @@
 using NeoTwitch.Models;
 using NeoTwitch.Services;
+using NeoTwitch.Services.Text;
 using NeoTwitch.ViewModels.Activity;
 
 namespace NeoTwitch;
@@ -51,7 +52,7 @@ public partial class MainWindow
             }
             catch (Exception ex)
             {
-                CrashReporter.Log(ex, "No se pudieron refrescar las suscripciones de Twitch.");
+                CrashReporter.Log(ex, _text.Get(UiTextKeys.TwitchSubscriptionRefreshFailureCrash));
                 AddLog($"Twitch: {ex.Message}", ActivityLogKind.Important);
                 _ = Dispatcher.InvokeAsync(() =>
                 {
@@ -70,12 +71,12 @@ public partial class MainWindow
             return;
         }
 
-        AddLog("Twitch: actualizando suscripciones por cambios en reglas.", ActivityLogKind.Twitch);
+        AddLog(_text.Get(UiTextKeys.TwitchSubscriptionsRefreshingLog), ActivityLogKind.Twitch);
         await _eventSubClient.StopAsync();
         await _eventSubClient.StartAsync();
         _eventSubscriptionSignature = signature;
         _twitchConnectionError = "";
-        AddLog("Twitch: suscripciones actualizadas.", ActivityLogKind.Twitch);
+        AddLog(_text.Get(UiTextKeys.TwitchSubscriptionsRefreshedLog), ActivityLogKind.Twitch);
         UpdateStatusText();
     }
 }

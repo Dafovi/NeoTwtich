@@ -46,7 +46,7 @@ public partial class MainWindow
     {
         var fileName = _filePicker.OpenFile(new FilePickerRequest(
             _text.Get(UiTextKeys.AudioTitle),
-            "Audio|*.wav;*.mp3;*.wma;*.aac;*.m4a|Todos los archivos|*.*"));
+            _text.Get(UiTextKeys.AudioFileDialogFilter)));
         if (string.IsNullOrWhiteSpace(fileName))
         {
             return;

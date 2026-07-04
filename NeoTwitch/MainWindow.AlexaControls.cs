@@ -1,6 +1,7 @@
 using System.Windows;
 using NeoTwitch.Models;
 using NeoTwitch.Services;
+using NeoTwitch.Services.Text;
 using NeoTwitch.ViewModels.Activity;
 using WpfButton = System.Windows.Controls.Button;
 using WpfCheckBox = System.Windows.Controls.CheckBox;
@@ -50,12 +51,12 @@ public partial class MainWindow
             SaveConfig();
             await _alexaRelayService.SendTestEventAsync(_config, CancellationToken.None);
             _alexaRelayConnected = true;
-            AddLog("Alexa: evento de prueba enviado.", ActivityLogKind.Alexa);
+            AddLog(_text.Get(UiTextKeys.AlexaTestSentLog), ActivityLogKind.Alexa);
         }
         catch (Exception ex)
         {
             _alexaRelayConnected = false;
-            CrashReporter.Log(ex, "No se pudo enviar la prueba de Alexa.");
+            CrashReporter.Log(ex, _text.Get(UiTextKeys.AlexaTestFailureCrash));
             AddLog($"Alexa: {ex.Message}", ActivityLogKind.Important);
             _dialog.ShowWarning("Alexa", ex.Message);
         }
@@ -74,7 +75,7 @@ public partial class MainWindow
 
         if (_config.BackgroundAlexaEnabled)
         {
-            await SendBackgroundAlexaEventAsync(_config.BackgroundAlexaOnEventName, "Fondo Alexa encendido", force: true);
+            await SendBackgroundAlexaEventAsync(_config.BackgroundAlexaOnEventName, _text.Get(UiTextKeys.AlexaBackgroundOnTitle), force: true);
         }
     }
 
@@ -83,6 +84,6 @@ public partial class MainWindow
         SaveGlobalSettingsFromFields();
         SaveBackgroundFromFields();
         SaveConfig();
-        await SendBackgroundAlexaEventAsync(_config.BackgroundAlexaOffEventName, "Fondo Alexa apagado", force: true);
+        await SendBackgroundAlexaEventAsync(_config.BackgroundAlexaOffEventName, _text.Get(UiTextKeys.AlexaBackgroundOffTitle), force: true);
     }
 }

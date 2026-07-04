@@ -51,17 +51,6 @@ public sealed class LedStripConfig : INotifyPropertyChanged
 
     public event PropertyChangedEventHandler? PropertyChanged;
 
-    public LedStripConfig Duplicate()
-    {
-        return new LedStripConfig
-        {
-            Id = Guid.NewGuid().ToString("N"),
-            Name = $"{Name} copia".Trim(),
-            Pin = Pin,
-            LedCount = LedCount
-        };
-    }
-
     public override string ToString() => DisplayLabel;
 
     private bool SetField<T>(ref T field, T value, [CallerMemberName] string? propertyName = null)

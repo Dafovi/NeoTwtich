@@ -36,4 +36,15 @@ public static class ConfigurationItemFactory
             LedCount = DefaultLedCount
         };
     }
+
+    public static LedStripConfig DuplicateLedStrip(LedStripConfig strip, IUiTextService text)
+    {
+        return new LedStripConfig
+        {
+            Id = Guid.NewGuid().ToString("N"),
+            Name = $"{strip.Name} {text.Get(UiTextKeys.ConfigurationCopySuffix)}".Trim(),
+            Pin = strip.Pin,
+            LedCount = strip.LedCount
+        };
+    }
 }

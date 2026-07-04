@@ -20,7 +20,7 @@ public partial class MainWindow
             return;
         }
 
-        var copy = strip.Duplicate();
+        var copy = ConfigurationItemFactory.DuplicateLedStrip(strip, _text);
         _config.LedStrips.Add(copy);
         _lightsViewModel.SelectedStrip = copy;
         SaveConfig();

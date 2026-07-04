@@ -30,6 +30,7 @@ var tests = new (string Name, Action Body)[]
 {
     ("ConfigurationItemFactory creates inactive action defaults", ConfigurationFactoryTests.CreateRuleUsesSafeDefaults),
     ("ConfigurationItemFactory suggests first available pin", ConfigurationFactoryTests.CreateLedStripSuggestsFirstAvailablePin),
+    ("ConfigurationItemFactory duplicates led strip values", ConfigurationFactoryTests.DuplicateLedStripCopiesValues),
     ("InputValueParser parses preferred COM ports", InputValueParserTests.ParsesPreferredComPorts),
     ("InputValueParser prefers detected Arduino ports", InputValueParserTests.PrefersDetectedArduinoPorts),
     ("InputValueParser clamps integer values", InputValueParserTests.ClampsIntegerValues),
@@ -265,6 +266,24 @@ static class ConfigurationFactoryTests
         TestAssert.Equal("Nueva tira", strip.Name);
         TestAssert.Equal(4, strip.Pin);
         TestAssert.Equal(30, strip.LedCount);
+    }
+
+    public static void DuplicateLedStripCopiesValues()
+    {
+        var source = new LedStripConfig
+        {
+            Id = "strip-1",
+            Name = "Principal",
+            Pin = 6,
+            LedCount = 120
+        };
+
+        var copy = ConfigurationItemFactory.DuplicateLedStrip(source, Text);
+
+        TestAssert.False(string.Equals(source.Id, copy.Id, StringComparison.OrdinalIgnoreCase));
+        TestAssert.Equal("Principal copia", copy.Name);
+        TestAssert.Equal(source.Pin, copy.Pin);
+        TestAssert.Equal(source.LedCount, copy.LedCount);
     }
 }
 

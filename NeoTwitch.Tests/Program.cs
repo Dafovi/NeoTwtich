@@ -114,6 +114,7 @@ var tests = new (string Name, Action Body)[]
     ("ActivityLogService filters entries and search text", ActivityLogServiceTests.FiltersEntriesAndSearchText),
     ("ActivityLogClassifier resolves sources and categories", ActivityLogClassifierTests.ResolvesSourcesAndCategories),
     ("ActivityLogSourceCatalog maps source metadata", ActivityLogSourceCatalogTests.MapsSourceMetadata),
+    ("ActivityLogStatusService maps status metadata", ActivityLogStatusServiceTests.MapsStatusMetadata),
     ("ActivityLogPresentationService classifies display metadata", ActivityLogPresentationTests.ClassifiesDisplayMetadata),
     ("ActivityViewModel filters entries view", ActivityViewModelTests.FiltersEntriesView),
     ("ActivityViewModel maps filter properties", ActivityViewModelTests.MapsFilterProperties),
@@ -2721,6 +2722,29 @@ static class ActivityLogSourceCatalogTests
         var unknown = ActivityLogSourceCatalog.Get("desconocido");
         TestAssert.Equal("Sistema", unknown.DisplayName);
         TestAssert.Equal("#14B8A6", unknown.AccentColor);
+    }
+}
+
+static class ActivityLogStatusServiceTests
+{
+    public static void MapsStatusMetadata()
+    {
+        var ok = ActivityLogStatusService.Build("Twitch conectado", ActivityLogKind.Twitch, "TWITCH");
+        TestAssert.Equal("OK", ok.Text);
+        TestAssert.Equal("#22C55E", ok.AccentColor);
+        TestAssert.Equal("Assets/Icons/status_ok.png", ok.IconPath);
+        TestAssert.False(ok.IsImportant);
+
+        var warning = ActivityLogStatusService.Build("Aviso: no coincide la escena", ActivityLogKind.Info, "OBS");
+        TestAssert.Equal("Aviso", warning.Text);
+        TestAssert.Equal("Assets/Icons/status_warning.png", warning.IconPath);
+        TestAssert.True(warning.IsImportant);
+
+        var error = ActivityLogStatusService.Build("No se pudo conectar", ActivityLogKind.Info, "SISTEMA");
+        TestAssert.Equal("Error", error.Text);
+        TestAssert.Equal("#F43F5E", error.AccentColor);
+        TestAssert.Equal("Assets/Icons/status_error.png", error.IconPath);
+        TestAssert.True(error.IsImportant);
     }
 }
 

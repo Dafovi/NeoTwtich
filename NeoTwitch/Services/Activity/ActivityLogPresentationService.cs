@@ -7,15 +7,15 @@ public static class ActivityLogPresentationService
     public static ActivityLogPresentation Build(string message, ActivityLogKind kind)
     {
         var sourceKey = ActivityLogClassifier.ResolveSourceKey(message, kind);
-        var statusText = ChooseStatusText(message, kind);
         var activityIconPath = ChooseActivityIconPath(message, kind, sourceKey);
         var title = BuildTitle(message, kind);
         var source = ActivityLogSourceCatalog.Get(sourceKey);
+        var status = ActivityLogStatusService.Build(message, kind, sourceKey);
 
         return new ActivityLogPresentation(
             SourceKey: sourceKey,
             FilterKey: sourceKey,
-            IsImportant: kind == ActivityLogKind.Important || !string.Equals(statusText, "OK", StringComparison.OrdinalIgnoreCase),
+            IsImportant: status.IsImportant,
             SourceName: source.DisplayName,
             Category: ActivityLogClassifier.ResolveCategory(message, kind),
             Title: title,
@@ -24,9 +24,9 @@ public static class ActivityLogPresentationService
             SourceAccentColor: source.AccentColor,
             SourceIconPath: source.IconPath,
             SourceIconKey: source.IconKey,
-            StatusText: statusText,
-            StatusAccentColor: StatusAccent(statusText),
-            StatusIconPath: ChooseStatusIconPath(statusText, sourceKey),
+            StatusText: status.Text,
+            StatusAccentColor: status.AccentColor,
+            StatusIconPath: status.IconPath,
             ActivityIconPath: activityIconPath,
             ActivityIconUsesOriginalImage: IsServiceIconPath(activityIconPath),
             ActivityIconKey: ChooseIconKey(message, kind));
@@ -263,54 +263,6 @@ public static class ActivityLogPresentationService
     {
         return iconPath.Contains("/service_", StringComparison.OrdinalIgnoreCase)
             || iconPath.Contains("\\service_", StringComparison.OrdinalIgnoreCase);
-    }
-
-    private static string ChooseStatusText(string message, ActivityLogKind kind)
-    {
-        var text = message.ToLowerInvariant();
-        if (text.Contains("error", StringComparison.Ordinal)
-            || text.Contains("fallo", StringComparison.Ordinal)
-            || text.Contains("no pude", StringComparison.Ordinal)
-            || text.Contains("no puedo", StringComparison.Ordinal)
-            || text.Contains("no hay", StringComparison.Ordinal)
-            || text.Contains("no encontre", StringComparison.Ordinal)
-            || text.Contains("no se pudo", StringComparison.Ordinal)
-            || text.Contains("tardo demasiado", StringComparison.Ordinal))
-        {
-            return "Error";
-        }
-
-        if (kind == ActivityLogKind.Important
-            || text.Contains("advertencia", StringComparison.Ordinal)
-            || text.Contains("aviso", StringComparison.Ordinal)
-            || text.Contains("descart", StringComparison.Ordinal)
-            || text.Contains("no coincide", StringComparison.Ordinal))
-        {
-            return "Aviso";
-        }
-
-        return "OK";
-    }
-
-    private static string StatusAccent(string statusText)
-    {
-        return statusText switch
-        {
-            "Error" => "#F43F5E",
-            "Aviso" => "#FFB020",
-            _ => "#22C55E"
-        };
-    }
-
-    private static string ChooseStatusIconPath(string statusText, string filterKey)
-    {
-        return statusText switch
-        {
-            "Error" => "Assets/Icons/status_error.png",
-            "Aviso" when string.Equals(filterKey, "IMPORTANTE", StringComparison.OrdinalIgnoreCase) => "Assets/Icons/status_important.png",
-            "Aviso" => "Assets/Icons/status_warning.png",
-            _ => "Assets/Icons/status_ok.png"
-        };
     }
 
     private static string ChooseIconKey(string message, ActivityLogKind kind)

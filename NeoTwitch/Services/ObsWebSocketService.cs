@@ -147,7 +147,7 @@ public sealed class ObsWebSocketService : IAsyncDisposable
             EnsureConnected();
             await SendRequestAsync(
                 ObsProtocol.SetCurrentProgramScene,
-                new Dictionary<string, object?> { [ObsProtocol.SceneName] = sceneName.Trim() },
+                ObsWebSocketRequestFactory.BuildSetCurrentProgramSceneRequest(sceneName),
                 token);
             await RefreshScenesCoreAsync(token);
             return Snapshot();
@@ -194,32 +194,18 @@ public sealed class ObsWebSocketService : IAsyncDisposable
         try
         {
             EnsureConnected();
-            var inputKind = kind == ObsMediaKind.Image ? ObsProtocol.ImageSourceKind : ObsProtocol.FfmpegSourceKind;
-            var settings = ObsWebSocketRequestFactory.BuildMediaInputSettings(kind, filePath);
             try
             {
                 await SendRequestAsync(
                     ObsProtocol.CreateInput,
-                    new Dictionary<string, object?>
-                    {
-                        [ObsProtocol.SceneName] = sceneName.Trim(),
-                        [ObsProtocol.InputName] = sourceName.Trim(),
-                        [ObsProtocol.InputKind] = inputKind,
-                        [ObsProtocol.InputSettings] = settings,
-                        [ObsProtocol.SceneItemEnabled] = true
-                    },
+                    ObsWebSocketRequestFactory.BuildCreateInputRequest(sceneName, sourceName, kind, filePath),
                     token);
             }
             catch (InvalidOperationException)
             {
                 await SendRequestAsync(
                     ObsProtocol.SetInputSettings,
-                    new Dictionary<string, object?>
-                    {
-                        [ObsProtocol.InputName] = sourceName.Trim(),
-                        [ObsProtocol.InputSettings] = settings,
-                        [ObsProtocol.Overlay] = true
-                    },
+                    ObsWebSocketRequestFactory.BuildSetInputSettingsRequest(sourceName, kind, filePath),
                     token);
                 await EnsureSceneItemAsync(sceneName, sourceName, token);
             }
@@ -338,12 +324,7 @@ public sealed class ObsWebSocketService : IAsyncDisposable
 
         await SendRequestAsync(
             ObsProtocol.CreateSceneItem,
-            new Dictionary<string, object?>
-            {
-                [ObsProtocol.SceneName] = sceneName.Trim(),
-                [ObsProtocol.SourceName] = sourceName.Trim(),
-                [ObsProtocol.SceneItemEnabled] = true
-            },
+            ObsWebSocketRequestFactory.BuildCreateSceneItemRequest(sceneName, sourceName),
             cancellationToken);
     }
 
@@ -356,12 +337,7 @@ public sealed class ObsWebSocketService : IAsyncDisposable
         var sceneItemId = await GetSceneItemIdAsync(sceneName, sourceName, cancellationToken);
         await SendRequestAsync(
             ObsProtocol.SetSceneItemEnabled,
-            new Dictionary<string, object?>
-            {
-                [ObsProtocol.SceneName] = sceneName.Trim(),
-                [ObsProtocol.SceneItemId] = sceneItemId,
-                [ObsProtocol.SceneItemEnabled] = enabled
-            },
+            ObsWebSocketRequestFactory.BuildSetSceneItemEnabledRequest(sceneName, sceneItemId, enabled),
             cancellationToken);
     }
 
@@ -396,11 +372,7 @@ public sealed class ObsWebSocketService : IAsyncDisposable
     {
         using var response = await SendRequestAsync(
             ObsProtocol.GetSceneItemId,
-            new Dictionary<string, object?>
-            {
-                [ObsProtocol.SceneName] = sceneName.Trim(),
-                [ObsProtocol.SourceName] = sourceName.Trim()
-            },
+            ObsWebSocketRequestFactory.BuildGetSceneItemIdRequest(sceneName, sourceName),
             cancellationToken);
         return ObsWebSocketResponseReader.ReadSceneItemId(response);
     }

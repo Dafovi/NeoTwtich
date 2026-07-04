@@ -1273,6 +1273,32 @@ static class ObsWebSocketRequestFactoryTests
         var volumeRequest = ObsWebSocketRequestFactory.BuildInputVolumeRequest(" Video ", 125);
         TestAssert.Equal("Video", volumeRequest[ObsWebSocketProtocol.InputName]);
         TestAssert.Equal(1d, volumeRequest[ObsWebSocketProtocol.InputVolumeMul]);
+
+        var sceneRequest = ObsWebSocketRequestFactory.BuildSetCurrentProgramSceneRequest(" Gameplay ");
+        TestAssert.Equal("Gameplay", sceneRequest[ObsWebSocketProtocol.SceneName]);
+
+        var createInput = ObsWebSocketRequestFactory.BuildCreateInputRequest(" Escena ", " Alerta ", ObsMediaKind.Video, @"C:\stream\alert.mp4");
+        TestAssert.Equal("Escena", createInput[ObsWebSocketProtocol.SceneName]);
+        TestAssert.Equal("Alerta", createInput[ObsWebSocketProtocol.InputName]);
+        TestAssert.Equal(ObsWebSocketProtocol.FfmpegSourceKind, createInput[ObsWebSocketProtocol.InputKind]);
+        TestAssert.Equal(true, createInput[ObsWebSocketProtocol.SceneItemEnabled]);
+
+        var updateInput = ObsWebSocketRequestFactory.BuildSetInputSettingsRequest(" Alerta ", ObsMediaKind.Image, @"C:\stream\alert.png");
+        TestAssert.Equal("Alerta", updateInput[ObsWebSocketProtocol.InputName]);
+        TestAssert.Equal(true, updateInput[ObsWebSocketProtocol.Overlay]);
+
+        var createSceneItem = ObsWebSocketRequestFactory.BuildCreateSceneItemRequest(" Escena ", " Alerta ");
+        TestAssert.Equal("Escena", createSceneItem[ObsWebSocketProtocol.SceneName]);
+        TestAssert.Equal("Alerta", createSceneItem[ObsWebSocketProtocol.SourceName]);
+
+        var itemEnabled = ObsWebSocketRequestFactory.BuildSetSceneItemEnabledRequest(" Escena ", 7, false);
+        TestAssert.Equal("Escena", itemEnabled[ObsWebSocketProtocol.SceneName]);
+        TestAssert.Equal(7, itemEnabled[ObsWebSocketProtocol.SceneItemId]);
+        TestAssert.Equal(false, itemEnabled[ObsWebSocketProtocol.SceneItemEnabled]);
+
+        var itemId = ObsWebSocketRequestFactory.BuildGetSceneItemIdRequest(" Escena ", " Alerta ");
+        TestAssert.Equal("Escena", itemId[ObsWebSocketProtocol.SceneName]);
+        TestAssert.Equal("Alerta", itemId[ObsWebSocketProtocol.SourceName]);
     }
 }
 

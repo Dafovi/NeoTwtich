@@ -38,6 +38,77 @@ public static class ObsWebSocketRequestFactory
             };
     }
 
+    public static Dictionary<string, object?> BuildSetCurrentProgramSceneRequest(string sceneName)
+    {
+        return new Dictionary<string, object?>
+        {
+            [ObsWebSocketProtocol.SceneName] = sceneName.Trim()
+        };
+    }
+
+    public static Dictionary<string, object?> BuildCreateInputRequest(
+        string sceneName,
+        string sourceName,
+        ObsMediaKind kind,
+        string filePath)
+    {
+        return new Dictionary<string, object?>
+        {
+            [ObsWebSocketProtocol.SceneName] = sceneName.Trim(),
+            [ObsWebSocketProtocol.InputName] = sourceName.Trim(),
+            [ObsWebSocketProtocol.InputKind] = kind == ObsMediaKind.Image
+                ? ObsWebSocketProtocol.ImageSourceKind
+                : ObsWebSocketProtocol.FfmpegSourceKind,
+            [ObsWebSocketProtocol.InputSettings] = BuildMediaInputSettings(kind, filePath),
+            [ObsWebSocketProtocol.SceneItemEnabled] = true
+        };
+    }
+
+    public static Dictionary<string, object?> BuildSetInputSettingsRequest(
+        string sourceName,
+        ObsMediaKind kind,
+        string filePath)
+    {
+        return new Dictionary<string, object?>
+        {
+            [ObsWebSocketProtocol.InputName] = sourceName.Trim(),
+            [ObsWebSocketProtocol.InputSettings] = BuildMediaInputSettings(kind, filePath),
+            [ObsWebSocketProtocol.Overlay] = true
+        };
+    }
+
+    public static Dictionary<string, object?> BuildCreateSceneItemRequest(string sceneName, string sourceName)
+    {
+        return new Dictionary<string, object?>
+        {
+            [ObsWebSocketProtocol.SceneName] = sceneName.Trim(),
+            [ObsWebSocketProtocol.SourceName] = sourceName.Trim(),
+            [ObsWebSocketProtocol.SceneItemEnabled] = true
+        };
+    }
+
+    public static Dictionary<string, object?> BuildSetSceneItemEnabledRequest(
+        string sceneName,
+        int sceneItemId,
+        bool enabled)
+    {
+        return new Dictionary<string, object?>
+        {
+            [ObsWebSocketProtocol.SceneName] = sceneName.Trim(),
+            [ObsWebSocketProtocol.SceneItemId] = sceneItemId,
+            [ObsWebSocketProtocol.SceneItemEnabled] = enabled
+        };
+    }
+
+    public static Dictionary<string, object?> BuildGetSceneItemIdRequest(string sceneName, string sourceName)
+    {
+        return new Dictionary<string, object?>
+        {
+            [ObsWebSocketProtocol.SceneName] = sceneName.Trim(),
+            [ObsWebSocketProtocol.SourceName] = sourceName.Trim()
+        };
+    }
+
     public static Dictionary<string, object?> BuildSceneItemTransformRequest(
         string sceneName,
         int sceneItemId,

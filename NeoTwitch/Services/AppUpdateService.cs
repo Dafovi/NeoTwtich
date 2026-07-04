@@ -11,9 +11,14 @@ public sealed class AppUpdateService
     private readonly VersionCheckService _versionCheckService;
 
     public AppUpdateService(IUiTextService text, IExternalLauncherService externalLauncher)
+        : this(externalLauncher, new VersionCheckService(text))
+    {
+    }
+
+    public AppUpdateService(IExternalLauncherService externalLauncher, VersionCheckService versionCheckService)
     {
         _externalLauncher = externalLauncher;
-        _versionCheckService = new VersionCheckService(text);
+        _versionCheckService = versionCheckService;
     }
 
     public Task<VersionCheckResult> CheckLatestAsync(CancellationToken cancellationToken)

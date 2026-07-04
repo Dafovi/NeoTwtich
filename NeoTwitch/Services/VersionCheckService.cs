@@ -10,14 +10,15 @@ namespace NeoTwitch.Services;
 public sealed class VersionCheckService
 {
     private readonly IUiTextService _text;
-    private readonly HttpClient _http = new()
-    {
-        Timeout = TimeSpan.FromSeconds(8)
-    };
+    private readonly HttpClient _http;
 
-    public VersionCheckService(IUiTextService text)
+    public VersionCheckService(IUiTextService text, HttpClient? httpClient = null)
     {
         _text = text;
+        _http = httpClient ?? new HttpClient
+        {
+            Timeout = TimeSpan.FromSeconds(8)
+        };
         _http.DefaultRequestHeaders.UserAgent.Add(new ProductInfoHeaderValue(NeoTwitchProduct.GitHubAppUserAgent, NeoTwitchProduct.CurrentVersionText));
     }
 

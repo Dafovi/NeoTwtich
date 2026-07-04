@@ -119,6 +119,7 @@ var tests = new (string Name, Action Body)[]
     ("ObsViewModel executes configured actions", ObsViewModelTests.ExecutesConfiguredActions),
     ("DiagnosticReportService builds report without network", DiagnosticReportServiceTests.BuildsReportWithoutNetwork),
     ("DiagnosticReportService reports missing audio", DiagnosticReportServiceTests.ReportsMissingAudio),
+    ("VersionCheckService parses latest release response", VersionCheckServiceTests.ParsesLatestReleaseResponse),
     ("VersionComparisonService compares normalized tags", VersionComparisonTests.ComparesNormalizedTags),
     ("ActivityLogService trims activity and dashboard entries", ActivityLogServiceTests.TrimsActivityAndDashboardEntries),
     ("ActivityLogService filters entries and search text", ActivityLogServiceTests.FiltersEntriesAndSearchText),
@@ -2903,6 +2904,34 @@ static class DiagnosticReportServiceTests
             IsUpdateAvailable: false)),
             Text,
             new FixedTimeProvider(new DateTimeOffset(2026, 6, 1, 12, 0, 0, TimeSpan.Zero)));
+    }
+}
+
+static class VersionCheckServiceTests
+{
+    public static void ParsesLatestReleaseResponse()
+    {
+        using var http = new HttpClient(new StaticJsonHttpHandler(
+            """{"tag_name":"V9.9.9-beta","html_url":"https://example.test/release"}"""));
+        var service = new VersionCheckService(UiTextService.CreateDefault(), http);
+
+        var result = service.CheckLatestAsync(CancellationToken.None).GetAwaiter().GetResult();
+
+        TestAssert.Equal(NeoTwitchProduct.CurrentVersionText, result.CurrentVersion);
+        TestAssert.Equal("9.9.9", result.LatestVersion);
+        TestAssert.Equal("https://example.test/release", result.ReleaseUrl);
+        TestAssert.True(result.IsUpdateAvailable);
+    }
+
+    private sealed class StaticJsonHttpHandler(string json) : HttpMessageHandler
+    {
+        protected override Task<HttpResponseMessage> SendAsync(HttpRequestMessage request, CancellationToken cancellationToken)
+        {
+            return Task.FromResult(new HttpResponseMessage(System.Net.HttpStatusCode.OK)
+            {
+                Content = new StringContent(json)
+            });
+        }
     }
 }
 

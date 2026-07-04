@@ -58,6 +58,7 @@ var tests = new (string Name, Action Body)[]
     ("ObsRulePlanService resolves scene restore", ObsRulePlanTests.ResolvesSceneRestore),
     ("ObsRulePlanService resolves media plans", ObsRulePlanTests.ResolvesMediaPlans),
     ("ObsRulePlanService builds media execution plan", ObsRulePlanTests.BuildsMediaExecutionPlan),
+    ("ObsWebSocketRequestFactory builds protocol requests", ObsWebSocketRequestFactoryTests.BuildsProtocolRequests),
     ("LightControlInputService resolves presets", LightControlInputTests.ResolvesPresets),
     ("LightControlInputService parses and clamps values", LightControlInputTests.ParsesAndClampsValues),
     ("BackgroundLightRestoreService resolves retry attempts", BackgroundLightRestoreTests.ResolvesRetryAttempts),
@@ -1127,6 +1128,55 @@ static class ObsRulePlanTests
             "video-source");
 
         TestAssert.Equal(ObsRuleMediaPlanStatus.MissingScene, missingScene.Status);
+    }
+}
+
+static class ObsWebSocketRequestFactoryTests
+{
+    public static void BuildsProtocolRequests()
+    {
+        var config = new ObsIntegrationConfig
+        {
+            Host = "127.0.0.1",
+            Port = 4455,
+            OverlayWidth = 1920,
+            OverlayHeight = 1080,
+            OverlayMediaWidth = 400,
+            OverlayMediaHeight = 300,
+            OverlayPositionMode = "Custom",
+            OverlayX = 2000,
+            OverlayY = 100
+        };
+
+        TestAssert.Equal("ws://127.0.0.1:4455/", ObsWebSocketRequestFactory.BuildUri(config).ToString());
+        config.Host = "wss://obs.example.test/socket";
+        TestAssert.Equal("wss://obs.example.test/socket", ObsWebSocketRequestFactory.BuildUri(config).ToString());
+        TestAssert.Equal(
+            "EabUNw4z9EKKpEOC0yvqBO8dJPSIcTb82eo+adWKOvk=",
+            ObsWebSocketRequestFactory.BuildAuthentication("pass", "salt", "challenge"));
+
+        var imageSettings = ObsWebSocketRequestFactory.BuildMediaInputSettings(ObsMediaKind.Image, @"C:\stream\alert.png");
+        TestAssert.Equal(@"C:\stream\alert.png", imageSettings[ObsWebSocketProtocol.ImageFile]);
+        TestAssert.False(imageSettings.ContainsKey(ObsWebSocketProtocol.LocalFile));
+
+        var videoSettings = ObsWebSocketRequestFactory.BuildMediaInputSettings(ObsMediaKind.Video, @"C:\stream\alert.mp4");
+        TestAssert.Equal(true, videoSettings[ObsWebSocketProtocol.IsLocalFile]);
+        TestAssert.Equal(@"C:\stream\alert.mp4", videoSettings[ObsWebSocketProtocol.LocalFile]);
+        TestAssert.Equal(false, videoSettings[ObsWebSocketProtocol.Looping]);
+        TestAssert.Equal(true, videoSettings[ObsWebSocketProtocol.RestartOnActivate]);
+
+        var transformRequest = ObsWebSocketRequestFactory.BuildSceneItemTransformRequest(" Gameplay ", 22, config);
+        TestAssert.Equal("Gameplay", transformRequest[ObsWebSocketProtocol.SceneName]);
+        TestAssert.Equal(22, transformRequest[ObsWebSocketProtocol.SceneItemId]);
+        var transform = (Dictionary<string, object?>)transformRequest[ObsWebSocketProtocol.SceneItemTransform]!;
+        TestAssert.Equal(1520, transform[ObsWebSocketProtocol.PositionX]);
+        TestAssert.Equal(100, transform[ObsWebSocketProtocol.PositionY]);
+        TestAssert.Equal(400, transform[ObsWebSocketProtocol.BoundsWidth]);
+        TestAssert.Equal(300, transform[ObsWebSocketProtocol.BoundsHeight]);
+
+        var volumeRequest = ObsWebSocketRequestFactory.BuildInputVolumeRequest(" Video ", 125);
+        TestAssert.Equal("Video", volumeRequest[ObsWebSocketProtocol.InputName]);
+        TestAssert.Equal(1d, volumeRequest[ObsWebSocketProtocol.InputVolumeMul]);
     }
 }
 

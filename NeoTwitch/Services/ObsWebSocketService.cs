@@ -1,9 +1,9 @@
 using System.Net.WebSockets;
 using System.IO;
-using System.Security.Cryptography;
 using System.Text;
 using System.Text.Json;
 using NeoTwitch.Models;
+using NeoTwitch.Services.Obs;
 using NeoTwitch.Services.Text;
 using ObsProtocol = NeoTwitch.Services.Obs.ObsWebSocketProtocol;
 
@@ -54,7 +54,7 @@ public sealed class ObsWebSocketService : IAsyncDisposable
             await DisposeSocketAsync();
 
             _socket = new ClientWebSocket();
-            await _socket.ConnectAsync(BuildUri(config), token);
+            await _socket.ConnectAsync(ObsWebSocketRequestFactory.BuildUri(config), token);
 
             using var hello = await ReceiveJsonAsync(token);
             if (ReadInt(hello.RootElement, ObsProtocol.Op) != ObsProtocol.OpHello)
@@ -76,7 +76,7 @@ public sealed class ObsWebSocketService : IAsyncDisposable
                     throw new InvalidOperationException(_text.Get(UiTextKeys.ObsPasswordRequired));
                 }
 
-                identify[ObsProtocol.Authentication] = BuildAuthentication(
+                identify[ObsProtocol.Authentication] = ObsWebSocketRequestFactory.BuildAuthentication(
                     config.Password,
                     ReadString(auth, ObsProtocol.Salt),
                     ReadString(auth, ObsProtocol.Challenge));
@@ -196,7 +196,7 @@ public sealed class ObsWebSocketService : IAsyncDisposable
         {
             EnsureConnected();
             var inputKind = kind == ObsMediaKind.Image ? ObsProtocol.ImageSourceKind : ObsProtocol.FfmpegSourceKind;
-            var settings = BuildMediaInputSettings(kind, filePath);
+            var settings = ObsWebSocketRequestFactory.BuildMediaInputSettings(kind, filePath);
             try
             {
                 await SendRequestAsync(
@@ -381,31 +381,9 @@ public sealed class ObsWebSocketService : IAsyncDisposable
         CancellationToken cancellationToken)
     {
         var sceneItemId = await GetSceneItemIdAsync(sceneName, sourceName, cancellationToken);
-        var mediaWidth = Math.Clamp(
-            config.OverlayMediaWidth,
-            ApplicationLimits.MinObsOverlayMediaSize,
-            Math.Max(ApplicationLimits.MinObsOverlayMediaSize, config.OverlayWidth));
-        var mediaHeight = Math.Clamp(
-            config.OverlayMediaHeight,
-            ApplicationLimits.MinObsOverlayMediaSize,
-            Math.Max(ApplicationLimits.MinObsOverlayMediaSize, config.OverlayHeight));
-        var (positionX, positionY) = ResolveOverlayPosition(config, mediaWidth, mediaHeight);
-
         await SendRequestAsync(
             ObsProtocol.SetSceneItemTransform,
-            new Dictionary<string, object?>
-            {
-                [ObsProtocol.SceneName] = sceneName.Trim(),
-                [ObsProtocol.SceneItemId] = sceneItemId,
-                [ObsProtocol.SceneItemTransform] = new Dictionary<string, object?>
-                {
-                    [ObsProtocol.PositionX] = positionX,
-                    [ObsProtocol.PositionY] = positionY,
-                    [ObsProtocol.BoundsType] = ObsProtocol.BoundsScaleInner,
-                    [ObsProtocol.BoundsWidth] = mediaWidth,
-                    [ObsProtocol.BoundsHeight] = mediaHeight
-                }
-            },
+            ObsWebSocketRequestFactory.BuildSceneItemTransformRequest(sceneName, sceneItemId, config),
             cancellationToken);
     }
 
@@ -414,14 +392,9 @@ public sealed class ObsWebSocketService : IAsyncDisposable
         int volumePercent,
         CancellationToken cancellationToken)
     {
-        var inputVolumeMul = Math.Clamp(volumePercent, ApplicationLimits.MinVolumePercent, ApplicationLimits.MaxVolumePercent) / 100d;
         await SendRequestAsync(
             ObsProtocol.SetInputVolume,
-            new Dictionary<string, object?>
-            {
-                [ObsProtocol.InputName] = sourceName.Trim(),
-                [ObsProtocol.InputVolumeMul] = inputVolumeMul
-            },
+            ObsWebSocketRequestFactory.BuildInputVolumeRequest(sourceName, volumePercent),
             cancellationToken);
     }
 
@@ -576,50 +549,6 @@ public sealed class ObsWebSocketService : IAsyncDisposable
     private ObsConnectionResult Snapshot()
     {
         return new ObsConnectionResult(IsConnected, Version, CurrentScene, StudioMode, Scenes);
-    }
-
-    private static Dictionary<string, object?> BuildMediaInputSettings(ObsMediaKind kind, string filePath)
-    {
-        return kind == ObsMediaKind.Image
-            ? new Dictionary<string, object?> { [ObsProtocol.ImageFile] = filePath }
-            : new Dictionary<string, object?>
-            {
-                [ObsProtocol.IsLocalFile] = true,
-                [ObsProtocol.LocalFile] = filePath,
-                [ObsProtocol.Looping] = false,
-                [ObsProtocol.RestartOnActivate] = true,
-                [ObsProtocol.CloseWhenInactive] = true
-            };
-    }
-
-    private static (int X, int Y) ResolveOverlayPosition(ObsIntegrationConfig config, int mediaWidth, int mediaHeight)
-    {
-        var maxX = Math.Max(0, config.OverlayWidth - mediaWidth);
-        var maxY = Math.Max(0, config.OverlayHeight - mediaHeight);
-        return config.OverlayPositionMode switch
-        {
-            ObsProtocol.CustomPositionMode => (Math.Clamp(config.OverlayX, 0, maxX), Math.Clamp(config.OverlayY, 0, maxY)),
-            ObsProtocol.RandomPositionMode => (Random.Shared.Next(0, maxX + 1), Random.Shared.Next(0, maxY + 1)),
-            _ => (maxX / 2, maxY / 2)
-        };
-    }
-
-    private static Uri BuildUri(ObsIntegrationConfig config)
-    {
-        var host = config.Host.Trim();
-        if (host.StartsWith(ObsProtocol.WebSocketScheme, StringComparison.OrdinalIgnoreCase)
-            || host.StartsWith(ObsProtocol.SecureWebSocketScheme, StringComparison.OrdinalIgnoreCase))
-        {
-            return new Uri(host);
-        }
-
-        return new Uri($"{ObsProtocol.WebSocketScheme}{host}:{config.Port}");
-    }
-
-    private static string BuildAuthentication(string password, string salt, string challenge)
-    {
-        var secret = Convert.ToBase64String(SHA256.HashData(Encoding.UTF8.GetBytes(password + salt)));
-        return Convert.ToBase64String(SHA256.HashData(Encoding.UTF8.GetBytes(secret + challenge)));
     }
 
     private static int ReadInt(JsonElement element, string propertyName, int fallback = 0)

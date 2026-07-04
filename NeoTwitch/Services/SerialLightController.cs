@@ -139,10 +139,10 @@ public sealed class SerialLightController : IDisposable
             var deviceParameters = key.OpenSubKey("Device Parameters");
             var portName = deviceParameters?.GetValue("PortName")?.ToString();
 
-            portName ??= TryFindPortName(friendlyName);
+            portName ??= SerialPortNameService.TryExtractPortName(friendlyName);
             if (!string.IsNullOrWhiteSpace(portName) && portName.StartsWith("COM", StringComparison.OrdinalIgnoreCase))
             {
-                results[portName.ToUpperInvariant()] = CleanFriendlyName(friendlyName, portName);
+                results[portName.ToUpperInvariant()] = SerialPortNameService.CleanFriendlyName(friendlyName, portName);
             }
 
             foreach (var subKeyName in key.GetSubKeyNames())
@@ -158,40 +158,6 @@ public sealed class SerialLightController : IDisposable
         {
             // Some USB registry branches are protected. Skip those and keep the ports we can read.
         }
-    }
-
-    private static string? TryFindPortName(string? friendlyName)
-    {
-        if (string.IsNullOrWhiteSpace(friendlyName))
-        {
-            return null;
-        }
-
-        var start = friendlyName.LastIndexOf("(COM", StringComparison.OrdinalIgnoreCase);
-        if (start < 0)
-        {
-            return null;
-        }
-
-        var end = friendlyName.IndexOf(')', start);
-        return end > start ? friendlyName.Substring(start + 1, end - start - 1).ToUpperInvariant() : null;
-    }
-
-    private static string CleanFriendlyName(string? friendlyName, string portName)
-    {
-        if (string.IsNullOrWhiteSpace(friendlyName))
-        {
-            return portName.ToUpperInvariant();
-        }
-
-        var clean = friendlyName.Replace($"({portName})", "", StringComparison.OrdinalIgnoreCase).Trim();
-        var semicolon = clean.LastIndexOf(';');
-        if (semicolon >= 0 && semicolon < clean.Length - 1)
-        {
-            clean = clean[(semicolon + 1)..].Trim();
-        }
-
-        return string.IsNullOrWhiteSpace(clean) ? portName.ToUpperInvariant() : clean;
     }
 
     public async Task ConfigureAsync(string port, int baudRate, Action<string> log, CancellationToken cancellationToken)

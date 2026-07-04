@@ -65,6 +65,7 @@ var tests = new (string Name, Action Body)[]
     ("BackgroundLightRestoreService resolves apply plan", BackgroundLightRestoreTests.ResolvesApplyPlan),
     ("BackgroundLightRestoreService resolves restore plan", BackgroundLightRestoreTests.ResolvesRestorePlan),
     ("RulePinChoiceService builds pin choices", RulePinChoiceTests.BuildsPinChoices),
+    ("SerialPortNameService cleans friendly port names", SerialPortNameTests.CleansFriendlyPortNames),
     ("SerialLightProtocol resolves commands", SerialLightProtocolTests.ResolvesCommands),
     ("SerialLightProtocol detects responses", SerialLightProtocolTests.DetectsResponses),
     ("LedPreviewService calculates responsive dot counts", LedPreviewTests.CalculatesResponsiveDotCounts),
@@ -1305,6 +1306,20 @@ static class RulePinChoiceTests
         TestAssert.Equal("Pin 3", choices.Options[1].Label);
         TestAssert.Equal("Derecha - Pin 7", choices.Options[2].Label);
         TestAssert.Equal("Personalizado (7, 9)", choices.Options[3].Label);
+    }
+}
+
+static class SerialPortNameTests
+{
+    public static void CleansFriendlyPortNames()
+    {
+        TestAssert.Equal("COM3", SerialPortNameService.TryExtractPortName("Arduino Uno (COM3)"));
+        TestAssert.Equal("COM12", SerialPortNameService.TryExtractPortName("USB-SERIAL CH340 (COM12)"));
+        TestAssert.Equal<string?>(null, SerialPortNameService.TryExtractPortName("Dispositivo sin puerto"));
+
+        TestAssert.Equal("Arduino Uno", SerialPortNameService.CleanFriendlyName("Arduino Uno (COM3)", "COM3"));
+        TestAssert.Equal("USB Serial Device", SerialPortNameService.CleanFriendlyName("USB\\VID_2341;USB Serial Device (COM7)", "COM7"));
+        TestAssert.Equal("COM9", SerialPortNameService.CleanFriendlyName(null, "COM9"));
     }
 }
 

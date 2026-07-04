@@ -52,6 +52,7 @@ var tests = new (string Name, Action Body)[]
     ("EventRuleMatcherService resolves normal event matches", EventRuleMatcherTests.ResolvesNormalEventMatches),
     ("EventRuleMatcherService keeps highest bits threshold", EventRuleMatcherTests.KeepsHighestBitsThreshold),
     ("TwitchEventSubSubscriptionPlanner builds unique definitions", TwitchEventSubSubscriptionPlannerTests.BuildsUniqueDefinitions),
+    ("TwitchEventSubMessageParser parses welcome and events", TwitchEventSubMessageParserTests.ParsesWelcomeAndEvents),
     ("AlertDurationService resolves maximum positive duration", AlertDurationTests.ResolvesMaximumPositiveDuration),
     ("AlertDurationService clamps synchronized durations", AlertDurationTests.ClampsSynchronizedDurations),
     ("AlertExecutionPlanService disables lights when Arduino is disabled", AlertExecutionPlanTests.DisablesLightsWhenArduinoIsDisabled),
@@ -958,6 +959,60 @@ static class TwitchEventSubSubscriptionPlannerTests
 
         var chat = definitions.First(definition => definition.Type == TwitchEventSubProtocol.Events.ChatMessage);
         TestAssert.Equal("broadcaster-1", chat.Condition[TwitchEventSubProtocol.Conditions.UserId]);
+    }
+}
+
+static class TwitchEventSubMessageParserTests
+{
+    public static void ParsesWelcomeAndEvents()
+    {
+        var parser = new TwitchEventSubMessageParser(UiTextService.CreateDefault());
+        var sessionId = parser.ReadSessionId(
+            """
+            {
+              "metadata": { "message_type": "session_welcome" },
+              "payload": { "session": { "id": "session-123" } }
+            }
+            """);
+
+        TestAssert.Equal("session-123", sessionId);
+
+        using var cheerDoc = System.Text.Json.JsonDocument.Parse(
+            """
+            {
+              "subscription": { "type": "channel.cheer" },
+              "event": {
+                "user_name": "Dafovii",
+                "bits": 100,
+                "message": "vamos!"
+              }
+            }
+            """);
+        var cheer = parser.ParseEvent(cheerDoc.RootElement)!;
+
+        TestAssert.Equal(TwitchEventKind.Cheer, cheer.Kind);
+        TestAssert.Equal("channel.cheer", cheer.RawType);
+        TestAssert.Equal("Dafovii", cheer.UserName);
+        TestAssert.Equal(100, cheer.Bits);
+        TestAssert.Equal("vamos!", cheer.Message);
+        TestAssert.Contains("100 bits", cheer.Title);
+
+        using var giftDoc = System.Text.Json.JsonDocument.Parse(
+            """
+            {
+              "subscription": { "type": "channel.subscription.gift" },
+              "event": {
+                "user_name": "",
+                "total": 3
+              }
+            }
+            """);
+        var gift = parser.ParseEvent(giftDoc.RootElement)!;
+
+        TestAssert.Equal(TwitchEventKind.Subscription, gift.Kind);
+        TestAssert.Equal("Alguien", gift.UserName);
+        TestAssert.Equal(3, gift.ViewerCount);
+        TestAssert.Contains("regalo 3", gift.Title);
     }
 }
 

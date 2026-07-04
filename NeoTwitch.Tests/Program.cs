@@ -233,9 +233,11 @@ static class AppConfigTests
 
 static class ConfigurationFactoryTests
 {
+    private static readonly IUiTextService Text = UiTextService.CreateDefault();
+
     public static void CreateRuleUsesSafeDefaults()
     {
-        var rule = ConfigurationItemFactory.CreateRule();
+        var rule = ConfigurationItemFactory.CreateRule(Text);
 
         TestAssert.Equal("Nueva regla", rule.Name);
         TestAssert.Equal(TwitchEventKind.Follow, rule.EventKind);
@@ -253,7 +255,8 @@ static class ConfigurationFactoryTests
         [
             new LedStripConfig { Pin = 2 },
             new LedStripConfig { Pin = 3 }
-        ]);
+        ],
+        Text);
 
         TestAssert.Equal("Nueva tira", strip.Name);
         TestAssert.Equal(4, strip.Pin);

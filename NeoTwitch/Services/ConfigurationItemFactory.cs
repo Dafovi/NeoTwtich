@@ -9,11 +9,6 @@ public static class ConfigurationItemFactory
     private const int DefaultArduinoPin = 6;
     private const int DefaultLedCount = 30;
 
-    public static EventRule CreateRule()
-    {
-        return CreateRule(UiTextService.CreateDefault());
-    }
-
     public static EventRule CreateRule(IUiTextService text)
     {
         return new EventRule
@@ -26,11 +21,6 @@ public static class ConfigurationItemFactory
             SendChatMessage = false,
             ChatMessageTemplate = text.Get(UiTextKeys.ConfigurationNewRuleChatTemplate)
         };
-    }
-
-    public static LedStripConfig CreateLedStrip(IEnumerable<LedStripConfig> existingStrips)
-    {
-        return CreateLedStrip(existingStrips, UiTextService.CreateDefault());
     }
 
     public static LedStripConfig CreateLedStrip(IEnumerable<LedStripConfig> existingStrips, IUiTextService text)

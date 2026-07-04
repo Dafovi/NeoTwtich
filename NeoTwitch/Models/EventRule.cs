@@ -283,32 +283,6 @@ public sealed class EventRule : INotifyPropertyChanged
 
     public event PropertyChangedEventHandler? PropertyChanged;
 
-    public bool Matches(TwitchEvent twitchEvent)
-    {
-        if (!IsEnabled || EventKind != twitchEvent.Kind)
-        {
-            return false;
-        }
-
-        if (EventKind == TwitchEventKind.Cheer)
-        {
-            return twitchEvent.Bits is int bits && bits >= MinimumBits;
-        }
-
-        if (EventKind == TwitchEventKind.ChatCommand)
-        {
-            return MatchesChatCommand(twitchEvent.Message, ChatCommand);
-        }
-
-        if (EventKind != TwitchEventKind.ChannelPointRedemption)
-        {
-            return true;
-        }
-
-        return string.IsNullOrWhiteSpace(CustomRewardTitle)
-            || string.Equals(CustomRewardTitle.Trim(), twitchEvent.RewardTitle?.Trim(), StringComparison.OrdinalIgnoreCase);
-    }
-
     public EventRule Duplicate()
     {
         return new EventRule
@@ -356,17 +330,6 @@ public sealed class EventRule : INotifyPropertyChanged
     public override string ToString()
     {
         return string.IsNullOrWhiteSpace(Name) ? EventKind.ToString() : Name;
-    }
-
-    private static bool MatchesChatCommand(string? message, string command)
-    {
-        if (string.IsNullOrWhiteSpace(command) || string.IsNullOrWhiteSpace(message))
-        {
-            return false;
-        }
-
-        var firstToken = message.Trim().Split([' ', '\t'], StringSplitOptions.RemoveEmptyEntries).FirstOrDefault();
-        return string.Equals(firstToken, NormalizeCommand(command), StringComparison.OrdinalIgnoreCase);
     }
 
     private static string NormalizeCommand(string? value)

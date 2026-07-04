@@ -52,6 +52,7 @@ var tests = new (string Name, Action Body)[]
     ("RuleObsMediaChoiceService resolves image and video libraries", RuleObsMediaChoiceTests.ResolvesImageAndVideoLibraries),
     ("EventRuleMatcherService resolves normal event matches", EventRuleMatcherTests.ResolvesNormalEventMatches),
     ("EventRuleMatcherService keeps highest bits threshold", EventRuleMatcherTests.KeepsHighestBitsThreshold),
+    ("EventRuleMatcherService matches chat command tokens", EventRuleMatcherTests.MatchesChatCommandTokens),
     ("TwitchEventSubSubscriptionPlanner builds unique definitions", TwitchEventSubSubscriptionPlannerTests.BuildsUniqueDefinitions),
     ("TwitchEventSubMessageParser parses welcome and events", TwitchEventSubMessageParserTests.ParsesWelcomeAndEvents),
     ("AlertDurationService resolves maximum positive duration", AlertDurationTests.ResolvesMaximumPositiveDuration),
@@ -950,6 +951,26 @@ static class EventRuleMatcherTests
 
         TestAssert.Equal(1, matches.Length);
         TestAssert.Equal("Bits 100", matches[0].Name);
+    }
+
+    public static void MatchesChatCommandTokens()
+    {
+        var rule = new EventRule
+        {
+            EventKind = TwitchEventKind.ChatCommand,
+            ChatCommand = "rave"
+        };
+
+        TestAssert.True(EventRuleMatcherService.Matches(rule, new TwitchEvent
+        {
+            Kind = TwitchEventKind.ChatCommand,
+            Message = "  !RAVE ahora"
+        }));
+        TestAssert.False(EventRuleMatcherService.Matches(rule, new TwitchEvent
+        {
+            Kind = TwitchEventKind.ChatCommand,
+            Message = "texto !rave"
+        }));
     }
 }
 

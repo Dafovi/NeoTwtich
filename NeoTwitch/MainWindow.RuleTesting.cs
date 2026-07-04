@@ -53,7 +53,7 @@ public partial class MainWindow
 
         var simulatedEvent = _ruleSimulation.BuildEvent(rule);
 
-        if (!rule.Matches(simulatedEvent))
+        if (!EventRuleMatcherService.Matches(rule, simulatedEvent))
         {
             var message = _text.Format(
                 UiTextKeys.RuleTestNoMatchPrompt,

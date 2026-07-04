@@ -344,7 +344,14 @@ static class AppConfigNormalizerTests
             AlertVolumePercent = 300,
             VideoVolumePercent = -20,
             RecentColors = ["#ff0000", "#FF0000", "bad", "#00ff00", "#111111", "#222222", "#333333", "#444444", "#555555", "#666666"],
-            LedStrips = [],
+            LedStrips =
+            [
+                new LedStripConfig
+                {
+                    Id = "",
+                    Name = ""
+                }
+            ],
             Rules =
             [
                 new EventRule
@@ -358,7 +365,8 @@ static class AppConfigNormalizerTests
             ]
         };
 
-        var normalized = AppConfigNormalizer.Normalize(config, Text);
+        var ids = new Queue<string>(["rule-id", "strip-id"]);
+        var normalized = AppConfigNormalizer.Normalize(config, Text, ids.Dequeue);
 
         TestAssert.Equal("System", normalized.ThemeMode);
         TestAssert.Equal(ApplicationLimits.MinBaudRate, normalized.BaudRate);
@@ -366,8 +374,9 @@ static class AppConfigNormalizerTests
         TestAssert.Equal(ApplicationLimits.MinVolumePercent, normalized.VideoVolumePercent);
         TestAssert.Equal(ApplicationLimits.MaxRecentColors, normalized.RecentColors.Count);
         TestAssert.Equal(1, normalized.LedStrips.Count);
+        TestAssert.Equal("strip-id", normalized.LedStrips[0].Id);
         TestAssert.Equal("Alerta sin nombre", normalized.Rules[0].Name);
-        TestAssert.False(string.IsNullOrWhiteSpace(normalized.Rules[0].Id));
+        TestAssert.Equal("rule-id", normalized.Rules[0].Id);
         TestAssert.Equal("#FFFFFF", normalized.Rules[0].PrimaryColor);
         TestAssert.Equal("#00FF00", normalized.Rules[0].SecondaryColor);
     }
@@ -388,9 +397,10 @@ static class AppConfigNormalizerTests
             ]
         };
 
-        var normalized = AppConfigNormalizer.Normalize(config, Text);
+        var normalized = AppConfigNormalizer.Normalize(config, Text, () => "migrated-audio-id");
 
         TestAssert.Equal(1, normalized.AudioLibrary.Count);
+        TestAssert.Equal("migrated-audio-id", normalized.AudioLibrary[0].Id);
         TestAssert.Equal("follow", normalized.AudioLibrary[0].Name);
         TestAssert.Equal(@"C:\stream\follow.mp3", normalized.AudioLibrary[0].FilePath);
         TestAssert.Equal(AudioSourceMode.Single, normalized.Rules[0].AudioSourceMode);

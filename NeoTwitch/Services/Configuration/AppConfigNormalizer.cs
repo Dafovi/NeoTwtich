@@ -8,8 +8,9 @@ namespace NeoTwitch.Services.Configuration;
 
 public static class AppConfigNormalizer
 {
-    public static AppConfig Normalize(AppConfig config, IUiTextService text)
+    public static AppConfig Normalize(AppConfig config, IUiTextService text, Func<string>? idFactory = null)
     {
+        var createId = idFactory ?? (() => Guid.NewGuid().ToString("N"));
         config.TwitchClientId ??= "";
         config.TwitchClientSecret ??= "";
         config.Token ??= new TwitchTokenInfo();
@@ -35,31 +36,31 @@ public static class AppConfigNormalizer
         config.BaudRate = Math.Clamp(config.BaudRate, ApplicationLimits.MinBaudRate, ApplicationLimits.MaxBaudRate);
         config.AlertVolumePercent = Math.Clamp(config.AlertVolumePercent, ApplicationLimits.MinVolumePercent, ApplicationLimits.MaxVolumePercent);
         config.VideoVolumePercent = Math.Clamp(config.VideoVolumePercent, ApplicationLimits.MinVolumePercent, ApplicationLimits.MaxVolumePercent);
-        config.AudioGroups = LibraryConfigNormalizer.NormalizeGroups(config.AudioGroups, text.Get(UiTextKeys.ConfigurationFallbackAudioGroupName));
-        config.AudioLibrary = LibraryConfigNormalizer.NormalizeAssets(config.AudioLibrary, audio => audio.DurationMs = audio.DurationMs);
-        config.ImageGroups = LibraryConfigNormalizer.NormalizeGroups(config.ImageGroups, text.Get(UiTextKeys.ConfigurationFallbackImageGroupName));
+        config.AudioGroups = LibraryConfigNormalizer.NormalizeGroups(config.AudioGroups, text.Get(UiTextKeys.ConfigurationFallbackAudioGroupName), createId);
+        config.AudioLibrary = LibraryConfigNormalizer.NormalizeAssets(config.AudioLibrary, audio => audio.DurationMs = audio.DurationMs, createId);
+        config.ImageGroups = LibraryConfigNormalizer.NormalizeGroups(config.ImageGroups, text.Get(UiTextKeys.ConfigurationFallbackImageGroupName), createId);
         config.ImageLibrary = LibraryConfigNormalizer.NormalizeAssets(config.ImageLibrary, asset =>
         {
             asset.DurationMs = asset.DurationMs;
             asset.Width = asset.Width;
             asset.Height = asset.Height;
-        });
-        config.VideoGroups = LibraryConfigNormalizer.NormalizeGroups(config.VideoGroups, text.Get(UiTextKeys.ConfigurationFallbackVideoGroupName));
+        }, createId);
+        config.VideoGroups = LibraryConfigNormalizer.NormalizeGroups(config.VideoGroups, text.Get(UiTextKeys.ConfigurationFallbackVideoGroupName), createId);
         config.VideoLibrary = LibraryConfigNormalizer.NormalizeAssets(config.VideoLibrary, asset =>
         {
             asset.DurationMs = asset.DurationMs;
             asset.Width = asset.Width;
             asset.Height = asset.Height;
-        });
+        }, createId);
         config.RecentColors = NormalizeRecentColors(config.RecentColors);
         config.MaxQueuedSameRuleAlerts = Math.Clamp(config.MaxQueuedSameRuleAlerts, 0, ApplicationLimits.MaxQueuedAlerts);
         config.SameRuleQueueCooldownMs = Math.Clamp(config.SameRuleQueueCooldownMs, 0, ApplicationLimits.MaxAlertDurationMs);
         config.MaxQueuedDifferentRuleAlerts = Math.Clamp(config.MaxQueuedDifferentRuleAlerts, 0, ApplicationLimits.MaxQueuedAlerts);
         config.DifferentRuleQueueCooldownMs = Math.Clamp(config.DifferentRuleQueueCooldownMs, 0, ApplicationLimits.MaxAlertDurationMs);
-        config.Rules = NormalizeRules(config.Rules, text.Get(UiTextKeys.ConfigurationFallbackRuleName));
-        MigrateRuleAudioLibrary(config);
+        config.Rules = NormalizeRules(config.Rules, text.Get(UiTextKeys.ConfigurationFallbackRuleName), createId);
+        MigrateRuleAudioLibrary(config, createId);
         var defaults = DefaultAppConfigFactory.Create(text);
-        config.LedStrips = NormalizeStrips(config.LedStrips, defaults.LedStrips, text.Get(UiTextKeys.ConfigurationFallbackLedStripName));
+        config.LedStrips = NormalizeStrips(config.LedStrips, defaults.LedStrips, text.Get(UiTextKeys.ConfigurationFallbackLedStripName), createId);
         config.BackgroundTargetPins ??= "";
         config.BackgroundPattern = Enum.IsDefined(config.BackgroundPattern)
             ? config.BackgroundPattern
@@ -89,7 +90,10 @@ public static class AppConfigNormalizer
             .Take(ApplicationLimits.MaxRecentColors));
     }
 
-    private static ObservableCollection<EventRule> NormalizeRules(ObservableCollection<EventRule>? rules, string fallbackName)
+    private static ObservableCollection<EventRule> NormalizeRules(
+        ObservableCollection<EventRule>? rules,
+        string fallbackName,
+        Func<string> idFactory)
     {
         if (rules is null || rules.Count == 0)
         {
@@ -98,7 +102,7 @@ public static class AppConfigNormalizer
 
         foreach (var rule in rules)
         {
-            rule.Id = string.IsNullOrWhiteSpace(rule.Id) ? Guid.NewGuid().ToString("N") : rule.Id;
+            rule.Id = string.IsNullOrWhiteSpace(rule.Id) ? idFactory() : rule.Id;
             rule.Name = string.IsNullOrWhiteSpace(rule.Name)
                 ? fallbackName
                 : rule.Name.Trim();
@@ -127,7 +131,7 @@ public static class AppConfigNormalizer
         return rules;
     }
 
-    private static void MigrateRuleAudioLibrary(AppConfig config)
+    private static void MigrateRuleAudioLibrary(AppConfig config, Func<string> idFactory)
     {
         foreach (var rule in config.Rules)
         {
@@ -164,6 +168,7 @@ public static class AppConfigNormalizer
             {
                 existing = new AudioAssetConfig
                 {
+                    Id = idFactory(),
                     Name = Path.GetFileNameWithoutExtension(rule.AudioPath),
                     FilePath = rule.AudioPath
                 };
@@ -178,7 +183,8 @@ public static class AppConfigNormalizer
     private static ObservableCollection<LedStripConfig> NormalizeStrips(
         ObservableCollection<LedStripConfig>? strips,
         ObservableCollection<LedStripConfig> defaults,
-        string fallbackName)
+        string fallbackName,
+        Func<string> idFactory)
     {
         if (strips is null || strips.Count == 0)
         {
@@ -187,7 +193,7 @@ public static class AppConfigNormalizer
 
         foreach (var strip in strips)
         {
-            strip.Id = string.IsNullOrWhiteSpace(strip.Id) ? Guid.NewGuid().ToString("N") : strip.Id;
+            strip.Id = string.IsNullOrWhiteSpace(strip.Id) ? idFactory() : strip.Id;
             strip.Name = string.IsNullOrWhiteSpace(strip.Name) ? fallbackName : strip.Name;
             strip.Pin = strip.Pin;
             strip.LedCount = strip.LedCount;

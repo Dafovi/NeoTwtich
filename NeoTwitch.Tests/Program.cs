@@ -24,6 +24,7 @@ using NeoTwitch.ViewModels.Obs;
 using NeoTwitch.ViewModels.Settings;
 using NeoTwitch.ViewModels.Shell;
 using NeoTwitch.ViewModels.Status;
+using NeoTwitch.ViewModels.Ui;
 
 var tests = new (string Name, Action Body)[]
 {
@@ -473,10 +474,13 @@ static class EventRuleFilterTests
 
 static class AlertsViewModelTests
 {
+    private static readonly IUiTextService Text = UiTextService.CreateDefault();
+    private static readonly IReadOnlyList<UiOption<string>> RuleCategoryOptions = UiOptionCatalog.CreateRuleCategoryOptions(Text);
+
     public static void MapsFiltersAndCount()
     {
         var changes = 0;
-        var viewModel = new AlertsViewModel(UiOptionCatalog.RuleCategoryOptions);
+        var viewModel = new AlertsViewModel(RuleCategoryOptions, Text);
         viewModel.FiltersChanged += (_, _) => changes++;
 
         viewModel.SearchText = "raid";
@@ -580,7 +584,7 @@ static class AlertsViewModelTests
     public static void ExecutesEditorSelectorCommands()
     {
         var actions = new List<string>();
-        var viewModel = new AlertsViewModel(UiOptionCatalog.RuleCategoryOptions);
+        var viewModel = new AlertsViewModel(RuleCategoryOptions, Text);
 
         viewModel.ConfigureEditorActions(
             parameter => actions.Add($"event:{parameter}"),

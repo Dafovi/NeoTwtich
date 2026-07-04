@@ -6,24 +6,6 @@ namespace NeoTwitch.Services.Ui;
 
 public static class UiOptionCatalog
 {
-    public static IReadOnlyList<UiOption<TwitchEventKind>> EventOptions { get; } =
-        CreateEventOptions(UiTextService.CreateDefault());
-
-    public static IReadOnlyList<UiOption<string>> RuleCategoryOptions { get; } =
-        CreateRuleCategoryOptions(UiTextService.CreateDefault());
-
-    public static IReadOnlyList<UiOption<LightPattern>> PatternOptions { get; } =
-        CreatePatternOptions(UiTextService.CreateDefault());
-
-    public static IReadOnlyList<UiOption<string>> ThemeModeOptions { get; } =
-        CreateThemeModeOptions(UiTextService.CreateDefault());
-
-    public static IReadOnlyList<UiOption<ObsMediaKind>> ObsMediaKindOptions { get; } =
-        CreateObsMediaKindOptions(UiTextService.CreateDefault());
-
-    public static IReadOnlyList<UiOption<MediaSourceMode>> MediaSourceModeOptions { get; } =
-        CreateMediaSourceModeOptions(UiTextService.CreateDefault());
-
     public static IReadOnlyList<UiOption<TwitchEventKind>> CreateEventOptions(IUiTextService text) =>
     [
         new(text.Get(UiTextKeys.OptionEventFollow), TwitchEventKind.Follow),

@@ -18,12 +18,12 @@ public partial class MainWindow
     private readonly Random _audioRandom = new();
     private readonly SemaphoreSlim _effectGate = new(1, 1);
     private IReadOnlyList<SerialPortInfo> _availablePorts = [];
-    private readonly IReadOnlyList<UiOption<TwitchEventKind>> _eventOptions = UiOptionCatalog.EventOptions;
-    private readonly IReadOnlyList<UiOption<string>> _ruleCategoryOptions = UiOptionCatalog.RuleCategoryOptions;
-    private readonly IReadOnlyList<UiOption<LightPattern>> _patternOptions = UiOptionCatalog.PatternOptions;
-    private readonly IReadOnlyList<UiOption<string>> _themeModeOptions = UiOptionCatalog.ThemeModeOptions;
-    private readonly IReadOnlyList<UiOption<ObsMediaKind>> _obsMediaKindOptions = UiOptionCatalog.ObsMediaKindOptions;
-    private readonly IReadOnlyList<UiOption<MediaSourceMode>> _mediaSourceModeOptions = UiOptionCatalog.MediaSourceModeOptions;
+    private readonly IReadOnlyList<UiOption<TwitchEventKind>> _eventOptions;
+    private readonly IReadOnlyList<UiOption<string>> _ruleCategoryOptions;
+    private readonly IReadOnlyList<UiOption<LightPattern>> _patternOptions;
+    private readonly IReadOnlyList<UiOption<string>> _themeModeOptions;
+    private readonly IReadOnlyList<UiOption<ObsMediaKind>> _obsMediaKindOptions;
+    private readonly IReadOnlyList<UiOption<MediaSourceMode>> _mediaSourceModeOptions;
 
     private AppConfig _config = new();
     private bool _initializingComponent;

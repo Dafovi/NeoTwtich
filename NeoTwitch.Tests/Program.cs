@@ -56,6 +56,7 @@ var tests = new (string Name, Action Body)[]
     ("EventRuleMatcherService keeps highest bits threshold", EventRuleMatcherTests.KeepsHighestBitsThreshold),
     ("EventRuleMatcherService matches chat command tokens", EventRuleMatcherTests.MatchesChatCommandTokens),
     ("TwitchEventSubSubscriptionPlanner builds unique definitions", TwitchEventSubSubscriptionPlannerTests.BuildsUniqueDefinitions),
+    ("TwitchEventSubSubscriptionRegistrar sends subscription payload", TwitchEventSubSubscriptionRegistrarTests.SendsSubscriptionPayload),
     ("TwitchEventSubMessageParser parses welcome and events", TwitchEventSubMessageParserTests.ParsesWelcomeAndEvents),
     ("TwitchAuthService refreshes token with injected HTTP", TwitchAuthServiceTests.RefreshesTokenWithInjectedHttp),
     ("TwitchChatService sends chat API payload", TwitchChatServiceTests.SendsChatApiPayload),
@@ -1047,6 +1048,68 @@ static class TwitchEventSubSubscriptionPlannerTests
 
         var chat = definitions.First(definition => definition.Type == TwitchEventSubProtocol.Events.ChatMessage);
         TestAssert.Equal("broadcaster-1", chat.Condition[TwitchEventSubProtocol.Conditions.UserId]);
+    }
+}
+
+static class TwitchEventSubSubscriptionRegistrarTests
+{
+    public static void SendsSubscriptionPayload()
+    {
+        var handler = new CapturingHttpHandler();
+        using var http = new HttpClient(handler);
+        var logs = new List<string>();
+        using var registrar = new TwitchEventSubSubscriptionRegistrar(UiTextService.CreateDefault(), logs.Add, http);
+        var config = TestConfig.CreateDefault();
+        config.TwitchClientId = "client-id";
+        config.Token.AccessToken = "access-token";
+        config.Channel.UserId = "broadcaster-1";
+        config.Rules =
+        [
+            new EventRule { IsEnabled = true, EventKind = TwitchEventKind.Follow }
+        ];
+
+        registrar.CreateSubscriptionsAsync("session-123", config, CancellationToken.None).GetAwaiter().GetResult();
+
+        TestAssert.Equal(1, handler.RequestCount);
+        TestAssert.Equal(TwitchEventSubProtocol.SubscriptionsApiUrl, handler.RequestUri);
+        TestAssert.Equal("Bearer access-token", handler.Authorization);
+        TestAssert.Equal("client-id", handler.ClientId);
+        TestAssert.Contains("\"type\":\"channel.follow\"", handler.RequestBody);
+        TestAssert.Contains("\"version\":\"2\"", handler.RequestBody);
+        TestAssert.Contains("\"method\":\"websocket\"", handler.RequestBody);
+        TestAssert.Contains("\"session_id\":\"session-123\"", handler.RequestBody);
+        TestAssert.Contains("Suscripcion lista", logs[0]);
+    }
+
+    private sealed class CapturingHttpHandler : HttpMessageHandler
+    {
+        public int RequestCount { get; private set; }
+
+        public string RequestUri { get; private set; } = "";
+
+        public string Authorization { get; private set; } = "";
+
+        public string ClientId { get; private set; } = "";
+
+        public string RequestBody { get; private set; } = "";
+
+        protected override async Task<HttpResponseMessage> SendAsync(HttpRequestMessage request, CancellationToken cancellationToken)
+        {
+            RequestCount++;
+            RequestUri = request.RequestUri?.ToString() ?? "";
+            Authorization = request.Headers.Authorization?.ToString() ?? "";
+            ClientId = request.Headers.TryGetValues("Client-Id", out var values)
+                ? values.FirstOrDefault() ?? ""
+                : "";
+            RequestBody = request.Content is null
+                ? ""
+                : await request.Content.ReadAsStringAsync(cancellationToken);
+
+            return new HttpResponseMessage(System.Net.HttpStatusCode.OK)
+            {
+                Content = new StringContent("{}")
+            };
+        }
     }
 }
 

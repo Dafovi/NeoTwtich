@@ -1,5 +1,3 @@
-using System.Net.Http.Headers;
-using System.Net.Http;
 using System.Net.WebSockets;
 using System.IO;
 using System.Text;
@@ -18,7 +16,8 @@ public sealed class TwitchEventSubClient : IDisposable
     private readonly Action<string> _log;
     private readonly IUiTextService _text;
     private readonly TwitchEventSubMessageParser _messageParser;
-    private readonly HttpClient _http = new();
+    private readonly TwitchEventSubSubscriptionRegistrar _subscriptionRegistrar;
+    private readonly bool _ownsSubscriptionRegistrar;
     private CancellationTokenSource? _cts;
     private Task? _runner;
 
@@ -27,7 +26,8 @@ public sealed class TwitchEventSubClient : IDisposable
         Func<AppConfig> getConfig,
         Action saveConfig,
         Action<string> log,
-        IUiTextService text)
+        IUiTextService text,
+        TwitchEventSubSubscriptionRegistrar? subscriptionRegistrar = null)
     {
         _authService = authService;
         _getConfig = getConfig;
@@ -35,6 +35,8 @@ public sealed class TwitchEventSubClient : IDisposable
         _log = log;
         _text = text;
         _messageParser = new TwitchEventSubMessageParser(text);
+        _subscriptionRegistrar = subscriptionRegistrar ?? new TwitchEventSubSubscriptionRegistrar(text, log);
+        _ownsSubscriptionRegistrar = subscriptionRegistrar is null;
     }
 
     public event Action<TwitchEvent>? EventReceived;
@@ -84,7 +86,10 @@ public sealed class TwitchEventSubClient : IDisposable
     {
         _cts?.Cancel();
         _cts?.Dispose();
-        _http.Dispose();
+        if (_ownsSubscriptionRegistrar)
+        {
+            _subscriptionRegistrar.Dispose();
+        }
     }
 
     private async Task RunAsync(CancellationToken cancellationToken)
@@ -116,7 +121,7 @@ public sealed class TwitchEventSubClient : IDisposable
 
                 if (createSubscriptions)
                 {
-                    await CreateSubscriptionsAsync(sessionId, config, cancellationToken);
+                    await _subscriptionRegistrar.CreateSubscriptionsAsync(sessionId, config, cancellationToken);
                 }
 
                 var reconnect = await ReadMessagesAsync(socket, cancellationToken);
@@ -207,49 +212,6 @@ public sealed class TwitchEventSubClient : IDisposable
         }
 
         return null;
-    }
-
-    private async Task CreateSubscriptionsAsync(string sessionId, AppConfig config, CancellationToken cancellationToken)
-    {
-        var definitions = TwitchEventSubSubscriptionPlanner.BuildDefinitions(config);
-
-        if (definitions.Count == 0)
-        {
-            _log(_text.Get(UiTextKeys.TwitchEventSubNoActiveRulesLog));
-            return;
-        }
-
-        foreach (var definition in definitions)
-        {
-            var body = new
-            {
-                type = definition.Type,
-                version = definition.Version,
-                condition = definition.Condition,
-                transport = new
-                {
-                    method = Protocol.TransportMethodWebSocket,
-                    session_id = sessionId
-                }
-            };
-
-            using var request = new HttpRequestMessage(HttpMethod.Post, Protocol.SubscriptionsApiUrl);
-            request.Headers.Authorization = new AuthenticationHeaderValue("Bearer", config.Token.AccessToken);
-            request.Headers.Add("Client-Id", config.TwitchClientId);
-            request.Content = new StringContent(JsonSerializer.Serialize(body), Encoding.UTF8, Protocol.ContentTypeJson);
-
-            using var response = await _http.SendAsync(request, cancellationToken);
-            var responseText = await response.Content.ReadAsStringAsync(cancellationToken);
-
-            if (response.IsSuccessStatusCode)
-            {
-                _log(_text.Format(UiTextKeys.TwitchEventSubSubscriptionReadyLog, definition.Type));
-            }
-            else
-            {
-                _log(_text.Format(UiTextKeys.TwitchEventSubSubscriptionCreateFailureLog, definition.Type, responseText));
-            }
-        }
     }
 
     private static async Task<string?> ReceiveTextAsync(ClientWebSocket socket, CancellationToken cancellationToken)

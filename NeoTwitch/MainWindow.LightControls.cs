@@ -35,7 +35,9 @@ public partial class MainWindow
 
         if (_config.LedStrips.Count == 1)
         {
-            _dialog.ShowInformation("Luces de fondo", "Deja al menos una tira configurada.");
+            _dialog.ShowInformation(
+                _text.Get(Services.Text.UiTextKeys.LightsTitle),
+                _text.Get(Services.Text.UiTextKeys.LightsKeepOneStripPrompt));
             return;
         }
 

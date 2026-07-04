@@ -60,7 +60,9 @@ public partial class MainWindow
 
     private void RemoveRule(EventRule rule)
     {
-        if (!_dialog.Confirm("Alertas", $"Eliminar la alerta '{rule.Name}'?"))
+        if (!_dialog.Confirm(
+            _text.Get(Services.Text.UiTextKeys.AlertsTitle),
+            _text.Format(Services.Text.UiTextKeys.RuleDeletePrompt, rule.Name)))
         {
             return;
         }

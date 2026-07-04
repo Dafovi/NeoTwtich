@@ -10,7 +10,7 @@ public partial class MainWindow
     private void OpenTwitchConsole()
     {
         _externalLauncher.Open(NeoTwitchProduct.Links.TwitchDeveloperApps);
-        AddLog("Twitch Console abierta para revisar el Client ID.", ActivityLogKind.Twitch);
+        AddLog(_text.Get(Services.Text.UiTextKeys.ExternalTwitchConsoleOpenedLog), ActivityLogKind.Twitch);
     }
 
     private void OpenTwitchProfileButton_Click(object sender, RoutedEventArgs e)
@@ -21,29 +21,29 @@ public partial class MainWindow
 
         if (string.IsNullOrWhiteSpace(channel))
         {
-            _dialog.ShowInformation("Twitch", "Conecta Twitch primero para abrir el perfil del canal.");
+            _dialog.ShowInformation(_text.Get(Services.Text.UiTextKeys.TwitchTitle), _text.Get(Services.Text.UiTextKeys.ExternalTwitchConnectFirstPrompt));
             return;
         }
 
         _externalLauncher.Open(NeoTwitchProduct.Links.TwitchChannel(channel));
-        AddLog($"Twitch: abriendo perfil de {channel}.", ActivityLogKind.Twitch);
+        AddLog(_text.Format(Services.Text.UiTextKeys.ExternalTwitchProfileOpeningLog, channel), ActivityLogKind.Twitch);
     }
 
     private void OpenAlexaConsole()
     {
         _externalLauncher.Open(NeoTwitchProduct.Links.AlexaDeveloperConsole);
-        AddLog("Alexa Developer Console abierta.", ActivityLogKind.Alexa);
+        AddLog(_text.Get(Services.Text.UiTextKeys.ExternalAlexaConsoleOpenedLog), ActivityLogKind.Alexa);
     }
 
     private void OpenArduinoSketch()
     {
         _externalLauncher.Open(NeoTwitchProduct.Links.ArduinoSketch);
-        AddLog("Arduino: abriendo sketch NeoPixel.", ActivityLogKind.Arduino);
+        AddLog(_text.Get(Services.Text.UiTextKeys.ExternalArduinoSketchOpenedLog), ActivityLogKind.Arduino);
     }
 
     private void OpenArduinoGuide()
     {
         _externalLauncher.Open(NeoTwitchProduct.Links.ArduinoGuide);
-        AddLog("Arduino: abriendo guia de conexion.", ActivityLogKind.Arduino);
+        AddLog(_text.Get(Services.Text.UiTextKeys.ExternalArduinoGuideOpenedLog), ActivityLogKind.Arduino);
     }
 }

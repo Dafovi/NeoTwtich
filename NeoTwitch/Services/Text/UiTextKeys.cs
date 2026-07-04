@@ -5,6 +5,8 @@ public static class UiTextKeys
     public const string AudioTitle = "audio.title";
     public const string ImagesTitle = "images.title";
     public const string VideosTitle = "videos.title";
+    public const string AlertsTitle = "alerts.title";
+    public const string LightsTitle = "lights.title";
 
     public const string LibraryNoGroup = "library.no_group";
     public const string LibraryNoGroupAssigned = "library.no_group_assigned";
@@ -65,6 +67,16 @@ public static class UiTextKeys
     public const string ConfigurationFallbackVideoGroupName = "configuration.fallback_video_group_name";
     public const string ConfigurationFallbackRuleName = "configuration.fallback_rule_name";
     public const string ConfigurationFallbackLedStripName = "configuration.fallback_led_strip_name";
+    public const string RuleDeletePrompt = "rule.delete_prompt";
+    public const string LightsKeepOneStripPrompt = "lights.keep_one_strip_prompt";
+
+    public const string ExternalTwitchConsoleOpenedLog = "external.twitch_console_opened_log";
+    public const string ExternalTwitchConnectFirstPrompt = "external.twitch_connect_first_prompt";
+    public const string ExternalTwitchProfileOpeningLog = "external.twitch_profile_opening_log";
+    public const string ExternalAlexaConsoleOpenedLog = "external.alexa_console_opened_log";
+    public const string ExternalArduinoSketchOpenedLog = "external.arduino_sketch_opened_log";
+    public const string ExternalArduinoGuideOpenedLog = "external.arduino_guide_opened_log";
+
     public const string RuleRowStatusActive = "rule_row.status_active";
     public const string RuleRowStatusInactive = "rule_row.status_inactive";
     public const string RuleRowActionLights = "rule_row.action_lights";

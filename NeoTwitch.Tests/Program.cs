@@ -254,8 +254,9 @@ static class ConfigurationFactoryTests
 
     public static void CreateRuleUsesSafeDefaults()
     {
-        var rule = ConfigurationItemFactory.CreateRule(Text);
+        var rule = ConfigurationItemFactory.CreateRule(Text, () => "rule-id");
 
+        TestAssert.Equal("rule-id", rule.Id);
         TestAssert.Equal("Nueva regla", rule.Name);
         TestAssert.Equal(TwitchEventKind.Follow, rule.EventKind);
         TestAssert.True(rule.IsEnabled);
@@ -273,8 +274,10 @@ static class ConfigurationFactoryTests
             new LedStripConfig { Pin = 2 },
             new LedStripConfig { Pin = 3 }
         ],
-        Text);
+        Text,
+        () => "strip-id");
 
+        TestAssert.Equal("strip-id", strip.Id);
         TestAssert.Equal("Nueva tira", strip.Name);
         TestAssert.Equal(4, strip.Pin);
         TestAssert.Equal(30, strip.LedCount);
@@ -290,9 +293,9 @@ static class ConfigurationFactoryTests
             LedCount = 120
         };
 
-        var copy = ConfigurationItemFactory.DuplicateLedStrip(source, Text);
+        var copy = ConfigurationItemFactory.DuplicateLedStrip(source, Text, () => "strip-copy-id");
 
-        TestAssert.False(string.Equals(source.Id, copy.Id, StringComparison.OrdinalIgnoreCase));
+        TestAssert.Equal("strip-copy-id", copy.Id);
         TestAssert.Equal("Principal copia", copy.Name);
         TestAssert.Equal(source.Pin, copy.Pin);
         TestAssert.Equal(source.LedCount, copy.LedCount);

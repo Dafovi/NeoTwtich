@@ -45,90 +45,68 @@ public sealed class ObsWebSocketService : IAsyncDisposable
             throw new InvalidOperationException(_text.Get(UiTextKeys.ObsConnectNotConfigured));
         }
 
-        using var timeout = CreateTimeoutToken(cancellationToken, ConnectTimeout);
-        var token = timeout.Token;
-
-        await _gate.WaitAsync(token);
-        try
-        {
-            await DisposeSocketAsync();
-
-            _socket = new ClientWebSocket();
-            await _socket.ConnectAsync(ObsWebSocketRequestFactory.BuildUri(config), token);
-
-            using var hello = await ReceiveJsonAsync(token);
-            if (ObsWebSocketResponseReader.ReadOperation(hello) != ObsProtocol.OpHello)
+        return await ExecuteExclusiveAsync(
+            cancellationToken,
+            ConnectTimeout,
+            UiTextKeys.ObsConnectTimeout,
+            async token =>
             {
-                throw new InvalidOperationException(_text.Get(UiTextKeys.ObsUnexpectedHello));
-            }
+                await DisposeSocketAsync();
 
-            var rpcVersion = ObsWebSocketResponseReader.ReadRpcVersion(hello);
-            var identify = new Dictionary<string, object?>
-            {
-                [ObsProtocol.RpcVersion] = rpcVersion
-            };
+                _socket = new ClientWebSocket();
+                await _socket.ConnectAsync(ObsWebSocketRequestFactory.BuildUri(config), token);
 
-            if (ObsWebSocketResponseReader.TryReadAuthentication(hello, out var salt, out var challenge))
-            {
-                if (string.IsNullOrWhiteSpace(config.Password))
+                using var hello = await ReceiveJsonAsync(token);
+                if (ObsWebSocketResponseReader.ReadOperation(hello) != ObsProtocol.OpHello)
                 {
-                    throw new InvalidOperationException(_text.Get(UiTextKeys.ObsPasswordRequired));
+                    throw new InvalidOperationException(_text.Get(UiTextKeys.ObsUnexpectedHello));
                 }
 
-                identify[ObsProtocol.Authentication] = ObsWebSocketRequestFactory.BuildAuthentication(
-                    config.Password,
-                    salt,
-                    challenge);
-            }
+                var rpcVersion = ObsWebSocketResponseReader.ReadRpcVersion(hello);
+                var identify = new Dictionary<string, object?>
+                {
+                    [ObsProtocol.RpcVersion] = rpcVersion
+                };
 
-            await SendAsync(new { op = ObsProtocol.OpIdentify, d = identify }, token);
-            using var identified = await ReceiveJsonAsync(token);
-            if (ObsWebSocketResponseReader.ReadOperation(identified) != ObsProtocol.OpIdentified)
-            {
-                throw new InvalidOperationException(_text.Get(UiTextKeys.ObsIdentificationFailure));
-            }
+                if (ObsWebSocketResponseReader.TryReadAuthentication(hello, out var salt, out var challenge))
+                {
+                    if (string.IsNullOrWhiteSpace(config.Password))
+                    {
+                        throw new InvalidOperationException(_text.Get(UiTextKeys.ObsPasswordRequired));
+                    }
 
-            Version = await GetVersionAsync(token);
-            await RefreshScenesCoreAsync(token);
-            return Snapshot();
-        }
-        catch (OperationCanceledException) when (!cancellationToken.IsCancellationRequested)
-        {
-            await DisposeSocketAsync();
-            throw new TimeoutException(_text.Get(UiTextKeys.ObsConnectTimeout));
-        }
-        catch
-        {
-            await DisposeSocketAsync();
-            throw;
-        }
-        finally
-        {
-            _gate.Release();
-        }
+                    identify[ObsProtocol.Authentication] = ObsWebSocketRequestFactory.BuildAuthentication(
+                        config.Password,
+                        salt,
+                        challenge);
+                }
+
+                await SendAsync(new { op = ObsProtocol.OpIdentify, d = identify }, token);
+                using var identified = await ReceiveJsonAsync(token);
+                if (ObsWebSocketResponseReader.ReadOperation(identified) != ObsProtocol.OpIdentified)
+                {
+                    throw new InvalidOperationException(_text.Get(UiTextKeys.ObsIdentificationFailure));
+                }
+
+                Version = await GetVersionAsync(token);
+                await RefreshScenesCoreAsync(token);
+                return Snapshot();
+            },
+            disposeOnFailure: true);
     }
 
     public async Task<ObsConnectionResult> RefreshScenesAsync(CancellationToken cancellationToken)
     {
-        using var timeout = CreateTimeoutToken(cancellationToken, RequestTimeout);
-        var token = timeout.Token;
-
-        await _gate.WaitAsync(token);
-        try
-        {
-            EnsureConnected();
-            await RefreshScenesCoreAsync(token);
-            return Snapshot();
-        }
-        catch (OperationCanceledException) when (!cancellationToken.IsCancellationRequested)
-        {
-            await DisposeSocketAsync();
-            throw new TimeoutException(_text.Get(UiTextKeys.ObsRefreshScenesTimeout));
-        }
-        finally
-        {
-            _gate.Release();
-        }
+        return await ExecuteExclusiveAsync(
+            cancellationToken,
+            RequestTimeout,
+            UiTextKeys.ObsRefreshScenesTimeout,
+            async token =>
+            {
+                EnsureConnected();
+                await RefreshScenesCoreAsync(token);
+                return Snapshot();
+            });
     }
 
     public async Task<ObsConnectionResult> SetCurrentProgramSceneAsync(string sceneName, CancellationToken cancellationToken)
@@ -138,29 +116,20 @@ public sealed class ObsWebSocketService : IAsyncDisposable
             throw new InvalidOperationException(_text.Get(UiTextKeys.ObsSelectSceneFirst));
         }
 
-        using var timeout = CreateTimeoutToken(cancellationToken, RequestTimeout);
-        var token = timeout.Token;
-
-        await _gate.WaitAsync(token);
-        try
-        {
-            EnsureConnected();
-            await SendRequestAsync(
-                ObsProtocol.SetCurrentProgramScene,
-                ObsWebSocketRequestFactory.BuildSetCurrentProgramSceneRequest(sceneName),
-                token);
-            await RefreshScenesCoreAsync(token);
-            return Snapshot();
-        }
-        catch (OperationCanceledException) when (!cancellationToken.IsCancellationRequested)
-        {
-            await DisposeSocketAsync();
-            throw new TimeoutException(_text.Get(UiTextKeys.ObsChangeSceneTimeout));
-        }
-        finally
-        {
-            _gate.Release();
-        }
+        return await ExecuteExclusiveAsync(
+            cancellationToken,
+            RequestTimeout,
+            UiTextKeys.ObsChangeSceneTimeout,
+            async token =>
+            {
+                EnsureConnected();
+                await SendRequestAsync(
+                    ObsProtocol.SetCurrentProgramScene,
+                    ObsWebSocketRequestFactory.BuildSetCurrentProgramSceneRequest(sceneName),
+                    token);
+                await RefreshScenesCoreAsync(token);
+                return Snapshot();
+            });
     }
 
     public async Task<ObsConnectionResult> ShowMediaSourceAsync(
@@ -187,52 +156,43 @@ public sealed class ObsWebSocketService : IAsyncDisposable
             throw new InvalidOperationException(_text.Get(UiTextKeys.ObsMissingMediaFile));
         }
 
-        using var timeout = CreateTimeoutToken(cancellationToken, RequestTimeout);
-        var token = timeout.Token;
-
-        await _gate.WaitAsync(token);
-        try
-        {
-            EnsureConnected();
-            try
+        return await ExecuteExclusiveAsync(
+            cancellationToken,
+            RequestTimeout,
+            UiTextKeys.ObsShowMediaTimeout,
+            async token =>
             {
-                await SendRequestAsync(
-                    ObsProtocol.CreateInput,
-                    ObsWebSocketRequestFactory.BuildCreateInputRequest(sceneName, sourceName, kind, filePath),
-                    token);
-            }
-            catch (InvalidOperationException)
-            {
-                await SendRequestAsync(
-                    ObsProtocol.SetInputSettings,
-                    ObsWebSocketRequestFactory.BuildSetInputSettingsRequest(sourceName, kind, filePath),
-                    token);
-                await EnsureSceneItemAsync(sceneName, sourceName, token);
-            }
+                EnsureConnected();
+                try
+                {
+                    await SendRequestAsync(
+                        ObsProtocol.CreateInput,
+                        ObsWebSocketRequestFactory.BuildCreateInputRequest(sceneName, sourceName, kind, filePath),
+                        token);
+                }
+                catch (InvalidOperationException)
+                {
+                    await SendRequestAsync(
+                        ObsProtocol.SetInputSettings,
+                        ObsWebSocketRequestFactory.BuildSetInputSettingsRequest(sourceName, kind, filePath),
+                        token);
+                    await EnsureSceneItemAsync(sceneName, sourceName, token);
+                }
 
-            await SetSceneItemEnabledAsync(sceneName, sourceName, enabled: true, token);
-            if (kind == ObsMediaKind.Video && videoVolumePercent is int volumePercent)
-            {
-                await SetInputVolumeAsync(sourceName, volumePercent, token);
-            }
+                await SetSceneItemEnabledAsync(sceneName, sourceName, enabled: true, token);
+                if (kind == ObsMediaKind.Video && videoVolumePercent is int volumePercent)
+                {
+                    await SetInputVolumeAsync(sourceName, volumePercent, token);
+                }
 
-            if (overlayConfig is not null)
-            {
-                await ApplySceneItemTransformAsync(sceneName, sourceName, overlayConfig, token);
-            }
+                if (overlayConfig is not null)
+                {
+                    await ApplySceneItemTransformAsync(sceneName, sourceName, overlayConfig, token);
+                }
 
-            await RefreshScenesCoreAsync(token);
-            return Snapshot();
-        }
-        catch (OperationCanceledException) when (!cancellationToken.IsCancellationRequested)
-        {
-            await DisposeSocketAsync();
-            throw new TimeoutException(_text.Get(UiTextKeys.ObsShowMediaTimeout));
-        }
-        finally
-        {
-            _gate.Release();
-        }
+                await RefreshScenesCoreAsync(token);
+                return Snapshot();
+            });
     }
 
     public async Task<ObsConnectionResult> HideSceneSourceAsync(
@@ -245,30 +205,18 @@ public sealed class ObsWebSocketService : IAsyncDisposable
             return Snapshot();
         }
 
-        using var timeout = CreateTimeoutToken(cancellationToken, RequestTimeout);
-        var token = timeout.Token;
-
-        await _gate.WaitAsync(token);
-        try
-        {
-            EnsureConnected();
-            await SetSceneItemEnabledAsync(sceneName, sourceName, enabled: false, token);
-            await RefreshScenesCoreAsync(token);
-            return Snapshot();
-        }
-        catch (InvalidOperationException)
-        {
-            return Snapshot();
-        }
-        catch (OperationCanceledException) when (!cancellationToken.IsCancellationRequested)
-        {
-            await DisposeSocketAsync();
-            throw new TimeoutException(_text.Get(UiTextKeys.ObsHideMediaTimeout));
-        }
-        finally
-        {
-            _gate.Release();
-        }
+        return await ExecuteExclusiveAsync(
+            cancellationToken,
+            RequestTimeout,
+            UiTextKeys.ObsHideMediaTimeout,
+            async token =>
+            {
+                EnsureConnected();
+                await SetSceneItemEnabledAsync(sceneName, sourceName, enabled: false, token);
+                await RefreshScenesCoreAsync(token);
+                return Snapshot();
+            },
+            invalidOperationFallback: Snapshot);
     }
 
     public async Task DisconnectAsync()
@@ -421,6 +369,46 @@ public sealed class ObsWebSocketService : IAsyncDisposable
             }
 
             return response;
+        }
+    }
+
+    private async Task<ObsConnectionResult> ExecuteExclusiveAsync(
+        CancellationToken cancellationToken,
+        TimeSpan timeout,
+        string timeoutMessageKey,
+        Func<CancellationToken, Task<ObsConnectionResult>> action,
+        bool disposeOnFailure = false,
+        Func<ObsConnectionResult>? invalidOperationFallback = null)
+    {
+        using var timeoutToken = CreateTimeoutToken(cancellationToken, timeout);
+        var token = timeoutToken.Token;
+
+        await _gate.WaitAsync(token);
+        try
+        {
+            return await action(token);
+        }
+        catch (InvalidOperationException) when (invalidOperationFallback is not null)
+        {
+            return invalidOperationFallback();
+        }
+        catch (OperationCanceledException) when (!cancellationToken.IsCancellationRequested)
+        {
+            await DisposeSocketAsync();
+            throw new TimeoutException(_text.Get(timeoutMessageKey));
+        }
+        catch
+        {
+            if (disposeOnFailure)
+            {
+                await DisposeSocketAsync();
+            }
+
+            throw;
+        }
+        finally
+        {
+            _gate.Release();
         }
     }
 

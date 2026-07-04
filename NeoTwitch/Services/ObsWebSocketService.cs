@@ -16,11 +16,13 @@ public sealed class ObsWebSocketService : IAsyncDisposable
 
     private readonly SemaphoreSlim _gate = new(1, 1);
     private readonly IUiTextService _text;
+    private readonly ObsWebSocketMessageFactory _messageFactory;
     private ClientWebSocket? _socket;
 
-    public ObsWebSocketService(IUiTextService text)
+    public ObsWebSocketService(IUiTextService text, ObsWebSocketMessageFactory? messageFactory = null)
     {
         _text = text;
+        _messageFactory = messageFactory ?? new ObsWebSocketMessageFactory();
     }
 
     public bool IsConnected => _socket?.State == WebSocketState.Open;
@@ -76,7 +78,7 @@ public sealed class ObsWebSocketService : IAsyncDisposable
                         challenge);
                 }
 
-                await SendAsync(new { op = ObsProtocol.OpIdentify, d = identify }, token);
+                await SendAsync(_messageFactory.BuildIdentify(identify), token);
                 using var identified = await ReceiveJsonAsync(token);
                 if (ObsWebSocketResponseReader.ReadOperation(identified) != ObsProtocol.OpIdentified)
                 {
@@ -327,19 +329,8 @@ public sealed class ObsWebSocketService : IAsyncDisposable
     {
         EnsureConnected();
 
-        var requestId = Guid.NewGuid().ToString("N");
-        var payload = new Dictionary<string, object?>
-        {
-            [ObsProtocol.RequestType] = requestType,
-            [ObsProtocol.RequestId] = requestId
-        };
-
-        if (requestData is not null)
-        {
-            payload[ObsProtocol.RequestData] = requestData;
-        }
-
-        await SendAsync(new { op = ObsProtocol.OpRequest, d = payload }, cancellationToken);
+        var request = _messageFactory.BuildRequest(requestType, requestData);
+        await SendAsync(request.Message, cancellationToken);
 
         while (true)
         {
@@ -350,7 +341,7 @@ public sealed class ObsWebSocketService : IAsyncDisposable
                 continue;
             }
 
-            if (!string.Equals(ObsWebSocketResponseReader.ReadRequestId(response), requestId, StringComparison.Ordinal))
+            if (!string.Equals(ObsWebSocketResponseReader.ReadRequestId(response), request.RequestId, StringComparison.Ordinal))
             {
                 response.Dispose();
                 continue;

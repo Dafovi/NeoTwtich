@@ -71,6 +71,7 @@ var tests = new (string Name, Action Body)[]
     ("ObsRulePlanService builds media execution plan", ObsRulePlanTests.BuildsMediaExecutionPlan),
     ("ObsOverlayService writes deterministic state", ObsOverlayServiceTests.WritesDeterministicState),
     ("ObsOverlayPositionService resolves deterministic positions", ObsOverlayPositionServiceTests.ResolvesDeterministicPositions),
+    ("ObsWebSocketMessageFactory builds deterministic envelopes", ObsWebSocketMessageFactoryTests.BuildsDeterministicEnvelopes),
     ("ObsWebSocketRequestFactory builds protocol requests", ObsWebSocketRequestFactoryTests.BuildsProtocolRequests),
     ("ObsWebSocketResponseReader parses protocol responses", ObsWebSocketResponseReaderTests.ParsesProtocolResponses),
     ("LightControlInputService resolves presets", LightControlInputTests.ResolvesPresets),
@@ -1618,6 +1619,44 @@ static class ObsOverlayPositionServiceTests
         var random = ObsOverlayPositionService.Resolve(config, 30, 20, (_, maxExclusive) => maxExclusive - 1);
         TestAssert.Equal(70, random.X);
         TestAssert.Equal(60, random.Y);
+    }
+}
+
+static class ObsWebSocketMessageFactoryTests
+{
+    public static void BuildsDeterministicEnvelopes()
+    {
+        var factory = new ObsWebSocketMessageFactory(() => "request-42");
+        var request = factory.BuildRequest(
+            ObsWebSocketProtocol.SetCurrentProgramScene,
+            new Dictionary<string, object?>
+            {
+                [ObsWebSocketProtocol.SceneName] = "Gameplay"
+            });
+
+        TestAssert.Equal("request-42", request.RequestId);
+        using var requestJson = System.Text.Json.JsonDocument.Parse(
+            System.Text.Json.JsonSerializer.Serialize(request.Message));
+
+        TestAssert.Equal(ObsWebSocketProtocol.OpRequest, requestJson.RootElement.GetProperty(ObsWebSocketProtocol.Op).GetInt32());
+        var requestData = requestJson.RootElement.GetProperty(ObsWebSocketProtocol.Data);
+        TestAssert.Equal(
+            ObsWebSocketProtocol.SetCurrentProgramScene,
+            requestData.GetProperty(ObsWebSocketProtocol.RequestType).GetString());
+        TestAssert.Equal("request-42", requestData.GetProperty(ObsWebSocketProtocol.RequestId).GetString());
+        TestAssert.Equal(
+            "Gameplay",
+            requestData.GetProperty(ObsWebSocketProtocol.RequestData).GetProperty(ObsWebSocketProtocol.SceneName).GetString());
+
+        var identify = factory.BuildIdentify(new Dictionary<string, object?>
+        {
+            [ObsWebSocketProtocol.RpcVersion] = 1
+        });
+        using var identifyJson = System.Text.Json.JsonDocument.Parse(
+            System.Text.Json.JsonSerializer.Serialize(identify));
+
+        TestAssert.Equal(ObsWebSocketProtocol.OpIdentify, identifyJson.RootElement.GetProperty(ObsWebSocketProtocol.Op).GetInt32());
+        TestAssert.Equal(1, identifyJson.RootElement.GetProperty(ObsWebSocketProtocol.Data).GetProperty(ObsWebSocketProtocol.RpcVersion).GetInt32());
     }
 }
 

@@ -1,5 +1,4 @@
 using NeoTwitch.Models;
-using NeoTwitch.Services.Text;
 using NeoTwitch.ViewModels.Status;
 
 namespace NeoTwitch.Services.Dashboard;
@@ -116,35 +115,6 @@ public static class DashboardStatusTextService
         }
 
         return hasOpenPort ? labels.ArduinoVerifying : labels.ArduinoDisconnected;
-    }
-
-    public static string BuildArduinoStatusText(
-        bool arduinoEnabled,
-        bool isConnecting,
-        bool hasConfirmedAck,
-        bool compatibleWithoutAck,
-        bool hasOpenPort,
-        string? serialPort,
-        int baudRate,
-        int stripCount,
-        int totalLeds,
-        bool backgroundEnabled,
-        LightPattern backgroundPattern,
-        DashboardStatusTextLabels labels)
-    {
-        return BuildArduinoStatusText(
-            arduinoEnabled,
-            isConnecting,
-            hasConfirmedAck,
-            compatibleWithoutAck,
-            hasOpenPort,
-            serialPort,
-            baudRate,
-            stripCount,
-            totalLeds,
-            backgroundEnabled,
-            DisplayNameService.For(backgroundPattern, UiTextService.CreateDefault()),
-            labels);
     }
 
     public static string BuildArduinoStatusText(

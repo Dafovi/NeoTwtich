@@ -3464,7 +3464,7 @@ static class DashboardStatusTextTests
                 stripCount: 1,
                 totalLeds: 30,
                 backgroundEnabled: true,
-                backgroundPattern: LightPattern.Solid,
+                backgroundPatternName: "Color fijo",
                 Labels));
 
         var lights = DashboardStatusTextService.BuildLightsArduinoStatusText(

@@ -503,10 +503,14 @@ static class AlertsViewModelTests
         TestAssert.True(viewModel.ContainsRule(activeRaid));
         TestAssert.False(viewModel.ContainsRule(inactiveRaid));
         TestAssert.Same(activeRaid, viewModel.FirstVisibleRule());
+        var visibleRow = viewModel.RulesView.Cast<EventRuleRowViewModel>().Single();
+        TestAssert.Same(activeRaid, visibleRow.Rule);
+        TestAssert.Equal("Raid grande - Raid recibida", visibleRow.DisplayLabel);
         var selectionChanges = 0;
         viewModel.SelectedRuleChanged += (_, _) => selectionChanges++;
         viewModel.SelectedRule = activeRaid;
         TestAssert.Same(activeRaid, viewModel.SelectedRule);
+        TestAssert.Same(activeRaid, viewModel.SelectedRuleRow!.Rule);
         TestAssert.Equal(1, selectionChanges);
         TestAssert.True(changes >= 3);
 

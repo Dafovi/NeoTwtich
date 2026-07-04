@@ -1,7 +1,5 @@
 using System.ComponentModel;
 using System.Runtime.CompilerServices;
-using System.Windows;
-using NeoTwitch.Services.Alerts;
 
 namespace NeoTwitch.Models;
 
@@ -58,28 +56,13 @@ public sealed class EventRule : INotifyPropertyChanged
     public bool IsEnabled
     {
         get => _isEnabled;
-        set
-        {
-            if (SetField(ref _isEnabled, value))
-            {
-                OnPropertyChanged(nameof(StatusText));
-                OnPropertyChanged(nameof(StatusColor));
-            }
-        }
+        set => SetField(ref _isEnabled, value);
     }
 
     public TwitchEventKind EventKind
     {
         get => _eventKind;
-        set
-        {
-            if (SetField(ref _eventKind, value))
-            {
-                OnPropertyChanged(nameof(DisplayLabel));
-                OnPropertyChanged(nameof(EventIconPath));
-                OnPropertyChanged(nameof(EventAccentColor));
-            }
-        }
+        set => SetField(ref _eventKind, value);
     }
 
     public string CustomRewardTitle
@@ -91,51 +74,25 @@ public sealed class EventRule : INotifyPropertyChanged
     public string ChatCommand
     {
         get => _chatCommand;
-        set
-        {
-            if (SetField(ref _chatCommand, NormalizeCommand(value)))
-            {
-                OnPropertyChanged(nameof(DisplayLabel));
-            }
-        }
+        set => SetField(ref _chatCommand, NormalizeCommand(value));
     }
 
     public int MinimumBits
     {
         get => _minimumBits;
-        set
-        {
-            if (SetField(ref _minimumBits, Math.Clamp(value, 1, 1_000_000)))
-            {
-                OnPropertyChanged(nameof(DisplayLabel));
-            }
-        }
+        set => SetField(ref _minimumBits, Math.Clamp(value, 1, 1_000_000));
     }
 
     public bool UseLights
     {
         get => _useLights;
-        set
-        {
-            if (SetField(ref _useLights, value))
-            {
-                OnPropertyChanged(nameof(ActionsSummary));
-                OnPropertyChanged(nameof(LightsActionVisibility));
-            }
-        }
+        set => SetField(ref _useLights, value);
     }
 
     public bool PlayAudio
     {
         get => _playAudio;
-        set
-        {
-            if (SetField(ref _playAudio, value))
-            {
-                OnPropertyChanged(nameof(ActionsSummary));
-                OnPropertyChanged(nameof(AudioActionVisibility));
-            }
-        }
+        set => SetField(ref _playAudio, value);
     }
 
     public string AudioPath
@@ -165,14 +122,7 @@ public sealed class EventRule : INotifyPropertyChanged
     public bool SendChatMessage
     {
         get => _sendChatMessage;
-        set
-        {
-            if (SetField(ref _sendChatMessage, value))
-            {
-                OnPropertyChanged(nameof(ActionsSummary));
-                OnPropertyChanged(nameof(ChatActionVisibility));
-            }
-        }
+        set => SetField(ref _sendChatMessage, value);
     }
 
     public string ChatMessageTemplate
@@ -184,14 +134,7 @@ public sealed class EventRule : INotifyPropertyChanged
     public bool SendAlexaEvent
     {
         get => _sendAlexaEvent;
-        set
-        {
-            if (SetField(ref _sendAlexaEvent, value))
-            {
-                OnPropertyChanged(nameof(ActionsSummary));
-                OnPropertyChanged(nameof(AlexaActionVisibility));
-            }
-        }
+        set => SetField(ref _sendAlexaEvent, value);
     }
 
     public string AlexaEventName
@@ -203,14 +146,7 @@ public sealed class EventRule : INotifyPropertyChanged
     public bool SendObsScene
     {
         get => _sendObsScene;
-        set
-        {
-            if (SetField(ref _sendObsScene, value))
-            {
-                OnPropertyChanged(nameof(ActionsSummary));
-                OnPropertyChanged(nameof(ObsActionVisibility));
-            }
-        }
+        set => SetField(ref _sendObsScene, value);
     }
 
     public string ObsSceneName
@@ -240,14 +176,7 @@ public sealed class EventRule : INotifyPropertyChanged
     public bool SendObsMedia
     {
         get => _sendObsMedia;
-        set
-        {
-            if (SetField(ref _sendObsMedia, value))
-            {
-                OnPropertyChanged(nameof(ActionsSummary));
-                OnPropertyChanged(nameof(ObsActionVisibility));
-            }
-        }
+        set => SetField(ref _sendObsMedia, value);
     }
 
     public ObsMediaKind ObsMediaKind
@@ -337,75 +266,20 @@ public sealed class EventRule : INotifyPropertyChanged
     public bool LightsActionAvailable
     {
         get => _lightsActionAvailable;
-        set
-        {
-            if (SetField(ref _lightsActionAvailable, value))
-            {
-                OnPropertyChanged(nameof(LightsActionOpacity));
-                OnPropertyChanged(nameof(LightsActionToolTip));
-            }
-        }
+        set => SetField(ref _lightsActionAvailable, value);
     }
 
     public bool AlexaActionAvailable
     {
         get => _alexaActionAvailable;
-        set
-        {
-            if (SetField(ref _alexaActionAvailable, value))
-            {
-                OnPropertyChanged(nameof(AlexaActionOpacity));
-                OnPropertyChanged(nameof(AlexaActionToolTip));
-            }
-        }
+        set => SetField(ref _alexaActionAvailable, value);
     }
 
     public bool ObsActionAvailable
     {
         get => _obsActionAvailable;
-        set
-        {
-            if (SetField(ref _obsActionAvailable, value))
-            {
-                OnPropertyChanged(nameof(ObsActionOpacity));
-                OnPropertyChanged(nameof(ObsActionToolTip));
-            }
-        }
+        set => SetField(ref _obsActionAvailable, value);
     }
-
-    public string DisplayLabel => EventRulePresentationService.BuildDisplayLabel(this);
-
-    public string StatusText => EventRulePresentationService.BuildStatusText(this);
-
-    public string StatusColor => EventRulePresentationService.BuildStatusColor(this);
-
-    public string EventIconPath => EventRulePresentationService.BuildEventIconPath(this);
-
-    public string EventAccentColor => EventRulePresentationService.BuildEventAccentColor(this);
-
-    public string ActionsSummary => EventRulePresentationService.BuildActionsSummary(this);
-
-    public Visibility LightsActionVisibility => UseLights ? Visibility.Visible : Visibility.Collapsed;
-
-    public double LightsActionOpacity => LightsActionAvailable ? 1d : 0.32d;
-
-    public string LightsActionToolTip => EventRulePresentationService.BuildLightsToolTip(this);
-
-    public Visibility AudioActionVisibility => PlayAudio ? Visibility.Visible : Visibility.Collapsed;
-
-    public Visibility ChatActionVisibility => SendChatMessage ? Visibility.Visible : Visibility.Collapsed;
-
-    public Visibility AlexaActionVisibility => SendAlexaEvent ? Visibility.Visible : Visibility.Collapsed;
-
-    public double AlexaActionOpacity => AlexaActionAvailable ? 1d : 0.32d;
-
-    public string AlexaActionToolTip => EventRulePresentationService.BuildAlexaToolTip(this);
-
-    public Visibility ObsActionVisibility => SendObsScene || SendObsMedia ? Visibility.Visible : Visibility.Collapsed;
-
-    public double ObsActionOpacity => ObsActionAvailable ? 1d : 0.32d;
-
-    public string ObsActionToolTip => EventRulePresentationService.BuildObsToolTip(this);
 
     public event PropertyChangedEventHandler? PropertyChanged;
 
@@ -479,7 +353,10 @@ public sealed class EventRule : INotifyPropertyChanged
         };
     }
 
-    public override string ToString() => DisplayLabel;
+    public override string ToString()
+    {
+        return string.IsNullOrWhiteSpace(Name) ? EventKind.ToString() : Name;
+    }
 
     private static bool MatchesChatCommand(string? message, string command)
     {
@@ -509,11 +386,6 @@ public sealed class EventRule : INotifyPropertyChanged
 
         field = value;
         OnPropertyChanged(propertyName);
-
-        if (propertyName is nameof(Name))
-        {
-            OnPropertyChanged(nameof(DisplayLabel));
-        }
 
         return true;
     }

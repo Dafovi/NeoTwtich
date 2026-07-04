@@ -33,8 +33,9 @@ public static class EventRuleFilterService
         }
 
         var text = searchText.Trim();
+        var displayLabel = EventRulePresentationService.BuildDisplayLabel(rule, textService);
         return TextSearchHelper.ContainsIgnoreCase(rule.Name, text)
-            || TextSearchHelper.ContainsIgnoreCase(rule.DisplayLabel, text)
+            || TextSearchHelper.ContainsIgnoreCase(displayLabel, text)
             || TextSearchHelper.ContainsIgnoreCase(rule.ChatCommand, text)
             || TextSearchHelper.ContainsIgnoreCase(rule.CustomRewardTitle, text)
             || TextSearchHelper.ContainsIgnoreCase(rule.ChatMessageTemplate, text)

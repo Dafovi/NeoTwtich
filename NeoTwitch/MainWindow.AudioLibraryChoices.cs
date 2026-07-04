@@ -1,3 +1,4 @@
+using NeoTwitch.Services.Alerts;
 using NeoTwitch.Services.Text;
 using NeoTwitch.ViewModels.Library;
 
@@ -35,7 +36,10 @@ public partial class MainWindow
         AudioAlertChoices.Add(new AudioAlertChoice("", _text.Get(UiTextKeys.LibraryNoAlertAssigned)));
         foreach (var rule in _config.Rules)
         {
-            AudioAlertChoices.Add(new AudioAlertChoice(rule.Id, string.IsNullOrWhiteSpace(rule.Name) ? rule.DisplayLabel : rule.Name));
+            var label = string.IsNullOrWhiteSpace(rule.Name)
+                ? EventRulePresentationService.BuildDisplayLabel(rule, _text)
+                : rule.Name;
+            AudioAlertChoices.Add(new AudioAlertChoice(rule.Id, label));
         }
 
         _audioAlertChoicesSignature = signature;

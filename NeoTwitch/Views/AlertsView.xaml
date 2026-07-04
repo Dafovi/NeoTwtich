@@ -86,7 +86,7 @@
 
                                 <ListBox x:Name="RulesList"
                                          ItemsSource="{Binding RulesView}"
-                                         SelectedItem="{Binding SelectedRule, Mode=TwoWay}"
+                                         SelectedItem="{Binding SelectedRuleRow, Mode=TwoWay}"
                                          BorderBrush="{DynamicResource ThemeBorderBrush}"
                                          Background="Transparent"
                                          BorderThickness="0"

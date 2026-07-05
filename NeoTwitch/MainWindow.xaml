@@ -142,7 +142,7 @@
                     <Button x:Name="NavSettingsButton"
                             Tag="0"
                             Style="{StaticResource NavButton}"
-                            ToolTip="Panel principal"
+                            ToolTip="Inicio"
                             Click="NavButton_Click" />
                     <Button x:Name="NavConnectionsButton"
                             Tag="1"
@@ -154,45 +154,45 @@
                             Style="{StaticResource NavButton}"
                             ToolTip="Alertas"
                             Click="NavButton_Click" />
-                    <Button x:Name="NavStripsButton"
+                    <Button x:Name="NavObsButton"
                             Tag="3"
+                            Style="{StaticResource NavButton}"
+                            ToolTip="OBS"
+                            Click="NavButton_Click" />
+                    <Button x:Name="NavStripsButton"
+                            Tag="4"
                             Style="{StaticResource NavButton}"
                             ToolTip="Luces de fondo"
                             Click="NavButton_Click" />
                     <Button x:Name="NavAlexaButton"
-                            Tag="4"
+                            Tag="5"
                             Style="{StaticResource NavButton}"
                             ToolTip="Alexa"
                             Click="NavButton_Click" />
                     <Button x:Name="NavAudioButton"
-                            Tag="5"
-                            Style="{StaticResource NavButton}"
-                            ToolTip="Audio"
-                            Click="NavButton_Click" />
-                    <Button x:Name="NavImagesButton"
                             Tag="6"
                             Style="{StaticResource NavButton}"
-                            ToolTip="Imagenes"
+                            ToolTip="Audio"
                             Click="NavButton_Click" />
                     <Button x:Name="NavVideosButton"
                             Tag="7"
                             Style="{StaticResource NavButton}"
                             ToolTip="Videos"
                             Click="NavButton_Click" />
-                    <Button x:Name="NavObsButton"
+                    <Button x:Name="NavImagesButton"
                             Tag="8"
                             Style="{StaticResource NavButton}"
-                            ToolTip="OBS"
-                            Click="NavButton_Click" />
-                    <Button x:Name="NavPreferencesButton"
-                            Tag="9"
-                            Style="{StaticResource NavButton}"
-                            ToolTip="Configuracion"
+                            ToolTip="Imagenes"
                             Click="NavButton_Click" />
                     <Button x:Name="NavActivityButton"
-                            Tag="10"
+                            Tag="9"
                             Style="{StaticResource NavButton}"
                             ToolTip="Actividad"
+                            Click="NavButton_Click" />
+                    <Button x:Name="NavPreferencesButton"
+                            Tag="10"
+                            Style="{StaticResource NavButton}"
+                            ToolTip="Configuracion"
                             Click="NavButton_Click" />
                 </StackPanel>
 
@@ -260,7 +260,7 @@
                     BorderThickness="0"
                     Padding="0"
                     SelectionChanged="MainTabs_SelectionChanged">
-            <TabItem x:Name="DashboardTab" Header="Panel">
+            <TabItem x:Name="DashboardTab" Header="Inicio">
                 <views:DashboardView x:Name="DashboardView" />
             </TabItem>
 
@@ -270,6 +270,10 @@
 
             <TabItem x:Name="AlertsTab" Header="Alertas">
                 <views:AlertsView x:Name="AlertsView" />
+            </TabItem>
+
+            <TabItem x:Name="ObsTab" Header="OBS">
+                <views:ObsView x:Name="ObsView" />
             </TabItem>
 
             <TabItem x:Name="LightsTab" Header="Luces de fondo">
@@ -284,24 +288,20 @@
                 <views:AudioView x:Name="AudioView" />
             </TabItem>
 
-            <TabItem x:Name="ImagesTab" Header="Imagenes">
-                <views:ImagesView x:Name="ImagesView" />
-            </TabItem>
-
             <TabItem x:Name="VideosTab" Header="Videos">
                 <views:VideosView x:Name="VideosView" />
             </TabItem>
 
-            <TabItem x:Name="ObsTab" Header="OBS">
-                <views:ObsView x:Name="ObsView" />
-            </TabItem>
-
-            <TabItem x:Name="SettingsTab" Header="Configuracion">
-                <views:SettingsView x:Name="SettingsView" />
+            <TabItem x:Name="ImagesTab" Header="Imagenes">
+                <views:ImagesView x:Name="ImagesView" />
             </TabItem>
 
             <TabItem x:Name="ActivityTab" Header="Actividad">
                 <views:ActivityView x:Name="ActivityView" />
+            </TabItem>
+
+            <TabItem x:Name="SettingsTab" Header="Configuracion">
+                <views:SettingsView x:Name="SettingsView" />
             </TabItem>
         </TabControl>
 

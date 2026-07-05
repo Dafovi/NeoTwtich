@@ -15,14 +15,14 @@ public sealed class ShellViewModel : ObservableObject
     public const int DashboardTabIndex = 0;
     public const int ConnectionsTabIndex = 1;
     public const int AlertsTabIndex = 2;
-    public const int LightsTabIndex = 3;
-    public const int AlexaTabIndex = 4;
-    public const int AudioTabIndex = 5;
-    public const int ImagesTabIndex = 6;
+    public const int ObsTabIndex = 3;
+    public const int LightsTabIndex = 4;
+    public const int AlexaTabIndex = 5;
+    public const int AudioTabIndex = 6;
     public const int VideosTabIndex = 7;
-    public const int ObsTabIndex = 8;
-    public const int SettingsTabIndex = 9;
-    public const int ActivityTabIndex = 10;
+    public const int ImagesTabIndex = 8;
+    public const int ActivityTabIndex = 9;
+    public const int SettingsTabIndex = 10;
 
     private readonly Func<int, bool> _navigate;
     private int _selectedTabIndex;
@@ -57,14 +57,14 @@ public sealed class ShellViewModel : ObservableObject
             new(DashboardTabIndex, "panel", text.Get(UiTextKeys.NavPanel), "Assets/Icons/nav_panel.png", text.Get(UiTextKeys.NavPanel)),
             new(ConnectionsTabIndex, "connections", text.Get(UiTextKeys.NavConnections), "Assets/Icons/nav_connections.png", text.Get(UiTextKeys.NavConnections)),
             new(AlertsTabIndex, "alerts", text.Get(UiTextKeys.NavAlerts), "Assets/Icons/nav_rules.png", text.Get(UiTextKeys.NavAlerts)),
+            new(ObsTabIndex, "obs", text.Get(UiTextKeys.NavObs), "Assets/Icons/nav_obs.png", text.Get(UiTextKeys.NavObs)),
             new(LightsTabIndex, "lights", text.Get(UiTextKeys.NavLights), "Assets/Icons/nav_lights.png", text.Get(UiTextKeys.NavLights)),
             new(AlexaTabIndex, "alexa", text.Get(UiTextKeys.NavAlexa), "Assets/Icons/nav_alexa.png", text.Get(UiTextKeys.NavAlexa)),
             new(AudioTabIndex, "audio", text.Get(UiTextKeys.NavAudio), "Assets/Icons/nav_audio.png", text.Get(UiTextKeys.NavAudio)),
-            new(ImagesTabIndex, "images", text.Get(UiTextKeys.NavImages), "Assets/Icons/nav_images.png", text.Get(UiTextKeys.NavImages)),
             new(VideosTabIndex, "videos", text.Get(UiTextKeys.NavVideos), "Assets/Icons/nav_videos.png", text.Get(UiTextKeys.NavVideos)),
-            new(ObsTabIndex, "obs", text.Get(UiTextKeys.NavObs), "Assets/Icons/nav_obs.png", text.Get(UiTextKeys.NavObs)),
-            new(SettingsTabIndex, "settings", text.Get(UiTextKeys.NavConfiguration), "Assets/Icons/nav_settings.png", text.Get(UiTextKeys.NavConfiguration)),
-            new(ActivityTabIndex, "activity", text.Get(UiTextKeys.NavActivity), "Assets/Icons/nav_activity.png", text.Get(UiTextKeys.NavActivity))
+            new(ImagesTabIndex, "images", text.Get(UiTextKeys.NavImages), "Assets/Icons/nav_images.png", text.Get(UiTextKeys.NavImages)),
+            new(ActivityTabIndex, "activity", text.Get(UiTextKeys.NavActivity), "Assets/Icons/nav_activity.png", text.Get(UiTextKeys.NavActivity)),
+            new(SettingsTabIndex, "settings", text.Get(UiTextKeys.NavConfiguration), "Assets/Icons/nav_settings.png", text.Get(UiTextKeys.NavConfiguration))
         ];
 
         VersionText = $"V{NeoTwitchProduct.CurrentVersionText}";

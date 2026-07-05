@@ -436,7 +436,7 @@ public static class SpanishUiTextCatalog
             [UiTextKeys.ConnectionButtonObsConnect] = "Conectar OBS",
             [UiTextKeys.ConnectionButtonObsScenesUpdating] = "Actualizando...",
             [UiTextKeys.ConnectionButtonObsScenesRefresh] = "Actualizar escenas",
-            [UiTextKeys.NavPanel] = "Panel",
+            [UiTextKeys.NavPanel] = "Inicio",
             [UiTextKeys.NavConnections] = "Conexiones",
             [UiTextKeys.NavAlerts] = "Alertas",
             [UiTextKeys.NavLights] = "Luces",

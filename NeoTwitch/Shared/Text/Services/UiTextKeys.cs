@@ -507,6 +507,9 @@ public static class UiTextKeys
     public const string TrayBackgroundTitle = "tray.background_title";
     public const string TrayBackgroundText = "tray.background_text";
     public const string TrayHiddenLog = "tray.hidden_log";
+    public const string TrayOfflineAlertTitle = "tray.offline_alert_title";
+    public const string TrayOfflineAlertTextFormat = "tray.offline_alert_text_format";
+    public const string AlertOfflineSuppressedLogFormat = "alert.offline_suppressed_log_format";
 
     public const string UpdateUpToDateLog = "update.up_to_date_log";
     public const string UpdateAvailableLog = "update.available_log";

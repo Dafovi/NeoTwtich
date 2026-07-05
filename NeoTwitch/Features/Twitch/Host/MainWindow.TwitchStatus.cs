@@ -24,6 +24,10 @@ public partial class MainWindow
             _twitchConnectionError = ex.Message;
             AddLog($"Twitch estado: {ex.Message}");
         }
+        finally
+        {
+            _lastStreamStatusRefreshAt = DateTimeOffset.UtcNow;
+        }
 
         UpdateStatusText();
     }

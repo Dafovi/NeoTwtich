@@ -506,6 +506,9 @@ public static class SpanishUiTextCatalog
             [UiTextKeys.TrayBackgroundTitle] = "{0} sigue activo",
             [UiTextKeys.TrayBackgroundText] = "La app quedo en segundo plano. Abrela desde el icono de la bandeja cuando la necesites.",
             [UiTextKeys.TrayHiddenLog] = "Ventana oculta en segundo plano.",
+            [UiTextKeys.TrayOfflineAlertTitle] = "Evento recibido sin directo",
+            [UiTextKeys.TrayOfflineAlertTextFormat] = "{0}\nNo ejecute la alerta porque el canal no esta en directo.",
+            [UiTextKeys.AlertOfflineSuppressedLogFormat] = "Directo apagado: no ejecute '{0}'. Se aviso en la bandeja.",
 
             [UiTextKeys.UpdateUpToDateLog] = "Version: V{0} al dia.",
             [UiTextKeys.UpdateAvailableLog] = "Version: hay una nueva version V{0}.",

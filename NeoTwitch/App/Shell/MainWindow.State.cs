@@ -14,9 +14,11 @@ namespace NeoTwitch;
 public partial class MainWindow
 {
     private const int LightStopSettleMs = 120;
+    private static readonly TimeSpan AlertStreamStatusRefreshInterval = TimeSpan.FromSeconds(5);
     private readonly Random _previewRandom = new();
     private readonly Random _audioRandom = new();
     private readonly SemaphoreSlim _effectGate = new(1, 1);
+    private readonly SemaphoreSlim _streamStatusRefreshGate = new(1, 1);
     private IReadOnlyList<SerialPortInfo> _availablePorts = [];
     private readonly IReadOnlyList<UiOption<TwitchEventKind>> _eventOptions;
     private readonly IReadOnlyList<UiOption<string>> _ruleCategoryOptions;
@@ -81,6 +83,7 @@ public partial class MainWindow
     private EventRule? _editingRule;
     private EventRule? _loadedRuleSnapshot;
     private TwitchStreamStatus? _streamStatus;
+    private DateTimeOffset _lastStreamStatusRefreshAt = DateTimeOffset.MinValue;
     private DrawingIcon? _trayIcon;
     private Forms.NotifyIcon? _notifyIcon;
 

@@ -583,7 +583,7 @@ static class AlertsViewModelTests
         viewModel.SetDirtyState(false);
 
         TestAssert.Equal("", viewModel.SearchText);
-        TestAssert.Equal("", viewModel.CategoryFilter);
+        TestAssert.Equal(nameof(TwitchEventKind.Follow), viewModel.CategoryFilter);
         TestAssert.Equal(EventRuleFilterService.AllStatus, viewModel.StatusFilter);
         TestAssert.True(viewModel.IsAllStatusSelected);
         TestAssert.Equal(0.68d, viewModel.SaveButtonOpacity);

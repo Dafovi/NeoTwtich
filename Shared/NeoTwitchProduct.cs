@@ -40,7 +40,7 @@ public static class NeoTwitchProduct
         public const string TwitchDeveloperApps = "https://dev.twitch.tv/console/apps";
         public const string AlexaDeveloperConsole = "https://developer.amazon.com/alexa/console/ask";
 
-        public static string ArduinoSketch => $"{GitHubRepositoryUrl}/blob/main/NeoTwitch/Arduino/NeoTwitchNeoPixel/NeoTwitchNeoPixel.ino";
+        public static string ArduinoSketch => $"{GitHubRepositoryUrl}/blob/main/NeoTwitch/Features/Arduino/Sketch/NeoTwitchNeoPixel/NeoTwitchNeoPixel.ino";
         public static string ArduinoGuide => $"{GitHubRepositoryUrl}#conexion-arduino-y-neopixel";
         public static string TwitchChannel(string channel) => $"https://www.twitch.tv/{Uri.EscapeDataString(channel)}";
     }

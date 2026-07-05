@@ -17,29 +17,55 @@ En Unity sueles pensar en:
 En Neo Twitch el equivalente aproximado es:
 
 - `MainWindow.xaml`: la ventana principal, parecida a la escena raiz.
-- `Views/*.xaml`: cada pestaña visual, parecida a un prefab/panel de UI.
-- `Views/*.xaml.cs`: el code-behind de esa vista, normalmente delgado.
-- `MainWindow.*.cs`: la logica de host separada por dominio.
-- `Models/*.cs`: datos serializables y enums.
-- `Services/*.cs`: integraciones y logica externa.
+- `Features/*/Views/*.xaml`: cada pestaña visual, parecida a un prefab/panel de UI.
+- `Features/*/Views/*.xaml.cs`: el code-behind de esa vista, normalmente delgado.
+- `Features/*/Host/MainWindow.*.cs`: la logica de host separada por dominio.
+- `Features/*/Models/*.cs`: datos serializables y enums propios de un dominio.
+- `Features/*/Services/*.cs`: integraciones y logica externa propias de un dominio.
+- `Shared/*`: infraestructura reusable que no pertenece a una sola feature.
+- `App/*`: composicion, shell, startup, tema y configuracion global de ventana.
 - `App.xaml`: recursos globales, parecido a una combinacion entre tema, estilos globales y configuracion del proyecto.
 
-La regla principal actual es: las vistas dibujan, `MainWindow` coordina, los servicios hablan con el exterior y los modelos guardan estado.
+La regla principal actual es: las vistas dibujan, `MainWindow` coordina, los servicios hablan con el exterior y los modelos guardan estado. La navegacion por codigo se hace primero por feature: si quieres tocar OBS, empieza en `Features/Obs`; si quieres tocar luces, empieza en `Features/Lights`.
 
 ## 2. Estructura de carpetas
 
 ```text
 NeoTwitch/
+  App/
+    Composition/
+    Configuration/
+    Shell/
+    Startup/
+    Theme/
   Assets/
     Icons/
     Service*.png
     Nav*.png
-  Models/
-  Services/
-  ViewModels/
-  Views/
+  Features/
+    Activity/
+    Alerts/
+    Alexa/
+    Arduino/
+    Audio/
+    Connections/
+    Dashboard/
+    Lights/
+    Media/
+    Obs/
+    Settings/
+    Twitch/
+  Shared/
+    Configuration/
+    Diagnostics/
+    IO/
+    Models/
+    Text/
+    Theme/
+    Ui/
+    ViewModels/
   MainWindow.xaml
-  MainWindow.*.cs
+  MainWindow.xaml.cs
   App.xaml
 
 NeoTwitch.Installer/
@@ -56,39 +82,49 @@ NeoTwitch.Installer/
 
 Contiene imagenes, logos e iconos. Los iconos de servicio como Twitch, Arduino, Alexa y OBS son imagenes reales y no deberian recrearse en XAML. Si el archivo empieza por `Service`, se trata como logo de servicio y normalmente conserva sus colores.
 
-`Views`
+`Features`
 
-Cada pestaña visual vive aqui:
+Cada dominio vive en su propia carpeta. Dentro de una feature puedes encontrar:
 
-- `DashboardView`
-- `ConnectionsView`
-- `AlertsView`
-- `LightsView`
-- `AudioView`
-- `ImageLibraryView`
-- `VideoLibraryView`
-- `ObsView`
-- `SettingsView`
-- `ActivityView`
+```text
+Features/Obs/
+  Host/
+  Models/
+  Services/
+  ViewModels/
+  Views/
+```
+
+No todas las features tienen todas las subcarpetas. Por ejemplo `Twitch` casi no tiene vistas porque es una integracion, mientras `Alerts` tiene bastante UI, ViewModels y logica de ejecucion.
 
 La idea es que `MainWindow.xaml` no contenga miles de lineas de cada pestaña. En vez de eso, carga vistas autocontenidas.
 
-`MainWindow.*.cs`
+`Features/*/Host/MainWindow.*.cs`
 
 `MainWindow` sigue siendo el host principal, pero esta partido por responsabilidad:
 
-- `MainWindow.Shell.cs`: navegacion, tema, tray icon, color picker.
-- `MainWindow.ConfigBinding.cs`: carga datos de config a UI y decide visibilidad.
-- `MainWindow.RuleEditor.cs`: editor de alertas, luces de reglas y fondo.
-- `MainWindow.AlertExecution.cs`: ejecucion de alertas.
-- `MainWindow.Connections.cs`: Twitch, Arduino, Alexa, OBS.
-- `MainWindow.AudioLibrary.cs`: biblioteca de audio.
-- `MainWindow.MediaLibraries.cs`: imagenes y videos.
-- `MainWindow.Obs.cs`: acciones OBS.
-- `MainWindow.Activity.cs`: actividad/log visual.
-- `MainWindow.Dashboard.cs`: resumen del panel principal.
+- `Features/Alerts/Host/MainWindow.Rule*.cs`: editor, filtros, guardado y pruebas de alertas.
+- `Features/Alerts/Host/MainWindow.Alert*.cs`: ejecucion de alertas y acciones.
+- `Features/Obs/Host/MainWindow.Obs*.cs`: acciones OBS, escenas, overlay y medios.
+- `Features/Audio/Host/MainWindow.Audio*.cs`: biblioteca y reproduccion de audio.
+- `Features/Media/Host/MainWindow.Media*.cs`: bibliotecas de imagenes y videos.
+- `Features/Lights/Host/MainWindow.Light*.cs`: fondo, previsualizacion LED y controles de luces.
+- `Features/Twitch/Host/MainWindow.Twitch*.cs`: conexion y suscripciones EventSub.
+- `App/Shell/MainWindow.*.cs`: navegacion, tray icon, ventana y shell.
+- `App/Configuration/MainWindow.*.cs`: carga/guardado global y binding de configuracion.
+- `App/Theme/MainWindow.Theme*.cs`: tema visual y colores.
 
 No es perfecto MVC/MVVM puro, pero ya no es un solo archivo gigante imposible de navegar.
+
+`Shared`
+
+Aqui vive lo que no pertenece a una sola feature:
+
+- `Shared/Configuration`: carga, normalizacion y guardado de configuracion.
+- `Shared/Text`: catalogo de textos, util para futura localizacion.
+- `Shared/Ui`: utilidades de tema, iconos, brushes, dialogos y controles comunes.
+- `Shared/Models`: modelos generales como `AppConfig`, `ApplicationLimits` y opciones de arranque.
+- `Shared/Views`: vistas reutilizables como `NeoTwitchView` y `ColorPickerDialog`.
 
 ## 3. Como se dibuja una pestaña
 
@@ -127,16 +163,16 @@ private WpfSlider BrightnessSlider => AlertsView.BrightnessSlider;
 
 Estos estan en archivos como:
 
-- `MainWindow.AlertControls.cs`
-- `MainWindow.LightControls.cs`
-- `MainWindow.AudioControls.cs`
-- `MainWindow.ConnectionControls.cs`
+- `Features/Alerts/Host/MainWindow.AlertControls.cs`
+- `Features/Lights/Host/MainWindow.LightControls.cs`
+- `Features/Audio/Host/MainWindow.AudioControls.cs`
+- `Features/Connections/Host/MainWindow.ConnectionControls.cs`
 
 Esto funciona como una capa de referencias, parecido a tener campos serializados en Unity, pero centralizados.
 
 ## 5. Estilos y tema
 
-El estilo general esta en `App.xaml` y se alimenta desde `MainWindow.Theme.cs`.
+El estilo general esta en `App.xaml` y se alimenta desde `App/Theme/MainWindow.Theme.cs`.
 
 Los controles usan recursos dinamicos:
 
@@ -297,7 +333,7 @@ config.BackgroundCycleMs = (int)BackgroundCycleSlider.Value;
 
 ## 9. Visibilidad condicional
 
-No todo se muestra siempre. Esta logica vive en `MainWindow.ConfigBinding.cs`.
+No todo se muestra siempre. Esta logica vive en `App/Configuration/MainWindow.ConfigBinding.cs` y en servicios de visibilidad como `Shared/Ui/Services/OptionVisibilityService.cs`.
 
 Ejemplo:
 
@@ -327,8 +363,8 @@ Asi evitas mostrar controles que no hacen nada.
 El selector vive en:
 
 ```text
-Views/ColorPickerDialog.xaml
-Views/ColorPickerDialog.xaml.cs
+Shared/Views/ColorPickerDialog.xaml
+Shared/Views/ColorPickerDialog.xaml.cs
 ```
 
 La app abre el selector desde:
@@ -375,7 +411,7 @@ Regla importante: normalizar no debe inventar reglas si el usuario ya tiene un a
 El cliente principal es:
 
 ```text
-Services/TwitchEventSubClient.cs
+Features/Twitch/Services/TwitchEventSubClient.cs
 ```
 
 Cuando hay reglas activas, crea suscripciones EventSub segun el tipo:
@@ -407,7 +443,7 @@ STOP|pin:leds
 La clase importante es:
 
 ```text
-Models/LightCommand.cs
+Features/Lights/Models/LightCommand.cs
 ```
 
 Si cambias el protocolo, debes cambiar tambien el sketch.
@@ -417,8 +453,8 @@ Si cambias el protocolo, debes cambiar tambien el sketch.
 OBS se conecta por websocket. La configuracion esta en la pestaña de conexiones y la operacion en:
 
 ```text
-MainWindow.Obs.cs
-Services/Obs*
+Features/Obs/Host/MainWindow.Obs.cs
+Features/Obs/Services/
 ```
 
 OBS puede:
@@ -485,10 +521,10 @@ Cuando se actualiza desde la app:
 Checklist:
 
 1. Edita primero el XAML de la vista.
-2. Si agregas `x:Name`, crea alias en `MainWindow.*Controls.cs`.
-3. Si el control aparece/oculta segun estado, actualiza `MainWindow.ConfigBinding.cs`.
-4. Si tiene click o change, crea handler en `Views/*.xaml.cs` y delega a `Host`.
-5. Implementa la logica en el archivo parcial correcto.
+2. Si agregas `x:Name`, crea alias en el archivo `Features/<Feature>/Host/MainWindow.*Controls.cs` correspondiente.
+3. Si el control aparece/oculta segun estado, actualiza `App/Configuration/MainWindow.ConfigBinding.cs` o el servicio de visibilidad correspondiente.
+4. Si tiene click o change, crea handler en `Features/<Feature>/Views/*.xaml.cs` y delega a `Host`.
+5. Implementa la logica en el archivo parcial correcto dentro de `Features/<Feature>/Host`.
 6. Ejecuta build.
 7. Abre la app al menos una vez.
 
@@ -560,4 +596,4 @@ Si un cambio decide comportamiento, ponlo en `MainWindow.*.cs` o en un servicio.
 
 Si un dato debe sobrevivir al cierre de la app, agregalo a `AppConfig` y normalizalo en `SettingsStore`.
 
-Si algo se comunica con Twitch, OBS, Arduino, Alexa o GitHub, debe vivir en `Services` o en un parcial dedicado, no enterrado dentro de una vista.
+Si algo se comunica con Twitch, OBS, Arduino, Alexa o GitHub, debe vivir en `Features/<Feature>/Services` o en un parcial dedicado de `Features/<Feature>/Host`, no enterrado dentro de una vista.

@@ -14,7 +14,7 @@ O si lo prefieres, puedes descargar la versión portable en el Último Release:
 
 También puedes descargar el sketch para Arduino desde aquí:
 
-[Descargar Sketch](NeoTwitch/Arduino/NeoTwitchNeoPixel/NeoTwitchNeoPixel.ino)
+[Descargar Sketch](NeoTwitch/Features/Arduino/Sketch/NeoTwitchNeoPixel/NeoTwitchNeoPixel.ino)
 
 Despues de descargar el `.zip`:
 
@@ -73,7 +73,7 @@ Y asi se ve el efecto cuando se activa en stream:
 2. Consigue el Client ID siguiendo la seccion `Conseguir el Client ID de Twitch`.
 3. Escribe ese Client ID en el panel `Twitch`. Si quieres que la app refresque la sesion automaticamente, pega tambien el Client Secret.
 4. Presiona `Conectar Twitch`, autoriza en el navegador y usa el codigo que muestra la app.
-5. Carga el sketch `NeoTwitch/Arduino/NeoTwitchNeoPixel/NeoTwitchNeoPixel.ino` en cada Arduino.
+5. Carga el sketch `NeoTwitch/Features/Arduino/Sketch/NeoTwitchNeoPixel/NeoTwitchNeoPixel.ino` en cada Arduino.
 6. En la app, usa `Detectar` o escribe el puerto COM del Arduino, por ejemplo `COM3`.
 7. En `Luces de fondo`, agrega cada salida Arduino con nombre, pin y cantidad de LEDs.
 8. En `Luces de fondo`, elige `Arduino Tira led ws2812b` para el fondo LED o `Alexa` para el fondo con rutinas/dispositivos Alexa.

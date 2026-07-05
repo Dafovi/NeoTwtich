@@ -14,8 +14,10 @@ public partial class MainWindow
         }
 
         var rule = ConfigurationItemFactory.CreateRule(_text);
+        rule.EventKind = _alertsViewModel.SelectedCategoryKind;
+        rule.Name = NeoTwitch.Services.Text.DisplayNameService.For(rule.EventKind, _text);
         _config.Rules.Add(rule);
-        ShowAllRuleFilters();
+        _alertsViewModel.SelectCategoryFilter(rule.EventKind);
         RefreshRulesView();
         _alertsViewModel.SelectedRule = rule;
         SaveConfig();
@@ -36,7 +38,7 @@ public partial class MainWindow
 
         var copy = EventRuleSnapshotService.Duplicate(rule, _text);
         _config.Rules.Add(copy);
-        ShowAllRuleFilters();
+        _alertsViewModel.SelectCategoryFilter(copy.EventKind);
         RefreshRulesView();
         _alertsViewModel.SelectedRule = copy;
         SaveConfig();

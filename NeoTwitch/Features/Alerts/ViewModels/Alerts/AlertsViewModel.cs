@@ -16,7 +16,7 @@ public sealed partial class AlertsViewModel : ObservableObject
 {
     private string _searchText = "";
     private string _statusFilter = EventRuleFilterService.AllStatus;
-    private string _categoryFilter = "";
+    private string _categoryFilter = nameof(TwitchEventKind.Follow);
     private string _rulesCountText = "";
     private bool _isEditorEnabled;
     private bool _hasUnsavedChanges;
@@ -45,6 +45,7 @@ public sealed partial class AlertsViewModel : ObservableObject
         _text = text;
         _rulesViewSource.Filter += RulesViewSource_Filter;
         SelectStatusFilterCommand = new RelayCommand(parameter => SelectStatusFilter(parameter?.ToString()));
+        SelectCategoryFilterCommand = new RelayCommand(parameter => SelectCategoryFilter(parameter?.ToString()));
         ConfigureActions(NoOp, NoOp, NoOp, NoOp, NoOp);
         ConfigureEditorActions(NoOp, NoOp, NoOp, NoOp, NoOp, NoOp, NoOp, NoOp);
     }
@@ -123,6 +124,8 @@ public sealed partial class AlertsViewModel : ObservableObject
 
     public ICommand SelectStatusFilterCommand { get; }
 
+    public ICommand SelectCategoryFilterCommand { get; }
+
     public ICommand AddRuleCommand { get; private set; } = new RelayCommand(NoOp);
 
     public ICommand DuplicateRuleCommand { get; private set; } = new RelayCommand(NoOp);
@@ -161,6 +164,7 @@ public sealed partial class AlertsViewModel : ObservableObject
                     OnPropertyChanged(nameof(SelectedRuleRow));
                 }
 
+                OnPropertyChanged(nameof(EditorContextText));
                 SelectedRuleChanged?.Invoke(this, EventArgs.Empty);
             }
         }
@@ -210,8 +214,9 @@ public sealed partial class AlertsViewModel : ObservableObject
         get => _categoryFilter;
         set
         {
-            if (SetProperty(ref _categoryFilter, value ?? ""))
+            if (SetProperty(ref _categoryFilter, NormalizeCategoryFilter(value)))
             {
+                NotifyCategoryPropertiesChanged();
                 NotifyFiltersChanged();
             }
         }
@@ -253,6 +258,32 @@ public sealed partial class AlertsViewModel : ObservableObject
     public bool IsActiveStatusSelected => StatusFilter == EventRuleFilterService.ActiveStatus;
 
     public bool IsInactiveStatusSelected => StatusFilter == EventRuleFilterService.InactiveStatus;
+
+    public TwitchEventKind SelectedCategoryKind => ParseCategoryFilter(CategoryFilter);
+
+    public string SelectedCategoryName => DisplayNameService.For(SelectedCategoryKind, _text);
+
+    public string SelectedCategoryListTitle => $"Alertas de {SelectedCategoryName}";
+
+    public string SelectedCategoryHint => $"Estas viendo y editando alertas de \"{SelectedCategoryName}\". Solo se muestran alertas de este tipo.";
+
+    public string CreateSelectedCategoryRuleText => $"Crear alerta de este tipo";
+
+    public string EditorContextText => SelectedRule is null
+        ? $"Tipo seleccionado: {SelectedCategoryName}"
+        : $"Tipo seleccionado: {SelectedCategoryName} > Editando: {SelectedRule.Name}";
+
+    public bool IsFollowCategorySelected => SelectedCategoryKind == TwitchEventKind.Follow;
+
+    public bool IsSubscriptionCategorySelected => SelectedCategoryKind == TwitchEventKind.Subscription;
+
+    public bool IsRaidCategorySelected => SelectedCategoryKind == TwitchEventKind.Raid;
+
+    public bool IsCheerCategorySelected => SelectedCategoryKind == TwitchEventKind.Cheer;
+
+    public bool IsChatCommandCategorySelected => SelectedCategoryKind == TwitchEventKind.ChatCommand;
+
+    public bool IsRedemptionCategorySelected => SelectedCategoryKind == TwitchEventKind.ChannelPointRedemption;
 
     public void ConfigureActions(
         Action addRule,
@@ -337,13 +368,23 @@ public sealed partial class AlertsViewModel : ObservableObject
         StatusFilter = NormalizeStatusFilter(status);
     }
 
+    public void SelectCategoryFilter(string? category)
+    {
+        CategoryFilter = category ?? "";
+    }
+
+    public void SelectCategoryFilter(TwitchEventKind kind)
+    {
+        CategoryFilter = kind.ToString();
+    }
+
     public void ClearFilters()
     {
         _suppressFilterEvents = true;
         try
         {
             SearchText = "";
-            CategoryFilter = "";
+            CategoryFilter = nameof(TwitchEventKind.Follow);
             StatusFilter = EventRuleFilterService.AllStatus;
         }
         finally
@@ -378,5 +419,37 @@ public sealed partial class AlertsViewModel : ObservableObject
 
     private static void NoOp(object? _)
     {
+    }
+
+    private void NotifyCategoryPropertiesChanged()
+    {
+        OnPropertyChanged(nameof(SelectedCategoryKind));
+        OnPropertyChanged(nameof(SelectedCategoryName));
+        OnPropertyChanged(nameof(SelectedCategoryListTitle));
+        OnPropertyChanged(nameof(SelectedCategoryHint));
+        OnPropertyChanged(nameof(CreateSelectedCategoryRuleText));
+        OnPropertyChanged(nameof(EditorContextText));
+        OnPropertyChanged(nameof(IsFollowCategorySelected));
+        OnPropertyChanged(nameof(IsSubscriptionCategorySelected));
+        OnPropertyChanged(nameof(IsRaidCategorySelected));
+        OnPropertyChanged(nameof(IsCheerCategorySelected));
+        OnPropertyChanged(nameof(IsChatCommandCategorySelected));
+        OnPropertyChanged(nameof(IsRedemptionCategorySelected));
+    }
+
+    private static string NormalizeCategoryFilter(string? category)
+    {
+        return Enum.TryParse<TwitchEventKind>(category, out var kind)
+            && kind != TwitchEventKind.Test
+            ? kind.ToString()
+            : nameof(TwitchEventKind.Follow);
+    }
+
+    private static TwitchEventKind ParseCategoryFilter(string? category)
+    {
+        return Enum.TryParse<TwitchEventKind>(category, out var kind)
+            && kind != TwitchEventKind.Test
+            ? kind
+            : TwitchEventKind.Follow;
     }
 }

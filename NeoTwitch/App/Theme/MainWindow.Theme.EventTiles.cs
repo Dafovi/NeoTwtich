@@ -12,7 +12,7 @@ public partial class MainWindow
             return;
         }
 
-        var selectedKind = _alertsViewModel.Editor.EventKind;
+        var selectedKind = _alertsViewModel.SelectedCategoryKind;
         var palette = _config.DarkMode
             ? ThemePalette.Dark
             : ThemePalette.Light;

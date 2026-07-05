@@ -7,7 +7,7 @@
                      mc:Ignorable="d">
                     <Grid Margin="24">
                         <Grid.RowDefinitions>
-                            <RowDefinition Height="0" />
+                            <RowDefinition Height="Auto" />
                             <RowDefinition Height="*" />
                         </Grid.RowDefinitions>
                         <Grid.ColumnDefinitions>
@@ -16,16 +16,134 @@
                             <ColumnDefinition Width="*" />
                         </Grid.ColumnDefinitions>
 
-                        <Grid Grid.ColumnSpan="3" Margin="0" Visibility="Collapsed">
-                            <StackPanel>
-                                <TextBlock Text="Alertas"
-                                           FontSize="28"
-                                           Style="{StaticResource TitleText}"
-                                           FontWeight="SemiBold" />
-                                <TextBlock Text="Crea reglas para seguidores, subs, raids, bits, chat y canjes."
-                                           Style="{StaticResource MutedText}"
-                                           Margin="0,4,0,0" />
+                        <Grid Grid.ColumnSpan="3" Margin="0,0,0,16">
+                            <Grid.RowDefinitions>
+                                <RowDefinition Height="Auto" />
+                                <RowDefinition Height="Auto" />
+                            </Grid.RowDefinitions>
+                            <Grid.ColumnDefinitions>
+                                <ColumnDefinition Width="*" />
+                                <ColumnDefinition Width="Auto" />
+                            </Grid.ColumnDefinitions>
+
+                            <StackPanel Orientation="Horizontal">
+                                <Image Source="/Assets/Icons/activity_notification_lime.png"
+                                       Width="30"
+                                       Height="30"
+                                       Margin="0,3,12,0" />
+                                <StackPanel>
+                                    <TextBlock Text="Alertas"
+                                               FontSize="28"
+                                               Style="{StaticResource TitleText}"
+                                               FontWeight="SemiBold" />
+                                    <TextBlock Text="Crea y personaliza alertas para interactuar con tu comunidad."
+                                               Style="{StaticResource MutedText}"
+                                               Margin="0,4,0,0" />
+                                </StackPanel>
                             </StackPanel>
+
+                            <Button Grid.Column="1"
+                                    Content="Nueva alerta personalizada"
+                                    Style="{StaticResource PrimaryButton}"
+                                    VerticalAlignment="Top"
+                                    Command="{Binding AddRuleCommand}" />
+
+                            <Border Grid.Row="1"
+                                    Grid.ColumnSpan="2"
+                                    Style="{StaticResource Card}"
+                                    Margin="0,16,0,0"
+                                    Padding="18">
+                                <StackPanel>
+                                    <ScrollViewer HorizontalScrollBarVisibility="Auto"
+                                                  VerticalScrollBarVisibility="Disabled"
+                                                  Padding="0,0,0,4">
+                                        <StackPanel Orientation="Horizontal">
+                                            <Button x:Name="EventFollowTileButton"
+                                                    Tag="Follow"
+                                                    MinWidth="190"
+                                                    MinHeight="62"
+                                                    Margin="0,0,8,0"
+                                                    Command="{Binding SelectCategoryFilterCommand}"
+                                                    CommandParameter="{Binding Tag, RelativeSource={RelativeSource Self}}">
+                                                <StackPanel Orientation="Horizontal" HorizontalAlignment="Center">
+                                                    <Image Source="/Assets/Icons/action_follower_teal.png" Width="30" Height="30" Margin="0,0,10,0" />
+                                                    <TextBlock Text="Nuevo seguidor" FontWeight="SemiBold" VerticalAlignment="Center" TextTrimming="CharacterEllipsis" />
+                                                </StackPanel>
+                                            </Button>
+                                            <Button x:Name="EventSubscriptionTileButton"
+                                                    Tag="Subscription"
+                                                    MinWidth="190"
+                                                    MinHeight="62"
+                                                    Margin="0,0,8,0"
+                                                    Command="{Binding SelectCategoryFilterCommand}"
+                                                    CommandParameter="{Binding Tag, RelativeSource={RelativeSource Self}}">
+                                                <StackPanel Orientation="Horizontal" HorizontalAlignment="Center">
+                                                    <Image Source="/Assets/Icons/action_subscription_purple.png" Width="30" Height="30" Margin="0,0,10,0" />
+                                                    <TextBlock Text="Nueva suscripcion" FontWeight="SemiBold" VerticalAlignment="Center" TextTrimming="CharacterEllipsis" />
+                                                </StackPanel>
+                                            </Button>
+                                            <Button x:Name="EventRaidTileButton"
+                                                    Tag="Raid"
+                                                    MinWidth="170"
+                                                    MinHeight="62"
+                                                    Margin="0,0,8,0"
+                                                    Command="{Binding SelectCategoryFilterCommand}"
+                                                    CommandParameter="{Binding Tag, RelativeSource={RelativeSource Self}}">
+                                                <StackPanel Orientation="Horizontal" HorizontalAlignment="Center">
+                                                    <Image Source="/Assets/Icons/activity_notification.png" Width="30" Height="30" Margin="0,0,10,0" />
+                                                    <TextBlock Text="Raid recibida" FontWeight="SemiBold" VerticalAlignment="Center" TextTrimming="CharacterEllipsis" />
+                                                </StackPanel>
+                                            </Button>
+                                            <Button x:Name="EventCheerTileButton"
+                                                    Tag="Cheer"
+                                                    MinWidth="150"
+                                                    MinHeight="62"
+                                                    Margin="0,0,8,0"
+                                                    Command="{Binding SelectCategoryFilterCommand}"
+                                                    CommandParameter="{Binding Tag, RelativeSource={RelativeSource Self}}">
+                                                <StackPanel Orientation="Horizontal" HorizontalAlignment="Center">
+                                                    <Image Source="/Assets/Icons/action_bits_blue.png" Width="30" Height="30" Margin="0,0,10,0" />
+                                                    <TextBlock Text="Bits" FontWeight="SemiBold" VerticalAlignment="Center" TextTrimming="CharacterEllipsis" />
+                                                </StackPanel>
+                                            </Button>
+                                            <Button x:Name="EventChatCommandTileButton"
+                                                    Tag="ChatCommand"
+                                                    MinWidth="190"
+                                                    MinHeight="62"
+                                                    Margin="0,0,8,0"
+                                                    Command="{Binding SelectCategoryFilterCommand}"
+                                                    CommandParameter="{Binding Tag, RelativeSource={RelativeSource Self}}">
+                                                <StackPanel Orientation="Horizontal" HorizontalAlignment="Center">
+                                                    <Image Source="/Assets/Icons/action_message_green.png" Width="30" Height="30" Margin="0,0,10,0" />
+                                                    <TextBlock Text="Comando de chat" FontWeight="SemiBold" VerticalAlignment="Center" TextTrimming="CharacterEllipsis" />
+                                                </StackPanel>
+                                            </Button>
+                                            <Button x:Name="EventRedemptionTileButton"
+                                                    Tag="ChannelPointRedemption"
+                                                    MinWidth="190"
+                                                    MinHeight="62"
+                                                    Command="{Binding SelectCategoryFilterCommand}"
+                                                    CommandParameter="{Binding Tag, RelativeSource={RelativeSource Self}}">
+                                                <StackPanel Orientation="Horizontal" HorizontalAlignment="Center">
+                                                    <Image Source="/Assets/Icons/activity_notification_lime.png" Width="30" Height="30" Margin="0,0,10,0" />
+                                                    <TextBlock Text="Canje de puntos" FontWeight="SemiBold" VerticalAlignment="Center" TextTrimming="CharacterEllipsis" />
+                                                </StackPanel>
+                                            </Button>
+                                        </StackPanel>
+                                    </ScrollViewer>
+
+                                    <Border BorderBrush="{DynamicResource ThemeBorderBrush}"
+                                            BorderThickness="1"
+                                            CornerRadius="12"
+                                            Padding="12"
+                                            Margin="0,16,0,0"
+                                            Background="{DynamicResource ThemeInputBrush}">
+                                        <TextBlock Text="{Binding SelectedCategoryHint}"
+                                                   Style="{StaticResource MutedText}"
+                                                   TextAlignment="Center" />
+                                    </Border>
+                                </StackPanel>
+                            </Border>
                         </Grid>
 
                         <Border Grid.Row="1"
@@ -34,12 +152,12 @@
                             <DockPanel LastChildFill="True">
                                 <StackPanel DockPanel.Dock="Top" Margin="0,0,0,10">
                                     <Grid Margin="0,0,0,12">
-                                        <TextBlock Text="Mis alertas"
+                                        <TextBlock Text="{Binding SelectedCategoryListTitle}"
                                                    FontSize="18"
                                                    Style="{StaticResource TitleText}"
                                                    FontWeight="SemiBold"
                                                    VerticalAlignment="Center" />
-                                        <Button Content="Nueva alerta"
+                                        <Button Content="{Binding CreateSelectedCategoryRuleText}"
                                                 Style="{StaticResource PrimaryButton}"
                                                 HorizontalAlignment="Right"
                                                 VerticalAlignment="Center"
@@ -72,10 +190,11 @@
                                                       Tag="INACTIVE" />
                                     </WrapPanel>
 
-                                    <ComboBox ItemsSource="{Binding CategoryOptions}"
-                                              DisplayMemberPath="Label"
-                                              SelectedValuePath="Value"
-                                              SelectedValue="{Binding CategoryFilter, Mode=TwoWay, UpdateSourceTrigger=PropertyChanged}" />
+                                    <TextBlock Text="La lista se filtra por el tipo seleccionado arriba."
+                                               Style="{StaticResource MutedText}"
+                                               FontSize="12"
+                                               TextWrapping="Wrap"
+                                               Margin="0,2,0,0" />
                                 </StackPanel>
 
                                 <TextBlock DockPanel.Dock="Bottom"
@@ -235,11 +354,11 @@
                                         <ColumnDefinition Width="Auto" />
                                     </Grid.ColumnDefinitions>
                                     <StackPanel>
-                                        <TextBlock Text="Configurar alerta"
+                                        <TextBlock Text="Editor de alerta"
                                                    FontSize="18"
                                                    Style="{StaticResource TitleText}"
                                                    FontWeight="SemiBold" />
-                                        <TextBlock Text="Define el evento y las acciones que se ejecutan."
+                                        <TextBlock Text="{Binding EditorContextText}"
                                                    Style="{StaticResource MutedText}"
                                                    FontSize="12"
                                                    Margin="0,3,0,0" />
@@ -287,13 +406,6 @@
                                             </StackPanel>
                                         </Grid>
 
-                                        <TextBlock Text="Tipo de evento"
-                                                   FontSize="14"
-                                                   FontWeight="SemiBold"
-                                                   Margin="0,6,0,2" />
-                                        <TextBlock Text="Elige cuando se activa esta alerta."
-                                                   Style="{StaticResource MutedText}"
-                                                   FontSize="12" />
                                         <ComboBox x:Name="EventKindBox"
                                                   ItemsSource="{Binding EventKindChoices}"
                                                   DisplayMemberPath="Label"
@@ -302,120 +414,7 @@
                                                   Visibility="Collapsed"
                                                   SelectionChanged="RuleFieldChanged" />
 
-                                        <Grid Margin="0,8,0,12">
-                                            <Grid.ColumnDefinitions>
-                                                <ColumnDefinition Width="*" />
-                                                <ColumnDefinition Width="10" />
-                                                <ColumnDefinition Width="*" />
-                                                <ColumnDefinition Width="10" />
-                                                <ColumnDefinition Width="*" />
-                                            </Grid.ColumnDefinitions>
-                                            <Grid.RowDefinitions>
-                                                <RowDefinition Height="92" />
-                                                <RowDefinition Height="10" />
-                                                <RowDefinition Height="92" />
-                                            </Grid.RowDefinitions>
-
-                                            <Button x:Name="EventFollowTileButton"
-                                                    Tag="Follow"
-                                                    Command="{Binding SelectEventKindCommand}"
-                                                    CommandParameter="{Binding Tag, RelativeSource={RelativeSource Self}}">
-                                                <StackPanel HorizontalAlignment="Center">
-                                                    <Image Source="/Assets/Icons/action_follower_teal.png"
-                                                           Width="26"
-                                                           Height="26"
-                                                           Margin="0,0,0,8" />
-                                                    <TextBlock Text="Nuevo seguidor"
-                                                               FontSize="12"
-                                                               FontWeight="SemiBold"
-                                                               TextAlignment="Center" />
-                                                </StackPanel>
-                                            </Button>
-                                            <Button x:Name="EventSubscriptionTileButton"
-                                                    Grid.Column="2"
-                                                    Tag="Subscription"
-                                                    Command="{Binding SelectEventKindCommand}"
-                                                    CommandParameter="{Binding Tag, RelativeSource={RelativeSource Self}}">
-                                                <StackPanel HorizontalAlignment="Center">
-                                                    <Image Source="/Assets/Icons/action_subscription_purple.png"
-                                                           Width="26"
-                                                           Height="26"
-                                                           Margin="0,0,0,8" />
-                                                    <TextBlock Text="Nueva suscripcion"
-                                                               FontSize="12"
-                                                               FontWeight="SemiBold"
-                                                               TextAlignment="Center" />
-                                                </StackPanel>
-                                            </Button>
-                                            <Button x:Name="EventRaidTileButton"
-                                                    Grid.Column="4"
-                                                    Tag="Raid"
-                                                    Command="{Binding SelectEventKindCommand}"
-                                                    CommandParameter="{Binding Tag, RelativeSource={RelativeSource Self}}">
-                                                <StackPanel HorizontalAlignment="Center">
-                                                    <Image Source="/Assets/Icons/activity_notification.png"
-                                                           Width="26"
-                                                           Height="26"
-                                                           Margin="0,0,0,8" />
-                                                    <TextBlock Text="Raid recibida"
-                                                               FontSize="12"
-                                                               FontWeight="SemiBold"
-                                                               TextAlignment="Center" />
-                                                </StackPanel>
-                                            </Button>
-                                            <Button x:Name="EventCheerTileButton"
-                                                    Grid.Row="2"
-                                                    Tag="Cheer"
-                                                    Command="{Binding SelectEventKindCommand}"
-                                                    CommandParameter="{Binding Tag, RelativeSource={RelativeSource Self}}">
-                                                <StackPanel HorizontalAlignment="Center">
-                                                    <Image Source="/Assets/Icons/action_bits_blue.png"
-                                                           Width="26"
-                                                           Height="26"
-                                                           Margin="0,0,0,8" />
-                                                    <TextBlock Text="Bits"
-                                                               FontSize="12"
-                                                               FontWeight="SemiBold"
-                                                               TextAlignment="Center" />
-                                                </StackPanel>
-                                            </Button>
-                                            <Button x:Name="EventChatCommandTileButton"
-                                                    Grid.Row="2"
-                                                    Grid.Column="2"
-                                                    Tag="ChatCommand"
-                                                    Command="{Binding SelectEventKindCommand}"
-                                                    CommandParameter="{Binding Tag, RelativeSource={RelativeSource Self}}">
-                                                <StackPanel HorizontalAlignment="Center">
-                                                    <Image Source="/Assets/Icons/action_message_green.png"
-                                                           Width="26"
-                                                           Height="26"
-                                                           Margin="0,0,0,8" />
-                                                    <TextBlock Text="Comando de chat"
-                                                               FontSize="12"
-                                                               FontWeight="SemiBold"
-                                                               TextAlignment="Center" />
-                                                </StackPanel>
-                                            </Button>
-                                            <Button x:Name="EventRedemptionTileButton"
-                                                    Grid.Row="2"
-                                                    Grid.Column="4"
-                                                    Tag="ChannelPointRedemption"
-                                                    Command="{Binding SelectEventKindCommand}"
-                                                    CommandParameter="{Binding Tag, RelativeSource={RelativeSource Self}}">
-                                                <StackPanel HorizontalAlignment="Center">
-                                                    <Image Source="/Assets/Icons/activity_notification_lime.png"
-                                                           Width="26"
-                                                           Height="26"
-                                                           Margin="0,0,0,8" />
-                                                    <TextBlock Text="Canje de puntos"
-                                                               FontSize="12"
-                                                               FontWeight="SemiBold"
-                                                               TextAlignment="Center" />
-                                                </StackPanel>
-                                            </Button>
-                                        </Grid>
-
-                                        <StackPanel>
+                                        <StackPanel Margin="0,0,0,10">
                                             <TextBlock x:Name="RewardTitleLabel"
                                                        Text="Canje especifico"
                                                        Style="{StaticResource MutedText}" />

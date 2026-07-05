@@ -30,6 +30,7 @@ public sealed partial class AlertsViewModel
     {
         _rulesViewSource.View?.Refresh();
         UpdateRulesCount(_rulesViewSource.View?.Cast<EventRuleRowViewModel>().Count() ?? 0, _rules?.Count ?? 0);
+        OnPropertyChanged(nameof(EditorContextText));
     }
 
     public bool ContainsRule(EventRule rule)

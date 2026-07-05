@@ -12,6 +12,7 @@ public partial class MainWindow
         }
 
         RefreshRulesView();
+        UpdateEventKindTileSelection();
     }
 
     private void RefreshRulesView()

@@ -60,13 +60,13 @@
                                                FontWeight="SemiBold"
                                                Margin="0,5,0,0" />
                                 </StackPanel>
-                                <Border Grid.Column="2"
-                                        Width="24"
-                                        Height="24"
-                                        Background="{Binding TwitchState.Brush}"
-                                        OpacityMask="{Binding TwitchState.IconMask}"
-                                        ToolTip="{Binding TwitchState.ToolTip}"
-                                        VerticalAlignment="Top" />
+                                <Rectangle Grid.Column="2"
+                                           Width="24"
+                                           Height="24"
+                                           Fill="{Binding TwitchState.Brush}"
+                                           OpacityMask="{Binding TwitchState.IconMask}"
+                                           ToolTip="{Binding TwitchState.ToolTip}"
+                                           VerticalAlignment="Top" />
                             </Grid>
                         </Border>
 
@@ -99,13 +99,13 @@
                                                FontWeight="SemiBold"
                                                Margin="0,5,0,0" />
                                 </StackPanel>
-                                <Border Grid.Column="2"
-                                        Width="24"
-                                        Height="24"
-                                        Background="{Binding ArduinoState.Brush}"
-                                        OpacityMask="{Binding ArduinoState.IconMask}"
-                                        ToolTip="{Binding ArduinoState.ToolTip}"
-                                        VerticalAlignment="Top" />
+                                <Rectangle Grid.Column="2"
+                                           Width="24"
+                                           Height="24"
+                                           Fill="{Binding ArduinoState.Brush}"
+                                           OpacityMask="{Binding ArduinoState.IconMask}"
+                                           ToolTip="{Binding ArduinoState.ToolTip}"
+                                           VerticalAlignment="Top" />
                             </Grid>
                         </Border>
 
@@ -138,13 +138,13 @@
                                                FontWeight="SemiBold"
                                                Margin="0,5,0,0" />
                                 </StackPanel>
-                                <Border Grid.Column="2"
-                                        Width="24"
-                                        Height="24"
-                                        Background="{Binding AlexaState.Brush}"
-                                        OpacityMask="{Binding AlexaState.IconMask}"
-                                        ToolTip="{Binding AlexaState.ToolTip}"
-                                        VerticalAlignment="Top" />
+                                <Rectangle Grid.Column="2"
+                                           Width="24"
+                                           Height="24"
+                                           Fill="{Binding AlexaState.Brush}"
+                                           OpacityMask="{Binding AlexaState.IconMask}"
+                                           ToolTip="{Binding AlexaState.ToolTip}"
+                                           VerticalAlignment="Top" />
                             </Grid>
                         </Border>
 
@@ -177,13 +177,13 @@
                                                FontWeight="SemiBold"
                                                Margin="0,5,0,0" />
                                 </StackPanel>
-                                <Border Grid.Column="2"
-                                        Width="24"
-                                        Height="24"
-                                        Background="{Binding ObsState.Brush}"
-                                        OpacityMask="{Binding ObsState.IconMask}"
-                                        ToolTip="{Binding ObsState.ToolTip}"
-                                        VerticalAlignment="Top" />
+                                <Rectangle Grid.Column="2"
+                                           Width="24"
+                                           Height="24"
+                                           Fill="{Binding ObsState.Brush}"
+                                           OpacityMask="{Binding ObsState.IconMask}"
+                                           ToolTip="{Binding ObsState.ToolTip}"
+                                           VerticalAlignment="Top" />
                             </Grid>
                         </Border>
                     </Grid>

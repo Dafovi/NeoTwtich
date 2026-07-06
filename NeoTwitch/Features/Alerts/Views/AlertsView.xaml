@@ -42,12 +42,6 @@
                                 </StackPanel>
                             </StackPanel>
 
-                            <Button Grid.Column="1"
-                                    Content="Nueva alerta personalizada"
-                                    Style="{StaticResource PrimaryButton}"
-                                    VerticalAlignment="Top"
-                                    Command="{Binding AddRuleCommand}" />
-
                             <Border Grid.Row="1"
                                     Grid.ColumnSpan="2"
                                     Style="{StaticResource Card}"
@@ -61,7 +55,8 @@
                                             <Button x:Name="EventFollowTileButton"
                                                     Tag="Follow"
                                                     MinWidth="190"
-                                                    MinHeight="62"
+                                                    MinHeight="50"
+                                                    Padding="12,6"
                                                     Margin="0,0,8,0"
                                                     Command="{Binding SelectCategoryFilterCommand}"
                                                     CommandParameter="{Binding Tag, RelativeSource={RelativeSource Self}}">
@@ -73,7 +68,8 @@
                                             <Button x:Name="EventSubscriptionTileButton"
                                                     Tag="Subscription"
                                                     MinWidth="190"
-                                                    MinHeight="62"
+                                                    MinHeight="50"
+                                                    Padding="12,6"
                                                     Margin="0,0,8,0"
                                                     Command="{Binding SelectCategoryFilterCommand}"
                                                     CommandParameter="{Binding Tag, RelativeSource={RelativeSource Self}}">
@@ -85,7 +81,8 @@
                                             <Button x:Name="EventRaidTileButton"
                                                     Tag="Raid"
                                                     MinWidth="170"
-                                                    MinHeight="62"
+                                                    MinHeight="50"
+                                                    Padding="12,6"
                                                     Margin="0,0,8,0"
                                                     Command="{Binding SelectCategoryFilterCommand}"
                                                     CommandParameter="{Binding Tag, RelativeSource={RelativeSource Self}}">
@@ -97,7 +94,8 @@
                                             <Button x:Name="EventCheerTileButton"
                                                     Tag="Cheer"
                                                     MinWidth="150"
-                                                    MinHeight="62"
+                                                    MinHeight="50"
+                                                    Padding="12,6"
                                                     Margin="0,0,8,0"
                                                     Command="{Binding SelectCategoryFilterCommand}"
                                                     CommandParameter="{Binding Tag, RelativeSource={RelativeSource Self}}">
@@ -109,7 +107,8 @@
                                             <Button x:Name="EventChatCommandTileButton"
                                                     Tag="ChatCommand"
                                                     MinWidth="190"
-                                                    MinHeight="62"
+                                                    MinHeight="50"
+                                                    Padding="12,6"
                                                     Margin="0,0,8,0"
                                                     Command="{Binding SelectCategoryFilterCommand}"
                                                     CommandParameter="{Binding Tag, RelativeSource={RelativeSource Self}}">
@@ -121,7 +120,8 @@
                                             <Button x:Name="EventRedemptionTileButton"
                                                     Tag="ChannelPointRedemption"
                                                     MinWidth="190"
-                                                    MinHeight="62"
+                                                    MinHeight="50"
+                                                    Padding="12,6"
                                                     Command="{Binding SelectCategoryFilterCommand}"
                                                     CommandParameter="{Binding Tag, RelativeSource={RelativeSource Self}}">
                                                 <StackPanel Orientation="Horizontal" HorizontalAlignment="Center">

@@ -3,7 +3,6 @@ using WpfButton = System.Windows.Controls.Button;
 using WpfCheckBox = System.Windows.Controls.CheckBox;
 using WpfComboBox = System.Windows.Controls.ComboBox;
 using WpfDockPanel = System.Windows.Controls.DockPanel;
-using WpfExpander = System.Windows.Controls.Expander;
 using WpfGrid = System.Windows.Controls.Grid;
 using WpfItemsControl = System.Windows.Controls.ItemsControl;
 using WpfPath = System.Windows.Shapes.Path;
@@ -19,7 +18,7 @@ public partial class MainWindow
 {
     private WpfBorder UseLightsActionCard => AlertsView.UseLightsActionCard;
     private WpfCheckBox UseLightsCheck => AlertsView.UseLightsCheck;
-    private WpfExpander LightConfigurationPanel => AlertsView.LightConfigurationPanel;
+    private WpfStackPanel LightConfigurationPanel => AlertsView.LightConfigurationPanel;
     private WpfSeparator LightOptionsSeparator => AlertsView.LightOptionsSeparator;
     private WpfTextBlock TargetPinsLabel => AlertsView.TargetPinsLabel;
     private WpfComboBox TargetPinsChoiceBox => AlertsView.TargetPinsChoiceBox;

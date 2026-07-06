@@ -5,6 +5,59 @@
                      xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
                      xmlns:views="clr-namespace:NeoTwitch.Views"
                      mc:Ignorable="d">
+    <views:NeoTwitchView.Resources>
+        <Style x:Key="AlertToggleSwitchStyle" TargetType="{x:Type CheckBox}">
+            <Setter Property="Width" Value="46" />
+            <Setter Property="Height" Value="26" />
+            <Setter Property="Focusable" Value="False" />
+            <Setter Property="Cursor" Value="Hand" />
+            <Setter Property="VerticalAlignment" Value="Center" />
+            <Setter Property="Template">
+                <Setter.Value>
+                    <ControlTemplate TargetType="{x:Type CheckBox}">
+                        <Grid Width="{TemplateBinding Width}"
+                              Height="{TemplateBinding Height}">
+                            <Border x:Name="Track"
+                                    CornerRadius="13"
+                                    Background="{DynamicResource ThemeBorderBrush}"
+                                    BorderBrush="{DynamicResource ThemeBorderBrush}"
+                                    BorderThickness="1" />
+                            <Ellipse x:Name="Thumb"
+                                     Width="20"
+                                     Height="20"
+                                     Margin="3,0,0,0"
+                                     HorizontalAlignment="Left"
+                                     VerticalAlignment="Center"
+                                     Fill="{DynamicResource ThemeMutedTextBrush}" />
+                        </Grid>
+                        <ControlTemplate.Triggers>
+                            <Trigger Property="IsChecked" Value="True">
+                                <Setter TargetName="Track" Property="Background" Value="{DynamicResource ThemeSelectionBrush}" />
+                                <Setter TargetName="Track" Property="BorderBrush" Value="{DynamicResource ThemeSelectionBrush}" />
+                                <Setter TargetName="Thumb" Property="HorizontalAlignment" Value="Right" />
+                                <Setter TargetName="Thumb" Property="Margin" Value="0,0,3,0" />
+                                <Setter TargetName="Thumb" Property="Fill" Value="#FFFFFFFF" />
+                            </Trigger>
+                            <Trigger Property="IsEnabled" Value="False">
+                                <Setter TargetName="Track" Property="Opacity" Value="0.45" />
+                                <Setter TargetName="Thumb" Property="Opacity" Value="0.65" />
+                            </Trigger>
+                        </ControlTemplate.Triggers>
+                    </ControlTemplate>
+                </Setter.Value>
+            </Setter>
+        </Style>
+
+        <Style x:Key="AlertLightPatternButtonStyle" TargetType="{x:Type Button}">
+            <Setter Property="MinWidth" Value="74" />
+            <Setter Property="MinHeight" Value="38" />
+            <Setter Property="Padding" Value="8,4" />
+            <Setter Property="Margin" Value="3" />
+            <Setter Property="HorizontalContentAlignment" Value="Center" />
+            <Setter Property="VerticalContentAlignment" Value="Center" />
+        </Style>
+    </views:NeoTwitchView.Resources>
+
                     <Grid Margin="24">
                         <Grid.RowDefinitions>
                             <RowDefinition Height="Auto" />
@@ -354,7 +407,7 @@
                                         <ColumnDefinition Width="Auto" />
                                     </Grid.ColumnDefinitions>
                                     <StackPanel>
-                                        <TextBlock Text="Editor de alerta"
+                                        <TextBlock Text="Configuracion de la alerta"
                                                    FontSize="18"
                                                    Style="{StaticResource TitleText}"
                                                    FontWeight="SemiBold" />
@@ -371,12 +424,30 @@
                                                 Content="Probar alerta"
                                                 Style="{StaticResource PrimaryButton}"
                                                 Command="{Binding TestRuleCommand}" />
-                                        <Button Content="Guardar cambios"
-                                                Style="{StaticResource PrimaryButton}"
-                                                Opacity="{Binding SaveButtonOpacity}"
-                                                ToolTip="{Binding SaveButtonToolTip}"
-                                                Command="{Binding SaveRuleCommand}" />
                                     </WrapPanel>
+                                </Grid>
+
+                                <Grid DockPanel.Dock="Bottom"
+                                      Margin="0,14,0,0"
+                                      IsEnabled="{Binding IsEditorEnabled}">
+                                    <Grid.ColumnDefinitions>
+                                        <ColumnDefinition Width="Auto" />
+                                        <ColumnDefinition Width="*" />
+                                        <ColumnDefinition Width="Auto" />
+                                    </Grid.ColumnDefinitions>
+                                    <Button Content="Eliminar alerta"
+                                            Style="{StaticResource DangerButton}"
+                                            HorizontalContentAlignment="Center"
+                                            MinWidth="150"
+                                            Command="{Binding RemoveRuleCommand}" />
+                                    <Button Grid.Column="2"
+                                            Content="Guardar cambios"
+                                            Style="{StaticResource PrimaryButton}"
+                                            HorizontalContentAlignment="Center"
+                                            MinWidth="280"
+                                            Opacity="{Binding SaveButtonOpacity}"
+                                            ToolTip="{Binding SaveButtonToolTip}"
+                                            Command="{Binding SaveRuleCommand}" />
                                 </Grid>
 
                                 <ScrollViewer VerticalScrollBarVisibility="Auto"
@@ -457,8 +528,14 @@
                                                     Padding="12"
                                                     Margin="0,0,0,10"
                                                     Background="{DynamicResource ThemeInputBrush}">
-                                                <StackPanel>
-                                                    <Grid>
+                                                <Grid>
+                                                    <Grid.ColumnDefinitions>
+                                                        <ColumnDefinition Width="220" />
+                                                        <ColumnDefinition Width="16" />
+                                                        <ColumnDefinition Width="*" />
+                                                    </Grid.ColumnDefinitions>
+
+                                                    <Grid MinWidth="190" VerticalAlignment="Center">
                                                         <Grid.ColumnDefinitions>
                                                             <ColumnDefinition Width="42" />
                                                             <ColumnDefinition Width="*" />
@@ -467,35 +544,33 @@
                                                         <Image Source="/Assets/Icons/nav_lights.png"
                                                                Width="26"
                                                                Height="26"
-                                                               Stretch="Uniform" />
-                                                        <StackPanel Grid.Column="1">
+                                                               Stretch="Uniform"
+                                                               VerticalAlignment="Center" />
+                                                        <StackPanel Grid.Column="1"
+                                                                    VerticalAlignment="Center">
                                                             <TextBlock Text="Luces"
                                                                        FontWeight="SemiBold" />
                                                             <TextBlock Text="Efectos y colores dinamicos."
                                                                        Style="{StaticResource MutedText}"
-                                                                       FontSize="12" />
+                                                                       FontSize="12"
+                                                                       TextWrapping="Wrap" />
                                                         </StackPanel>
                                                         <CheckBox x:Name="UseLightsCheck"
                                                                   Grid.Column="2"
                                                                   Content=""
+                                                                  Style="{StaticResource AlertToggleSwitchStyle}"
                                                                   IsChecked="{Binding Editor.UseLights, Mode=TwoWay, UpdateSourceTrigger=PropertyChanged}"
                                                                   Checked="RuleFieldChanged"
                                                                   Unchecked="RuleFieldChanged" />
                                                     </Grid>
 
-                                                    <Expander x:Name="LightConfigurationPanel"
-                                                              Header="Configuracion de luces"
-                                                              IsExpanded="True"
-                                                              Foreground="{DynamicResource ThemeTextBrush}"
-                                                              Margin="42,10,0,0">
-                                                        <StackPanel Margin="0,10,0,0">
-                                                            <TextBlock Text="Se muestran solo las opciones que usa el patron."
-                                                                       Style="{StaticResource MutedText}"
-                                                                       FontSize="12"
-                                                                       Margin="0,0,0,10" />
-
+                                                    <StackPanel x:Name="LightConfigurationPanel"
+                                                                Grid.Column="2"
+                                                                Margin="0">
                                                             <Separator x:Name="LightOptionsSeparator"
-                                                                       Margin="0,0,0,12" />
+                                                                       Height="0"
+                                                                       Margin="0"
+                                                                       Opacity="0" />
 
                                                             <TextBlock x:Name="TargetPinsLabel"
                                                                        Text="Pines de salida"
@@ -524,30 +599,18 @@
                                                                           Visibility="Collapsed"
                                                                           SelectedValue="{Binding Editor.Pattern, Mode=TwoWay, UpdateSourceTrigger=PropertyChanged}"
                                                                           SelectionChanged="RuleFieldChanged" />
-                                                                <Grid Margin="0,4,0,12">
-                                                                    <Grid.ColumnDefinitions>
-                                                                        <ColumnDefinition Width="*" />
-                                                                        <ColumnDefinition Width="8" />
-                                                                        <ColumnDefinition Width="*" />
-                                                                        <ColumnDefinition Width="8" />
-                                                                        <ColumnDefinition Width="*" />
-                                                                        <ColumnDefinition Width="8" />
-                                                                        <ColumnDefinition Width="*" />
-                                                                    </Grid.ColumnDefinitions>
-                                                                    <Grid.RowDefinitions>
-                                                                        <RowDefinition Height="72" />
-                                                                        <RowDefinition Height="8" />
-                                                                        <RowDefinition Height="72" />
-                                                                    </Grid.RowDefinitions>
-
+                                                                <UniformGrid Columns="7" Margin="-3,4,-3,10">
                                                                     <Button x:Name="PatternSolidTileButton"
                                                                             Tag="Solid"
+                                                                            Style="{StaticResource AlertLightPatternButtonStyle}"
                                                                             Command="{Binding SelectLightPatternCommand}"
                                                                             CommandParameter="{Binding Tag, RelativeSource={RelativeSource Self}}">
-                                                                        <StackPanel HorizontalAlignment="Center">
+                                                                        <StackPanel Orientation="Horizontal"
+                                                                                    HorizontalAlignment="Center"
+                                                                                    VerticalAlignment="Center">
                                                                             <Rectangle Width="22"
                                                                                        Height="22"
-                                                                                       Margin="0,0,0,6"
+                                                                                       Margin="0,0,6,0"
                                                                                        Fill="{Binding Foreground, RelativeSource={RelativeSource AncestorType=Button}}">
                                                                                 <Rectangle.OpacityMask>
                                                                                     <ImageBrush ImageSource="/Assets/Icons/lights_fx_static.png"
@@ -555,20 +618,22 @@
                                                                                 </Rectangle.OpacityMask>
                                                                             </Rectangle>
                                                                             <TextBlock Text="Fijo"
-                                                                                       FontSize="12"
+                                                                                       FontSize="11"
                                                                                        FontWeight="SemiBold"
                                                                                        TextAlignment="Center" />
                                                                         </StackPanel>
                                                                     </Button>
                                                                     <Button x:Name="PatternPulseTileButton"
-                                                                            Grid.Column="2"
                                                                             Tag="Pulse"
+                                                                            Style="{StaticResource AlertLightPatternButtonStyle}"
                                                                             Command="{Binding SelectLightPatternCommand}"
                                                                             CommandParameter="{Binding Tag, RelativeSource={RelativeSource Self}}">
-                                                                        <StackPanel HorizontalAlignment="Center">
+                                                                        <StackPanel Orientation="Horizontal"
+                                                                                    HorizontalAlignment="Center"
+                                                                                    VerticalAlignment="Center">
                                                                             <Rectangle Width="22"
                                                                                        Height="22"
-                                                                                       Margin="0,0,0,6"
+                                                                                       Margin="0,0,6,0"
                                                                                        Fill="{Binding Foreground, RelativeSource={RelativeSource AncestorType=Button}}">
                                                                                 <Rectangle.OpacityMask>
                                                                                     <ImageBrush ImageSource="/Assets/Icons/lights_fx_pulse.png"
@@ -576,20 +641,22 @@
                                                                                 </Rectangle.OpacityMask>
                                                                             </Rectangle>
                                                                             <TextBlock Text="Pulso"
-                                                                                       FontSize="12"
+                                                                                       FontSize="11"
                                                                                        FontWeight="SemiBold"
                                                                                        TextAlignment="Center" />
                                                                         </StackPanel>
                                                                     </Button>
                                                                     <Button x:Name="PatternRainbowTileButton"
-                                                                            Grid.Column="4"
                                                                             Tag="Rainbow"
+                                                                            Style="{StaticResource AlertLightPatternButtonStyle}"
                                                                             Command="{Binding SelectLightPatternCommand}"
                                                                             CommandParameter="{Binding Tag, RelativeSource={RelativeSource Self}}">
-                                                                        <StackPanel HorizontalAlignment="Center">
+                                                                        <StackPanel Orientation="Horizontal"
+                                                                                    HorizontalAlignment="Center"
+                                                                                    VerticalAlignment="Center">
                                                                             <Rectangle Width="22"
                                                                                        Height="22"
-                                                                                       Margin="0,0,0,6"
+                                                                                       Margin="0,0,6,0"
                                                                                        Fill="{Binding Foreground, RelativeSource={RelativeSource AncestorType=Button}}">
                                                                                 <Rectangle.OpacityMask>
                                                                                     <ImageBrush ImageSource="/Assets/Icons/lights_fx_rainbow.png"
@@ -597,20 +664,22 @@
                                                                                 </Rectangle.OpacityMask>
                                                                             </Rectangle>
                                                                             <TextBlock Text="Arcoiris"
-                                                                                       FontSize="12"
+                                                                                       FontSize="11"
                                                                                        FontWeight="SemiBold"
                                                                                        TextAlignment="Center" />
                                                                         </StackPanel>
                                                                     </Button>
                                                                     <Button x:Name="PatternChaseTileButton"
-                                                                            Grid.Column="6"
                                                                             Tag="Chase"
+                                                                            Style="{StaticResource AlertLightPatternButtonStyle}"
                                                                             Command="{Binding SelectLightPatternCommand}"
                                                                             CommandParameter="{Binding Tag, RelativeSource={RelativeSource Self}}">
-                                                                        <StackPanel HorizontalAlignment="Center">
+                                                                        <StackPanel Orientation="Horizontal"
+                                                                                    HorizontalAlignment="Center"
+                                                                                    VerticalAlignment="Center">
                                                                             <Rectangle Width="22"
                                                                                        Height="22"
-                                                                                       Margin="0,0,0,6"
+                                                                                       Margin="0,0,6,0"
                                                                                        Fill="{Binding Foreground, RelativeSource={RelativeSource AncestorType=Button}}">
                                                                                 <Rectangle.OpacityMask>
                                                                                     <ImageBrush ImageSource="/Assets/Icons/lights_fx_wave.png"
@@ -618,20 +687,22 @@
                                                                                 </Rectangle.OpacityMask>
                                                                             </Rectangle>
                                                                             <TextBlock Text="Carrera"
-                                                                                       FontSize="12"
+                                                                                       FontSize="11"
                                                                                        FontWeight="SemiBold"
                                                                                        TextAlignment="Center" />
                                                                         </StackPanel>
                                                                     </Button>
                                                                     <Button x:Name="PatternTheaterTileButton"
-                                                                            Grid.Row="2"
                                                                             Tag="Theater"
+                                                                            Style="{StaticResource AlertLightPatternButtonStyle}"
                                                                             Command="{Binding SelectLightPatternCommand}"
                                                                             CommandParameter="{Binding Tag, RelativeSource={RelativeSource Self}}">
-                                                                        <StackPanel HorizontalAlignment="Center">
+                                                                        <StackPanel Orientation="Horizontal"
+                                                                                    HorizontalAlignment="Center"
+                                                                                    VerticalAlignment="Center">
                                                                             <Rectangle Width="22"
                                                                                        Height="22"
-                                                                                       Margin="0,0,0,6"
+                                                                                       Margin="0,0,6,0"
                                                                                        Fill="{Binding Foreground, RelativeSource={RelativeSource AncestorType=Button}}">
                                                                                 <Rectangle.OpacityMask>
                                                                                     <ImageBrush ImageSource="/Assets/Icons/lights_fx_breathe.png"
@@ -639,21 +710,22 @@
                                                                                 </Rectangle.OpacityMask>
                                                                             </Rectangle>
                                                                             <TextBlock Text="Teatro"
-                                                                                       FontSize="12"
+                                                                                       FontSize="11"
                                                                                        FontWeight="SemiBold"
                                                                                        TextAlignment="Center" />
                                                                         </StackPanel>
                                                                     </Button>
                                                                     <Button x:Name="PatternSparkleTileButton"
-                                                                            Grid.Row="2"
-                                                                            Grid.Column="2"
                                                                             Tag="Sparkle"
+                                                                            Style="{StaticResource AlertLightPatternButtonStyle}"
                                                                             Command="{Binding SelectLightPatternCommand}"
                                                                             CommandParameter="{Binding Tag, RelativeSource={RelativeSource Self}}">
-                                                                        <StackPanel HorizontalAlignment="Center">
+                                                                        <StackPanel Orientation="Horizontal"
+                                                                                    HorizontalAlignment="Center"
+                                                                                    VerticalAlignment="Center">
                                                                             <Rectangle Width="22"
                                                                                        Height="22"
-                                                                                       Margin="0,0,0,6"
+                                                                                       Margin="0,0,6,0"
                                                                                        Fill="{Binding Foreground, RelativeSource={RelativeSource AncestorType=Button}}">
                                                                                 <Rectangle.OpacityMask>
                                                                                     <ImageBrush ImageSource="/Assets/Icons/activity_notification_lime.png"
@@ -661,22 +733,22 @@
                                                                                 </Rectangle.OpacityMask>
                                                                             </Rectangle>
                                                                             <TextBlock Text="Destellos"
-                                                                                       FontSize="12"
+                                                                                       FontSize="11"
                                                                                        FontWeight="SemiBold"
                                                                                        TextAlignment="Center" />
                                                                         </StackPanel>
                                                                     </Button>
                                                                     <Button x:Name="PatternRaveTileButton"
-                                                                            Grid.Row="2"
-                                                                            Grid.Column="4"
-                                                                            Grid.ColumnSpan="3"
                                                                             Tag="Rave"
+                                                                            Style="{StaticResource AlertLightPatternButtonStyle}"
                                                                             Command="{Binding SelectLightPatternCommand}"
                                                                             CommandParameter="{Binding Tag, RelativeSource={RelativeSource Self}}">
-                                                                        <StackPanel HorizontalAlignment="Center">
+                                                                        <StackPanel Orientation="Horizontal"
+                                                                                    HorizontalAlignment="Center"
+                                                                                    VerticalAlignment="Center">
                                                                             <Rectangle Width="22"
                                                                                        Height="22"
-                                                                                       Margin="0,0,0,6"
+                                                                                       Margin="0,0,6,0"
                                                                                        Fill="{Binding Foreground, RelativeSource={RelativeSource AncestorType=Button}}">
                                                                                 <Rectangle.OpacityMask>
                                                                                     <ImageBrush ImageSource="/Assets/Icons/lights_fx_rave.png"
@@ -684,141 +756,168 @@
                                                                                 </Rectangle.OpacityMask>
                                                                             </Rectangle>
                                                                             <TextBlock Text="Rave"
-                                                                                       FontSize="12"
+                                                                                       FontSize="11"
                                                                                        FontWeight="SemiBold"
                                                                                        TextAlignment="Center" />
                                                                         </StackPanel>
                                                                     </Button>
-                                                                </Grid>
+                                                                </UniformGrid>
                                                             </StackPanel>
 
                                                             <StackPanel Margin="0,10,0,6">
                                                                 <Grid x:Name="ColorOptionsGrid"
                                                                       MinWidth="0"
                                                                       HorizontalAlignment="Stretch"
-                                                                      Margin="0,0,0,12">
+                                                                      Margin="0,0,0,8">
                                                                     <Border BorderBrush="{DynamicResource ThemeBorderBrush}"
                                                                             BorderThickness="1"
                                                                             CornerRadius="14"
-                                                                            Padding="12"
+                                                                            Padding="10"
                                                                             Background="{DynamicResource ThemeSurfaceBrush}">
-                                                                        <StackPanel>
-                                                                            <TextBlock Text="Colores"
-                                                                                       FontWeight="SemiBold"
-                                                                                       Margin="0,0,0,10" />
-                                                                            <StackPanel x:Name="PrimaryColorPanel">
-                                                                                <TextBlock Text="Color principal" Style="{StaticResource MutedText}" />
-                                                                                <DockPanel LastChildFill="True" Margin="0,4,0,10">
+                                                                        <UniformGrid Columns="3">
+                                                                            <StackPanel x:Name="PrimaryColorPanel"
+                                                                                        Margin="0,0,8,0">
+                                                                                <TextBlock Text="Color principal"
+                                                                                           Style="{StaticResource MutedText}"
+                                                                                           Margin="0,0,0,4" />
+                                                                                <DockPanel LastChildFill="True">
                                                                                     <Button x:Name="PrimaryColorButton"
                                                                                             DockPanel.Dock="Left"
-                                                                                            Width="38"
-                                                                                            Margin="0,0,10,0"
+                                                                                            Width="34"
+                                                                                            Height="34"
+                                                                                            Margin="0,0,8,0"
                                                                                             ToolTip="Escoger color"
                                                                                             Tag="Primary"
                                                                                             Command="{Binding PickLightColorCommand}"
                                                                                             CommandParameter="{Binding Tag, RelativeSource={RelativeSource Self}}" />
-                                                                                    <Button Content="Editar color"
-                                                                                            DockPanel.Dock="Right"
-                                                                                            MinWidth="104"
-                                                                                            Margin="10,0,0,0"
-                                                                                            Tag="Primary"
-                                                                                            Command="{Binding PickLightColorCommand}"
-                                                                                            CommandParameter="{Binding Tag, RelativeSource={RelativeSource Self}}" />
                                                                                     <TextBox x:Name="PrimaryColorBox"
+                                                                                             MinWidth="0"
                                                                                              Margin="0"
                                                                                              Text="{Binding Editor.PrimaryColor, Mode=TwoWay, UpdateSourceTrigger=PropertyChanged}"
                                                                                              TextChanged="RuleFieldChanged" />
                                                                                 </DockPanel>
                                                                             </StackPanel>
 
-                                                                            <TextBlock x:Name="SecondaryColorLabel"
-                                                                                       Text="Color secundario"
-                                                                                       Style="{StaticResource MutedText}" />
-                                                                            <DockPanel x:Name="SecondaryColorPanel"
-                                                                                       LastChildFill="True"
-                                                                                       Margin="0,4,0,10">
-                                                                                <Button x:Name="SecondaryColorButton"
-                                                                                        DockPanel.Dock="Left"
-                                                                                        Width="38"
-                                                                                        Margin="0,0,10,0"
-                                                                                        ToolTip="Escoger color"
-                                                                                        Tag="Secondary"
-                                                                                        Command="{Binding PickLightColorCommand}"
-                                                                                        CommandParameter="{Binding Tag, RelativeSource={RelativeSource Self}}" />
-                                                                                <Button Content="Editar color"
-                                                                                        DockPanel.Dock="Right"
-                                                                                        MinWidth="104"
-                                                                                        Margin="10,0,0,0"
-                                                                                        Tag="Secondary"
-                                                                                        Command="{Binding PickLightColorCommand}"
-                                                                                        CommandParameter="{Binding Tag, RelativeSource={RelativeSource Self}}" />
-                                                                                <TextBox x:Name="SecondaryColorBox"
-                                                                                         Margin="0"
-                                                                                         Text="{Binding Editor.SecondaryColor, Mode=TwoWay, UpdateSourceTrigger=PropertyChanged}"
-                                                                                         TextChanged="RuleFieldChanged" />
-                                                                            </DockPanel>
+                                                                            <StackPanel Margin="0,0,8,0">
+                                                                                <TextBlock x:Name="SecondaryColorLabel"
+                                                                                           Text="Color secundario"
+                                                                                           Style="{StaticResource MutedText}"
+                                                                                           Margin="0,0,0,4" />
+                                                                                <DockPanel x:Name="SecondaryColorPanel"
+                                                                                           LastChildFill="True">
+                                                                                    <Button x:Name="SecondaryColorButton"
+                                                                                            DockPanel.Dock="Left"
+                                                                                            Width="34"
+                                                                                            Height="34"
+                                                                                            Margin="0,0,8,0"
+                                                                                            ToolTip="Escoger color"
+                                                                                            Tag="Secondary"
+                                                                                            Command="{Binding PickLightColorCommand}"
+                                                                                            CommandParameter="{Binding Tag, RelativeSource={RelativeSource Self}}" />
+                                                                                    <TextBox x:Name="SecondaryColorBox"
+                                                                                             MinWidth="0"
+                                                                                             Margin="0"
+                                                                                             Text="{Binding Editor.SecondaryColor, Mode=TwoWay, UpdateSourceTrigger=PropertyChanged}"
+                                                                                             TextChanged="RuleFieldChanged" />
+                                                                                </DockPanel>
+                                                                            </StackPanel>
 
-                                                                            <TextBlock x:Name="TertiaryColorLabel"
-                                                                                       Text="Tercer color"
-                                                                                       Style="{StaticResource MutedText}" />
-                                                                            <DockPanel x:Name="TertiaryColorPanel"
-                                                                                       LastChildFill="True"
-                                                                                       Margin="0,4,0,0">
-                                                                                <Button x:Name="TertiaryColorButton"
-                                                                                        DockPanel.Dock="Left"
-                                                                                        Width="38"
-                                                                                        Margin="0,0,10,0"
-                                                                                        ToolTip="Escoger color"
-                                                                                        Tag="Tertiary"
-                                                                                        Command="{Binding PickLightColorCommand}"
-                                                                                        CommandParameter="{Binding Tag, RelativeSource={RelativeSource Self}}" />
-                                                                                <Button Content="Editar color"
-                                                                                        DockPanel.Dock="Right"
-                                                                                        MinWidth="104"
-                                                                                        Margin="10,0,0,0"
-                                                                                        Tag="Tertiary"
-                                                                                        Command="{Binding PickLightColorCommand}"
-                                                                                        CommandParameter="{Binding Tag, RelativeSource={RelativeSource Self}}" />
-                                                                                <TextBox x:Name="TertiaryColorBox"
-                                                                                         Margin="0"
-                                                                                         Text="{Binding Editor.TertiaryColor, Mode=TwoWay, UpdateSourceTrigger=PropertyChanged}"
-                                                                                         TextChanged="RuleFieldChanged" />
-                                                                            </DockPanel>
-                                                                        </StackPanel>
+                                                                            <StackPanel>
+                                                                                <TextBlock x:Name="TertiaryColorLabel"
+                                                                                           Text="Tercer color"
+                                                                                           Style="{StaticResource MutedText}"
+                                                                                           Margin="0,0,0,4" />
+                                                                                <DockPanel x:Name="TertiaryColorPanel"
+                                                                                           LastChildFill="True">
+                                                                                    <Button x:Name="TertiaryColorButton"
+                                                                                            DockPanel.Dock="Left"
+                                                                                            Width="34"
+                                                                                            Height="34"
+                                                                                            Margin="0,0,8,0"
+                                                                                            ToolTip="Escoger color"
+                                                                                            Tag="Tertiary"
+                                                                                            Command="{Binding PickLightColorCommand}"
+                                                                                            CommandParameter="{Binding Tag, RelativeSource={RelativeSource Self}}" />
+                                                                                    <TextBox x:Name="TertiaryColorBox"
+                                                                                             MinWidth="0"
+                                                                                             Margin="0"
+                                                                                             Text="{Binding Editor.TertiaryColor, Mode=TwoWay, UpdateSourceTrigger=PropertyChanged}"
+                                                                                             TextChanged="RuleFieldChanged" />
+                                                                                </DockPanel>
+                                                                            </StackPanel>
+                                                                        </UniformGrid>
                                                                     </Border>
                                                                 </Grid>
 
+                                                                <TextBlock Text="Vista previa"
+                                                                           FontWeight="SemiBold"
+                                                                           Margin="0,8,0,6" />
+                                                                <Border x:Name="RuleLedPreviewPanel"
+                                                                        BorderBrush="{DynamicResource ThemeBorderBrush}"
+                                                                        BorderThickness="1"
+                                                                        CornerRadius="10"
+                                                                        Padding="10"
+                                                                        Background="{DynamicResource ThemeSurfaceBrush}"
+                                                                        IsVisibleChanged="RuleLedPreviewPanel_IsVisibleChanged">
+                                                                    <ItemsControl x:Name="RuleLedPreviewList"
+                                                                                  ItemsSource="{Binding LedPreviewDots}">
+                                                                        <ItemsControl.ItemsPanel>
+                                                                            <ItemsPanelTemplate>
+                                                                                <UniformGrid Rows="1" />
+                                                                            </ItemsPanelTemplate>
+                                                                        </ItemsControl.ItemsPanel>
+                                                                        <ItemsControl.ItemTemplate>
+                                                                            <DataTemplate>
+                                                                                <Ellipse Width="16"
+                                                                                         Height="16"
+                                                                                         Fill="{Binding Fill}"
+                                                                                         Stroke="#80FFFFFF"
+                                                                                         StrokeThickness="1"
+                                                                                         Margin="4">
+                                                                                    <Ellipse.Effect>
+                                                                                        <DropShadowEffect Color="{Binding GlowColor}"
+                                                                                                          BlurRadius="{Binding GlowRadius}"
+                                                                                                          ShadowDepth="0"
+                                                                                                          Opacity="{Binding GlowOpacity}" />
+                                                                                    </Ellipse.Effect>
+                                                                                </Ellipse>
+                                                                            </DataTemplate>
+                                                                        </ItemsControl.ItemTemplate>
+                                                                    </ItemsControl>
+                                                                </Border>
+
+                                                            </StackPanel>
+
+                                                            <TextBlock Text="Brillo y tiempos"
+                                                                       FontWeight="SemiBold"
+                                                                       Margin="0,0,0,8" />
+                                                            <WrapPanel Margin="0,0,0,12">
                                                                 <Grid x:Name="BrightnessGrid"
-                                                                      MinWidth="0"
-                                                                      HorizontalAlignment="Stretch"
-                                                                      Margin="0,0,0,12">
+                                                                      MinWidth="138"
+                                                                      Width="150"
+                                                                      Margin="0,0,8,8">
                                                                     <Border BorderBrush="{DynamicResource ThemeBorderBrush}"
                                                                             BorderThickness="1"
-                                                                            CornerRadius="14"
-                                                                            Padding="12"
+                                                                            CornerRadius="12"
+                                                                            Padding="8"
                                                                             Background="{DynamicResource ThemeSurfaceBrush}">
-                                                                        <Grid>
-                                                                            <Grid.RowDefinitions>
-                                                                                <RowDefinition Height="Auto" />
-                                                                                <RowDefinition Height="*" />
-                                                                            </Grid.RowDefinitions>
+                                                                        <StackPanel>
                                                                             <TextBlock Text="Brillo"
-                                                                                       FontWeight="SemiBold" />
-                                                                            <Grid Grid.Row="1"
-                                                                                  Margin="0,8,0,0"
-                                                                                  MinHeight="154">
-                                                                                <Ellipse Width="104"
-                                                                                         Height="104"
+                                                                                       Style="{StaticResource MutedText}" />
+                                                                            <Grid Margin="0,4,0,0"
+                                                                                  Height="124">
+                                                                                <Ellipse Width="82"
+                                                                                         Height="82"
                                                                                          Stroke="#3014B8A6"
-                                                                                         StrokeThickness="12"
+                                                                                         StrokeThickness="10"
                                                                                          HorizontalAlignment="Center"
                                                                                          VerticalAlignment="Top" />
                                                                                 <Path x:Name="BrightnessArc"
-                                                                                      Width="104"
-                                                                                      Height="104"
+                                                                                      Width="82"
+                                                                                      Height="82"
                                                                                       Stretch="None"
                                                                                       Stroke="#14B8A6"
-                                                                                      StrokeThickness="12"
+                                                                                      StrokeThickness="10"
                                                                                       StrokeStartLineCap="Round"
                                                                                       StrokeEndLineCap="Round"
                                                                                       Fill="Transparent"
@@ -826,24 +925,24 @@
                                                                                       VerticalAlignment="Top" />
                                                                                 <TextBlock x:Name="BrightnessValueText"
                                                                                            Text="{Binding Editor.BrightnessPercentText}"
-                                                                                           FontSize="24"
+                                                                                           FontSize="19"
                                                                                            FontWeight="SemiBold"
-                                                                                           Margin="0,36,0,0"
+                                                                                           Margin="0,28,0,0"
                                                                                            HorizontalAlignment="Center"
                                                                                            VerticalAlignment="Top" />
                                                                                 <StackPanel Orientation="Horizontal"
                                                                                             HorizontalAlignment="Center"
                                                                                             VerticalAlignment="Bottom">
                                                                                     <Button Content="-"
-                                                                                            Width="34"
-                                                                                            Height="30"
+                                                                                            Width="28"
+                                                                                            Height="26"
                                                                                             Margin="0,0,6,0"
                                                                                             Tag="Brightness:-15"
                                                                                             Command="{Binding AdjustLightValueCommand}"
                                                                                             CommandParameter="{Binding Tag, RelativeSource={RelativeSource Self}}" />
                                                                                     <Button Content="+"
-                                                                                            Width="34"
-                                                                                            Height="30"
+                                                                                            Width="28"
+                                                                                            Height="26"
                                                                                             Tag="Brightness:15"
                                                                                             Command="{Binding AdjustLightValueCommand}"
                                                                                             CommandParameter="{Binding Tag, RelativeSource={RelativeSource Self}}" />
@@ -855,24 +954,18 @@
                                                                                         Visibility="Collapsed"
                                                                                         Value="{Binding Editor.Brightness, Mode=TwoWay, UpdateSourceTrigger=PropertyChanged}"
                                                                                         ValueChanged="RuleFieldChanged" />
-                                                                             </Grid>
-                                                                         </Grid>
-                                                                     </Border>
-                                                                 </Grid>
-                                                            </StackPanel>
-
-                                                            <TextBlock Text="Tiempos"
-                                                                       FontWeight="SemiBold"
-                                                                       Margin="0,0,0,8" />
-                                                            <WrapPanel Margin="0,0,0,12">
+                                                                            </Grid>
+                                                                        </StackPanel>
+                                                                    </Border>
+                                                                </Grid>
                                                                 <Grid x:Name="DurationGrid"
-                                                                      MinWidth="220"
-                                                                      Width="250"
-                                                                      Margin="0,0,10,10">
+                                                                      MinWidth="156"
+                                                                      Width="172"
+                                                                      Margin="0,0,8,8">
                                                                     <Border BorderBrush="{DynamicResource ThemeBorderBrush}"
                                                                             BorderThickness="1"
                                                                             CornerRadius="12"
-                                                                            Padding="10"
+                                                                            Padding="8"
                                                                             Background="{DynamicResource ThemeSurfaceBrush}">
                                                                         <StackPanel>
                                                                             <TextBlock Text="Duracion sin audio"
@@ -880,21 +973,21 @@
                                                                             <DockPanel Margin="0,8,0,0">
                                                                                 <Button Content="-"
                                                                                         DockPanel.Dock="Left"
-                                                                                        Width="32"
+                                                                                        Width="28"
                                                                                         Tag="Duration:-250"
                                                                                         Command="{Binding AdjustLightValueCommand}"
                                                                                         CommandParameter="{Binding Tag, RelativeSource={RelativeSource Self}}" />
                                                                                 <Button Content="+"
                                                                                         DockPanel.Dock="Right"
-                                                                                        Width="32"
+                                                                                        Width="28"
                                                                                         Tag="Duration:250"
                                                                                         Command="{Binding AdjustLightValueCommand}"
                                                                                         CommandParameter="{Binding Tag, RelativeSource={RelativeSource Self}}" />
                                                                                 <StackPanel Orientation="Horizontal"
                                                                                             HorizontalAlignment="Center"
-                                                                                            MinWidth="102">
+                                                                                            MinWidth="86">
                                                                                     <TextBox x:Name="DurationValueText"
-                                                                                             Width="70"
+                                                                                             Width="54"
                                                                                              TextAlignment="Center"
                                                                                              FontWeight="SemiBold"
                                                                                              TextChanged="LightNumberBox_TextChanged" />
@@ -920,13 +1013,13 @@
                                                                     </Border>
                                                                 </Grid>
                                                                 <Grid x:Name="CycleGrid"
-                                                                      MinWidth="220"
-                                                                      Width="250"
-                                                                      Margin="0,0,10,10">
+                                                                      MinWidth="156"
+                                                                      Width="172"
+                                                                      Margin="0,0,8,8">
                                                                     <Border BorderBrush="{DynamicResource ThemeBorderBrush}"
                                                                             BorderThickness="1"
                                                                             CornerRadius="12"
-                                                                            Padding="10"
+                                                                            Padding="8"
                                                                             Background="{DynamicResource ThemeSurfaceBrush}">
                                                                         <StackPanel>
                                                                             <TextBlock Text="Delay entre pasos"
@@ -934,21 +1027,21 @@
                                                                             <DockPanel Margin="0,8,0,0">
                                                                                 <Button Content="-"
                                                                                         DockPanel.Dock="Left"
-                                                                                        Width="32"
+                                                                                        Width="28"
                                                                                         Tag="Cycle:-10"
                                                                                         Command="{Binding AdjustLightValueCommand}"
                                                                                         CommandParameter="{Binding Tag, RelativeSource={RelativeSource Self}}" />
                                                                                 <Button Content="+"
                                                                                         DockPanel.Dock="Right"
-                                                                                        Width="32"
+                                                                                        Width="28"
                                                                                         Tag="Cycle:10"
                                                                                         Command="{Binding AdjustLightValueCommand}"
                                                                                         CommandParameter="{Binding Tag, RelativeSource={RelativeSource Self}}" />
                                                                                 <StackPanel Orientation="Horizontal"
                                                                                             HorizontalAlignment="Center"
-                                                                                            MinWidth="102">
+                                                                                            MinWidth="86">
                                                                                     <TextBox x:Name="CycleValueText"
-                                                                                             Width="70"
+                                                                                             Width="54"
                                                                                              TextAlignment="Center"
                                                                                              FontWeight="SemiBold"
                                                                                              TextChanged="LightNumberBox_TextChanged" />
@@ -974,13 +1067,13 @@
                                                                     </Border>
                                                                 </Grid>
                                                                 <Grid x:Name="StepGrid"
-                                                                      MinWidth="220"
-                                                                      Width="250"
-                                                                      Margin="0,0,10,10">
+                                                                      MinWidth="156"
+                                                                      Width="172"
+                                                                      Margin="0,0,8,8">
                                                                     <Border BorderBrush="{DynamicResource ThemeBorderBrush}"
                                                                             BorderThickness="1"
                                                                             CornerRadius="12"
-                                                                            Padding="10"
+                                                                            Padding="8"
                                                                             Background="{DynamicResource ThemeSurfaceBrush}">
                                                                         <StackPanel>
                                                                             <TextBlock Text="Duracion del paso"
@@ -988,21 +1081,21 @@
                                                                             <DockPanel Margin="0,8,0,0">
                                                                                 <Button Content="-"
                                                                                         DockPanel.Dock="Left"
-                                                                                        Width="32"
+                                                                                        Width="28"
                                                                                         Tag="Step:-10"
                                                                                         Command="{Binding AdjustLightValueCommand}"
                                                                                         CommandParameter="{Binding Tag, RelativeSource={RelativeSource Self}}" />
                                                                                 <Button Content="+"
                                                                                         DockPanel.Dock="Right"
-                                                                                        Width="32"
+                                                                                        Width="28"
                                                                                         Tag="Step:10"
                                                                                         Command="{Binding AdjustLightValueCommand}"
                                                                                         CommandParameter="{Binding Tag, RelativeSource={RelativeSource Self}}" />
                                                                                 <StackPanel Orientation="Horizontal"
                                                                                             HorizontalAlignment="Center"
-                                                                                            MinWidth="102">
+                                                                                            MinWidth="86">
                                                                                     <TextBox x:Name="StepValueText"
-                                                                                             Width="70"
+                                                                                             Width="54"
                                                                                              TextAlignment="Center"
                                                                                              FontWeight="SemiBold"
                                                                                              TextChanged="LightNumberBox_TextChanged" />
@@ -1030,9 +1123,10 @@
                                                                 <Border BorderBrush="{DynamicResource ThemeBorderBrush}"
                                                                         BorderThickness="1"
                                                                         CornerRadius="12"
-                                                                        Padding="10"
-                                                                        MinWidth="260"
-                                                                        Margin="0,0,10,10"
+                                                                        Padding="8"
+                                                                        MinWidth="180"
+                                                                        Width="198"
+                                                                        Margin="0,0,8,8"
                                                                         Background="{DynamicResource ThemeSurfaceBrush}">
                                                                     <StackPanel>
                                                                         <TextBlock Text="Presets rapidos"
@@ -1056,45 +1150,8 @@
                                                                 </Border>
                                                             </WrapPanel>
 
-                                                            <TextBlock Text="Vista previa"
-                                                                       FontWeight="SemiBold"
-                                                                       Margin="0,8,0,6" />
-                                                            <Border x:Name="RuleLedPreviewPanel"
-                                                                    BorderBrush="{DynamicResource ThemeBorderBrush}"
-                                                                    BorderThickness="1"
-                                                                    CornerRadius="10"
-                                                                    Padding="10"
-                                                                    Background="{DynamicResource ThemeSurfaceBrush}"
-                                                                    IsVisibleChanged="RuleLedPreviewPanel_IsVisibleChanged">
-                                                                <ItemsControl x:Name="RuleLedPreviewList"
-                                                                              ItemsSource="{Binding LedPreviewDots}">
-                                                                    <ItemsControl.ItemsPanel>
-                                                                        <ItemsPanelTemplate>
-                                                                            <UniformGrid Rows="1" />
-                                                                        </ItemsPanelTemplate>
-                                                                    </ItemsControl.ItemsPanel>
-                                                                    <ItemsControl.ItemTemplate>
-                                                                        <DataTemplate>
-                                                                            <Ellipse Width="16"
-                                                                                     Height="16"
-                                                                                     Fill="{Binding Fill}"
-                                                                                     Stroke="#80FFFFFF"
-                                                                                     StrokeThickness="1"
-                                                                                     Margin="4">
-                                                                                <Ellipse.Effect>
-                                                                                    <DropShadowEffect Color="{Binding GlowColor}"
-                                                                                                      BlurRadius="{Binding GlowRadius}"
-                                                                                                      ShadowDepth="0"
-                                                                                                      Opacity="{Binding GlowOpacity}" />
-                                                                                </Ellipse.Effect>
-                                                                            </Ellipse>
-                                                                        </DataTemplate>
-                                                                    </ItemsControl.ItemTemplate>
-                                                                </ItemsControl>
-                                                            </Border>
                                                         </StackPanel>
-                                                    </Expander>
-                                                </StackPanel>
+                                                </Grid>
                                             </Border>
 
                                             <Border x:Name="AudioActionCard"
@@ -1104,8 +1161,14 @@
                                                     Padding="12"
                                                     Margin="0,0,0,10"
                                                     Background="{DynamicResource ThemeInputBrush}">
-                                                <StackPanel>
-                                                    <Grid>
+                                                <Grid>
+                                                    <Grid.ColumnDefinitions>
+                                                        <ColumnDefinition Width="220" />
+                                                        <ColumnDefinition Width="16" />
+                                                        <ColumnDefinition Width="*" />
+                                                    </Grid.ColumnDefinitions>
+
+                                                    <Grid MinWidth="190" VerticalAlignment="Center">
                                                         <Grid.ColumnDefinitions>
                                                             <ColumnDefinition Width="42" />
                                                             <ColumnDefinition Width="*" />
@@ -1114,24 +1177,29 @@
                                                         <Image Source="/Assets/Icons/service_audio.png"
                                                                Width="26"
                                                                Height="26"
-                                                               Stretch="Uniform" />
-                                                        <StackPanel Grid.Column="1">
+                                                               Stretch="Uniform"
+                                                               VerticalAlignment="Center" />
+                                                        <StackPanel Grid.Column="1"
+                                                                    VerticalAlignment="Center">
                                                             <TextBlock Text="Audio"
                                                                        FontWeight="SemiBold" />
                                                             <TextBlock Text="Reproduce sonido o musica."
                                                                        Style="{StaticResource MutedText}"
-                                                                       FontSize="12" />
+                                                                       FontSize="12"
+                                                                       TextWrapping="Wrap" />
                                                         </StackPanel>
                                                         <CheckBox x:Name="PlayAudioCheck"
                                                                   Grid.Column="2"
                                                                   Content=""
+                                                                  Style="{StaticResource AlertToggleSwitchStyle}"
                                                                   IsChecked="{Binding Editor.PlayAudio, Mode=TwoWay, UpdateSourceTrigger=PropertyChanged}"
                                                                   Checked="RuleFieldChanged"
                                                                   Unchecked="RuleFieldChanged" />
                                                     </Grid>
 
                                                     <StackPanel x:Name="AudioDetailsPanel"
-                                                                Margin="42,12,0,0">
+                                                                Grid.Column="2"
+                                                                Margin="0">
                                                         <TextBlock x:Name="AudioLabel"
                                                                    Text="Audio"
                                                                    Style="{StaticResource MutedText}" />
@@ -1148,16 +1216,26 @@
                                                             </Grid.ColumnDefinitions>
 
                                                             <Button x:Name="RuleSingleAudioModeButton"
-                                                                    Content="Audio unico"
                                                                     Tag="Single"
                                                                     Command="{Binding SelectAudioModeCommand}"
-                                                                    CommandParameter="{Binding Tag, RelativeSource={RelativeSource Self}}" />
+                                                                    CommandParameter="{Binding Tag, RelativeSource={RelativeSource Self}}"
+                                                                    ToolTip="Audio unico">
+                                                                <Image Source="/Assets/Icons/sound_file.png"
+                                                                       Width="22"
+                                                                       Height="22"
+                                                                       Stretch="Uniform" />
+                                                            </Button>
                                                             <Button x:Name="RuleGroupAudioModeButton"
                                                                     Grid.Column="2"
-                                                                    Content="Grupo aleatorio"
                                                                     Tag="Group"
                                                                     Command="{Binding SelectAudioModeCommand}"
-                                                                    CommandParameter="{Binding Tag, RelativeSource={RelativeSource Self}}" />
+                                                                    CommandParameter="{Binding Tag, RelativeSource={RelativeSource Self}}"
+                                                                    ToolTip="Grupo aleatorio">
+                                                                <Image Source="/Assets/Icons/sound_group.png"
+                                                                       Width="22"
+                                                                       Height="22"
+                                                                       Stretch="Uniform" />
+                                                            </Button>
 
                                                             <StackPanel x:Name="RuleAudioSinglePanel"
                                                                         Grid.Row="1"
@@ -1196,7 +1274,7 @@
                                                                        Margin="0,8,0,0" />
                                                         </Grid>
                                                     </StackPanel>
-                                                </StackPanel>
+                                                </Grid>
                                             </Border>
 
                                             <Border x:Name="ChatActionCard"
@@ -1206,8 +1284,14 @@
                                                     Padding="12"
                                                     Margin="0,0,0,10"
                                                     Background="{DynamicResource ThemeInputBrush}">
-                                                <StackPanel>
-                                                    <Grid>
+                                                <Grid>
+                                                    <Grid.ColumnDefinitions>
+                                                        <ColumnDefinition Width="220" />
+                                                        <ColumnDefinition Width="16" />
+                                                        <ColumnDefinition Width="*" />
+                                                    </Grid.ColumnDefinitions>
+
+                                                    <Grid MinWidth="190" VerticalAlignment="Center">
                                                         <Grid.ColumnDefinitions>
                                                             <ColumnDefinition Width="42" />
                                                             <ColumnDefinition Width="*" />
@@ -1216,24 +1300,29 @@
                                                         <Image Source="/Assets/Icons/action_message_green.png"
                                                                Width="26"
                                                                Height="26"
-                                                               Stretch="Uniform" />
-                                                        <StackPanel Grid.Column="1">
+                                                               Stretch="Uniform"
+                                                               VerticalAlignment="Center" />
+                                                        <StackPanel Grid.Column="1"
+                                                                    VerticalAlignment="Center">
                                                             <TextBlock Text="Mensaje de chat"
                                                                        FontWeight="SemiBold" />
                                                             <TextBlock Text="Envia respuesta automatica."
                                                                        Style="{StaticResource MutedText}"
-                                                                       FontSize="12" />
+                                                                       FontSize="12"
+                                                                       TextWrapping="Wrap" />
                                                         </StackPanel>
                                                         <CheckBox x:Name="ChatMessageCheck"
                                                                   Grid.Column="2"
                                                                   Content=""
+                                                                  Style="{StaticResource AlertToggleSwitchStyle}"
                                                                   IsChecked="{Binding Editor.SendChatMessage, Mode=TwoWay, UpdateSourceTrigger=PropertyChanged}"
                                                                   Checked="RuleFieldChanged"
                                                                   Unchecked="RuleFieldChanged" />
                                                     </Grid>
 
                                                     <StackPanel x:Name="ChatDetailsPanel"
-                                                                Margin="42,12,0,0">
+                                                                Grid.Column="2"
+                                                                Margin="0">
                                                             <TextBlock x:Name="ChatMessageLabel"
                                                                        Text="Mensaje al chat"
                                                                        Style="{StaticResource MutedText}" />
@@ -1243,7 +1332,7 @@
                                                                      TextChanged="RuleFieldChanged"
                                                                      ToolTip="Variables: {user}, {bits}, {reward}, {viewers}, {message}, {event}" />
                                                     </StackPanel>
-                                                </StackPanel>
+                                                </Grid>
                                             </Border>
 
                                             <Border x:Name="AlexaActionCard"
@@ -1253,8 +1342,14 @@
                                                     Padding="12"
                                                     Margin="0,0,0,10"
                                                     Background="{DynamicResource ThemeInputBrush}">
-                                                <StackPanel>
-                                                    <Grid>
+                                                <Grid>
+                                                    <Grid.ColumnDefinitions>
+                                                        <ColumnDefinition Width="220" />
+                                                        <ColumnDefinition Width="16" />
+                                                        <ColumnDefinition Width="*" />
+                                                    </Grid.ColumnDefinitions>
+
+                                                    <Grid MinWidth="190" VerticalAlignment="Center">
                                                         <Grid.ColumnDefinitions>
                                                             <ColumnDefinition Width="42" />
                                                             <ColumnDefinition Width="*" />
@@ -1263,23 +1358,28 @@
                                                         <Image Source="/Assets/Icons/service_alexa.png"
                                                                Width="26"
                                                                Height="26"
-                                                               Stretch="Uniform" />
-                                                        <StackPanel Grid.Column="1">
+                                                               Stretch="Uniform"
+                                                               VerticalAlignment="Center" />
+                                                        <StackPanel Grid.Column="1"
+                                                                    VerticalAlignment="Center">
                                                             <TextBlock Text="Alexa"
                                                                        FontWeight="SemiBold" />
                                                             <TextBlock Text="Dispara una rutina o dispositivo."
                                                                        Style="{StaticResource MutedText}"
-                                                                       FontSize="12" />
+                                                                       FontSize="12"
+                                                                       TextWrapping="Wrap" />
                                                         </StackPanel>
                                                         <CheckBox x:Name="AlexaEventCheck"
                                                                   Grid.Column="2"
                                                                   Content=""
+                                                                  Style="{StaticResource AlertToggleSwitchStyle}"
                                                                   IsChecked="{Binding Editor.SendAlexaEvent, Mode=TwoWay, UpdateSourceTrigger=PropertyChanged}"
                                                                   Checked="RuleFieldChanged"
                                                                   Unchecked="RuleFieldChanged" />
                                                     </Grid>
                                                     <StackPanel x:Name="AlexaDetailsPanel"
-                                                                Margin="42,12,0,0">
+                                                                Grid.Column="2"
+                                                                Margin="0">
                                                         <TextBlock x:Name="AlexaRuleHintText"
                                                                    Text="Se enviara a Alexa el nombre de esta regla."
                                                                    Style="{StaticResource MutedText}"
@@ -1287,7 +1387,7 @@
                                                                    TextWrapping="Wrap"
                                                                    Margin="0" />
                                                     </StackPanel>
-                                                </StackPanel>
+                                                </Grid>
                                             </Border>
 
                                             <Border x:Name="ObsActionCard"
@@ -1297,8 +1397,14 @@
                                                     Padding="12"
                                                     Margin="0,0,0,10"
                                                     Background="{DynamicResource ThemeInputBrush}">
-                                                <StackPanel>
-                                                    <Grid>
+                                                <Grid>
+                                                    <Grid.ColumnDefinitions>
+                                                        <ColumnDefinition Width="220" />
+                                                        <ColumnDefinition Width="16" />
+                                                        <ColumnDefinition Width="*" />
+                                                    </Grid.ColumnDefinitions>
+
+                                                    <Grid MinWidth="190" VerticalAlignment="Center">
                                                         <Grid.ColumnDefinitions>
                                                             <ColumnDefinition Width="42" />
                                                             <ColumnDefinition Width="*" />
@@ -1307,23 +1413,28 @@
                                                         <Image Source="/Assets/ServiceObs.png"
                                                                Width="26"
                                                                Height="26"
-                                                               Stretch="Uniform" />
-                                                        <StackPanel Grid.Column="1">
+                                                               Stretch="Uniform"
+                                                               VerticalAlignment="Center" />
+                                                        <StackPanel Grid.Column="1"
+                                                                    VerticalAlignment="Center">
                                                             <TextBlock Text="OBS"
                                                                        FontWeight="SemiBold" />
                                                             <TextBlock Text="Cambia escenas o muestra imagenes/videos."
                                                                        Style="{StaticResource MutedText}"
-                                                                       FontSize="12" />
+                                                                       FontSize="12"
+                                                                       TextWrapping="Wrap" />
                                                         </StackPanel>
                                                         <CheckBox x:Name="ObsSceneCheck"
                                                                   Grid.Column="2"
                                                                   Content=""
+                                                                  Style="{StaticResource AlertToggleSwitchStyle}"
                                                                   IsChecked="{Binding Editor.SendObsScene, Mode=TwoWay, UpdateSourceTrigger=PropertyChanged}"
                                                                   Checked="RuleFieldChanged"
                                                                   Unchecked="RuleFieldChanged" />
                                                     </Grid>
                                                     <StackPanel x:Name="ObsDetailsPanel"
-                                                                Margin="42,12,0,0">
+                                                                Grid.Column="2"
+                                                                Margin="0">
                                                         <StackPanel x:Name="ObsSceneDetailsPanel">
                                                             <TextBlock Text="Escena de OBS"
                                                                        Style="{StaticResource MutedText}" />
@@ -1376,12 +1487,23 @@
                                                                        Margin="0,8,0,0" />
                                                         </StackPanel>
 
-                                                        <CheckBox x:Name="ObsMediaCheck"
-                                                                  Content="Mostrar imagen o video"
-                                                                  Margin="0,14,0,0"
-                                                                  IsChecked="{Binding Editor.SendObsMedia, Mode=TwoWay, UpdateSourceTrigger=PropertyChanged}"
-                                                                  Checked="RuleFieldChanged"
-                                                                  Unchecked="RuleFieldChanged" />
+                                                        <Grid Margin="0,14,0,0">
+                                                            <Grid.ColumnDefinitions>
+                                                                <ColumnDefinition Width="*" />
+                                                                <ColumnDefinition Width="Auto" />
+                                                            </Grid.ColumnDefinitions>
+                                                            <TextBlock Text="Mostrar imagen o video"
+                                                                       FontWeight="SemiBold"
+                                                                       VerticalAlignment="Center"
+                                                                       TextWrapping="Wrap" />
+                                                            <CheckBox x:Name="ObsMediaCheck"
+                                                                      Grid.Column="1"
+                                                                      Content=""
+                                                                      Style="{StaticResource AlertToggleSwitchStyle}"
+                                                                      IsChecked="{Binding Editor.SendObsMedia, Mode=TwoWay, UpdateSourceTrigger=PropertyChanged}"
+                                                                      Checked="RuleFieldChanged"
+                                                                      Unchecked="RuleFieldChanged" />
+                                                        </Grid>
 
                                                         <StackPanel x:Name="ObsMediaDetailsPanel"
                                                                     Margin="22,8,0,0">
@@ -1394,16 +1516,26 @@
                                                                     <ColumnDefinition Width="*" />
                                                                 </Grid.ColumnDefinitions>
                                                                 <Button x:Name="RuleObsImageModeButton"
-                                                                        Content="Imagen"
                                                                         Tag="Image"
                                                                         Command="{Binding SelectObsMediaKindCommand}"
-                                                                        CommandParameter="{Binding Tag, RelativeSource={RelativeSource Self}}" />
+                                                                        CommandParameter="{Binding Tag, RelativeSource={RelativeSource Self}}"
+                                                                        ToolTip="Imagen">
+                                                                    <Image Source="/Assets/Icons/media_image.png"
+                                                                           Width="22"
+                                                                           Height="22"
+                                                                           Stretch="Uniform" />
+                                                                </Button>
                                                                 <Button x:Name="RuleObsVideoModeButton"
                                                                         Grid.Column="2"
-                                                                        Content="Video"
                                                                         Tag="Video"
                                                                         Command="{Binding SelectObsMediaKindCommand}"
-                                                                        CommandParameter="{Binding Tag, RelativeSource={RelativeSource Self}}" />
+                                                                        CommandParameter="{Binding Tag, RelativeSource={RelativeSource Self}}"
+                                                                        ToolTip="Video">
+                                                                    <Image Source="/Assets/Icons/media_video.png"
+                                                                           Width="22"
+                                                                           Height="22"
+                                                                           Stretch="Uniform" />
+                                                                </Button>
                                                             </Grid>
                                                             <ComboBox x:Name="RuleObsMediaKindBox"
                                                                       ItemsSource="{Binding ObsMediaKindChoices}"
@@ -1422,16 +1554,26 @@
                                                                     <ColumnDefinition Width="*" />
                                                                 </Grid.ColumnDefinitions>
                                                                 <Button x:Name="RuleObsSingleMediaModeButton"
-                                                                        Content="Individual"
                                                                         Tag="Single"
                                                                         Command="{Binding SelectObsMediaSourceModeCommand}"
-                                                                        CommandParameter="{Binding Tag, RelativeSource={RelativeSource Self}}" />
+                                                                        CommandParameter="{Binding Tag, RelativeSource={RelativeSource Self}}"
+                                                                        ToolTip="Individual">
+                                                                    <Image Source="/Assets/Icons/sound_file.png"
+                                                                           Width="22"
+                                                                           Height="22"
+                                                                           Stretch="Uniform" />
+                                                                </Button>
                                                                 <Button x:Name="RuleObsGroupMediaModeButton"
                                                                         Grid.Column="2"
-                                                                        Content="Grupo aleatorio"
                                                                         Tag="Group"
                                                                         Command="{Binding SelectObsMediaSourceModeCommand}"
-                                                                        CommandParameter="{Binding Tag, RelativeSource={RelativeSource Self}}" />
+                                                                        CommandParameter="{Binding Tag, RelativeSource={RelativeSource Self}}"
+                                                                        ToolTip="Grupo aleatorio">
+                                                                    <Image Source="/Assets/Icons/media_group.png"
+                                                                           Width="22"
+                                                                           Height="22"
+                                                                           Stretch="Uniform" />
+                                                                </Button>
                                                             </Grid>
                                                             <ComboBox x:Name="RuleObsMediaSourceModeBox"
                                                                       ItemsSource="{Binding ObsMediaSourceModeChoices}"
@@ -1481,14 +1623,9 @@
                                                                        Margin="0,8,0,0" />
                                                         </StackPanel>
                                                     </StackPanel>
-                                                </StackPanel>
+                                                </Grid>
                                             </Border>
 
-                                            <Button Content="Eliminar alerta"
-                                                    Style="{StaticResource DangerButton}"
-                                                    HorizontalContentAlignment="Center"
-                                                    Margin="0"
-                                                    Command="{Binding RemoveRuleCommand}" />
                                         </StackPanel>
                                     </StackPanel>
                                 </ScrollViewer>

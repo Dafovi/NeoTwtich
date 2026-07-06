@@ -7,8 +7,8 @@ public static class OptionVisibilityService
 {
     public static RuleOptionVisibility ResolveRule(RuleOptionVisibilityInput input)
     {
-        var useLights = input.ArduinoAvailable && input.UseLights;
-        var usesAnyLightColor = useLights
+        var lightsAvailable = input.ArduinoAvailable;
+        var usesAnyLightColor = lightsAvailable
             && (LightPatternCapabilities.UsesPrimaryColor(input.Pattern)
                 || LightPatternCapabilities.UsesSecondaryColor(input.Pattern)
                 || LightPatternCapabilities.UsesTertiaryColor(input.Pattern));
@@ -17,39 +17,37 @@ public static class OptionVisibilityService
             ShowRewardTitle: input.EventKind == TwitchEventKind.ChannelPointRedemption,
             ShowChatCommand: input.EventKind == TwitchEventKind.ChatCommand,
             ShowMinimumBits: input.EventKind == TwitchEventKind.Cheer,
-            ShowAudioDetails: input.PlayAudio,
-            ShowAudioSingle: input.PlayAudio && input.AudioSourceMode == AudioSourceMode.Single && input.HasAudioAssets,
-            ShowAudioGroup: input.PlayAudio && input.AudioSourceMode == AudioSourceMode.Group && input.HasAudioGroups,
-            ShowAudioEmptyHint: input.PlayAudio
-                && ((input.AudioSourceMode == AudioSourceMode.Single && !input.HasAudioAssets)
-                    || (input.AudioSourceMode == AudioSourceMode.Group && !input.HasAudioGroups)),
-            ShowChatDetails: input.SendChatMessage,
+            ShowAudioDetails: true,
+            ShowAudioSingle: input.AudioSourceMode == AudioSourceMode.Single && input.HasAudioAssets,
+            ShowAudioGroup: input.AudioSourceMode == AudioSourceMode.Group && input.HasAudioGroups,
+            ShowAudioEmptyHint: (input.AudioSourceMode == AudioSourceMode.Single && !input.HasAudioAssets)
+                || (input.AudioSourceMode == AudioSourceMode.Group && !input.HasAudioGroups),
+            ShowChatDetails: true,
             ShowLightsAction: input.ArduinoAvailable,
             ShowAlexaAction: input.AlexaAvailable,
-            ShowAlexaDetails: input.AlexaAvailable && input.SendAlexaEvent,
+            ShowAlexaDetails: input.AlexaAvailable,
             ShowObsAction: input.ObsAvailable,
             ShowObsDetails: input.ObsAvailable,
-            ShowObsSceneDetails: input.ObsAvailable && input.SendObsScene,
-            ShowObsSceneTiming: input.ObsAvailable && input.SendObsScene && !string.IsNullOrWhiteSpace(input.SelectedObsSceneName),
-            ShowObsReturnDelay: input.ObsAvailable && input.SendObsScene && !input.SendObsMedia && input.ReturnObsScene,
-            ShowObsEmptyHint: input.ObsAvailable && input.SendObsScene && !input.HasObsScenes,
-            ShowObsMediaDetails: input.ObsAvailable && input.SendObsMedia,
-            ShowObsMediaDuration: input.ObsAvailable && input.SendObsMedia && input.ObsMediaKind == ObsMediaKind.Image,
-            ShowObsMediaAsset: input.ObsAvailable && input.SendObsMedia && input.ObsMediaSourceMode == MediaSourceMode.Single && input.HasObsMediaAssets,
-            ShowObsMediaGroup: input.ObsAvailable && input.SendObsMedia && input.ObsMediaSourceMode == MediaSourceMode.Group && input.HasObsMediaGroups,
+            ShowObsSceneDetails: input.ObsAvailable,
+            ShowObsSceneTiming: input.ObsAvailable && !string.IsNullOrWhiteSpace(input.SelectedObsSceneName),
+            ShowObsReturnDelay: input.ObsAvailable && !input.SendObsMedia && input.ReturnObsScene,
+            ShowObsEmptyHint: input.ObsAvailable && !input.HasObsScenes,
+            ShowObsMediaDetails: input.ObsAvailable,
+            ShowObsMediaDuration: input.ObsAvailable && input.ObsMediaKind == ObsMediaKind.Image,
+            ShowObsMediaAsset: input.ObsAvailable && input.ObsMediaSourceMode == MediaSourceMode.Single && input.HasObsMediaAssets,
+            ShowObsMediaGroup: input.ObsAvailable && input.ObsMediaSourceMode == MediaSourceMode.Group && input.HasObsMediaGroups,
             ShowObsMediaEmptyHint: input.ObsAvailable
-                && input.SendObsMedia
                 && ((input.ObsMediaSourceMode == MediaSourceMode.Single && !input.HasObsMediaAssets)
                     || (input.ObsMediaSourceMode == MediaSourceMode.Group && !input.HasObsMediaGroups)),
-            ShowLightConfiguration: useLights,
+            ShowLightConfiguration: lightsAvailable,
             ShowLightColorOptions: usesAnyLightColor,
-            ShowPrimaryColor: useLights && LightPatternCapabilities.UsesPrimaryColor(input.Pattern),
-            ShowSecondaryColor: useLights && LightPatternCapabilities.UsesSecondaryColor(input.Pattern),
-            ShowTertiaryColor: useLights && LightPatternCapabilities.UsesTertiaryColor(input.Pattern),
-            ShowBrightness: useLights && LightPatternCapabilities.UsesBrightness(input.Pattern),
-            ShowDuration: useLights && !input.PlayAudio,
-            ShowCycle: useLights && LightPatternCapabilities.UsesCycle(input.Pattern),
-            ShowStep: useLights && LightPatternCapabilities.UsesStep(input.Pattern));
+            ShowPrimaryColor: lightsAvailable && LightPatternCapabilities.UsesPrimaryColor(input.Pattern),
+            ShowSecondaryColor: lightsAvailable && LightPatternCapabilities.UsesSecondaryColor(input.Pattern),
+            ShowTertiaryColor: lightsAvailable && LightPatternCapabilities.UsesTertiaryColor(input.Pattern),
+            ShowBrightness: lightsAvailable && LightPatternCapabilities.UsesBrightness(input.Pattern),
+            ShowDuration: lightsAvailable && !input.PlayAudio,
+            ShowCycle: lightsAvailable && LightPatternCapabilities.UsesCycle(input.Pattern),
+            ShowStep: lightsAvailable && LightPatternCapabilities.UsesStep(input.Pattern));
     }
 
     public static BackgroundOptionVisibility ResolveBackground(BackgroundOptionVisibilityInput input)

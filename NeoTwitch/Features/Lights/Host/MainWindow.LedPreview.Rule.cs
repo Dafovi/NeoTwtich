@@ -86,7 +86,7 @@ public partial class MainWindow
         return _alertsViewModel.Editor.UseLights
             && _config.ArduinoEnabled
             && _shellViewModel.SelectedTabIndex == ShellViewModel.AlertsTabIndex
-            && LightConfigurationPanel.IsExpanded
+            && LightConfigurationPanel.IsVisible
             && RuleLedPreviewPanel.IsVisible;
     }
 }

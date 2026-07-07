@@ -44,13 +44,27 @@ public sealed class EventRuleRowViewModel : ObservableObject, IDisposable
 
     public Visibility ChatActionVisibility => Rule.SendChatMessage ? Visibility.Visible : Visibility.Collapsed;
 
+    public Visibility VideoActionVisibility => Rule.SendObsVideo || (Rule.SendObsMedia && Rule.ObsMediaKind == ObsMediaKind.Video)
+        ? Visibility.Visible
+        : Visibility.Collapsed;
+
+    public Visibility ImageActionVisibility => Rule.SendObsImage || (Rule.SendObsMedia && Rule.ObsMediaKind == ObsMediaKind.Image)
+        ? Visibility.Visible
+        : Visibility.Collapsed;
+
+    public double ObsMediaActionOpacity => Rule.ObsActionAvailable ? 1d : 0.32d;
+
+    public string ObsMediaActionToolTip => EventRulePresentationService.BuildObsToolTip(Rule, _text);
+
     public Visibility AlexaActionVisibility => Rule.SendAlexaEvent ? Visibility.Visible : Visibility.Collapsed;
 
     public double AlexaActionOpacity => Rule.AlexaActionAvailable ? 1d : 0.32d;
 
     public string AlexaActionToolTip => EventRulePresentationService.BuildAlexaToolTip(Rule, _text);
 
-    public Visibility ObsActionVisibility => Rule.SendObsScene || Rule.SendObsMedia ? Visibility.Visible : Visibility.Collapsed;
+    public Visibility ObsActionVisibility => Rule.SendObsScene
+        ? Visibility.Visible
+        : Visibility.Collapsed;
 
     public double ObsActionOpacity => Rule.ObsActionAvailable ? 1d : 0.32d;
 
@@ -80,6 +94,10 @@ public sealed class EventRuleRowViewModel : ObservableObject, IDisposable
         OnPropertyChanged(nameof(LightsActionToolTip));
         OnPropertyChanged(nameof(AudioActionVisibility));
         OnPropertyChanged(nameof(ChatActionVisibility));
+        OnPropertyChanged(nameof(VideoActionVisibility));
+        OnPropertyChanged(nameof(ImageActionVisibility));
+        OnPropertyChanged(nameof(ObsMediaActionOpacity));
+        OnPropertyChanged(nameof(ObsMediaActionToolTip));
         OnPropertyChanged(nameof(AlexaActionVisibility));
         OnPropertyChanged(nameof(AlexaActionOpacity));
         OnPropertyChanged(nameof(AlexaActionToolTip));

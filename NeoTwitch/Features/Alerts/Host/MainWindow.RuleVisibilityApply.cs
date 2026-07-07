@@ -16,19 +16,24 @@ public partial class MainWindow
         UiVisibilityService.SetVisible(visibility.ShowAudioEmptyHint, RuleAudioEmptyHintText);
         UiVisibilityService.SetVisible(visibility.ShowChatDetails, ChatDetailsPanel, ChatMessageLabel, ChatMessageBox);
         UiVisibilityService.SetVisible(visibility.ShowLightsAction, UseLightsActionCard);
-        UiVisibilityService.SetVisible(visibility.ShowAlexaAction, AlexaActionCard);
-        UiVisibilityService.SetVisible(visibility.ShowAlexaDetails, AlexaDetailsPanel, AlexaRuleHintText);
+        UiVisibilityService.SetVisible(visibility.ShowObsVideoAction, VideoActionCard);
+        UiVisibilityService.SetVisible(visibility.ShowObsVideoDetails, ObsVideoDetailsPanel);
+        UiVisibilityService.SetVisible(visibility.ShowObsVideoAsset, RuleObsVideoAssetPanel);
+        UiVisibilityService.SetVisible(visibility.ShowObsVideoGroup, RuleObsVideoGroupPanel);
+        UiVisibilityService.SetVisible(visibility.ShowObsVideoEmptyHint, RuleObsVideoEmptyHintText);
+        UiVisibilityService.SetVisible(visibility.ShowObsImageAction, ImageActionCard);
+        UiVisibilityService.SetVisible(visibility.ShowObsImageDetails, ObsImageDetailsPanel, ObsImageDurationPanel);
+        UiVisibilityService.SetVisible(visibility.ShowObsImageAsset, RuleObsImageAssetPanel);
+        UiVisibilityService.SetVisible(visibility.ShowObsImageGroup, RuleObsImageGroupPanel);
+        UiVisibilityService.SetVisible(visibility.ShowObsImageEmptyHint, RuleObsImageEmptyHintText);
         UiVisibilityService.SetVisible(visibility.ShowObsAction, ObsActionCard);
         UiVisibilityService.SetVisible(visibility.ShowObsDetails, ObsDetailsPanel);
         UiVisibilityService.SetVisible(visibility.ShowObsSceneDetails, ObsSceneDetailsPanel);
         UiVisibilityService.SetVisible(visibility.ShowObsSceneTiming, ObsSceneTimingGrid);
         UiVisibilityService.SetVisible(visibility.ShowObsReturnDelay, ObsReturnDelayPanel);
         UiVisibilityService.SetVisible(visibility.ShowObsEmptyHint, RuleObsEmptyHintText);
-        UiVisibilityService.SetVisible(visibility.ShowObsMediaDetails, ObsMediaDetailsPanel);
-        UiVisibilityService.SetVisible(visibility.ShowObsMediaDuration, ObsMediaDurationPanel);
-        UiVisibilityService.SetVisible(visibility.ShowObsMediaAsset, RuleObsMediaAssetPanel);
-        UiVisibilityService.SetVisible(visibility.ShowObsMediaGroup, RuleObsMediaGroupPanel);
-        UiVisibilityService.SetVisible(visibility.ShowObsMediaEmptyHint, RuleObsMediaEmptyHintText);
+        UiVisibilityService.SetVisible(visibility.ShowAlexaAction, AlexaActionCard);
+        UiVisibilityService.SetVisible(visibility.ShowAlexaDetails, AlexaDetailsPanel, AlexaRuleHintText);
         UiVisibilityService.SetVisible(visibility.ShowLightConfiguration, LightConfigurationPanel, LightOptionsSeparator, TargetPinsLabel, TargetPinsChoiceBox, PatternGrid, RuleLedPreviewPanel);
         UiVisibilityService.SetVisible(visibility.ShowLightColorOptions, ColorOptionsGrid);
         UiVisibilityService.SetVisible(visibility.ShowPrimaryColor, PrimaryColorPanel);
@@ -50,14 +55,16 @@ public partial class MainWindow
         var chatEnabled = editor.SendChatMessage;
         var alexaEnabled = _config.Alexa.IsConfigured && editor.SendAlexaEvent;
         var obsSceneEnabled = _config.Obs.IsConfigured && editor.SendObsScene;
-        var obsMediaEnabled = _config.Obs.IsConfigured && editor.SendObsMedia;
+        var obsImageEnabled = _config.Obs.IsConfigured && editor.SendObsImage;
+        var obsVideoEnabled = _config.Obs.IsConfigured && editor.SendObsVideo;
 
         SetRuleOptionAvailability(lightsEnabled, LightConfigurationPanel);
         SetRuleOptionAvailability(audioEnabled, AudioDetailsPanel);
         SetRuleOptionAvailability(chatEnabled, ChatDetailsPanel);
         SetRuleOptionAvailability(alexaEnabled, AlexaDetailsPanel);
         SetRuleOptionAvailability(obsSceneEnabled, ObsSceneDetailsPanel);
-        SetRuleOptionAvailability(obsMediaEnabled, ObsMediaDetailsPanel);
+        SetRuleOptionAvailability(obsImageEnabled, ObsImageDetailsPanel);
+        SetRuleOptionAvailability(obsVideoEnabled, ObsVideoDetailsPanel);
     }
 
     private static void SetRuleOptionAvailability(bool enabled, params FrameworkElement[] elements)

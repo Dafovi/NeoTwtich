@@ -33,6 +33,15 @@ public static class RuleEditorFormService
         rule.ObsMediaAssetId = values.ObsMediaAssetId.Trim();
         rule.ObsMediaGroupId = values.ObsMediaGroupId.Trim();
         rule.ObsMediaDurationMs = ParseInt(values.ObsMediaDurationText, 5000, 250, 600000);
+        rule.SendObsImage = values.SendObsImage;
+        rule.ObsImageSourceMode = values.ObsImageSourceMode;
+        rule.ObsImageAssetId = values.ObsImageAssetId.Trim();
+        rule.ObsImageGroupId = values.ObsImageGroupId.Trim();
+        rule.ObsImageDurationMs = ParseInt(values.ObsImageDurationText, 5000, 250, 600000);
+        rule.SendObsVideo = values.SendObsVideo;
+        rule.ObsVideoSourceMode = values.ObsVideoSourceMode;
+        rule.ObsVideoAssetId = values.ObsVideoAssetId.Trim();
+        rule.ObsVideoGroupId = values.ObsVideoGroupId.Trim();
         rule.UseLights = values.UseLights;
         rule.PlayAudio = values.PlayAudio;
         rule.AudioSourceMode = values.AudioSourceMode;
@@ -75,6 +84,15 @@ public sealed record RuleEditorFormValues(
     string ObsMediaAssetId,
     string ObsMediaGroupId,
     string ObsMediaDurationText,
+    bool SendObsImage,
+    MediaSourceMode ObsImageSourceMode,
+    string ObsImageAssetId,
+    string ObsImageGroupId,
+    string ObsImageDurationText,
+    bool SendObsVideo,
+    MediaSourceMode ObsVideoSourceMode,
+    string ObsVideoAssetId,
+    string ObsVideoGroupId,
     bool UseLights,
     bool PlayAudio,
     AudioSourceMode AudioSourceMode,

@@ -13,19 +13,19 @@ public partial class MainWindow
         bool shouldRestoreBackground,
         bool wasCancelled,
         ObsSceneRestoreRequest? obsRestore,
-        ObsMediaHideRequest? obsMediaHide,
-        Task? obsMediaHideTask)
+        IReadOnlyCollection<ObsMediaHideRequest> obsMediaHides,
+        IReadOnlyCollection<Task> obsMediaHideTasks)
     {
         ClearCurrentPlayback(effectCts);
         await RestoreBackgroundAfterRuleAsync(shouldRestoreBackground, wasCancelled);
-        await CleanupRuleObsMediaAsync(wasCancelled, obsMediaHide, obsMediaHideTask);
+        await CleanupRuleObsMediaAsync(wasCancelled, obsMediaHides, obsMediaHideTasks);
 
         if (!_currentObsCleanedByStop)
         {
             await RestoreRuleObsSceneAsync(obsRestore, wasCancelled);
         }
 
-        ClearCurrentObsRuleState(obsRestore, obsMediaHide);
+        ClearCurrentObsRuleState(obsRestore, obsMediaHides);
         effectCts.Dispose();
         _alertQueue.MarkFinished(queueSlot);
         _effectGate.Release();
@@ -62,10 +62,10 @@ public partial class MainWindow
 
     private async Task CleanupRuleObsMediaAsync(
         bool wasCancelled,
-        ObsMediaHideRequest? obsMediaHide,
-        Task? obsMediaHideTask)
+        IReadOnlyCollection<ObsMediaHideRequest> obsMediaHides,
+        IReadOnlyCollection<Task> obsMediaHideTasks)
     {
-        if (_currentObsCleanedByStop || obsMediaHide is null)
+        if (_currentObsCleanedByStop || obsMediaHides.Count == 0)
         {
             return;
         }
@@ -74,11 +74,14 @@ public partial class MainWindow
         {
             if (wasCancelled)
             {
-                await HideRuleObsMediaAsync(obsMediaHide, CancellationToken.None);
+                foreach (var obsMediaHide in obsMediaHides)
+                {
+                    await HideRuleObsMediaAsync(obsMediaHide, CancellationToken.None);
+                }
             }
-            else if (obsMediaHideTask is not null)
+            else if (obsMediaHideTasks.Count > 0)
             {
-                await obsMediaHideTask;
+                await Task.WhenAll(obsMediaHideTasks);
             }
         }
         catch (Exception ex)
@@ -90,16 +93,16 @@ public partial class MainWindow
 
     private void ClearCurrentObsRuleState(
         ObsSceneRestoreRequest? obsRestore,
-        ObsMediaHideRequest? obsMediaHide)
+        IReadOnlyCollection<ObsMediaHideRequest> obsMediaHides)
     {
         if (ReferenceEquals(_currentObsRestore, obsRestore))
         {
             _currentObsRestore = null;
         }
 
-        if (ReferenceEquals(_currentObsMediaHide, obsMediaHide))
+        if (obsMediaHides.Count == 0 || _currentObsMediaHides.SequenceEqual(obsMediaHides))
         {
-            _currentObsMediaHide = null;
+            _currentObsMediaHides.Clear();
         }
     }
 }

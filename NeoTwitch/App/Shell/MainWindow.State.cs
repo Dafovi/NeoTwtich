@@ -78,7 +78,7 @@ public partial class MainWindow
     private MediaLibraryKind? _previewingMediaKind;
     private ObsMediaHideRequest? _mediaPreviewHideRequest;
     private ObsSceneRestoreRequest? _currentObsRestore;
-    private ObsMediaHideRequest? _currentObsMediaHide;
+    private readonly List<ObsMediaHideRequest> _currentObsMediaHides = [];
     private bool _currentObsCleanedByStop;
     private EventRule? _editingRule;
     private EventRule? _loadedRuleSnapshot;

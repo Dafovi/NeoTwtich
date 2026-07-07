@@ -39,12 +39,30 @@ public partial class MainWindow
 
     private void SelectRuleObsMediaSourceMode(object? parameter)
     {
-        if (!TryParseEnumParameter<MediaSourceMode>(parameter, out var mode))
+        var raw = parameter?.ToString() ?? "";
+        var parts = raw.Split(':', 2, StringSplitOptions.TrimEntries | StringSplitOptions.RemoveEmptyEntries);
+        if (parts.Length == 2
+            && Enum.TryParse<ObsMediaKind>(parts[0], out var kind)
+            && Enum.TryParse<MediaSourceMode>(parts[1], out var prefixedMode))
+        {
+            if (kind == ObsMediaKind.Image)
+            {
+                _alertsViewModel.Editor.ObsImageSourceMode = prefixedMode;
+            }
+            else
+            {
+                _alertsViewModel.Editor.ObsVideoSourceMode = prefixedMode;
+            }
+        }
+        else if (TryParseEnumParameter<MediaSourceMode>(parameter, out var mode))
+        {
+            _alertsViewModel.Editor.ObsMediaSourceMode = mode;
+        }
+        else
         {
             return;
         }
 
-        _alertsViewModel.Editor.ObsMediaSourceMode = mode;
         UpdateRuleObsMediaModeSelection();
         UpdateRuleOptionVisibility();
         if (SaveCurrentRuleFromFields())

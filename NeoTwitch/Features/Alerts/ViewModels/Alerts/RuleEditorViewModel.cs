@@ -29,6 +29,15 @@ public sealed class RuleEditorViewModel : ObservableObject
     private string _obsMediaAssetId = "";
     private string _obsMediaGroupId = "";
     private string _obsMediaDurationText = "5000";
+    private bool _sendObsImage;
+    private MediaSourceMode _obsImageSourceMode = MediaSourceMode.Single;
+    private string _obsImageAssetId = "";
+    private string _obsImageGroupId = "";
+    private string _obsImageDurationText = "5000";
+    private bool _sendObsVideo;
+    private MediaSourceMode _obsVideoSourceMode = MediaSourceMode.Single;
+    private string _obsVideoAssetId = "";
+    private string _obsVideoGroupId = "";
     private AudioSourceMode _audioSourceMode = AudioSourceMode.Single;
     private string _audioAssetId = "";
     private string _audioGroupId = "";
@@ -174,6 +183,60 @@ public sealed class RuleEditorViewModel : ObservableObject
         set => SetProperty(ref _obsMediaDurationText, value ?? "");
     }
 
+    public bool SendObsImage
+    {
+        get => _sendObsImage;
+        set => SetProperty(ref _sendObsImage, value);
+    }
+
+    public MediaSourceMode ObsImageSourceMode
+    {
+        get => _obsImageSourceMode;
+        set => SetProperty(ref _obsImageSourceMode, value);
+    }
+
+    public string ObsImageAssetId
+    {
+        get => _obsImageAssetId;
+        set => SetProperty(ref _obsImageAssetId, value ?? "");
+    }
+
+    public string ObsImageGroupId
+    {
+        get => _obsImageGroupId;
+        set => SetProperty(ref _obsImageGroupId, value ?? "");
+    }
+
+    public string ObsImageDurationText
+    {
+        get => _obsImageDurationText;
+        set => SetProperty(ref _obsImageDurationText, value ?? "");
+    }
+
+    public bool SendObsVideo
+    {
+        get => _sendObsVideo;
+        set => SetProperty(ref _sendObsVideo, value);
+    }
+
+    public MediaSourceMode ObsVideoSourceMode
+    {
+        get => _obsVideoSourceMode;
+        set => SetProperty(ref _obsVideoSourceMode, value);
+    }
+
+    public string ObsVideoAssetId
+    {
+        get => _obsVideoAssetId;
+        set => SetProperty(ref _obsVideoAssetId, value ?? "");
+    }
+
+    public string ObsVideoGroupId
+    {
+        get => _obsVideoGroupId;
+        set => SetProperty(ref _obsVideoGroupId, value ?? "");
+    }
+
     public AudioSourceMode AudioSourceMode
     {
         get => _audioSourceMode;
@@ -283,6 +346,27 @@ public sealed class RuleEditorViewModel : ObservableObject
         ObsMediaAssetId = rule.ObsMediaAssetId;
         ObsMediaGroupId = rule.ObsMediaGroupId;
         ObsMediaDurationText = rule.ObsMediaDurationMs.ToString();
+        SendObsImage = rule.SendObsImage || (rule.SendObsMedia && rule.ObsMediaKind == ObsMediaKind.Image);
+        ObsImageSourceMode = !string.IsNullOrWhiteSpace(rule.ObsImageAssetId) || !string.IsNullOrWhiteSpace(rule.ObsImageGroupId)
+            ? rule.ObsImageSourceMode
+            : rule.ObsMediaKind == ObsMediaKind.Image ? rule.ObsMediaSourceMode : rule.ObsImageSourceMode;
+        ObsImageAssetId = !string.IsNullOrWhiteSpace(rule.ObsImageAssetId)
+            ? rule.ObsImageAssetId
+            : rule.ObsMediaKind == ObsMediaKind.Image ? rule.ObsMediaAssetId : "";
+        ObsImageGroupId = !string.IsNullOrWhiteSpace(rule.ObsImageGroupId)
+            ? rule.ObsImageGroupId
+            : rule.ObsMediaKind == ObsMediaKind.Image ? rule.ObsMediaGroupId : "";
+        ObsImageDurationText = (rule.ObsImageDurationMs > 0 ? rule.ObsImageDurationMs : rule.ObsMediaDurationMs).ToString();
+        SendObsVideo = rule.SendObsVideo || (rule.SendObsMedia && rule.ObsMediaKind == ObsMediaKind.Video);
+        ObsVideoSourceMode = !string.IsNullOrWhiteSpace(rule.ObsVideoAssetId) || !string.IsNullOrWhiteSpace(rule.ObsVideoGroupId)
+            ? rule.ObsVideoSourceMode
+            : rule.ObsMediaKind == ObsMediaKind.Video ? rule.ObsMediaSourceMode : rule.ObsVideoSourceMode;
+        ObsVideoAssetId = !string.IsNullOrWhiteSpace(rule.ObsVideoAssetId)
+            ? rule.ObsVideoAssetId
+            : rule.ObsMediaKind == ObsMediaKind.Video ? rule.ObsMediaAssetId : "";
+        ObsVideoGroupId = !string.IsNullOrWhiteSpace(rule.ObsVideoGroupId)
+            ? rule.ObsVideoGroupId
+            : rule.ObsMediaKind == ObsMediaKind.Video ? rule.ObsMediaGroupId : "";
         AudioSourceMode = rule.AudioSourceMode;
         AudioAssetId = rule.AudioAssetId;
         AudioGroupId = rule.AudioGroupId;
@@ -321,6 +405,15 @@ public sealed class RuleEditorViewModel : ObservableObject
         ObsMediaAssetId = "";
         ObsMediaGroupId = "";
         ObsMediaDurationText = "5000";
+        SendObsImage = false;
+        ObsImageSourceMode = MediaSourceMode.Single;
+        ObsImageAssetId = "";
+        ObsImageGroupId = "";
+        ObsImageDurationText = "5000";
+        SendObsVideo = false;
+        ObsVideoSourceMode = MediaSourceMode.Single;
+        ObsVideoAssetId = "";
+        ObsVideoGroupId = "";
         AudioSourceMode = AudioSourceMode.Single;
         AudioAssetId = "";
         AudioGroupId = "";

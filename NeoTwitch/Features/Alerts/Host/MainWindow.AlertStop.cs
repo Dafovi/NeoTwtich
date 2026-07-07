@@ -22,23 +22,23 @@ public partial class MainWindow
 
     private async Task CleanupCurrentObsEffectAsync()
     {
-        var mediaHide = _currentObsMediaHide;
+        var mediaHides = _currentObsMediaHides.ToArray();
         var restore = _currentObsRestore;
-        if (mediaHide is null && restore is null)
+        if (mediaHides.Length == 0 && restore is null)
         {
             return;
         }
 
         try
         {
-            if (mediaHide is not null)
+            foreach (var mediaHide in mediaHides)
             {
                 await HideRuleObsMediaAsync(mediaHide, CancellationToken.None);
             }
 
             await RestoreRuleObsSceneAsync(restore, restoreImmediately: true);
             _currentObsCleanedByStop = true;
-            _currentObsMediaHide = null;
+            _currentObsMediaHides.Clear();
             _currentObsRestore = null;
         }
         catch (Exception ex)

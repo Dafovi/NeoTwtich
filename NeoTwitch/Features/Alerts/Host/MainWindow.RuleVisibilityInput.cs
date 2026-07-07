@@ -21,11 +21,14 @@ public partial class MainWindow
         var sendObsScene = editor.SendObsScene;
         var selectedObsSceneName = editor.ObsSceneName;
         var returnObsScene = editor.ObsReturnToPreviousScene;
-        var sendObsMedia = editor.SendObsMedia;
-        var obsMediaKind = editor.ObsMediaKind;
-        var obsMediaSourceMode = editor.ObsMediaSourceMode;
-        var obsMediaChoices = RuleObsMediaChoiceService.Resolve(
-            obsMediaKind,
+        var imageChoices = RuleObsMediaChoiceService.Resolve(
+            ObsMediaKind.Image,
+            _config.ImageLibrary,
+            _config.VideoLibrary,
+            _config.ImageGroups,
+            _config.VideoGroups);
+        var videoChoices = RuleObsMediaChoiceService.Resolve(
+            ObsMediaKind.Video,
             _config.ImageLibrary,
             _config.VideoLibrary,
             _config.ImageGroups,
@@ -48,11 +51,14 @@ public partial class MainWindow
             selectedObsSceneName,
             returnObsScene,
             _obsSceneRows.Count > 0,
-            sendObsMedia,
-            obsMediaKind,
-            obsMediaSourceMode,
-            obsMediaChoices.HasAssets,
-            obsMediaChoices.HasGroups,
+            editor.SendObsImage,
+            editor.ObsImageSourceMode,
+            imageChoices.HasAssets,
+            imageChoices.HasGroups,
+            editor.SendObsVideo,
+            editor.ObsVideoSourceMode,
+            videoChoices.HasAssets,
+            videoChoices.HasGroups,
             pattern);
     }
 }

@@ -32,6 +32,10 @@ public sealed partial class AlertsViewModel : ObservableObject
     private IEnumerable? _obsMediaSourceModeChoices;
     private IEnumerable? _obsMediaAssetChoices;
     private IEnumerable? _obsMediaGroupChoices;
+    private IEnumerable? _obsImageAssetChoices;
+    private IEnumerable? _obsImageGroupChoices;
+    private IEnumerable? _obsVideoAssetChoices;
+    private IEnumerable? _obsVideoGroupChoices;
     private IEnumerable? _targetPinChoices;
     private readonly CollectionViewSource _rulesViewSource = new();
     private readonly ObservableCollection<EventRuleRowViewModel> _ruleRows = [];
@@ -110,6 +114,30 @@ public sealed partial class AlertsViewModel : ObservableObject
     {
         get => _obsMediaGroupChoices;
         private set => SetProperty(ref _obsMediaGroupChoices, value);
+    }
+
+    public IEnumerable? ObsImageAssetChoices
+    {
+        get => _obsImageAssetChoices;
+        private set => SetProperty(ref _obsImageAssetChoices, value);
+    }
+
+    public IEnumerable? ObsImageGroupChoices
+    {
+        get => _obsImageGroupChoices;
+        private set => SetProperty(ref _obsImageGroupChoices, value);
+    }
+
+    public IEnumerable? ObsVideoAssetChoices
+    {
+        get => _obsVideoAssetChoices;
+        private set => SetProperty(ref _obsVideoAssetChoices, value);
+    }
+
+    public IEnumerable? ObsVideoGroupChoices
+    {
+        get => _obsVideoGroupChoices;
+        private set => SetProperty(ref _obsVideoGroupChoices, value);
     }
 
     public IEnumerable? TargetPinChoices
@@ -361,6 +389,18 @@ public sealed partial class AlertsViewModel : ObservableObject
     {
         ObsMediaAssetChoices = assetChoices;
         ObsMediaGroupChoices = groupChoices;
+    }
+
+    public void UpdateObsMediaChoices(
+        IEnumerable? imageAssetChoices,
+        IEnumerable? imageGroupChoices,
+        IEnumerable? videoAssetChoices,
+        IEnumerable? videoGroupChoices)
+    {
+        ObsImageAssetChoices = imageAssetChoices;
+        ObsImageGroupChoices = imageGroupChoices;
+        ObsVideoAssetChoices = videoAssetChoices;
+        ObsVideoGroupChoices = videoGroupChoices;
     }
 
     public void SelectStatusFilter(string? status)

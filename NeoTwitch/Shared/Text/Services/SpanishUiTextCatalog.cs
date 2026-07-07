@@ -101,6 +101,8 @@ public static class SpanishUiTextCatalog
             [UiTextKeys.RuleRowActionLights] = "Luces",
             [UiTextKeys.RuleRowActionAudio] = "Audio",
             [UiTextKeys.RuleRowActionChat] = "Chat",
+            [UiTextKeys.RuleRowActionVideo] = "Video",
+            [UiTextKeys.RuleRowActionImage] = "Imagen",
             [UiTextKeys.RuleRowActionAlexa] = "Alexa",
             [UiTextKeys.RuleRowActionObs] = "OBS",
             [UiTextKeys.RuleRowNoActions] = "Sin acciones",

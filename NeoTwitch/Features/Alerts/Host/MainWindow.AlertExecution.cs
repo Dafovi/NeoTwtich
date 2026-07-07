@@ -23,10 +23,10 @@ public partial class MainWindow
         var wasCancelled = false;
         var shouldRestoreBackground = false;
         ObsSceneRestoreRequest? obsRestore = null;
-        ObsMediaHideRequest? obsMediaHide = null;
-        Task? obsMediaHideTask = null;
+        IReadOnlyList<ObsMediaHideRequest> obsMediaHides = [];
+        List<Task> obsMediaHideTasks = [];
         _currentObsRestore = null;
-        _currentObsMediaHide = null;
+        _currentObsMediaHides.Clear();
         _currentObsCleanedByStop = false;
 
         try
@@ -43,14 +43,15 @@ public partial class MainWindow
 
             obsRestore = await SendRuleObsSceneAsync(rule, effectCts.Token);
             _currentObsRestore = obsRestore;
-            obsMediaHide = await SendRuleObsMediaAsync(rule, effectCts.Token);
-            obsRestore = ObsRulePlanService.AlignSceneRestoreWithMedia(obsRestore, obsMediaHide);
+            obsMediaHides = await SendRuleObsMediaAsync(rule, effectCts.Token);
+            obsRestore = ObsRulePlanService.AlignSceneRestoreWithMedia(obsRestore, obsMediaHides);
             _currentObsRestore = obsRestore;
 
-            _currentObsMediaHide = obsMediaHide;
-            if (obsMediaHide is not null)
+            _currentObsMediaHides.Clear();
+            _currentObsMediaHides.AddRange(obsMediaHides);
+            foreach (var obsMediaHide in obsMediaHides)
             {
-                obsMediaHideTask = HideRuleObsMediaAfterDelayAsync(obsMediaHide, effectCts.Token);
+                obsMediaHideTasks.Add(HideRuleObsMediaAfterDelayAsync(obsMediaHide, effectCts.Token));
             }
 
             AudioPlayback? playback = null;
@@ -72,7 +73,7 @@ public partial class MainWindow
                 _config,
                 _lightController.HasOpenPort,
                 playback?.Duration,
-                obsMediaHide?.Duration);
+                obsMediaHides.Count == 0 ? null : obsMediaHides.Max(media => media.Duration));
 
             if (!plan.UseLights)
             {
@@ -102,7 +103,7 @@ public partial class MainWindow
             }
 
             playback?.Play();
-            await AlertEffectWaitService.WaitAsync(playback, command, obsMediaHide, effectCts.Token);
+            await AlertEffectWaitService.WaitAsync(playback, command, obsMediaHides, effectCts.Token);
 
             if (command is not null)
             {
@@ -128,8 +129,8 @@ public partial class MainWindow
                 shouldRestoreBackground,
                 wasCancelled,
                 obsRestore,
-                obsMediaHide,
-                obsMediaHideTask);
+                obsMediaHides,
+                obsMediaHideTasks);
         }
     }
 

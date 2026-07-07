@@ -101,6 +101,8 @@ public static class UiTextKeys
     public const string RuleRowActionLights = "rule_row.action_lights";
     public const string RuleRowActionAudio = "rule_row.action_audio";
     public const string RuleRowActionChat = "rule_row.action_chat";
+    public const string RuleRowActionVideo = "rule_row.action_video";
+    public const string RuleRowActionImage = "rule_row.action_image";
     public const string RuleRowActionAlexa = "rule_row.action_alexa";
     public const string RuleRowActionObs = "rule_row.action_obs";
     public const string RuleRowNoActions = "rule_row.no_actions";

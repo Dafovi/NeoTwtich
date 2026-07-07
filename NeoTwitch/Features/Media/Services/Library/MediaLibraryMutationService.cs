@@ -23,14 +23,40 @@ public static class MediaLibraryMutationService
 
         var obsKind = MediaLibraryKindCatalog.Get(kind).ObsKind;
         var updatedRules = 0;
-        foreach (var rule in config.Rules.Where(rule =>
-            rule.ObsMediaKind == obsKind
-            && rule.ObsMediaSourceMode == MediaSourceMode.Single
-            && string.Equals(rule.ObsMediaAssetId, asset.Id, StringComparison.OrdinalIgnoreCase)))
+        foreach (var rule in config.Rules)
         {
-            rule.ObsMediaAssetId = "";
-            rule.SendObsMedia = false;
-            updatedRules++;
+            var updated = false;
+            if (rule.ObsMediaKind == obsKind
+                && rule.ObsMediaSourceMode == MediaSourceMode.Single
+                && string.Equals(rule.ObsMediaAssetId, asset.Id, StringComparison.OrdinalIgnoreCase))
+            {
+                rule.ObsMediaAssetId = "";
+                rule.SendObsMedia = false;
+                updated = true;
+            }
+
+            if (obsKind == ObsMediaKind.Image
+                && rule.ObsImageSourceMode == MediaSourceMode.Single
+                && string.Equals(rule.ObsImageAssetId, asset.Id, StringComparison.OrdinalIgnoreCase))
+            {
+                rule.ObsImageAssetId = "";
+                rule.SendObsImage = false;
+                updated = true;
+            }
+
+            if (obsKind == ObsMediaKind.Video
+                && rule.ObsVideoSourceMode == MediaSourceMode.Single
+                && string.Equals(rule.ObsVideoAssetId, asset.Id, StringComparison.OrdinalIgnoreCase))
+            {
+                rule.ObsVideoAssetId = "";
+                rule.SendObsVideo = false;
+                updated = true;
+            }
+
+            if (updated)
+            {
+                updatedRules++;
+            }
         }
 
         return new MediaAssetRemovalResult(asset, updatedRules);

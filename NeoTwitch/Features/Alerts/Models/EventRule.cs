@@ -32,6 +32,15 @@ public sealed class EventRule : INotifyPropertyChanged
     private string _obsMediaAssetId = "";
     private string _obsMediaGroupId = "";
     private int _obsMediaDurationMs = 5000;
+    private bool _sendObsImage;
+    private MediaSourceMode _obsImageSourceMode = MediaSourceMode.Single;
+    private string _obsImageAssetId = "";
+    private string _obsImageGroupId = "";
+    private int _obsImageDurationMs = 5000;
+    private bool _sendObsVideo;
+    private MediaSourceMode _obsVideoSourceMode = MediaSourceMode.Single;
+    private string _obsVideoAssetId = "";
+    private string _obsVideoGroupId = "";
     private LightPattern _pattern = LightPattern.Pulse;
     private string _targetPins = "";
     private string _primaryColor = "#FF2D55";
@@ -207,6 +216,60 @@ public sealed class EventRule : INotifyPropertyChanged
     {
         get => _obsMediaDurationMs;
         set => SetField(ref _obsMediaDurationMs, Math.Clamp(value, ApplicationLimits.MinAlertDurationMs, ApplicationLimits.MaxAlertDurationMs));
+    }
+
+    public bool SendObsImage
+    {
+        get => _sendObsImage;
+        set => SetField(ref _sendObsImage, value);
+    }
+
+    public MediaSourceMode ObsImageSourceMode
+    {
+        get => _obsImageSourceMode;
+        set => SetField(ref _obsImageSourceMode, value);
+    }
+
+    public string ObsImageAssetId
+    {
+        get => _obsImageAssetId;
+        set => SetField(ref _obsImageAssetId, value);
+    }
+
+    public string ObsImageGroupId
+    {
+        get => _obsImageGroupId;
+        set => SetField(ref _obsImageGroupId, value);
+    }
+
+    public int ObsImageDurationMs
+    {
+        get => _obsImageDurationMs;
+        set => SetField(ref _obsImageDurationMs, Math.Clamp(value, ApplicationLimits.MinAlertDurationMs, ApplicationLimits.MaxAlertDurationMs));
+    }
+
+    public bool SendObsVideo
+    {
+        get => _sendObsVideo;
+        set => SetField(ref _sendObsVideo, value);
+    }
+
+    public MediaSourceMode ObsVideoSourceMode
+    {
+        get => _obsVideoSourceMode;
+        set => SetField(ref _obsVideoSourceMode, value);
+    }
+
+    public string ObsVideoAssetId
+    {
+        get => _obsVideoAssetId;
+        set => SetField(ref _obsVideoAssetId, value);
+    }
+
+    public string ObsVideoGroupId
+    {
+        get => _obsVideoGroupId;
+        set => SetField(ref _obsVideoGroupId, value);
     }
 
     public LightPattern Pattern

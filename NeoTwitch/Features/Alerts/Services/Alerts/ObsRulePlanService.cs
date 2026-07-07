@@ -62,6 +62,11 @@ public static class ObsRulePlanService
         return obsConfigured && rule.SendObsMedia;
     }
 
+    public static bool ShouldSendMedia(bool obsConfigured, bool sendMedia)
+    {
+        return obsConfigured && sendMedia;
+    }
+
     public static string ResolveMediaSceneName(EventRule rule, string? currentScene)
     {
         return rule.SendObsScene && !string.IsNullOrWhiteSpace(rule.ObsSceneName)
@@ -87,7 +92,30 @@ public static class ObsRulePlanService
         string imageSourceName,
         string videoSourceName)
     {
-        if (!ShouldSendMedia(rule, config.Obs.IsConfigured))
+        return BuildMediaExecutionPlan(
+            rule,
+            config,
+            currentScene,
+            asset,
+            rule.SendObsMedia,
+            rule.ObsMediaKind,
+            rule.ObsMediaDurationMs,
+            imageSourceName,
+            videoSourceName);
+    }
+
+    public static ObsRuleMediaExecutionPlan BuildMediaExecutionPlan(
+        EventRule rule,
+        AppConfig config,
+        string? currentScene,
+        MediaAssetConfig? asset,
+        bool sendMedia,
+        ObsMediaKind mediaKind,
+        int durationMs,
+        string imageSourceName,
+        string videoSourceName)
+    {
+        if (!ShouldSendMedia(config.Obs.IsConfigured, sendMedia))
         {
             return new ObsRuleMediaExecutionPlan(
                 ObsRuleMediaPlanStatus.Disabled,
@@ -125,9 +153,9 @@ public static class ObsRulePlanService
             ObsRuleMediaPlanStatus.Ready,
             asset,
             sceneName,
-            ResolveAlertSourceName(rule.ObsMediaKind, imageSourceName, videoSourceName),
-            MediaRuleAssetService.ResolveRuleMediaDuration(rule, asset),
-            rule.ObsMediaKind == ObsMediaKind.Video ? config.VideoVolumePercent : null);
+            ResolveAlertSourceName(mediaKind, imageSourceName, videoSourceName),
+            MediaRuleAssetService.ResolveRuleMediaDuration(mediaKind, durationMs, asset),
+            mediaKind == ObsMediaKind.Video ? config.VideoVolumePercent : null);
     }
 
     public static ObsMediaHideRequest BuildMediaHideRequest(
@@ -150,5 +178,16 @@ public static class ObsRulePlanService
         return restore is not null && mediaHide is not null
             ? restore with { Delay = mediaHide.Duration, StartedAt = mediaHide.StartedAt }
             : restore;
+    }
+
+    public static ObsSceneRestoreRequest? AlignSceneRestoreWithMedia(
+        ObsSceneRestoreRequest? restore,
+        IEnumerable<ObsMediaHideRequest> mediaHides)
+    {
+        var longestMedia = mediaHides
+            .OrderByDescending(media => media.Duration)
+            .FirstOrDefault();
+
+        return AlignSceneRestoreWithMedia(restore, longestMedia);
     }
 }

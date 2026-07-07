@@ -12,20 +12,43 @@ public static class MediaRuleAssetService
         Random random,
         Func<string, bool>? fileExists = null)
     {
-        if (!rule.SendObsMedia)
+        return ResolveRuleMediaAsset(
+            rule.SendObsMedia,
+            rule.ObsMediaKind,
+            rule.ObsMediaSourceMode,
+            rule.ObsMediaAssetId,
+            rule.ObsMediaGroupId,
+            imageLibrary,
+            videoLibrary,
+            random,
+            fileExists);
+    }
+
+    public static MediaAssetConfig? ResolveRuleMediaAsset(
+        bool shouldSend,
+        ObsMediaKind kind,
+        MediaSourceMode sourceMode,
+        string assetId,
+        string groupId,
+        IReadOnlyCollection<MediaAssetConfig> imageLibrary,
+        IReadOnlyCollection<MediaAssetConfig> videoLibrary,
+        Random random,
+        Func<string, bool>? fileExists = null)
+    {
+        if (!shouldSend)
         {
             return null;
         }
 
         fileExists ??= File.Exists;
-        var library = rule.ObsMediaKind == ObsMediaKind.Image
+        var library = kind == ObsMediaKind.Image
             ? imageLibrary
             : videoLibrary;
 
-        if (rule.ObsMediaSourceMode == MediaSourceMode.Group)
+        if (sourceMode == MediaSourceMode.Group)
         {
             var candidates = library
-                .Where(asset => string.Equals(asset.GroupId, rule.ObsMediaGroupId, StringComparison.OrdinalIgnoreCase))
+                .Where(asset => string.Equals(asset.GroupId, groupId, StringComparison.OrdinalIgnoreCase))
                 .Where(asset => fileExists(asset.FilePath))
                 .ToArray();
 
@@ -35,20 +58,22 @@ public static class MediaRuleAssetService
         }
 
         return library
-            .Where(asset => string.Equals(asset.Id, rule.ObsMediaAssetId, StringComparison.OrdinalIgnoreCase))
+            .Where(asset => string.Equals(asset.Id, assetId, StringComparison.OrdinalIgnoreCase))
             .FirstOrDefault(asset => fileExists(asset.FilePath));
     }
 
     public static TimeSpan ResolveRuleMediaDuration(EventRule rule, MediaAssetConfig asset)
     {
-        if (rule.ObsMediaKind == ObsMediaKind.Video)
-        {
-            return TimeSpan.FromMilliseconds(asset.DurationMs > 0 ? asset.DurationMs : 5000);
-        }
+        return ResolveRuleMediaDuration(rule.ObsMediaKind, rule.ObsMediaDurationMs, asset);
+    }
 
-        return TimeSpan.FromMilliseconds(Math.Clamp(
-            rule.ObsMediaDurationMs,
-            ApplicationLimits.MinAlertDurationMs,
-            ApplicationLimits.MaxAlertDurationMs));
+    public static TimeSpan ResolveRuleMediaDuration(ObsMediaKind kind, int durationMs, MediaAssetConfig asset)
+    {
+        return kind == ObsMediaKind.Video
+            ? TimeSpan.FromMilliseconds(asset.DurationMs > 0 ? asset.DurationMs : 5000)
+            : TimeSpan.FromMilliseconds(Math.Clamp(
+                durationMs,
+                ApplicationLimits.MinAlertDurationMs,
+                ApplicationLimits.MaxAlertDurationMs));
     }
 }

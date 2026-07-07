@@ -13,18 +13,71 @@ namespace NeoTwitch;
 
 public partial class MainWindow
 {
-    private async Task<ObsMediaHideRequest?> SendRuleObsMediaAsync(EventRule rule, CancellationToken cancellationToken)
+    private async Task<IReadOnlyList<ObsMediaHideRequest>> SendRuleObsMediaAsync(EventRule rule, CancellationToken cancellationToken)
     {
-        var asset = ObsRulePlanService.ShouldSendMedia(rule, _config.Obs.IsConfigured)
-            ? ResolveRuleObsMediaAsset(rule)
+        List<ObsMediaHideRequest> requests = [];
+
+        var imageRequest = await SendRuleObsMediaAsync(
+            rule,
+            ObsMediaKind.Image,
+            rule.SendObsImage || (rule.SendObsMedia && rule.ObsMediaKind == ObsMediaKind.Image),
+            string.IsNullOrWhiteSpace(rule.ObsImageAssetId) && string.IsNullOrWhiteSpace(rule.ObsImageGroupId)
+                ? rule.ObsMediaSourceMode
+                : rule.ObsImageSourceMode,
+            string.IsNullOrWhiteSpace(rule.ObsImageAssetId) && rule.ObsMediaKind == ObsMediaKind.Image ? rule.ObsMediaAssetId : rule.ObsImageAssetId,
+            string.IsNullOrWhiteSpace(rule.ObsImageGroupId) && rule.ObsMediaKind == ObsMediaKind.Image ? rule.ObsMediaGroupId : rule.ObsImageGroupId,
+            rule.ObsImageDurationMs > 0 ? rule.ObsImageDurationMs : rule.ObsMediaDurationMs,
+            NeoTwitchProduct.Obs.AlertImageSourceName,
+            cancellationToken);
+        if (imageRequest is not null)
+        {
+            requests.Add(imageRequest);
+        }
+
+        var videoRequest = await SendRuleObsMediaAsync(
+            rule,
+            ObsMediaKind.Video,
+            rule.SendObsVideo || (rule.SendObsMedia && rule.ObsMediaKind == ObsMediaKind.Video),
+            string.IsNullOrWhiteSpace(rule.ObsVideoAssetId) && string.IsNullOrWhiteSpace(rule.ObsVideoGroupId)
+                ? rule.ObsMediaSourceMode
+                : rule.ObsVideoSourceMode,
+            string.IsNullOrWhiteSpace(rule.ObsVideoAssetId) && rule.ObsMediaKind == ObsMediaKind.Video ? rule.ObsMediaAssetId : rule.ObsVideoAssetId,
+            string.IsNullOrWhiteSpace(rule.ObsVideoGroupId) && rule.ObsMediaKind == ObsMediaKind.Video ? rule.ObsMediaGroupId : rule.ObsVideoGroupId,
+            rule.ObsMediaDurationMs,
+            NeoTwitchProduct.Obs.AlertVideoSourceName,
+            cancellationToken);
+        if (videoRequest is not null)
+        {
+            requests.Add(videoRequest);
+        }
+
+        return requests;
+    }
+
+    private async Task<ObsMediaHideRequest?> SendRuleObsMediaAsync(
+        EventRule rule,
+        ObsMediaKind mediaKind,
+        bool sendMedia,
+        MediaSourceMode sourceMode,
+        string assetId,
+        string groupId,
+        int durationMs,
+        string sourceName,
+        CancellationToken cancellationToken)
+    {
+        var asset = ObsRulePlanService.ShouldSendMedia(_config.Obs.IsConfigured, sendMedia)
+            ? ResolveRuleObsMediaAsset(mediaKind, sendMedia, sourceMode, assetId, groupId)
             : null;
         var plan = ObsRulePlanService.BuildMediaExecutionPlan(
             rule,
             _config,
             _obsService.CurrentScene,
             asset,
-            NeoTwitchProduct.Obs.AlertImageSourceName,
-            NeoTwitchProduct.Obs.AlertVideoSourceName);
+            sendMedia,
+            mediaKind,
+            durationMs,
+            sourceName,
+            sourceName);
 
         if (!HandleObsMediaPlanStatus(rule, plan))
         {
@@ -47,14 +100,14 @@ public partial class MainWindow
                 plan.SceneName,
                 plan.SourceName,
                 plan.Asset!.FilePath,
-                rule.ObsMediaKind,
+                mediaKind,
                 _config.Obs,
                 plan.VolumePercent,
                 cancellationToken);
 
             ApplyObsResult(result);
-            WriteObsOverlayState(plan.Asset, rule.ObsMediaKind, plan.Duration);
-            MarkObsMediaAssetUsed(rule.ObsMediaKind, plan.Asset);
+            WriteObsOverlayState(plan.Asset, mediaKind, plan.Duration);
+            MarkObsMediaAssetUsed(mediaKind, plan.Asset);
             AddLog(_text.Format(UiTextKeys.ObsRuleMediaShownLog, plan.Asset.DisplayName, plan.SceneName), ActivityLogKind.Obs);
 
             return ObsRulePlanService.BuildMediaHideRequest(
@@ -96,15 +149,24 @@ public partial class MainWindow
         }
     }
 
-    private MediaAssetConfig? ResolveRuleObsMediaAsset(EventRule rule)
+    private MediaAssetConfig? ResolveRuleObsMediaAsset(
+        ObsMediaKind mediaKind,
+        bool sendMedia,
+        MediaSourceMode sourceMode,
+        string assetId,
+        string groupId)
     {
         if (!Dispatcher.CheckAccess())
         {
-            return Dispatcher.Invoke(() => ResolveRuleObsMediaAsset(rule));
+            return Dispatcher.Invoke(() => ResolveRuleObsMediaAsset(mediaKind, sendMedia, sourceMode, assetId, groupId));
         }
 
         return MediaRuleAssetService.ResolveRuleMediaAsset(
-            rule,
+            sendMedia,
+            mediaKind,
+            sourceMode,
+            assetId,
+            groupId,
             _config.ImageLibrary,
             _config.VideoLibrary,
             _previewRandom);

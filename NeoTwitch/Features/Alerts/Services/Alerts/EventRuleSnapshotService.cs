@@ -55,6 +55,15 @@ public static class EventRuleSnapshotService
         target.ObsMediaAssetId = source.ObsMediaAssetId;
         target.ObsMediaGroupId = source.ObsMediaGroupId;
         target.ObsMediaDurationMs = source.ObsMediaDurationMs;
+        target.SendObsImage = source.SendObsImage;
+        target.ObsImageSourceMode = source.ObsImageSourceMode;
+        target.ObsImageAssetId = source.ObsImageAssetId;
+        target.ObsImageGroupId = source.ObsImageGroupId;
+        target.ObsImageDurationMs = source.ObsImageDurationMs;
+        target.SendObsVideo = source.SendObsVideo;
+        target.ObsVideoSourceMode = source.ObsVideoSourceMode;
+        target.ObsVideoAssetId = source.ObsVideoAssetId;
+        target.ObsVideoGroupId = source.ObsVideoGroupId;
         target.Pattern = source.Pattern;
         target.TargetPins = source.TargetPins;
         target.PrimaryColor = source.PrimaryColor;
@@ -98,6 +107,15 @@ public static class EventRuleSnapshotService
             && left.ObsMediaAssetId == right.ObsMediaAssetId
             && left.ObsMediaGroupId == right.ObsMediaGroupId
             && left.ObsMediaDurationMs == right.ObsMediaDurationMs
+            && left.SendObsImage == right.SendObsImage
+            && left.ObsImageSourceMode == right.ObsImageSourceMode
+            && left.ObsImageAssetId == right.ObsImageAssetId
+            && left.ObsImageGroupId == right.ObsImageGroupId
+            && left.ObsImageDurationMs == right.ObsImageDurationMs
+            && left.SendObsVideo == right.SendObsVideo
+            && left.ObsVideoSourceMode == right.ObsVideoSourceMode
+            && left.ObsVideoAssetId == right.ObsVideoAssetId
+            && left.ObsVideoGroupId == right.ObsVideoGroupId
             && left.Pattern == right.Pattern
             && left.TargetPins == right.TargetPins
             && left.PrimaryColor == right.PrimaryColor

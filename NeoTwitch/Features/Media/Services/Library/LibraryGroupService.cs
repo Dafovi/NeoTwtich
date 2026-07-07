@@ -63,13 +63,40 @@ public static class LibraryGroupService
     public static int ClearMediaGroupFromRules(IEnumerable<EventRule> rules, ObsMediaKind kind, string groupId)
     {
         var cleared = 0;
-        foreach (var rule in rules.Where(rule => rule.ObsMediaKind == kind
-                     && rule.ObsMediaSourceMode == MediaSourceMode.Group
-                     && string.Equals(rule.ObsMediaGroupId, groupId, StringComparison.OrdinalIgnoreCase)))
+        foreach (var rule in rules)
         {
-            rule.ObsMediaGroupId = "";
-            rule.SendObsMedia = false;
-            cleared++;
+            var updated = false;
+            if (rule.ObsMediaKind == kind
+                && rule.ObsMediaSourceMode == MediaSourceMode.Group
+                && string.Equals(rule.ObsMediaGroupId, groupId, StringComparison.OrdinalIgnoreCase))
+            {
+                rule.ObsMediaGroupId = "";
+                rule.SendObsMedia = false;
+                updated = true;
+            }
+
+            if (kind == ObsMediaKind.Image
+                && rule.ObsImageSourceMode == MediaSourceMode.Group
+                && string.Equals(rule.ObsImageGroupId, groupId, StringComparison.OrdinalIgnoreCase))
+            {
+                rule.ObsImageGroupId = "";
+                rule.SendObsImage = false;
+                updated = true;
+            }
+
+            if (kind == ObsMediaKind.Video
+                && rule.ObsVideoSourceMode == MediaSourceMode.Group
+                && string.Equals(rule.ObsVideoGroupId, groupId, StringComparison.OrdinalIgnoreCase))
+            {
+                rule.ObsVideoGroupId = "";
+                rule.SendObsVideo = false;
+                updated = true;
+            }
+
+            if (updated)
+            {
+                cleared++;
+            }
         }
 
         return cleared;

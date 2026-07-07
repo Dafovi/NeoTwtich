@@ -27,13 +27,13 @@ public partial class MainWindow
         }
 
         var palette = _config.DarkMode ? ThemePalette.Dark : ThemePalette.Light;
-        var mediaKind = _alertsViewModel.Editor.ObsMediaKind;
-        var sourceMode = _alertsViewModel.Editor.ObsMediaSourceMode;
+        var imageSourceMode = _alertsViewModel.Editor.ObsImageSourceMode;
+        var videoSourceMode = _alertsViewModel.Editor.ObsVideoSourceMode;
 
-        ApplyRuleModeButtonTheme(RuleObsImageModeButton, mediaKind == ObsMediaKind.Image, UiAccentCatalog.ObsImage, palette);
-        ApplyRuleModeButtonTheme(RuleObsVideoModeButton, mediaKind == ObsMediaKind.Video, UiAccentCatalog.ObsVideo, palette);
-        ApplyRuleModeButtonTheme(RuleObsSingleMediaModeButton, sourceMode == MediaSourceMode.Single, UiAccentCatalog.MediaSingle, palette);
-        ApplyRuleModeButtonTheme(RuleObsGroupMediaModeButton, sourceMode == MediaSourceMode.Group, UiAccentCatalog.MediaGroup, palette);
+        ApplyRuleModeButtonTheme(RuleObsImageSingleMediaModeButton, imageSourceMode == MediaSourceMode.Single, UiAccentCatalog.ObsImage, palette);
+        ApplyRuleModeButtonTheme(RuleObsImageGroupMediaModeButton, imageSourceMode == MediaSourceMode.Group, UiAccentCatalog.MediaGroup, palette);
+        ApplyRuleModeButtonTheme(RuleObsVideoSingleMediaModeButton, videoSourceMode == MediaSourceMode.Single, UiAccentCatalog.ObsVideo, palette);
+        ApplyRuleModeButtonTheme(RuleObsVideoGroupMediaModeButton, videoSourceMode == MediaSourceMode.Group, UiAccentCatalog.MediaGroup, palette);
     }
 
     private static void ApplyRuleModeButtonTheme(

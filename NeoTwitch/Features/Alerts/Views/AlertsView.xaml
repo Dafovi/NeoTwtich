@@ -350,23 +350,30 @@
                                                                    Opacity="{Binding LightsActionOpacity}"
                                                                    ToolTip="{Binding LightsActionToolTip}"
                                                                    Visibility="{Binding LightsActionVisibility}" />
-                                                            <Image Source="/Assets/Icons/service_audio.png"
-                                                                   Width="16"
-                                                                   Height="16"
-                                                                   Margin="0,0,10,0"
-                                                                   Visibility="{Binding AudioActionVisibility}" />
                                                             <Image Source="/Assets/Icons/action_message_green.png"
                                                                    Width="16"
                                                                    Height="16"
                                                                    Margin="0,0,10,0"
                                                                    Visibility="{Binding ChatActionVisibility}" />
-                                                            <Image Source="/Assets/Icons/service_alexa.png"
+                                                            <Image Source="/Assets/Icons/service_audio.png"
                                                                    Width="16"
                                                                    Height="16"
                                                                    Margin="0,0,10,0"
-                                                                   Opacity="{Binding AlexaActionOpacity}"
-                                                                   ToolTip="{Binding AlexaActionToolTip}"
-                                                                   Visibility="{Binding AlexaActionVisibility}" />
+                                                                   Visibility="{Binding AudioActionVisibility}" />
+                                                            <Image Source="/Assets/Icons/media_video.png"
+                                                                   Width="16"
+                                                                   Height="16"
+                                                                   Margin="0,0,10,0"
+                                                                   Opacity="{Binding ObsMediaActionOpacity}"
+                                                                   ToolTip="{Binding ObsMediaActionToolTip}"
+                                                                   Visibility="{Binding VideoActionVisibility}" />
+                                                            <Image Source="/Assets/Icons/media_image.png"
+                                                                   Width="16"
+                                                                   Height="16"
+                                                                   Margin="0,0,10,0"
+                                                                   Opacity="{Binding ObsMediaActionOpacity}"
+                                                                   ToolTip="{Binding ObsMediaActionToolTip}"
+                                                                   Visibility="{Binding ImageActionVisibility}" />
                                                             <Image Source="/Assets/ServiceObs.png"
                                                                    Width="16"
                                                                    Height="16"
@@ -374,6 +381,13 @@
                                                                    Opacity="{Binding ObsActionOpacity}"
                                                                    ToolTip="{Binding ObsActionToolTip}"
                                                                    Visibility="{Binding ObsActionVisibility}" />
+                                                            <Image Source="/Assets/Icons/service_alexa.png"
+                                                                   Width="16"
+                                                                   Height="16"
+                                                                   Margin="0,0,10,0"
+                                                                   Opacity="{Binding AlexaActionOpacity}"
+                                                                   ToolTip="{Binding AlexaActionToolTip}"
+                                                                   Visibility="{Binding AlexaActionVisibility}" />
                                                         </WrapPanel>
                                                     </StackPanel>
 
@@ -1154,6 +1168,64 @@
                                                 </Grid>
                                             </Border>
 
+                                            <Border x:Name="ChatActionCard"
+                                                    BorderBrush="{DynamicResource ThemeBorderBrush}"
+                                                    BorderThickness="1"
+                                                    CornerRadius="12"
+                                                    Padding="12"
+                                                    Margin="0,0,0,10"
+                                                    Background="{DynamicResource ThemeInputBrush}">
+                                                <Grid>
+                                                    <Grid.ColumnDefinitions>
+                                                        <ColumnDefinition Width="220" />
+                                                        <ColumnDefinition Width="16" />
+                                                        <ColumnDefinition Width="*" />
+                                                    </Grid.ColumnDefinitions>
+
+                                                    <Grid MinWidth="190" VerticalAlignment="Center">
+                                                        <Grid.ColumnDefinitions>
+                                                            <ColumnDefinition Width="42" />
+                                                            <ColumnDefinition Width="*" />
+                                                            <ColumnDefinition Width="Auto" />
+                                                        </Grid.ColumnDefinitions>
+                                                        <Image Source="/Assets/Icons/action_message_green.png"
+                                                               Width="26"
+                                                               Height="26"
+                                                               Stretch="Uniform"
+                                                               VerticalAlignment="Center" />
+                                                        <StackPanel Grid.Column="1"
+                                                                    VerticalAlignment="Center">
+                                                            <TextBlock Text="Mensaje de chat"
+                                                                       FontWeight="SemiBold" />
+                                                            <TextBlock Text="Envia respuesta automatica."
+                                                                       Style="{StaticResource MutedText}"
+                                                                       FontSize="12"
+                                                                       TextWrapping="Wrap" />
+                                                        </StackPanel>
+                                                        <CheckBox x:Name="ChatMessageCheck"
+                                                                  Grid.Column="2"
+                                                                  Content=""
+                                                                  Style="{StaticResource AlertToggleSwitchStyle}"
+                                                                  IsChecked="{Binding Editor.SendChatMessage, Mode=TwoWay, UpdateSourceTrigger=PropertyChanged}"
+                                                                  Checked="RuleFieldChanged"
+                                                                  Unchecked="RuleFieldChanged" />
+                                                    </Grid>
+
+                                                    <StackPanel x:Name="ChatDetailsPanel"
+                                                                Grid.Column="2"
+                                                                Margin="0">
+                                                            <TextBlock x:Name="ChatMessageLabel"
+                                                                       Text="Mensaje al chat"
+                                                                       Style="{StaticResource MutedText}" />
+                                                            <TextBox x:Name="ChatMessageBox"
+                                                                     Margin="0,4,0,0"
+                                                                     Text="{Binding Editor.ChatMessageTemplate, Mode=TwoWay, UpdateSourceTrigger=PropertyChanged}"
+                                                                     TextChanged="RuleFieldChanged"
+                                                                     ToolTip="Variables: {user}, {bits}, {reward}, {viewers}, {message}, {event}" />
+                                                    </StackPanel>
+                                                </Grid>
+                                            </Border>
+
                                             <Border x:Name="AudioActionCard"
                                                     BorderBrush="{DynamicResource ThemeBorderBrush}"
                                                     BorderThickness="1"
@@ -1277,7 +1349,7 @@
                                                 </Grid>
                                             </Border>
 
-                                            <Border x:Name="ChatActionCard"
+                                            <Border x:Name="VideoActionCard"
                                                     BorderBrush="{DynamicResource ThemeBorderBrush}"
                                                     BorderThickness="1"
                                                     CornerRadius="12"
@@ -1290,52 +1362,105 @@
                                                         <ColumnDefinition Width="16" />
                                                         <ColumnDefinition Width="*" />
                                                     </Grid.ColumnDefinitions>
-
                                                     <Grid MinWidth="190" VerticalAlignment="Center">
                                                         <Grid.ColumnDefinitions>
                                                             <ColumnDefinition Width="42" />
                                                             <ColumnDefinition Width="*" />
                                                             <ColumnDefinition Width="Auto" />
                                                         </Grid.ColumnDefinitions>
-                                                        <Image Source="/Assets/Icons/action_message_green.png"
+                                                        <Image Source="/Assets/Icons/media_video.png"
                                                                Width="26"
                                                                Height="26"
                                                                Stretch="Uniform"
                                                                VerticalAlignment="Center" />
-                                                        <StackPanel Grid.Column="1"
-                                                                    VerticalAlignment="Center">
-                                                            <TextBlock Text="Mensaje de chat"
+                                                        <StackPanel Grid.Column="1" VerticalAlignment="Center">
+                                                            <TextBlock Text="Video"
                                                                        FontWeight="SemiBold" />
-                                                            <TextBlock Text="Envia respuesta automatica."
+                                                            <TextBlock Text="Reproduce un video en OBS."
                                                                        Style="{StaticResource MutedText}"
                                                                        FontSize="12"
                                                                        TextWrapping="Wrap" />
                                                         </StackPanel>
-                                                        <CheckBox x:Name="ChatMessageCheck"
+                                                        <CheckBox x:Name="ObsVideoCheck"
                                                                   Grid.Column="2"
                                                                   Content=""
                                                                   Style="{StaticResource AlertToggleSwitchStyle}"
-                                                                  IsChecked="{Binding Editor.SendChatMessage, Mode=TwoWay, UpdateSourceTrigger=PropertyChanged}"
+                                                                  IsChecked="{Binding Editor.SendObsVideo, Mode=TwoWay, UpdateSourceTrigger=PropertyChanged}"
                                                                   Checked="RuleFieldChanged"
                                                                   Unchecked="RuleFieldChanged" />
                                                     </Grid>
-
-                                                    <StackPanel x:Name="ChatDetailsPanel"
-                                                                Grid.Column="2"
-                                                                Margin="0">
-                                                            <TextBlock x:Name="ChatMessageLabel"
-                                                                       Text="Mensaje al chat"
+                                                    <StackPanel x:Name="ObsVideoDetailsPanel"
+                                                                Grid.Column="2">
+                                                        <TextBlock Text="Seleccion"
+                                                                   Style="{StaticResource MutedText}" />
+                                                        <Grid Margin="0,4,0,8">
+                                                            <Grid.ColumnDefinitions>
+                                                                <ColumnDefinition Width="*" />
+                                                                <ColumnDefinition Width="10" />
+                                                                <ColumnDefinition Width="*" />
+                                                            </Grid.ColumnDefinitions>
+                                                            <Button x:Name="RuleObsVideoSingleMediaModeButton"
+                                                                    Tag="Video:Single"
+                                                                    Command="{Binding SelectObsMediaSourceModeCommand}"
+                                                                    CommandParameter="{Binding Tag, RelativeSource={RelativeSource Self}}"
+                                                                    ToolTip="Video individual">
+                                                                <Image Source="/Assets/Icons/sound_file.png"
+                                                                       Width="22"
+                                                                       Height="22"
+                                                                       Stretch="Uniform" />
+                                                            </Button>
+                                                            <Button x:Name="RuleObsVideoGroupMediaModeButton"
+                                                                    Grid.Column="2"
+                                                                    Tag="Video:Group"
+                                                                    Command="{Binding SelectObsMediaSourceModeCommand}"
+                                                                    CommandParameter="{Binding Tag, RelativeSource={RelativeSource Self}}"
+                                                                    ToolTip="Grupo aleatorio de videos">
+                                                                <Image Source="/Assets/Icons/media_group.png"
+                                                                       Width="22"
+                                                                       Height="22"
+                                                                       Stretch="Uniform" />
+                                                            </Button>
+                                                        </Grid>
+                                                        <ComboBox x:Name="RuleObsVideoSourceModeBox"
+                                                                  ItemsSource="{Binding ObsMediaSourceModeChoices}"
+                                                                  DisplayMemberPath="Label"
+                                                                  SelectedValuePath="Value"
+                                                                  SelectedValue="{Binding Editor.ObsVideoSourceMode, Mode=TwoWay, UpdateSourceTrigger=PropertyChanged}"
+                                                                  Visibility="Collapsed"
+                                                                  SelectionChanged="RuleFieldChanged" />
+                                                        <StackPanel x:Name="RuleObsVideoAssetPanel"
+                                                                    Margin="0,0,0,0">
+                                                            <TextBlock Text="Archivo"
                                                                        Style="{StaticResource MutedText}" />
-                                                            <TextBox x:Name="ChatMessageBox"
-                                                                     Margin="0,4,0,0"
-                                                                     Text="{Binding Editor.ChatMessageTemplate, Mode=TwoWay, UpdateSourceTrigger=PropertyChanged}"
-                                                                     TextChanged="RuleFieldChanged"
-                                                                     ToolTip="Variables: {user}, {bits}, {reward}, {viewers}, {message}, {event}" />
+                                                            <ComboBox x:Name="RuleObsVideoAssetBox"
+                                                                      ItemsSource="{Binding ObsVideoAssetChoices}"
+                                                                      DisplayMemberPath="DisplayName"
+                                                                      SelectedValuePath="Id"
+                                                                      SelectedValue="{Binding Editor.ObsVideoAssetId, Mode=TwoWay, UpdateSourceTrigger=PropertyChanged}"
+                                                                      SelectionChanged="RuleFieldChanged" />
+                                                        </StackPanel>
+                                                        <StackPanel x:Name="RuleObsVideoGroupPanel"
+                                                                    Margin="0,10,0,0">
+                                                            <TextBlock Text="Grupo"
+                                                                       Style="{StaticResource MutedText}" />
+                                                            <ComboBox x:Name="RuleObsVideoGroupBox"
+                                                                      ItemsSource="{Binding ObsVideoGroupChoices}"
+                                                                      DisplayMemberPath="Name"
+                                                                      SelectedValuePath="Id"
+                                                                      SelectedValue="{Binding Editor.ObsVideoGroupId, Mode=TwoWay, UpdateSourceTrigger=PropertyChanged}"
+                                                                      SelectionChanged="RuleFieldChanged" />
+                                                        </StackPanel>
+                                                        <TextBlock x:Name="RuleObsVideoEmptyHintText"
+                                                                   Text="Agrega videos en la biblioteca para usarlos en OBS."
+                                                                   Style="{StaticResource MutedText}"
+                                                                   FontSize="11"
+                                                                   TextWrapping="Wrap"
+                                                                   Margin="0,8,0,0" />
                                                     </StackPanel>
                                                 </Grid>
                                             </Border>
 
-                                            <Border x:Name="AlexaActionCard"
+                                            <Border x:Name="ImageActionCard"
                                                     BorderBrush="{DynamicResource ThemeBorderBrush}"
                                                     BorderThickness="1"
                                                     CornerRadius="12"
@@ -1348,44 +1473,107 @@
                                                         <ColumnDefinition Width="16" />
                                                         <ColumnDefinition Width="*" />
                                                     </Grid.ColumnDefinitions>
-
                                                     <Grid MinWidth="190" VerticalAlignment="Center">
                                                         <Grid.ColumnDefinitions>
                                                             <ColumnDefinition Width="42" />
                                                             <ColumnDefinition Width="*" />
                                                             <ColumnDefinition Width="Auto" />
                                                         </Grid.ColumnDefinitions>
-                                                        <Image Source="/Assets/Icons/service_alexa.png"
+                                                        <Image Source="/Assets/Icons/media_image.png"
                                                                Width="26"
                                                                Height="26"
                                                                Stretch="Uniform"
                                                                VerticalAlignment="Center" />
-                                                        <StackPanel Grid.Column="1"
-                                                                    VerticalAlignment="Center">
-                                                            <TextBlock Text="Alexa"
+                                                        <StackPanel Grid.Column="1" VerticalAlignment="Center">
+                                                            <TextBlock Text="Imagen"
                                                                        FontWeight="SemiBold" />
-                                                            <TextBlock Text="Dispara una rutina o dispositivo."
+                                                            <TextBlock Text="Muestra una imagen en OBS."
                                                                        Style="{StaticResource MutedText}"
                                                                        FontSize="12"
                                                                        TextWrapping="Wrap" />
                                                         </StackPanel>
-                                                        <CheckBox x:Name="AlexaEventCheck"
+                                                        <CheckBox x:Name="ObsImageCheck"
                                                                   Grid.Column="2"
                                                                   Content=""
                                                                   Style="{StaticResource AlertToggleSwitchStyle}"
-                                                                  IsChecked="{Binding Editor.SendAlexaEvent, Mode=TwoWay, UpdateSourceTrigger=PropertyChanged}"
+                                                                  IsChecked="{Binding Editor.SendObsImage, Mode=TwoWay, UpdateSourceTrigger=PropertyChanged}"
                                                                   Checked="RuleFieldChanged"
                                                                   Unchecked="RuleFieldChanged" />
                                                     </Grid>
-                                                    <StackPanel x:Name="AlexaDetailsPanel"
-                                                                Grid.Column="2"
-                                                                Margin="0">
-                                                        <TextBlock x:Name="AlexaRuleHintText"
-                                                                   Text="Se enviara a Alexa el nombre de esta regla."
+                                                    <StackPanel x:Name="ObsImageDetailsPanel"
+                                                                Grid.Column="2">
+                                                        <TextBlock Text="Seleccion"
+                                                                   Style="{StaticResource MutedText}" />
+                                                        <Grid Margin="0,4,0,8">
+                                                            <Grid.ColumnDefinitions>
+                                                                <ColumnDefinition Width="*" />
+                                                                <ColumnDefinition Width="10" />
+                                                                <ColumnDefinition Width="*" />
+                                                            </Grid.ColumnDefinitions>
+                                                            <Button x:Name="RuleObsImageSingleMediaModeButton"
+                                                                    Tag="Image:Single"
+                                                                    Command="{Binding SelectObsMediaSourceModeCommand}"
+                                                                    CommandParameter="{Binding Tag, RelativeSource={RelativeSource Self}}"
+                                                                    ToolTip="Imagen individual">
+                                                                <Image Source="/Assets/Icons/sound_file.png"
+                                                                       Width="22"
+                                                                       Height="22"
+                                                                       Stretch="Uniform" />
+                                                            </Button>
+                                                            <Button x:Name="RuleObsImageGroupMediaModeButton"
+                                                                    Grid.Column="2"
+                                                                    Tag="Image:Group"
+                                                                    Command="{Binding SelectObsMediaSourceModeCommand}"
+                                                                    CommandParameter="{Binding Tag, RelativeSource={RelativeSource Self}}"
+                                                                    ToolTip="Grupo aleatorio de imagenes">
+                                                                <Image Source="/Assets/Icons/media_group.png"
+                                                                       Width="22"
+                                                                       Height="22"
+                                                                       Stretch="Uniform" />
+                                                            </Button>
+                                                        </Grid>
+                                                        <ComboBox x:Name="RuleObsImageSourceModeBox"
+                                                                  ItemsSource="{Binding ObsMediaSourceModeChoices}"
+                                                                  DisplayMemberPath="Label"
+                                                                  SelectedValuePath="Value"
+                                                                  SelectedValue="{Binding Editor.ObsImageSourceMode, Mode=TwoWay, UpdateSourceTrigger=PropertyChanged}"
+                                                                  Visibility="Collapsed"
+                                                                  SelectionChanged="RuleFieldChanged" />
+                                                        <StackPanel x:Name="ObsImageDurationPanel">
+                                                            <TextBlock Text="Duracion (ms)"
+                                                                       Style="{StaticResource MutedText}" />
+                                                            <TextBox x:Name="ObsImageDurationBox"
+                                                                     Text="{Binding Editor.ObsImageDurationText, Mode=TwoWay, UpdateSourceTrigger=PropertyChanged}"
+                                                                     TextChanged="RuleFieldChanged" />
+                                                        </StackPanel>
+                                                        <StackPanel x:Name="RuleObsImageAssetPanel"
+                                                                    Margin="0,10,0,0">
+                                                            <TextBlock Text="Archivo"
+                                                                       Style="{StaticResource MutedText}" />
+                                                            <ComboBox x:Name="RuleObsImageAssetBox"
+                                                                      ItemsSource="{Binding ObsImageAssetChoices}"
+                                                                      DisplayMemberPath="DisplayName"
+                                                                      SelectedValuePath="Id"
+                                                                      SelectedValue="{Binding Editor.ObsImageAssetId, Mode=TwoWay, UpdateSourceTrigger=PropertyChanged}"
+                                                                      SelectionChanged="RuleFieldChanged" />
+                                                        </StackPanel>
+                                                        <StackPanel x:Name="RuleObsImageGroupPanel"
+                                                                    Margin="0,10,0,0">
+                                                            <TextBlock Text="Grupo"
+                                                                       Style="{StaticResource MutedText}" />
+                                                            <ComboBox x:Name="RuleObsImageGroupBox"
+                                                                      ItemsSource="{Binding ObsImageGroupChoices}"
+                                                                      DisplayMemberPath="Name"
+                                                                      SelectedValuePath="Id"
+                                                                      SelectedValue="{Binding Editor.ObsImageGroupId, Mode=TwoWay, UpdateSourceTrigger=PropertyChanged}"
+                                                                      SelectionChanged="RuleFieldChanged" />
+                                                        </StackPanel>
+                                                        <TextBlock x:Name="RuleObsImageEmptyHintText"
+                                                                   Text="Agrega imagenes en la biblioteca para usarlas en OBS."
                                                                    Style="{StaticResource MutedText}"
                                                                    FontSize="11"
                                                                    TextWrapping="Wrap"
-                                                                   Margin="0" />
+                                                                   Margin="0,8,0,0" />
                                                     </StackPanel>
                                                 </Grid>
                                             </Border>
@@ -1487,145 +1675,64 @@
                                                                        Margin="0,8,0,0" />
                                                         </StackPanel>
 
-                                                        <Grid Margin="0,14,0,0">
-                                                            <Grid.ColumnDefinitions>
-                                                                <ColumnDefinition Width="*" />
-                                                                <ColumnDefinition Width="Auto" />
-                                                            </Grid.ColumnDefinitions>
-                                                            <TextBlock Text="Mostrar imagen o video"
-                                                                       FontWeight="SemiBold"
-                                                                       VerticalAlignment="Center"
-                                                                       TextWrapping="Wrap" />
-                                                            <CheckBox x:Name="ObsMediaCheck"
-                                                                      Grid.Column="1"
-                                                                      Content=""
-                                                                      Style="{StaticResource AlertToggleSwitchStyle}"
-                                                                      IsChecked="{Binding Editor.SendObsMedia, Mode=TwoWay, UpdateSourceTrigger=PropertyChanged}"
-                                                                      Checked="RuleFieldChanged"
-                                                                      Unchecked="RuleFieldChanged" />
-                                                        </Grid>
-
-                                                        <StackPanel x:Name="ObsMediaDetailsPanel"
-                                                                    Margin="22,8,0,0">
-                                                            <TextBlock Text="Tipo de medio"
-                                                                       Style="{StaticResource MutedText}" />
-                                                            <Grid Margin="0,4,0,8">
-                                                                <Grid.ColumnDefinitions>
-                                                                    <ColumnDefinition Width="*" />
-                                                                    <ColumnDefinition Width="10" />
-                                                                    <ColumnDefinition Width="*" />
-                                                                </Grid.ColumnDefinitions>
-                                                                <Button x:Name="RuleObsImageModeButton"
-                                                                        Tag="Image"
-                                                                        Command="{Binding SelectObsMediaKindCommand}"
-                                                                        CommandParameter="{Binding Tag, RelativeSource={RelativeSource Self}}"
-                                                                        ToolTip="Imagen">
-                                                                    <Image Source="/Assets/Icons/media_image.png"
-                                                                           Width="22"
-                                                                           Height="22"
-                                                                           Stretch="Uniform" />
-                                                                </Button>
-                                                                <Button x:Name="RuleObsVideoModeButton"
-                                                                        Grid.Column="2"
-                                                                        Tag="Video"
-                                                                        Command="{Binding SelectObsMediaKindCommand}"
-                                                                        CommandParameter="{Binding Tag, RelativeSource={RelativeSource Self}}"
-                                                                        ToolTip="Video">
-                                                                    <Image Source="/Assets/Icons/media_video.png"
-                                                                           Width="22"
-                                                                           Height="22"
-                                                                           Stretch="Uniform" />
-                                                                </Button>
-                                                            </Grid>
-                                                            <ComboBox x:Name="RuleObsMediaKindBox"
-                                                                      ItemsSource="{Binding ObsMediaKindChoices}"
-                                                                      DisplayMemberPath="Label"
-                                                                      SelectedValuePath="Value"
-                                                                      SelectedValue="{Binding Editor.ObsMediaKind, Mode=TwoWay, UpdateSourceTrigger=PropertyChanged}"
-                                                                      Visibility="Collapsed"
-                                                                      SelectionChanged="RuleFieldChanged" />
-
-                                                            <TextBlock Text="Seleccion"
-                                                                       Style="{StaticResource MutedText}" />
-                                                            <Grid Margin="0,4,0,8">
-                                                                <Grid.ColumnDefinitions>
-                                                                    <ColumnDefinition Width="*" />
-                                                                    <ColumnDefinition Width="10" />
-                                                                    <ColumnDefinition Width="*" />
-                                                                </Grid.ColumnDefinitions>
-                                                                <Button x:Name="RuleObsSingleMediaModeButton"
-                                                                        Tag="Single"
-                                                                        Command="{Binding SelectObsMediaSourceModeCommand}"
-                                                                        CommandParameter="{Binding Tag, RelativeSource={RelativeSource Self}}"
-                                                                        ToolTip="Individual">
-                                                                    <Image Source="/Assets/Icons/sound_file.png"
-                                                                           Width="22"
-                                                                           Height="22"
-                                                                           Stretch="Uniform" />
-                                                                </Button>
-                                                                <Button x:Name="RuleObsGroupMediaModeButton"
-                                                                        Grid.Column="2"
-                                                                        Tag="Group"
-                                                                        Command="{Binding SelectObsMediaSourceModeCommand}"
-                                                                        CommandParameter="{Binding Tag, RelativeSource={RelativeSource Self}}"
-                                                                        ToolTip="Grupo aleatorio">
-                                                                    <Image Source="/Assets/Icons/media_group.png"
-                                                                           Width="22"
-                                                                           Height="22"
-                                                                           Stretch="Uniform" />
-                                                                </Button>
-                                                            </Grid>
-                                                            <ComboBox x:Name="RuleObsMediaSourceModeBox"
-                                                                      ItemsSource="{Binding ObsMediaSourceModeChoices}"
-                                                                      DisplayMemberPath="Label"
-                                                                      SelectedValuePath="Value"
-                                                                      SelectedValue="{Binding Editor.ObsMediaSourceMode, Mode=TwoWay, UpdateSourceTrigger=PropertyChanged}"
-                                                                      Visibility="Collapsed"
-                                                                      SelectionChanged="RuleFieldChanged" />
-
-                                                            <StackPanel x:Name="ObsMediaDurationPanel">
-                                                                <TextBlock Text="Duracion (ms)"
-                                                                           Style="{StaticResource MutedText}" />
-                                                                <TextBox x:Name="ObsMediaDurationBox"
-                                                                         Text="{Binding Editor.ObsMediaDurationText, Mode=TwoWay, UpdateSourceTrigger=PropertyChanged}"
-                                                                         TextChanged="RuleFieldChanged" />
-                                                            </StackPanel>
-
-                                                            <StackPanel x:Name="RuleObsMediaAssetPanel"
-                                                                        Margin="0,10,0,0">
-                                                                <TextBlock Text="Archivo"
-                                                                           Style="{StaticResource MutedText}" />
-                                                                <ComboBox x:Name="RuleObsMediaAssetBox"
-                                                                          ItemsSource="{Binding ObsMediaAssetChoices}"
-                                                                          DisplayMemberPath="DisplayName"
-                                                                          SelectedValuePath="Id"
-                                                                          SelectedValue="{Binding Editor.ObsMediaAssetId, Mode=TwoWay, UpdateSourceTrigger=PropertyChanged}"
-                                                                          SelectionChanged="RuleFieldChanged" />
-                                                            </StackPanel>
-
-                                                            <StackPanel x:Name="RuleObsMediaGroupPanel"
-                                                                        Margin="0,10,0,0">
-                                                                <TextBlock Text="Grupo"
-                                                                           Style="{StaticResource MutedText}" />
-                                                                <ComboBox x:Name="RuleObsMediaGroupBox"
-                                                                          ItemsSource="{Binding ObsMediaGroupChoices}"
-                                                                          DisplayMemberPath="Name"
-                                                                          SelectedValuePath="Id"
-                                                                          SelectedValue="{Binding Editor.ObsMediaGroupId, Mode=TwoWay, UpdateSourceTrigger=PropertyChanged}"
-                                                                          SelectionChanged="RuleFieldChanged" />
-                                                            </StackPanel>
-
-                                                            <TextBlock x:Name="RuleObsMediaEmptyHintText"
-                                                                       Text="Agrega imagenes o videos en sus bibliotecas para usarlos en OBS."
-                                                                       Style="{StaticResource MutedText}"
-                                                                       FontSize="11"
-                                                                       TextWrapping="Wrap"
-                                                                       Margin="0,8,0,0" />
-                                                        </StackPanel>
                                                     </StackPanel>
                                                 </Grid>
                                             </Border>
 
+                                            <Border x:Name="AlexaActionCard"
+                                                    BorderBrush="{DynamicResource ThemeBorderBrush}"
+                                                    BorderThickness="1"
+                                                    CornerRadius="12"
+                                                    Padding="12"
+                                                    Margin="0,0,0,10"
+                                                    Background="{DynamicResource ThemeInputBrush}">
+                                                <Grid>
+                                                    <Grid.ColumnDefinitions>
+                                                        <ColumnDefinition Width="220" />
+                                                        <ColumnDefinition Width="16" />
+                                                        <ColumnDefinition Width="*" />
+                                                    </Grid.ColumnDefinitions>
+
+                                                    <Grid MinWidth="190" VerticalAlignment="Center">
+                                                        <Grid.ColumnDefinitions>
+                                                            <ColumnDefinition Width="42" />
+                                                            <ColumnDefinition Width="*" />
+                                                            <ColumnDefinition Width="Auto" />
+                                                        </Grid.ColumnDefinitions>
+                                                        <Image Source="/Assets/Icons/service_alexa.png"
+                                                               Width="26"
+                                                               Height="26"
+                                                               Stretch="Uniform"
+                                                               VerticalAlignment="Center" />
+                                                        <StackPanel Grid.Column="1"
+                                                                    VerticalAlignment="Center">
+                                                            <TextBlock Text="Alexa"
+                                                                       FontWeight="SemiBold" />
+                                                            <TextBlock Text="Dispara una rutina o dispositivo."
+                                                                       Style="{StaticResource MutedText}"
+                                                                       FontSize="12"
+                                                                       TextWrapping="Wrap" />
+                                                        </StackPanel>
+                                                        <CheckBox x:Name="AlexaEventCheck"
+                                                                  Grid.Column="2"
+                                                                  Content=""
+                                                                  Style="{StaticResource AlertToggleSwitchStyle}"
+                                                                  IsChecked="{Binding Editor.SendAlexaEvent, Mode=TwoWay, UpdateSourceTrigger=PropertyChanged}"
+                                                                  Checked="RuleFieldChanged"
+                                                                  Unchecked="RuleFieldChanged" />
+                                                    </Grid>
+                                                    <StackPanel x:Name="AlexaDetailsPanel"
+                                                                Grid.Column="2"
+                                                                Margin="0">
+                                                        <TextBlock x:Name="AlexaRuleHintText"
+                                                                   Text="Se enviara a Alexa el nombre de esta regla."
+                                                                   Style="{StaticResource MutedText}"
+                                                                   FontSize="11"
+                                                                   TextWrapping="Wrap"
+                                                                   Margin="0" />
+                                                    </StackPanel>
+                                                </Grid>
+                                            </Border>
                                         </StackPanel>
                                     </StackPanel>
                                 </ScrollViewer>

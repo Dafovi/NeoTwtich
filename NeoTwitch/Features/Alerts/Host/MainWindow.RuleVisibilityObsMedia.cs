@@ -13,15 +13,23 @@ public partial class MainWindow
             return;
         }
 
-        var kind = _alertsViewModel.Editor.ObsMediaKind;
-
-        var choices = RuleObsMediaChoiceService.Resolve(
-            kind,
+        var imageChoices = RuleObsMediaChoiceService.Resolve(
+            ObsMediaKind.Image,
+            _config.ImageLibrary,
+            _config.VideoLibrary,
+            _config.ImageGroups,
+            _config.VideoGroups);
+        var videoChoices = RuleObsMediaChoiceService.Resolve(
+            ObsMediaKind.Video,
             _config.ImageLibrary,
             _config.VideoLibrary,
             _config.ImageGroups,
             _config.VideoGroups);
 
-        _alertsViewModel.UpdateObsMediaChoices(choices.Assets, choices.Groups);
+        _alertsViewModel.UpdateObsMediaChoices(
+            imageChoices.Assets,
+            imageChoices.Groups,
+            videoChoices.Assets,
+            videoChoices.Groups);
     }
 }

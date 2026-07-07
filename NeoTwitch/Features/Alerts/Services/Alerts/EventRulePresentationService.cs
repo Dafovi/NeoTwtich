@@ -60,24 +60,34 @@ public static class EventRulePresentationService
             actions.Add(text.Get(UiTextKeys.RuleRowActionLights));
         }
 
-        if (rule.PlayAudio)
-        {
-            actions.Add(text.Get(UiTextKeys.RuleRowActionAudio));
-        }
-
         if (rule.SendChatMessage)
         {
             actions.Add(text.Get(UiTextKeys.RuleRowActionChat));
         }
 
+        if (rule.PlayAudio)
+        {
+            actions.Add(text.Get(UiTextKeys.RuleRowActionAudio));
+        }
+
+        if (rule.SendObsVideo || (rule.SendObsMedia && rule.ObsMediaKind == ObsMediaKind.Video))
+        {
+            actions.Add(text.Get(UiTextKeys.RuleRowActionVideo));
+        }
+
+        if (rule.SendObsImage || (rule.SendObsMedia && rule.ObsMediaKind == ObsMediaKind.Image))
+        {
+            actions.Add(text.Get(UiTextKeys.RuleRowActionImage));
+        }
+
+        if (rule.SendObsScene)
+        {
+            actions.Add(text.Get(UiTextKeys.RuleRowActionObs));
+        }
+
         if (rule.SendAlexaEvent)
         {
             actions.Add(text.Get(UiTextKeys.RuleRowActionAlexa));
-        }
-
-        if (rule.SendObsScene || rule.SendObsMedia)
-        {
-            actions.Add(text.Get(UiTextKeys.RuleRowActionObs));
         }
 
         return actions.Count == 0

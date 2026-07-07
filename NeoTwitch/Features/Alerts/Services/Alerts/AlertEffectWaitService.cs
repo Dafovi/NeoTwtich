@@ -11,10 +11,23 @@ public static class AlertEffectWaitService
         ObsMediaHideRequest? obsMediaHide,
         CancellationToken cancellationToken)
     {
+        await WaitAsync(
+            playback,
+            command,
+            obsMediaHide is null ? [] : [obsMediaHide],
+            cancellationToken);
+    }
+
+    public static async Task WaitAsync(
+        AudioPlayback? playback,
+        LightCommand? command,
+        IReadOnlyCollection<ObsMediaHideRequest> obsMediaHides,
+        CancellationToken cancellationToken)
+    {
         var duration = AlertDurationService.ResolveMaxEffectDuration(
             playback?.Duration,
             command is null ? null : TimeSpan.FromMilliseconds(command.DurationMs),
-            obsMediaHide?.Duration);
+            obsMediaHides.Count == 0 ? null : obsMediaHides.Max(media => media.Duration));
 
         if (duration is { TotalMilliseconds: > 0 })
         {

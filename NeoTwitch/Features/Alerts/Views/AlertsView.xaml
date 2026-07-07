@@ -1408,88 +1408,384 @@
                                                                 </StackPanel>
                                                             </Button>
                                                         </UniformGrid>
-                                                        <UniformGrid Columns="3"
-                                                                     Margin="0,10,0,0">
-                                                            <StackPanel Margin="0,0,8,0">
-                                                                <TextBlock Text="Color principal"
-                                                                           Style="{StaticResource MutedText}" />
-                                                                <DockPanel Margin="0,4,0,0">
-                                                                    <Button x:Name="VirtualPrimaryColorButton"
-                                                                            Width="30"
-                                                                            Height="30"
-                                                                            Padding="0"
-                                                                            Command="{Binding PickLightColorCommand}"
-                                                                            CommandParameter="VirtualPrimary" />
-                                                                    <TextBox x:Name="VirtualPrimaryColorBox"
-                                                                             Text="{Binding Editor.VirtualLightsPrimaryColor, Mode=TwoWay, UpdateSourceTrigger=PropertyChanged}"
-                                                                             TextChanged="RuleFieldChanged"
-                                                                             Margin="6,0,0,0" />
-                                                                </DockPanel>
-                                                            </StackPanel>
-                                                            <StackPanel Margin="0,0,8,0">
-                                                                <TextBlock Text="Color secundario"
-                                                                           Style="{StaticResource MutedText}" />
-                                                                <DockPanel Margin="0,4,0,0">
-                                                                    <Button x:Name="VirtualSecondaryColorButton"
-                                                                            Width="30"
-                                                                            Height="30"
-                                                                            Padding="0"
-                                                                            Command="{Binding PickLightColorCommand}"
-                                                                            CommandParameter="VirtualSecondary" />
-                                                                    <TextBox x:Name="VirtualSecondaryColorBox"
-                                                                             Text="{Binding Editor.VirtualLightsSecondaryColor, Mode=TwoWay, UpdateSourceTrigger=PropertyChanged}"
-                                                                             TextChanged="RuleFieldChanged"
-                                                                             Margin="6,0,0,0" />
-                                                                </DockPanel>
-                                                            </StackPanel>
-                                                            <StackPanel>
-                                                                <TextBlock Text="Tercer color"
-                                                                           Style="{StaticResource MutedText}" />
-                                                                <DockPanel Margin="0,4,0,0">
-                                                                    <Button x:Name="VirtualTertiaryColorButton"
-                                                                            Width="30"
-                                                                            Height="30"
-                                                                            Padding="0"
-                                                                            Command="{Binding PickLightColorCommand}"
-                                                                            CommandParameter="VirtualTertiary" />
-                                                                    <TextBox x:Name="VirtualTertiaryColorBox"
-                                                                             Text="{Binding Editor.VirtualLightsTertiaryColor, Mode=TwoWay, UpdateSourceTrigger=PropertyChanged}"
-                                                                             TextChanged="RuleFieldChanged"
-                                                                             Margin="6,0,0,0" />
-                                                                </DockPanel>
-                                                            </StackPanel>
-                                                        </UniformGrid>
-                                                        <UniformGrid Columns="4"
-                                                                     Margin="0,10,0,0">
-                                                            <StackPanel Margin="0,0,8,0">
-                                                                <TextBlock Text="Brillo"
-                                                                           Style="{StaticResource MutedText}" />
-                                                                <TextBox Text="{Binding Editor.VirtualLightsBrightness, Mode=TwoWay, UpdateSourceTrigger=PropertyChanged}"
-                                                                         TextChanged="RuleFieldChanged"
-                                                                         Margin="0,4,0,0" />
-                                                            </StackPanel>
-                                                            <StackPanel Margin="0,0,8,0">
-                                                                <TextBlock Text="Duracion"
-                                                                           Style="{StaticResource MutedText}" />
-                                                                <TextBox Text="{Binding Editor.VirtualLightsDurationMs, Mode=TwoWay, UpdateSourceTrigger=PropertyChanged}"
-                                                                         TextChanged="RuleFieldChanged"
-                                                                         Margin="0,4,0,0" />
-                                                            </StackPanel>
-                                                            <StackPanel Margin="0,0,8,0">
-                                                                <TextBlock Text="Ciclo"
-                                                                           Style="{StaticResource MutedText}" />
-                                                                <TextBox Text="{Binding Editor.VirtualLightsCycleMs, Mode=TwoWay, UpdateSourceTrigger=PropertyChanged}"
-                                                                         TextChanged="RuleFieldChanged"
-                                                                         Margin="0,4,0,0" />
-                                                            </StackPanel>
-                                                            <StackPanel>
-                                                                <TextBlock Text="Delay"
-                                                                           Style="{StaticResource MutedText}" />
-                                                                <TextBox Text="{Binding Editor.VirtualLightsStepMs, Mode=TwoWay, UpdateSourceTrigger=PropertyChanged}"
-                                                                         TextChanged="RuleFieldChanged"
-                                                                         Margin="0,4,0,0" />
-                                                            </StackPanel>
-                                                        </UniformGrid>
+                                                        <Grid x:Name="VirtualColorOptionsGrid"
+                                                              MinWidth="0"
+                                                              HorizontalAlignment="Stretch"
+                                                              Margin="0,10,0,8">
+                                                            <Border BorderBrush="{DynamicResource ThemeBorderBrush}"
+                                                                    BorderThickness="1"
+                                                                    CornerRadius="14"
+                                                                    Padding="10"
+                                                                    Background="{DynamicResource ThemeSurfaceBrush}">
+                                                                <UniformGrid Columns="3">
+                                                                    <StackPanel x:Name="VirtualPrimaryColorPanel"
+                                                                                Margin="0,0,8,0">
+                                                                        <TextBlock Text="Color principal"
+                                                                                   Style="{StaticResource MutedText}"
+                                                                                   Margin="0,0,0,4" />
+                                                                        <DockPanel LastChildFill="True">
+                                                                            <Button x:Name="VirtualPrimaryColorButton"
+                                                                                    DockPanel.Dock="Left"
+                                                                                    Width="34"
+                                                                                    Height="34"
+                                                                                    Margin="0,0,8,0"
+                                                                                    Padding="0"
+                                                                                    ToolTip="Escoger color"
+                                                                                    Command="{Binding PickLightColorCommand}"
+                                                                                    CommandParameter="VirtualPrimary" />
+                                                                            <TextBox x:Name="VirtualPrimaryColorBox"
+                                                                                     MinWidth="0"
+                                                                                     Text="{Binding Editor.VirtualLightsPrimaryColor, Mode=TwoWay, UpdateSourceTrigger=PropertyChanged}"
+                                                                                     TextChanged="RuleFieldChanged" />
+                                                                        </DockPanel>
+                                                                    </StackPanel>
+                                                                    <StackPanel Margin="0,0,8,0">
+                                                                        <TextBlock x:Name="VirtualSecondaryColorLabel"
+                                                                                   Text="Color secundario"
+                                                                                   Style="{StaticResource MutedText}"
+                                                                                   Margin="0,0,0,4" />
+                                                                        <DockPanel x:Name="VirtualSecondaryColorPanel"
+                                                                                   LastChildFill="True">
+                                                                            <Button x:Name="VirtualSecondaryColorButton"
+                                                                                    DockPanel.Dock="Left"
+                                                                                    Width="34"
+                                                                                    Height="34"
+                                                                                    Margin="0,0,8,0"
+                                                                                    Padding="0"
+                                                                                    ToolTip="Escoger color"
+                                                                                    Command="{Binding PickLightColorCommand}"
+                                                                                    CommandParameter="VirtualSecondary" />
+                                                                            <TextBox x:Name="VirtualSecondaryColorBox"
+                                                                                     MinWidth="0"
+                                                                                     Text="{Binding Editor.VirtualLightsSecondaryColor, Mode=TwoWay, UpdateSourceTrigger=PropertyChanged}"
+                                                                                     TextChanged="RuleFieldChanged" />
+                                                                        </DockPanel>
+                                                                    </StackPanel>
+                                                                    <StackPanel>
+                                                                        <TextBlock x:Name="VirtualTertiaryColorLabel"
+                                                                                   Text="Tercer color"
+                                                                                   Style="{StaticResource MutedText}"
+                                                                                   Margin="0,0,0,4" />
+                                                                        <DockPanel x:Name="VirtualTertiaryColorPanel"
+                                                                                   LastChildFill="True">
+                                                                            <Button x:Name="VirtualTertiaryColorButton"
+                                                                                    DockPanel.Dock="Left"
+                                                                                    Width="34"
+                                                                                    Height="34"
+                                                                                    Margin="0,0,8,0"
+                                                                                    Padding="0"
+                                                                                    ToolTip="Escoger color"
+                                                                                    Command="{Binding PickLightColorCommand}"
+                                                                                    CommandParameter="VirtualTertiary" />
+                                                                            <TextBox x:Name="VirtualTertiaryColorBox"
+                                                                                     MinWidth="0"
+                                                                                     Text="{Binding Editor.VirtualLightsTertiaryColor, Mode=TwoWay, UpdateSourceTrigger=PropertyChanged}"
+                                                                                     TextChanged="RuleFieldChanged" />
+                                                                        </DockPanel>
+                                                                    </StackPanel>
+                                                                </UniformGrid>
+                                                            </Border>
+                                                        </Grid>
+
+                                                        <TextBlock x:Name="VirtualLedPreviewTitle"
+                                                                   Text="Vista previa virtual"
+                                                                   FontWeight="SemiBold"
+                                                                   Margin="0,8,0,6" />
+                                                        <Border x:Name="VirtualRuleLedPreviewPanel"
+                                                                BorderBrush="{DynamicResource ThemeBorderBrush}"
+                                                                BorderThickness="1"
+                                                                CornerRadius="10"
+                                                                Padding="10"
+                                                                Background="{DynamicResource ThemeSurfaceBrush}"
+                                                                IsVisibleChanged="RuleLedPreviewPanel_IsVisibleChanged">
+                                                            <ItemsControl x:Name="VirtualRuleLedPreviewList"
+                                                                          ItemsSource="{Binding VirtualLedPreviewDots}">
+                                                                <ItemsControl.ItemsPanel>
+                                                                    <ItemsPanelTemplate>
+                                                                        <UniformGrid Rows="1" />
+                                                                    </ItemsPanelTemplate>
+                                                                </ItemsControl.ItemsPanel>
+                                                                <ItemsControl.ItemTemplate>
+                                                                    <DataTemplate>
+                                                                        <Ellipse Width="16"
+                                                                                 Height="16"
+                                                                                 Fill="{Binding Fill}"
+                                                                                 Stroke="#80FFFFFF"
+                                                                                 StrokeThickness="1"
+                                                                                 Margin="4">
+                                                                            <Ellipse.Effect>
+                                                                                <DropShadowEffect Color="{Binding GlowColor}"
+                                                                                                  BlurRadius="{Binding GlowRadius}"
+                                                                                                  ShadowDepth="0"
+                                                                                                  Opacity="{Binding GlowOpacity}" />
+                                                                            </Ellipse.Effect>
+                                                                        </Ellipse>
+                                                                    </DataTemplate>
+                                                                </ItemsControl.ItemTemplate>
+                                                            </ItemsControl>
+                                                        </Border>
+
+                                                        <TextBlock x:Name="VirtualTimingTitle"
+                                                                   Text="Brillo y tiempos virtuales"
+                                                                   FontWeight="SemiBold"
+                                                                   Margin="0,10,0,8" />
+                                                        <WrapPanel Margin="0,0,0,0">
+                                                            <Grid x:Name="VirtualBrightnessGrid"
+                                                                  MinWidth="138"
+                                                                  Width="150"
+                                                                  Margin="0,0,8,8">
+                                                                <Border BorderBrush="{DynamicResource ThemeBorderBrush}"
+                                                                        BorderThickness="1"
+                                                                        CornerRadius="12"
+                                                                        Padding="8"
+                                                                        Background="{DynamicResource ThemeSurfaceBrush}">
+                                                                    <StackPanel>
+                                                                        <TextBlock Text="Brillo"
+                                                                                   Style="{StaticResource MutedText}" />
+                                                                        <Grid Margin="0,4,0,0"
+                                                                              Height="124">
+                                                                            <Ellipse Width="82"
+                                                                                     Height="82"
+                                                                                     Stroke="#3014B8A6"
+                                                                                     StrokeThickness="10"
+                                                                                     HorizontalAlignment="Center"
+                                                                                     VerticalAlignment="Top" />
+                                                                            <Path x:Name="VirtualBrightnessArc"
+                                                                                  Width="82"
+                                                                                  Height="82"
+                                                                                  Stretch="None"
+                                                                                  Stroke="#14B8A6"
+                                                                                  StrokeThickness="10"
+                                                                                  StrokeStartLineCap="Round"
+                                                                                  StrokeEndLineCap="Round"
+                                                                                  Fill="Transparent"
+                                                                                  HorizontalAlignment="Center"
+                                                                                  VerticalAlignment="Top" />
+                                                                            <TextBlock Text="{Binding Editor.VirtualBrightnessPercentText}"
+                                                                                       FontSize="19"
+                                                                                       FontWeight="SemiBold"
+                                                                                       Margin="0,28,0,0"
+                                                                                       HorizontalAlignment="Center"
+                                                                                       VerticalAlignment="Top" />
+                                                                            <StackPanel Orientation="Horizontal"
+                                                                                        HorizontalAlignment="Center"
+                                                                                        VerticalAlignment="Bottom">
+                                                                                <Button Content="-"
+                                                                                        Width="28"
+                                                                                        Height="26"
+                                                                                        Margin="0,0,6,0"
+                                                                                        Tag="VirtualBrightness:-15"
+                                                                                        Command="{Binding AdjustLightValueCommand}"
+                                                                                        CommandParameter="{Binding Tag, RelativeSource={RelativeSource Self}}" />
+                                                                                <Button Content="+"
+                                                                                        Width="28"
+                                                                                        Height="26"
+                                                                                        Tag="VirtualBrightness:15"
+                                                                                        Command="{Binding AdjustLightValueCommand}"
+                                                                                        CommandParameter="{Binding Tag, RelativeSource={RelativeSource Self}}" />
+                                                                            </StackPanel>
+                                                                            <Slider x:Name="VirtualBrightnessSlider"
+                                                                                    Minimum="0"
+                                                                                    Maximum="255"
+                                                                                    TickFrequency="1"
+                                                                                    Visibility="Collapsed"
+                                                                                    Value="{Binding Editor.VirtualLightsBrightness, Mode=TwoWay, UpdateSourceTrigger=PropertyChanged}"
+                                                                                    ValueChanged="RuleFieldChanged" />
+                                                                        </Grid>
+                                                                    </StackPanel>
+                                                                </Border>
+                                                            </Grid>
+                                                            <Grid x:Name="VirtualDurationGrid"
+                                                                  MinWidth="156"
+                                                                  Width="172"
+                                                                  Margin="0,0,8,8">
+                                                                <Border BorderBrush="{DynamicResource ThemeBorderBrush}"
+                                                                        BorderThickness="1"
+                                                                        CornerRadius="12"
+                                                                        Padding="8"
+                                                                        Background="{DynamicResource ThemeSurfaceBrush}">
+                                                                    <StackPanel>
+                                                                        <TextBlock Text="Duracion"
+                                                                                   Style="{StaticResource MutedText}" />
+                                                                        <DockPanel Margin="0,8,0,0">
+                                                                            <Button Content="-"
+                                                                                    DockPanel.Dock="Left"
+                                                                                    Width="28"
+                                                                                    Tag="VirtualDuration:-250"
+                                                                                    Command="{Binding AdjustLightValueCommand}"
+                                                                                    CommandParameter="{Binding Tag, RelativeSource={RelativeSource Self}}" />
+                                                                            <Button Content="+"
+                                                                                    DockPanel.Dock="Right"
+                                                                                    Width="28"
+                                                                                    Tag="VirtualDuration:250"
+                                                                                    Command="{Binding AdjustLightValueCommand}"
+                                                                                    CommandParameter="{Binding Tag, RelativeSource={RelativeSource Self}}" />
+                                                                            <StackPanel Orientation="Horizontal"
+                                                                                        HorizontalAlignment="Center"
+                                                                                        MinWidth="86">
+                                                                                <TextBox x:Name="VirtualDurationValueText"
+                                                                                         Width="54"
+                                                                                         TextAlignment="Center"
+                                                                                         FontWeight="SemiBold"
+                                                                                         TextChanged="LightNumberBox_TextChanged" />
+                                                                                <Border BorderBrush="{DynamicResource ThemeBorderBrush}"
+                                                                                        BorderThickness="1"
+                                                                                        CornerRadius="6"
+                                                                                        Padding="8,0"
+                                                                                        Margin="4,0,0,0">
+                                                                                    <TextBlock Text="ms"
+                                                                                               VerticalAlignment="Center"
+                                                                                               Style="{StaticResource MutedText}" />
+                                                                                </Border>
+                                                                            </StackPanel>
+                                                                        </DockPanel>
+                                                                        <Slider x:Name="VirtualDurationSlider"
+                                                                                Minimum="250"
+                                                                                Maximum="60000"
+                                                                                TickFrequency="250"
+                                                                                Visibility="Collapsed"
+                                                                                Value="{Binding Editor.VirtualLightsDurationMs, Mode=TwoWay, UpdateSourceTrigger=PropertyChanged}"
+                                                                                ValueChanged="RuleFieldChanged" />
+                                                                    </StackPanel>
+                                                                </Border>
+                                                            </Grid>
+                                                            <Grid x:Name="VirtualCycleGrid"
+                                                                  MinWidth="156"
+                                                                  Width="172"
+                                                                  Margin="0,0,8,8">
+                                                                <Border BorderBrush="{DynamicResource ThemeBorderBrush}"
+                                                                        BorderThickness="1"
+                                                                        CornerRadius="12"
+                                                                        Padding="8"
+                                                                        Background="{DynamicResource ThemeSurfaceBrush}">
+                                                                    <StackPanel>
+                                                                        <TextBlock Text="Delay entre pasos"
+                                                                                   Style="{StaticResource MutedText}" />
+                                                                        <DockPanel Margin="0,8,0,0">
+                                                                            <Button Content="-"
+                                                                                    DockPanel.Dock="Left"
+                                                                                    Width="28"
+                                                                                    Tag="VirtualCycle:-10"
+                                                                                    Command="{Binding AdjustLightValueCommand}"
+                                                                                    CommandParameter="{Binding Tag, RelativeSource={RelativeSource Self}}" />
+                                                                            <Button Content="+"
+                                                                                    DockPanel.Dock="Right"
+                                                                                    Width="28"
+                                                                                    Tag="VirtualCycle:10"
+                                                                                    Command="{Binding AdjustLightValueCommand}"
+                                                                                    CommandParameter="{Binding Tag, RelativeSource={RelativeSource Self}}" />
+                                                                            <StackPanel Orientation="Horizontal"
+                                                                                        HorizontalAlignment="Center"
+                                                                                        MinWidth="86">
+                                                                                <TextBox x:Name="VirtualCycleValueText"
+                                                                                         Width="54"
+                                                                                         TextAlignment="Center"
+                                                                                         FontWeight="SemiBold"
+                                                                                         TextChanged="LightNumberBox_TextChanged" />
+                                                                                <Border BorderBrush="{DynamicResource ThemeBorderBrush}"
+                                                                                        BorderThickness="1"
+                                                                                        CornerRadius="6"
+                                                                                        Padding="8,0"
+                                                                                        Margin="4,0,0,0">
+                                                                                    <TextBlock Text="ms"
+                                                                                               VerticalAlignment="Center"
+                                                                                               Style="{StaticResource MutedText}" />
+                                                                                </Border>
+                                                                            </StackPanel>
+                                                                        </DockPanel>
+                                                                        <Slider x:Name="VirtualCycleSlider"
+                                                                                Minimum="10"
+                                                                                Maximum="2000"
+                                                                                TickFrequency="10"
+                                                                                Visibility="Collapsed"
+                                                                                Value="{Binding Editor.VirtualLightsCycleMs, Mode=TwoWay, UpdateSourceTrigger=PropertyChanged}"
+                                                                                ValueChanged="RuleFieldChanged" />
+                                                                    </StackPanel>
+                                                                </Border>
+                                                            </Grid>
+                                                            <Grid x:Name="VirtualStepGrid"
+                                                                  MinWidth="156"
+                                                                  Width="172"
+                                                                  Margin="0,0,8,8">
+                                                                <Border BorderBrush="{DynamicResource ThemeBorderBrush}"
+                                                                        BorderThickness="1"
+                                                                        CornerRadius="12"
+                                                                        Padding="8"
+                                                                        Background="{DynamicResource ThemeSurfaceBrush}">
+                                                                    <StackPanel>
+                                                                        <TextBlock Text="Duracion del paso"
+                                                                                   Style="{StaticResource MutedText}" />
+                                                                        <DockPanel Margin="0,8,0,0">
+                                                                            <Button Content="-"
+                                                                                    DockPanel.Dock="Left"
+                                                                                    Width="28"
+                                                                                    Tag="VirtualStep:-10"
+                                                                                    Command="{Binding AdjustLightValueCommand}"
+                                                                                    CommandParameter="{Binding Tag, RelativeSource={RelativeSource Self}}" />
+                                                                            <Button Content="+"
+                                                                                    DockPanel.Dock="Right"
+                                                                                    Width="28"
+                                                                                    Tag="VirtualStep:10"
+                                                                                    Command="{Binding AdjustLightValueCommand}"
+                                                                                    CommandParameter="{Binding Tag, RelativeSource={RelativeSource Self}}" />
+                                                                            <StackPanel Orientation="Horizontal"
+                                                                                        HorizontalAlignment="Center"
+                                                                                        MinWidth="86">
+                                                                                <TextBox x:Name="VirtualStepValueText"
+                                                                                         Width="54"
+                                                                                         TextAlignment="Center"
+                                                                                         FontWeight="SemiBold"
+                                                                                         TextChanged="LightNumberBox_TextChanged" />
+                                                                                <Border BorderBrush="{DynamicResource ThemeBorderBrush}"
+                                                                                        BorderThickness="1"
+                                                                                        CornerRadius="6"
+                                                                                        Padding="8,0"
+                                                                                        Margin="4,0,0,0">
+                                                                                    <TextBlock Text="ms"
+                                                                                               VerticalAlignment="Center"
+                                                                                               Style="{StaticResource MutedText}" />
+                                                                                </Border>
+                                                                            </StackPanel>
+                                                                        </DockPanel>
+                                                                        <Slider x:Name="VirtualStepSlider"
+                                                                                Minimum="10"
+                                                                                Maximum="5000"
+                                                                                TickFrequency="10"
+                                                                                Visibility="Collapsed"
+                                                                                Value="{Binding Editor.VirtualLightsStepMs, Mode=TwoWay, UpdateSourceTrigger=PropertyChanged}"
+                                                                                ValueChanged="RuleFieldChanged" />
+                                                                    </StackPanel>
+                                                                </Border>
+                                                            </Grid>
+                                                            <Border BorderBrush="{DynamicResource ThemeBorderBrush}"
+                                                                    BorderThickness="1"
+                                                                    CornerRadius="12"
+                                                                    Padding="8"
+                                                                    MinWidth="180"
+                                                                    Width="198"
+                                                                    Margin="0,0,8,8"
+                                                                    Background="{DynamicResource ThemeSurfaceBrush}">
+                                                                <StackPanel>
+                                                                    <TextBlock Text="Presets rapidos"
+                                                                               Style="{StaticResource MutedText}"
+                                                                               Margin="0,0,0,8" />
+                                                                    <UniformGrid Columns="3">
+                                                                        <Button Content="Suave"
+                                                                                Tag="Virtual:Soft"
+                                                                                Command="{Binding SelectLightPresetCommand}"
+                                                                                CommandParameter="{Binding Tag, RelativeSource={RelativeSource Self}}" />
+                                                                        <Button Content="Medio"
+                                                                                Tag="Virtual:Medium"
+                                                                                Command="{Binding SelectLightPresetCommand}"
+                                                                                CommandParameter="{Binding Tag, RelativeSource={RelativeSource Self}}" />
+                                                                        <Button Content="Rapido"
+                                                                                Tag="Virtual:Fast"
+                                                                                Command="{Binding SelectLightPresetCommand}"
+                                                                                CommandParameter="{Binding Tag, RelativeSource={RelativeSource Self}}" />
+                                                                    </UniformGrid>
+                                                                </StackPanel>
+                                                            </Border>
+                                                        </WrapPanel>
                                                     </StackPanel>
                                                 </Grid>
                                             </Border>

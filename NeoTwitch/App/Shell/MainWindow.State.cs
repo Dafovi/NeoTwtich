@@ -69,6 +69,7 @@ public partial class MainWindow
     private string _eventSubscriptionSignature = "";
     private bool _hasShownTrayNotice;
     private int _ruleLedPreviewStep;
+    private int _virtualRuleLedPreviewStep;
     private int _backgroundLedPreviewStep;
     private AudioPlayback? _currentPlayback;
     private AudioPlayback? _audioPreviewPlayback;

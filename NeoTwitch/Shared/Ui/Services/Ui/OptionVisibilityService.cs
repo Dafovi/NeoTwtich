@@ -13,6 +13,11 @@ public static class OptionVisibilityService
             && (LightPatternCapabilities.UsesPrimaryColor(input.Pattern)
                 || LightPatternCapabilities.UsesSecondaryColor(input.Pattern)
                 || LightPatternCapabilities.UsesTertiaryColor(input.Pattern));
+        var virtualEffectAvailable = input.UseVirtualLights;
+        var usesAnyVirtualLightColor = virtualEffectAvailable
+            && (LightPatternCapabilities.UsesPrimaryColor(input.VirtualLightsPattern)
+                || LightPatternCapabilities.UsesSecondaryColor(input.VirtualLightsPattern)
+                || LightPatternCapabilities.UsesTertiaryColor(input.VirtualLightsPattern));
 
         return new RuleOptionVisibility(
             ShowRewardTitle: input.EventKind == TwitchEventKind.ChannelPointRedemption,
@@ -27,6 +32,15 @@ public static class OptionVisibilityService
             ShowLightsAction: input.ArduinoAvailable,
             ShowVirtualLightsAction: true,
             ShowVirtualLightsDetails: true,
+            ShowVirtualLightConfiguration: virtualEffectAvailable,
+            ShowVirtualLightColorOptions: usesAnyVirtualLightColor,
+            ShowVirtualPrimaryColor: virtualEffectAvailable && LightPatternCapabilities.UsesPrimaryColor(input.VirtualLightsPattern),
+            ShowVirtualSecondaryColor: virtualEffectAvailable && LightPatternCapabilities.UsesSecondaryColor(input.VirtualLightsPattern),
+            ShowVirtualTertiaryColor: virtualEffectAvailable && LightPatternCapabilities.UsesTertiaryColor(input.VirtualLightsPattern),
+            ShowVirtualBrightness: virtualEffectAvailable && LightPatternCapabilities.UsesBrightness(input.VirtualLightsPattern),
+            ShowVirtualDuration: virtualEffectAvailable && !input.PlayAudio && !input.SendObsImage && !input.SendObsVideo,
+            ShowVirtualCycle: virtualEffectAvailable && LightPatternCapabilities.UsesCycle(input.VirtualLightsPattern),
+            ShowVirtualStep: virtualEffectAvailable && LightPatternCapabilities.UsesStep(input.VirtualLightsPattern),
             ShowAlexaAction: input.AlexaAvailable,
             ShowAlexaDetails: input.AlexaAvailable,
             ShowObsAction: input.ObsAvailable,
@@ -110,7 +124,8 @@ public sealed record RuleOptionVisibilityInput(
     MediaSourceMode ObsVideoSourceMode,
     bool HasObsVideoAssets,
     bool HasObsVideoGroups,
-    LightPattern Pattern);
+    LightPattern Pattern,
+    LightPattern VirtualLightsPattern);
 
 public sealed record RuleOptionVisibility(
     bool ShowRewardTitle,
@@ -124,6 +139,15 @@ public sealed record RuleOptionVisibility(
     bool ShowLightsAction,
     bool ShowVirtualLightsAction,
     bool ShowVirtualLightsDetails,
+    bool ShowVirtualLightConfiguration,
+    bool ShowVirtualLightColorOptions,
+    bool ShowVirtualPrimaryColor,
+    bool ShowVirtualSecondaryColor,
+    bool ShowVirtualTertiaryColor,
+    bool ShowVirtualBrightness,
+    bool ShowVirtualDuration,
+    bool ShowVirtualCycle,
+    bool ShowVirtualStep,
     bool ShowAlexaAction,
     bool ShowAlexaDetails,
     bool ShowObsAction,

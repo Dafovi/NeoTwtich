@@ -114,6 +114,9 @@ public partial class MainWindow
             DurationValueText.Text = ((int)Math.Round(_alertsViewModel.Editor.DurationMs)).ToString();
             CycleValueText.Text = ((int)Math.Round(_alertsViewModel.Editor.CycleMs)).ToString();
             StepValueText.Text = ((int)Math.Round(_alertsViewModel.Editor.StepMs)).ToString();
+            VirtualDurationValueText.Text = ((int)Math.Round(_alertsViewModel.Editor.VirtualLightsDurationMs)).ToString();
+            VirtualCycleValueText.Text = ((int)Math.Round(_alertsViewModel.Editor.VirtualLightsCycleMs)).ToString();
+            VirtualStepValueText.Text = ((int)Math.Round(_alertsViewModel.Editor.VirtualLightsStepMs)).ToString();
             BackgroundCycleValueText.Text = ((int)Math.Round(_lightsViewModel.BackgroundCycleMs)).ToString();
             BackgroundStepValueText.Text = ((int)Math.Round(_lightsViewModel.BackgroundStepMs)).ToString();
         }
@@ -123,6 +126,7 @@ public partial class MainWindow
         }
 
         UpdateCircularProgress(BrightnessArc, brightnessPercent / 100d);
+        UpdateCircularProgress(VirtualBrightnessArc, _alertsViewModel.Editor.VirtualBrightnessPercent / 100d);
         UpdateCircularProgress(BackgroundBrightnessArc, backgroundBrightnessPercent / 100d);
     }
 

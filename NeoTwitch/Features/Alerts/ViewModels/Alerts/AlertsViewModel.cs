@@ -155,6 +155,8 @@ public sealed partial class AlertsViewModel : ObservableObject
 
     public ObservableCollection<RuleLedPreviewDot> LedPreviewDots { get; } = [];
 
+    public ObservableCollection<RuleLedPreviewDot> VirtualLedPreviewDots { get; } = [];
+
     public RuleEditorViewModel Editor { get; } = new();
 
     public ICommand SelectStatusFilterCommand { get; }

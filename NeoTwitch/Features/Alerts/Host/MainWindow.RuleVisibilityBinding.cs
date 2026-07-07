@@ -13,6 +13,7 @@ public partial class MainWindow
         UpdateRuleObsMediaModeSelection();
         RefreshRuleObsMediaChoices();
         UpdateRuleLedPreviewFrame();
+        UpdateVirtualRuleLedPreviewFrame();
         UpdateRuleLedPreviewTimerState();
     }
 }

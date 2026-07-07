@@ -14,11 +14,27 @@ public partial class MainWindow
             return;
         }
 
+        var isVirtual = preset.StartsWith("Virtual:", StringComparison.OrdinalIgnoreCase);
+        if (isVirtual)
+        {
+            preset = preset["Virtual:".Length..];
+        }
+
         var values = LightControlInputService.GetRulePreset(preset);
-        _alertsViewModel.Editor.Brightness = values.Brightness;
-        _alertsViewModel.Editor.DurationMs = values.DurationMs;
-        _alertsViewModel.Editor.CycleMs = values.CycleMs;
-        _alertsViewModel.Editor.StepMs = values.StepMs;
+        if (isVirtual)
+        {
+            _alertsViewModel.Editor.VirtualLightsBrightness = values.Brightness;
+            _alertsViewModel.Editor.VirtualLightsDurationMs = values.DurationMs;
+            _alertsViewModel.Editor.VirtualLightsCycleMs = values.CycleMs;
+            _alertsViewModel.Editor.VirtualLightsStepMs = values.StepMs;
+        }
+        else
+        {
+            _alertsViewModel.Editor.Brightness = values.Brightness;
+            _alertsViewModel.Editor.DurationMs = values.DurationMs;
+            _alertsViewModel.Editor.CycleMs = values.CycleMs;
+            _alertsViewModel.Editor.StepMs = values.StepMs;
+        }
 
         if (SaveCurrentRuleFromFields())
         {
@@ -27,6 +43,7 @@ public partial class MainWindow
 
         UpdateSliderLabels();
         UpdateRuleLedPreviewFrame();
+        UpdateVirtualRuleLedPreviewFrame();
     }
 
     private void AdjustRuleLightValue(object? parameter)
@@ -41,34 +58,53 @@ public partial class MainWindow
             return;
         }
 
-        var current = delta.Target switch
+        var isVirtual = delta.Target.StartsWith("Virtual", StringComparison.OrdinalIgnoreCase);
+        var target = isVirtual ? delta.Target["Virtual".Length..] : delta.Target;
+
+        var current = (isVirtual, target) switch
         {
-            "Brightness" => _alertsViewModel.Editor.Brightness,
-            "Duration" => _alertsViewModel.Editor.DurationMs,
-            "Cycle" => _alertsViewModel.Editor.CycleMs,
-            "Step" => _alertsViewModel.Editor.StepMs,
+            (false, "Brightness") => _alertsViewModel.Editor.Brightness,
+            (false, "Duration") => _alertsViewModel.Editor.DurationMs,
+            (false, "Cycle") => _alertsViewModel.Editor.CycleMs,
+            (false, "Step") => _alertsViewModel.Editor.StepMs,
+            (true, "Brightness") => _alertsViewModel.Editor.VirtualLightsBrightness,
+            (true, "Duration") => _alertsViewModel.Editor.VirtualLightsDurationMs,
+            (true, "Cycle") => _alertsViewModel.Editor.VirtualLightsCycleMs,
+            (true, "Step") => _alertsViewModel.Editor.VirtualLightsStepMs,
             _ => double.NaN
         };
 
-        if (double.IsNaN(current) || !LightControlInputService.TryGetRuleRange(delta.Target, out var range))
+        if (double.IsNaN(current) || !LightControlInputService.TryGetRuleRange(target, out var range))
         {
             return;
         }
 
         var value = LightControlInputService.AdjustValue(current, delta.Amount, range.Minimum, range.Maximum);
-        switch (delta.Target)
+        switch (isVirtual, target)
         {
-            case "Brightness":
+            case (false, "Brightness"):
                 _alertsViewModel.Editor.Brightness = value;
                 break;
-            case "Duration":
+            case (false, "Duration"):
                 _alertsViewModel.Editor.DurationMs = value;
                 break;
-            case "Cycle":
+            case (false, "Cycle"):
                 _alertsViewModel.Editor.CycleMs = value;
                 break;
-            case "Step":
+            case (false, "Step"):
                 _alertsViewModel.Editor.StepMs = value;
+                break;
+            case (true, "Brightness"):
+                _alertsViewModel.Editor.VirtualLightsBrightness = value;
+                break;
+            case (true, "Duration"):
+                _alertsViewModel.Editor.VirtualLightsDurationMs = value;
+                break;
+            case (true, "Cycle"):
+                _alertsViewModel.Editor.VirtualLightsCycleMs = value;
+                break;
+            case (true, "Step"):
+                _alertsViewModel.Editor.VirtualLightsStepMs = value;
                 break;
         }
 
@@ -79,6 +115,7 @@ public partial class MainWindow
 
         UpdateSliderLabels();
         UpdateRuleLedPreviewFrame();
+        UpdateVirtualRuleLedPreviewFrame();
     }
 
     internal void LightNumberBox_TextChanged(object sender, TextChangedEventArgs e)
@@ -94,7 +131,13 @@ public partial class MainWindow
                 ? CycleSlider
                 : ReferenceEquals(textBox, StepValueText)
                     ? StepSlider
-                    : null;
+                    : ReferenceEquals(textBox, VirtualDurationValueText)
+                        ? VirtualDurationSlider
+                        : ReferenceEquals(textBox, VirtualCycleValueText)
+                            ? VirtualCycleSlider
+                            : ReferenceEquals(textBox, VirtualStepValueText)
+                                ? VirtualStepSlider
+                                : null;
 
         if (slider is null || !LightControlInputService.TryParseSliderText(textBox.Text, slider.Minimum, slider.Maximum, out var value))
         {
@@ -109,6 +152,7 @@ public partial class MainWindow
 
         UpdateSliderLabels();
         UpdateRuleLedPreviewFrame();
+        UpdateVirtualRuleLedPreviewFrame();
     }
 
     private void RefreshRulePinChoices()
@@ -141,6 +185,8 @@ public partial class MainWindow
                 UpdateRuleDirtyStateFromSnapshot();
             }
 
+            UpdateRuleOptionVisibility();
+            UpdateVirtualRuleLedPreviewFrame();
             return;
         }
 

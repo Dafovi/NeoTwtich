@@ -60,6 +60,7 @@ public partial class MainWindow
             editor.ObsVideoSourceMode,
             videoChoices.HasAssets,
             videoChoices.HasGroups,
-            pattern);
+            pattern,
+            editor.VirtualLightsPattern);
     }
 }

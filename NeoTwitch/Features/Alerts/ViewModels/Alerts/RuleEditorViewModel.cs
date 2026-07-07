@@ -300,8 +300,21 @@ public sealed class RuleEditorViewModel : ObservableObject
     public double VirtualLightsBrightness
     {
         get => _virtualLightsBrightness;
-        set => SetProperty(ref _virtualLightsBrightness, value);
+        set
+        {
+            if (SetProperty(ref _virtualLightsBrightness, value))
+            {
+                OnPropertyChanged(nameof(VirtualBrightnessPercent));
+                OnPropertyChanged(nameof(VirtualBrightnessPercentText));
+            }
+        }
     }
+
+    public int VirtualBrightnessPercent => BrightnessMaximum <= 0d
+        ? 0
+        : (int)Math.Round(Math.Clamp(VirtualLightsBrightness / BrightnessMaximum, 0d, 1d) * 100d);
+
+    public string VirtualBrightnessPercentText => $"{VirtualBrightnessPercent}%";
 
     public double VirtualLightsDurationMs
     {

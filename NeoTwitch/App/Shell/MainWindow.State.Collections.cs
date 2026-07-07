@@ -14,6 +14,7 @@ public partial class MainWindow
     private ObservableCollection<ObsSceneRow> _obsSceneRows => _obsViewModel.SceneRows;
     private readonly ObservableCollection<ObsSceneChoice> _obsSceneChoices = [];
     private ObservableCollection<RuleLedPreviewDot> _ruleLedPreviewDots => _alertsViewModel.LedPreviewDots;
+    private ObservableCollection<RuleLedPreviewDot> _virtualRuleLedPreviewDots => _alertsViewModel.VirtualLedPreviewDots;
     private ObservableCollection<RuleLedPreviewDot> _backgroundLedPreviewDots => _lightsViewModel.BackgroundLedPreviewDots;
     private readonly DispatcherTimer _ruleLedPreviewTimer = new();
     private readonly DispatcherTimer _backgroundLedPreviewTimer = new();

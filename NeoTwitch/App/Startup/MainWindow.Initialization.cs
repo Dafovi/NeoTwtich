@@ -149,6 +149,7 @@ public partial class MainWindow
         for (var i = 0; i < ApplicationLimits.RulePreviewLedDots; i++)
         {
             _ruleLedPreviewDots.Add(PreviewDot(Services.Lights.LedPreviewService.ParseColor("#334155", "#334155"), 0.08));
+            _virtualRuleLedPreviewDots.Add(PreviewDot(Services.Lights.LedPreviewService.ParseColor("#334155", "#334155"), 0.08));
             _backgroundLedPreviewDots.Add(PreviewDot(Services.Lights.LedPreviewService.ParseColor("#334155", "#334155"), 0.08));
         }
 
@@ -157,7 +158,11 @@ public partial class MainWindow
     private void InitializePreviewTimers()
     {
         _ruleLedPreviewTimer.Interval = TimeSpan.FromMilliseconds(120);
-        _ruleLedPreviewTimer.Tick += (_, _) => UpdateRuleLedPreviewFrame();
+        _ruleLedPreviewTimer.Tick += (_, _) =>
+        {
+            UpdateRuleLedPreviewFrame();
+            UpdateVirtualRuleLedPreviewFrame();
+        };
         _backgroundLedPreviewTimer.Interval = TimeSpan.FromMilliseconds(120);
         _backgroundLedPreviewTimer.Tick += (_, _) => UpdateBackgroundLedPreviewFrame();
         _arduinoMonitorTimer.Interval = TimeSpan.FromSeconds(2.5);

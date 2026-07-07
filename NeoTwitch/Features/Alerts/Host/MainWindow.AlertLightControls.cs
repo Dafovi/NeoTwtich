@@ -18,6 +18,17 @@ public partial class MainWindow
 {
     private WpfBorder UseLightsActionCard => AlertsView.UseLightsActionCard;
     private WpfCheckBox UseLightsCheck => AlertsView.UseLightsCheck;
+    private WpfBorder VirtualLightsActionCard => AlertsView.VirtualLightsActionCard;
+    private WpfCheckBox VirtualLightsCheck => AlertsView.VirtualLightsCheck;
+    private WpfStackPanel VirtualLightsDetailsPanel => AlertsView.VirtualLightsDetailsPanel;
+    private WpfCheckBox VirtualLightsObsCheck => AlertsView.VirtualLightsObsCheck;
+    private WpfCheckBox VirtualLightsScreenCheck => AlertsView.VirtualLightsScreenCheck;
+    private WpfButton VirtualPrimaryColorButton => AlertsView.VirtualPrimaryColorButton;
+    private WpfTextBox VirtualPrimaryColorBox => AlertsView.VirtualPrimaryColorBox;
+    private WpfButton VirtualSecondaryColorButton => AlertsView.VirtualSecondaryColorButton;
+    private WpfTextBox VirtualSecondaryColorBox => AlertsView.VirtualSecondaryColorBox;
+    private WpfButton VirtualTertiaryColorButton => AlertsView.VirtualTertiaryColorButton;
+    private WpfTextBox VirtualTertiaryColorBox => AlertsView.VirtualTertiaryColorBox;
     private WpfStackPanel LightConfigurationPanel => AlertsView.LightConfigurationPanel;
     private WpfSeparator LightOptionsSeparator => AlertsView.LightOptionsSeparator;
     private WpfTextBlock TargetPinsLabel => AlertsView.TargetPinsLabel;
@@ -31,6 +42,13 @@ public partial class MainWindow
     private WpfButton PatternTheaterTileButton => AlertsView.PatternTheaterTileButton;
     private WpfButton PatternSparkleTileButton => AlertsView.PatternSparkleTileButton;
     private WpfButton PatternRaveTileButton => AlertsView.PatternRaveTileButton;
+    private WpfButton VirtualPatternSolidTileButton => AlertsView.VirtualPatternSolidTileButton;
+    private WpfButton VirtualPatternPulseTileButton => AlertsView.VirtualPatternPulseTileButton;
+    private WpfButton VirtualPatternRainbowTileButton => AlertsView.VirtualPatternRainbowTileButton;
+    private WpfButton VirtualPatternChaseTileButton => AlertsView.VirtualPatternChaseTileButton;
+    private WpfButton VirtualPatternTheaterTileButton => AlertsView.VirtualPatternTheaterTileButton;
+    private WpfButton VirtualPatternSparkleTileButton => AlertsView.VirtualPatternSparkleTileButton;
+    private WpfButton VirtualPatternRaveTileButton => AlertsView.VirtualPatternRaveTileButton;
     private WpfGrid ColorOptionsGrid => AlertsView.ColorOptionsGrid;
     private WpfStackPanel PrimaryColorPanel => AlertsView.PrimaryColorPanel;
     private WpfButton PrimaryColorButton => AlertsView.PrimaryColorButton;

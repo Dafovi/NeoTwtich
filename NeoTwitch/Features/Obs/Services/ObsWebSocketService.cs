@@ -214,6 +214,58 @@ public sealed partial class ObsWebSocketService : IAsyncDisposable
             invalidOperationFallback: Snapshot);
     }
 
+    public async Task<ObsConnectionResult> ShowBrowserSourceAsync(
+        string sceneName,
+        string sourceName,
+        string url,
+        int width,
+        int height,
+        CancellationToken cancellationToken)
+    {
+        if (string.IsNullOrWhiteSpace(sceneName))
+        {
+            throw new InvalidOperationException(_text.Get(UiTextKeys.ObsSelectMediaScene));
+        }
+
+        if (string.IsNullOrWhiteSpace(sourceName))
+        {
+            throw new InvalidOperationException(_text.Get(UiTextKeys.ObsMissingSourceName));
+        }
+
+        if (string.IsNullOrWhiteSpace(url))
+        {
+            throw new InvalidOperationException(_text.Get(UiTextKeys.ObsMissingMediaFile));
+        }
+
+        return await ExecuteExclusiveAsync(
+            cancellationToken,
+            RequestTimeout,
+            UiTextKeys.ObsShowMediaTimeout,
+            async token =>
+            {
+                EnsureConnected();
+                try
+                {
+                    await SendRequestAsync(
+                        ObsProtocol.CreateInput,
+                        ObsWebSocketRequestFactory.BuildCreateBrowserInputRequest(sceneName, sourceName, url, width, height),
+                        token);
+                }
+                catch (InvalidOperationException)
+                {
+                    await SendRequestAsync(
+                        ObsProtocol.SetInputSettings,
+                        ObsWebSocketRequestFactory.BuildSetBrowserInputSettingsRequest(sourceName, url, width, height),
+                        token);
+                    await EnsureSceneItemAsync(sceneName, sourceName, token);
+                }
+
+                await SetSceneItemEnabledAsync(sceneName, sourceName, enabled: true, token);
+                await RefreshScenesCoreAsync(token);
+                return Snapshot();
+            });
+    }
+
     public async Task DisconnectAsync()
     {
         await _gate.WaitAsync();

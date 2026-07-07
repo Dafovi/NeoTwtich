@@ -8,7 +8,8 @@ public static class OptionVisibilityService
     public static RuleOptionVisibility ResolveRule(RuleOptionVisibilityInput input)
     {
         var lightsAvailable = input.ArduinoAvailable;
-        var usesAnyLightColor = lightsAvailable
+        var effectAvailable = lightsAvailable && input.UseLights;
+        var usesAnyLightColor = effectAvailable
             && (LightPatternCapabilities.UsesPrimaryColor(input.Pattern)
                 || LightPatternCapabilities.UsesSecondaryColor(input.Pattern)
                 || LightPatternCapabilities.UsesTertiaryColor(input.Pattern));
@@ -24,6 +25,8 @@ public static class OptionVisibilityService
                 || (input.AudioSourceMode == AudioSourceMode.Group && !input.HasAudioGroups),
             ShowChatDetails: true,
             ShowLightsAction: input.ArduinoAvailable,
+            ShowVirtualLightsAction: true,
+            ShowVirtualLightsDetails: true,
             ShowAlexaAction: input.AlexaAvailable,
             ShowAlexaDetails: input.AlexaAvailable,
             ShowObsAction: input.ObsAvailable,
@@ -46,15 +49,16 @@ public static class OptionVisibilityService
             ShowObsVideoEmptyHint: input.ObsAvailable
                 && ((input.ObsVideoSourceMode == MediaSourceMode.Single && !input.HasObsVideoAssets)
                     || (input.ObsVideoSourceMode == MediaSourceMode.Group && !input.HasObsVideoGroups)),
-            ShowLightConfiguration: lightsAvailable,
+            ShowLightConfiguration: effectAvailable,
+            ShowTargetPins: lightsAvailable,
             ShowLightColorOptions: usesAnyLightColor,
-            ShowPrimaryColor: lightsAvailable && LightPatternCapabilities.UsesPrimaryColor(input.Pattern),
-            ShowSecondaryColor: lightsAvailable && LightPatternCapabilities.UsesSecondaryColor(input.Pattern),
-            ShowTertiaryColor: lightsAvailable && LightPatternCapabilities.UsesTertiaryColor(input.Pattern),
-            ShowBrightness: lightsAvailable && LightPatternCapabilities.UsesBrightness(input.Pattern),
-            ShowDuration: lightsAvailable && !input.PlayAudio,
-            ShowCycle: lightsAvailable && LightPatternCapabilities.UsesCycle(input.Pattern),
-            ShowStep: lightsAvailable && LightPatternCapabilities.UsesStep(input.Pattern));
+            ShowPrimaryColor: effectAvailable && LightPatternCapabilities.UsesPrimaryColor(input.Pattern),
+            ShowSecondaryColor: effectAvailable && LightPatternCapabilities.UsesSecondaryColor(input.Pattern),
+            ShowTertiaryColor: effectAvailable && LightPatternCapabilities.UsesTertiaryColor(input.Pattern),
+            ShowBrightness: effectAvailable && LightPatternCapabilities.UsesBrightness(input.Pattern),
+            ShowDuration: effectAvailable && !input.PlayAudio && !input.SendObsImage && !input.SendObsVideo,
+            ShowCycle: effectAvailable && LightPatternCapabilities.UsesCycle(input.Pattern),
+            ShowStep: effectAvailable && LightPatternCapabilities.UsesStep(input.Pattern));
     }
 
     public static BackgroundOptionVisibility ResolveBackground(BackgroundOptionVisibilityInput input)
@@ -85,6 +89,7 @@ public sealed record RuleOptionVisibilityInput(
     TwitchEventKind EventKind,
     bool ArduinoAvailable,
     bool UseLights,
+    bool UseVirtualLights,
     bool PlayAudio,
     AudioSourceMode AudioSourceMode,
     bool HasAudioAssets,
@@ -117,6 +122,8 @@ public sealed record RuleOptionVisibility(
     bool ShowAudioEmptyHint,
     bool ShowChatDetails,
     bool ShowLightsAction,
+    bool ShowVirtualLightsAction,
+    bool ShowVirtualLightsDetails,
     bool ShowAlexaAction,
     bool ShowAlexaDetails,
     bool ShowObsAction,
@@ -136,6 +143,7 @@ public sealed record RuleOptionVisibility(
     bool ShowObsVideoGroup,
     bool ShowObsVideoEmptyHint,
     bool ShowLightConfiguration,
+    bool ShowTargetPins,
     bool ShowLightColorOptions,
     bool ShowPrimaryColor,
     bool ShowSecondaryColor,

@@ -8,6 +8,7 @@ namespace NeoTwitch.ViewModels.Obs;
 public sealed class ObsViewModel : ObservableObject
 {
     private Action _copyOverlayUrl = Noop;
+    private Action _copyVirtualLightsOverlayUrl = Noop;
     private Action _refreshScenes = Noop;
     private Action<object?> _previewScene = Noop;
     private Action<object?> _changeScene = Noop;
@@ -20,6 +21,7 @@ public sealed class ObsViewModel : ObservableObject
     private string _sceneCount = "0";
     private string _studioMode = "Desactivado";
     private string _overlayUrl = "";
+    private string _virtualLightsOverlayUrl = "";
     private string _overlayWidthText = "1920";
     private string _overlayHeightText = "1080";
     private string _overlayMediaWidthText = "640";
@@ -35,6 +37,7 @@ public sealed class ObsViewModel : ObservableObject
     public ObsViewModel()
     {
         CopyOverlayUrlCommand = new RelayCommand(() => _copyOverlayUrl());
+        CopyVirtualLightsOverlayUrlCommand = new RelayCommand(() => _copyVirtualLightsOverlayUrl());
         RefreshScenesCommand = new RelayCommand(() => _refreshScenes());
         PreviewSceneCommand = new RelayCommand(parameter => _previewScene(parameter));
         ChangeSceneCommand = new RelayCommand(parameter => _changeScene(parameter));
@@ -43,6 +46,8 @@ public sealed class ObsViewModel : ObservableObject
     public ObservableCollection<ObsSceneRow> SceneRows { get; } = [];
 
     public RelayCommand CopyOverlayUrlCommand { get; }
+
+    public RelayCommand CopyVirtualLightsOverlayUrlCommand { get; }
 
     public RelayCommand RefreshScenesCommand { get; }
 
@@ -114,6 +119,12 @@ public sealed class ObsViewModel : ObservableObject
     {
         get => _overlayUrl;
         private set => SetProperty(ref _overlayUrl, value);
+    }
+
+    public string VirtualLightsOverlayUrl
+    {
+        get => _virtualLightsOverlayUrl;
+        private set => SetProperty(ref _virtualLightsOverlayUrl, value);
     }
 
     public string OverlayWidthText
@@ -204,9 +215,10 @@ public sealed class ObsViewModel : ObservableObject
         SceneRows.Clear();
     }
 
-    public void LoadOverlayConfig(AppConfig config, string overlayUrl)
+    public void LoadOverlayConfig(AppConfig config, string overlayUrl, string virtualLightsOverlayUrl)
     {
         OverlayUrl = overlayUrl;
+        VirtualLightsOverlayUrl = virtualLightsOverlayUrl;
         OverlayWidthText = config.Obs.OverlayWidth.ToString();
         OverlayHeightText = config.Obs.OverlayHeight.ToString();
         OverlayMediaWidthText = config.Obs.OverlayMediaWidth.ToString();
@@ -217,19 +229,22 @@ public sealed class ObsViewModel : ObservableObject
         UpdateOverlayPositionState();
     }
 
-    public void UpdateOverlayUrl(string overlayUrl)
+    public void UpdateOverlayUrl(string overlayUrl, string virtualLightsOverlayUrl)
     {
         OverlayUrl = overlayUrl;
+        VirtualLightsOverlayUrl = virtualLightsOverlayUrl;
         UpdateOverlayPositionState();
     }
 
     public void ConfigureActions(
         Action copyOverlayUrl,
+        Action copyVirtualLightsOverlayUrl,
         Action refreshScenes,
         Action<object?> previewScene,
         Action<object?> changeScene)
     {
         _copyOverlayUrl = copyOverlayUrl;
+        _copyVirtualLightsOverlayUrl = copyVirtualLightsOverlayUrl;
         _refreshScenes = refreshScenes;
         _previewScene = previewScene;
         _changeScene = changeScene;

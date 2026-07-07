@@ -50,6 +50,7 @@ public static class NeoTwitchProduct
         public const string WebSocketGuideUrl = "https://github.com/obsproject/obs-websocket";
         public const string AlertImageSourceName = "Neo Twitch - Imagen de alerta";
         public const string AlertVideoSourceName = "Neo Twitch - Video de alerta";
+        public const string VirtualLightsSourceName = "Neo Twitch - Luces virtuales";
         public const string PreviewImageSourceName = "Neo Twitch - Prueba imagen";
         public const string PreviewVideoSourceName = "Neo Twitch - Prueba video";
         public const string OverlayWindowTitle = "Neo Twitch OBS Overlay";

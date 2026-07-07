@@ -14,7 +14,7 @@ public partial class MainWindow
         _connectionsViewModel.LoadArduinoConfig(_config);
         _connectionsViewModel.LoadAlexaConfig(_config);
         _connectionsViewModel.LoadObsConnectionConfig(_config);
-        _obsViewModel.LoadOverlayConfig(_config, BuildObsOverlayUrl());
+        _obsViewModel.LoadOverlayConfig(_config, BuildObsOverlayUrl(), BuildVirtualLightsOverlayUrl());
     }
 
     private void LoadGlobalPreferencesIntoUi()
@@ -41,6 +41,7 @@ public partial class MainWindow
             _obsSceneChoices,
             _obsMediaKindOptions,
             _mediaSourceModeOptions);
+        _alertsViewModel.UpdateVirtualScreenChoices(_virtualScreenService.CreateScreenChoices());
         _audioLibraryViewModel.SetNewAssetChoices(AudioGroupChoices, AudioAlertChoices);
         _imageLibraryViewModel.SetNewAssetChoices(ImageGroupChoices);
         _videoLibraryViewModel.SetNewAssetChoices(VideoGroupChoices);

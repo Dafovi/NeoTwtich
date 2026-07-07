@@ -16,6 +16,8 @@ public partial class MainWindow
         UiVisibilityService.SetVisible(visibility.ShowAudioEmptyHint, RuleAudioEmptyHintText);
         UiVisibilityService.SetVisible(visibility.ShowChatDetails, ChatDetailsPanel, ChatMessageLabel, ChatMessageBox);
         UiVisibilityService.SetVisible(visibility.ShowLightsAction, UseLightsActionCard);
+        UiVisibilityService.SetVisible(visibility.ShowVirtualLightsAction, VirtualLightsActionCard);
+        UiVisibilityService.SetVisible(visibility.ShowVirtualLightsDetails, VirtualLightsDetailsPanel);
         UiVisibilityService.SetVisible(visibility.ShowObsVideoAction, VideoActionCard);
         UiVisibilityService.SetVisible(visibility.ShowObsVideoDetails, ObsVideoDetailsPanel);
         UiVisibilityService.SetVisible(visibility.ShowObsVideoAsset, RuleObsVideoAssetPanel);
@@ -34,7 +36,8 @@ public partial class MainWindow
         UiVisibilityService.SetVisible(visibility.ShowObsEmptyHint, RuleObsEmptyHintText);
         UiVisibilityService.SetVisible(visibility.ShowAlexaAction, AlexaActionCard);
         UiVisibilityService.SetVisible(visibility.ShowAlexaDetails, AlexaDetailsPanel, AlexaRuleHintText);
-        UiVisibilityService.SetVisible(visibility.ShowLightConfiguration, LightConfigurationPanel, LightOptionsSeparator, TargetPinsLabel, TargetPinsChoiceBox, PatternGrid, RuleLedPreviewPanel);
+        UiVisibilityService.SetVisible(visibility.ShowLightConfiguration, LightConfigurationPanel, LightOptionsSeparator, PatternGrid, RuleLedPreviewPanel);
+        UiVisibilityService.SetVisible(visibility.ShowTargetPins, TargetPinsLabel, TargetPinsChoiceBox);
         UiVisibilityService.SetVisible(visibility.ShowLightColorOptions, ColorOptionsGrid);
         UiVisibilityService.SetVisible(visibility.ShowPrimaryColor, PrimaryColorPanel);
         UiVisibilityService.SetVisible(visibility.ShowSecondaryColor, SecondaryColorLabel, SecondaryColorPanel);
@@ -51,6 +54,8 @@ public partial class MainWindow
     {
         var editor = _alertsViewModel.Editor;
         var lightsEnabled = _config.ArduinoEnabled && editor.UseLights;
+        var virtualLightsEnabled = editor.UseVirtualLights && (editor.VirtualLightsToObs || editor.VirtualLightsToScreen);
+        var lightEffectEnabled = lightsEnabled || virtualLightsEnabled;
         var audioEnabled = editor.PlayAudio;
         var chatEnabled = editor.SendChatMessage;
         var alexaEnabled = _config.Alexa.IsConfigured && editor.SendAlexaEvent;
@@ -58,7 +63,8 @@ public partial class MainWindow
         var obsImageEnabled = _config.Obs.IsConfigured && editor.SendObsImage;
         var obsVideoEnabled = _config.Obs.IsConfigured && editor.SendObsVideo;
 
-        SetRuleOptionAvailability(lightsEnabled, LightConfigurationPanel);
+        SetRuleOptionAvailability(lightEffectEnabled, LightConfigurationPanel);
+        SetRuleOptionAvailability(virtualLightsEnabled, VirtualLightsDetailsPanel);
         SetRuleOptionAvailability(audioEnabled, AudioDetailsPanel);
         SetRuleOptionAvailability(chatEnabled, ChatDetailsPanel);
         SetRuleOptionAvailability(alexaEnabled, AlexaDetailsPanel);

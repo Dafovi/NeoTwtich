@@ -75,14 +75,15 @@ public partial class MainWindow
                 playback?.Duration,
                 obsMediaHides.Count == 0 ? null : obsMediaHides.Max(media => media.Duration));
 
+            var virtualLightsDuration = await StartRuleVirtualLightsAsync(
+                rule,
+                plan.SynchronizedDurationMs ?? rule.DurationMs,
+                effectCts.Token);
+
             if (!plan.UseLights)
             {
                 playback?.Play();
-                if (playback is not null)
-                {
-                    await playback.Completion.WaitAsync(effectCts.Token);
-                }
-
+                await AlertEffectWaitService.WaitAsync(playback, null, obsMediaHides, effectCts.Token, virtualLightsDuration);
                 return;
             }
 
@@ -103,7 +104,7 @@ public partial class MainWindow
             }
 
             playback?.Play();
-            await AlertEffectWaitService.WaitAsync(playback, command, obsMediaHides, effectCts.Token);
+            await AlertEffectWaitService.WaitAsync(playback, command, obsMediaHides, effectCts.Token, virtualLightsDuration);
 
             if (command is not null)
             {

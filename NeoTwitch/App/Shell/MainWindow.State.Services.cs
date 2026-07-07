@@ -36,6 +36,9 @@ public partial class MainWindow
     private AlexaRelayService _alexaRelayService => _services.AlexaRelayService;
     private ObsWebSocketService _obsService => _services.ObsService;
     private ObsOverlayService _obsOverlayService => _services.ObsOverlayService;
+    private VirtualLightsOverlayService _virtualLightsOverlayService => _services.VirtualLightsOverlayService;
+    private VirtualLightsScreenOverlayService _virtualLightsScreenOverlayService => _services.VirtualLightsScreenOverlayService;
+    private VirtualScreenService _virtualScreenService => _services.VirtualScreenService;
     private WindowsStartupService _windowsStartupService => _services.WindowsStartupService;
     private AppUpdateService _updateService => _services.UpdateService;
     private DiagnosticReportService _diagnosticReportService => _services.DiagnosticReportService;

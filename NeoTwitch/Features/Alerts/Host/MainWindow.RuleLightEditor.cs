@@ -130,6 +130,20 @@ public partial class MainWindow
 
     private void SelectRuleLightPattern(object? parameter)
     {
+        var raw = parameter?.ToString() ?? "";
+        if (raw.StartsWith("Virtual:", StringComparison.OrdinalIgnoreCase)
+            && Enum.TryParse<LightPattern>(raw["Virtual:".Length..], out var virtualPattern))
+        {
+            _alertsViewModel.Editor.VirtualLightsPattern = virtualPattern;
+            UpdateVirtualPatternTileSelection();
+            if (SaveCurrentRuleFromFields())
+            {
+                UpdateRuleDirtyStateFromSnapshot();
+            }
+
+            return;
+        }
+
         if (!TryParseEnumParameter<LightPattern>(parameter, out var pattern))
         {
             return;
@@ -137,6 +151,11 @@ public partial class MainWindow
 
         _alertsViewModel.Editor.Pattern = pattern;
         UpdatePatternTileSelection();
+        if (SaveCurrentRuleFromFields())
+        {
+            UpdateRuleDirtyStateFromSnapshot();
+        }
+
         UpdateRuleLedPreviewFrame();
     }
 

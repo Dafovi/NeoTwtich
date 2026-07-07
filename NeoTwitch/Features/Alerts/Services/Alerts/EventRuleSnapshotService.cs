@@ -64,6 +64,18 @@ public static class EventRuleSnapshotService
         target.ObsVideoSourceMode = source.ObsVideoSourceMode;
         target.ObsVideoAssetId = source.ObsVideoAssetId;
         target.ObsVideoGroupId = source.ObsVideoGroupId;
+        target.UseVirtualLights = source.UseVirtualLights;
+        target.VirtualLightsToObs = source.VirtualLightsToObs;
+        target.VirtualLightsToScreen = source.VirtualLightsToScreen;
+        target.VirtualLightsScreenId = source.VirtualLightsScreenId;
+        target.VirtualLightsPattern = source.VirtualLightsPattern;
+        target.VirtualLightsPrimaryColor = source.VirtualLightsPrimaryColor;
+        target.VirtualLightsSecondaryColor = source.VirtualLightsSecondaryColor;
+        target.VirtualLightsTertiaryColor = source.VirtualLightsTertiaryColor;
+        target.VirtualLightsBrightness = source.VirtualLightsBrightness;
+        target.VirtualLightsDurationMs = source.VirtualLightsDurationMs;
+        target.VirtualLightsCycleMs = source.VirtualLightsCycleMs;
+        target.VirtualLightsStepMs = source.VirtualLightsStepMs;
         target.Pattern = source.Pattern;
         target.TargetPins = source.TargetPins;
         target.PrimaryColor = source.PrimaryColor;
@@ -116,6 +128,18 @@ public static class EventRuleSnapshotService
             && left.ObsVideoSourceMode == right.ObsVideoSourceMode
             && left.ObsVideoAssetId == right.ObsVideoAssetId
             && left.ObsVideoGroupId == right.ObsVideoGroupId
+            && left.UseVirtualLights == right.UseVirtualLights
+            && left.VirtualLightsToObs == right.VirtualLightsToObs
+            && left.VirtualLightsToScreen == right.VirtualLightsToScreen
+            && left.VirtualLightsScreenId == right.VirtualLightsScreenId
+            && left.VirtualLightsPattern == right.VirtualLightsPattern
+            && left.VirtualLightsPrimaryColor == right.VirtualLightsPrimaryColor
+            && left.VirtualLightsSecondaryColor == right.VirtualLightsSecondaryColor
+            && left.VirtualLightsTertiaryColor == right.VirtualLightsTertiaryColor
+            && left.VirtualLightsBrightness == right.VirtualLightsBrightness
+            && left.VirtualLightsDurationMs == right.VirtualLightsDurationMs
+            && left.VirtualLightsCycleMs == right.VirtualLightsCycleMs
+            && left.VirtualLightsStepMs == right.VirtualLightsStepMs
             && left.Pattern == right.Pattern
             && left.TargetPins == right.TargetPins
             && left.PrimaryColor == right.PrimaryColor

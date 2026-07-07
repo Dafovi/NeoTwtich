@@ -40,15 +40,21 @@ public sealed class EventRuleRowViewModel : ObservableObject, IDisposable
 
     public string LightsActionToolTip => EventRulePresentationService.BuildLightsToolTip(Rule, _text);
 
+    public Visibility VirtualLightsActionVisibility => Rule.UseVirtualLights ? Visibility.Visible : Visibility.Collapsed;
+
     public Visibility AudioActionVisibility => Rule.PlayAudio ? Visibility.Visible : Visibility.Collapsed;
+
+    public double VirtualLightsActionOpacity => Rule.VirtualLightsToObs || Rule.VirtualLightsToScreen ? 1d : 0.32d;
+
+    public string VirtualLightsActionToolTip => EventRulePresentationService.BuildVirtualLightsToolTip(Rule, _text);
 
     public Visibility ChatActionVisibility => Rule.SendChatMessage ? Visibility.Visible : Visibility.Collapsed;
 
-    public Visibility VideoActionVisibility => Rule.SendObsVideo || (Rule.SendObsMedia && Rule.ObsMediaKind == ObsMediaKind.Video)
+    public Visibility VideoActionVisibility => Rule.SendObsVideo
         ? Visibility.Visible
         : Visibility.Collapsed;
 
-    public Visibility ImageActionVisibility => Rule.SendObsImage || (Rule.SendObsMedia && Rule.ObsMediaKind == ObsMediaKind.Image)
+    public Visibility ImageActionVisibility => Rule.SendObsImage
         ? Visibility.Visible
         : Visibility.Collapsed;
 
@@ -92,6 +98,9 @@ public sealed class EventRuleRowViewModel : ObservableObject, IDisposable
         OnPropertyChanged(nameof(LightsActionVisibility));
         OnPropertyChanged(nameof(LightsActionOpacity));
         OnPropertyChanged(nameof(LightsActionToolTip));
+        OnPropertyChanged(nameof(VirtualLightsActionVisibility));
+        OnPropertyChanged(nameof(VirtualLightsActionOpacity));
+        OnPropertyChanged(nameof(VirtualLightsActionToolTip));
         OnPropertyChanged(nameof(AudioActionVisibility));
         OnPropertyChanged(nameof(ChatActionVisibility));
         OnPropertyChanged(nameof(VideoActionVisibility));

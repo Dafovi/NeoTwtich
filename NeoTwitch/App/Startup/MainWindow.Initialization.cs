@@ -60,6 +60,7 @@ public partial class MainWindow
             _obsViewModel = new ObsViewModel();
             _obsViewModel.ConfigureActions(
                 CopyObsOverlayUrl,
+                CopyVirtualLightsOverlayUrl,
                 TestObsConnection,
                 PreviewObsScene,
                 ChangeObsScene);

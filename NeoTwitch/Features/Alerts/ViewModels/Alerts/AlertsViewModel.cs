@@ -37,6 +37,7 @@ public sealed partial class AlertsViewModel : ObservableObject
     private IEnumerable? _obsVideoAssetChoices;
     private IEnumerable? _obsVideoGroupChoices;
     private IEnumerable? _targetPinChoices;
+    private IEnumerable? _virtualScreenChoices;
     private readonly CollectionViewSource _rulesViewSource = new();
     private readonly ObservableCollection<EventRuleRowViewModel> _ruleRows = [];
     private readonly IUiTextService _text;
@@ -144,6 +145,12 @@ public sealed partial class AlertsViewModel : ObservableObject
     {
         get => _targetPinChoices;
         private set => SetProperty(ref _targetPinChoices, value);
+    }
+
+    public IEnumerable? VirtualScreenChoices
+    {
+        get => _virtualScreenChoices;
+        private set => SetProperty(ref _virtualScreenChoices, value);
     }
 
     public ObservableCollection<RuleLedPreviewDot> LedPreviewDots { get; } = [];
@@ -383,6 +390,11 @@ public sealed partial class AlertsViewModel : ObservableObject
     public void UpdateTargetPinChoices(IEnumerable? choices)
     {
         TargetPinChoices = choices;
+    }
+
+    public void UpdateVirtualScreenChoices(IEnumerable? choices)
+    {
+        VirtualScreenChoices = choices;
     }
 
     public void UpdateObsMediaChoices(IEnumerable? assetChoices, IEnumerable? groupChoices)

@@ -20,13 +20,11 @@ public partial class MainWindow
         var imageRequest = await SendRuleObsMediaAsync(
             rule,
             ObsMediaKind.Image,
-            rule.SendObsImage || (rule.SendObsMedia && rule.ObsMediaKind == ObsMediaKind.Image),
-            string.IsNullOrWhiteSpace(rule.ObsImageAssetId) && string.IsNullOrWhiteSpace(rule.ObsImageGroupId)
-                ? rule.ObsMediaSourceMode
-                : rule.ObsImageSourceMode,
-            string.IsNullOrWhiteSpace(rule.ObsImageAssetId) && rule.ObsMediaKind == ObsMediaKind.Image ? rule.ObsMediaAssetId : rule.ObsImageAssetId,
-            string.IsNullOrWhiteSpace(rule.ObsImageGroupId) && rule.ObsMediaKind == ObsMediaKind.Image ? rule.ObsMediaGroupId : rule.ObsImageGroupId,
-            rule.ObsImageDurationMs > 0 ? rule.ObsImageDurationMs : rule.ObsMediaDurationMs,
+            rule.SendObsImage,
+            rule.ObsImageSourceMode,
+            rule.ObsImageAssetId,
+            rule.ObsImageGroupId,
+            rule.ObsImageDurationMs,
             NeoTwitchProduct.Obs.AlertImageSourceName,
             cancellationToken);
         if (imageRequest is not null)
@@ -37,12 +35,10 @@ public partial class MainWindow
         var videoRequest = await SendRuleObsMediaAsync(
             rule,
             ObsMediaKind.Video,
-            rule.SendObsVideo || (rule.SendObsMedia && rule.ObsMediaKind == ObsMediaKind.Video),
-            string.IsNullOrWhiteSpace(rule.ObsVideoAssetId) && string.IsNullOrWhiteSpace(rule.ObsVideoGroupId)
-                ? rule.ObsMediaSourceMode
-                : rule.ObsVideoSourceMode,
-            string.IsNullOrWhiteSpace(rule.ObsVideoAssetId) && rule.ObsMediaKind == ObsMediaKind.Video ? rule.ObsMediaAssetId : rule.ObsVideoAssetId,
-            string.IsNullOrWhiteSpace(rule.ObsVideoGroupId) && rule.ObsMediaKind == ObsMediaKind.Video ? rule.ObsMediaGroupId : rule.ObsVideoGroupId,
+            rule.SendObsVideo,
+            rule.ObsVideoSourceMode,
+            rule.ObsVideoAssetId,
+            rule.ObsVideoGroupId,
             rule.ObsMediaDurationMs,
             NeoTwitchProduct.Obs.AlertVideoSourceName,
             cancellationToken);

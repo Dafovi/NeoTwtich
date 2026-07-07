@@ -32,6 +32,8 @@ public partial class MainWindow
                 palette,
                 fillSelected: false);
         }
+
+        UpdateVirtualPatternTileSelection();
     }
 
     private IEnumerable<System.Windows.Controls.Button> PatternTileButtons()
@@ -45,6 +47,57 @@ public partial class MainWindow
             PatternTheaterTileButton,
             PatternSparkleTileButton,
             PatternRaveTileButton
+        ];
+    }
+
+    private void UpdateVirtualPatternTileSelection()
+    {
+        if (_initializingComponent)
+        {
+            return;
+        }
+
+        var selectedPattern = _alertsViewModel.Editor.VirtualLightsPattern;
+        var palette = _config.DarkMode
+            ? ThemePalette.Dark
+            : ThemePalette.Light;
+
+        foreach (var button in VirtualPatternTileButtons())
+        {
+            if (button.Tag is not string value)
+            {
+                continue;
+            }
+
+            var raw = value.StartsWith("Virtual:", StringComparison.OrdinalIgnoreCase)
+                ? value["Virtual:".Length..]
+                : value;
+            if (!Enum.TryParse<LightPattern>(raw, out var tilePattern))
+            {
+                continue;
+            }
+
+            var selected = tilePattern == selectedPattern;
+            SelectionButtonThemeService.Apply(
+                button,
+                selected,
+                UiAccentCatalog.ForLightPattern(tilePattern),
+                palette,
+                fillSelected: false);
+        }
+    }
+
+    private IEnumerable<System.Windows.Controls.Button> VirtualPatternTileButtons()
+    {
+        return
+        [
+            VirtualPatternSolidTileButton,
+            VirtualPatternPulseTileButton,
+            VirtualPatternRainbowTileButton,
+            VirtualPatternChaseTileButton,
+            VirtualPatternTheaterTileButton,
+            VirtualPatternSparkleTileButton,
+            VirtualPatternRaveTileButton
         ];
     }
 

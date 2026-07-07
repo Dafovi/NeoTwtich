@@ -59,9 +59,15 @@ public static class ObsWebSocketProtocol
 
     public const string ImageSourceKind = "image_source";
     public const string FfmpegSourceKind = "ffmpeg_source";
+    public const string BrowserSourceKind = "browser_source";
     public const string ImageFile = "file";
     public const string IsLocalFile = "is_local_file";
     public const string LocalFile = "local_file";
+    public const string BrowserUrl = "url";
+    public const string BrowserWidth = "width";
+    public const string BrowserHeight = "height";
+    public const string BrowserShutdown = "shutdown";
+    public const string BrowserRestartWhenActive = "restart_when_active";
     public const string Looping = "looping";
     public const string RestartOnActivate = "restart_on_activate";
     public const string CloseWhenInactive = "close_when_inactive";

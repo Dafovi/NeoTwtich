@@ -27,11 +27,11 @@ public static class RuleEditorFormService
         rule.ObsSceneDelayMs = ParseInt(values.ObsSceneDelayText, 0, 0, 600000);
         rule.ObsReturnToPreviousScene = values.ObsReturnToPreviousScene;
         rule.ObsReturnDelayMs = ParseInt(values.ObsReturnDelayText, 15000, 0, 600000);
-        rule.SendObsMedia = values.SendObsMedia;
+        rule.SendObsMedia = false;
         rule.ObsMediaKind = values.ObsMediaKind;
         rule.ObsMediaSourceMode = values.ObsMediaSourceMode;
-        rule.ObsMediaAssetId = values.ObsMediaAssetId.Trim();
-        rule.ObsMediaGroupId = values.ObsMediaGroupId.Trim();
+        rule.ObsMediaAssetId = "";
+        rule.ObsMediaGroupId = "";
         rule.ObsMediaDurationMs = ParseInt(values.ObsMediaDurationText, 5000, 250, 600000);
         rule.SendObsImage = values.SendObsImage;
         rule.ObsImageSourceMode = values.ObsImageSourceMode;
@@ -42,6 +42,18 @@ public static class RuleEditorFormService
         rule.ObsVideoSourceMode = values.ObsVideoSourceMode;
         rule.ObsVideoAssetId = values.ObsVideoAssetId.Trim();
         rule.ObsVideoGroupId = values.ObsVideoGroupId.Trim();
+        rule.UseVirtualLights = values.UseVirtualLights;
+        rule.VirtualLightsToObs = values.VirtualLightsToObs;
+        rule.VirtualLightsToScreen = values.VirtualLightsToScreen;
+        rule.VirtualLightsScreenId = values.VirtualLightsScreenId.Trim();
+        rule.VirtualLightsPattern = values.VirtualLightsPattern;
+        rule.VirtualLightsPrimaryColor = LightCommand.NormalizeColor(values.VirtualLightsPrimaryColor);
+        rule.VirtualLightsSecondaryColor = LightCommand.NormalizeColor(values.VirtualLightsSecondaryColor);
+        rule.VirtualLightsTertiaryColor = LightCommand.NormalizeColor(values.VirtualLightsTertiaryColor);
+        rule.VirtualLightsBrightness = (int)Math.Round(values.VirtualLightsBrightness);
+        rule.VirtualLightsDurationMs = (int)Math.Round(values.VirtualLightsDurationMs);
+        rule.VirtualLightsCycleMs = (int)Math.Round(values.VirtualLightsCycleMs);
+        rule.VirtualLightsStepMs = (int)Math.Round(values.VirtualLightsStepMs);
         rule.UseLights = values.UseLights;
         rule.PlayAudio = values.PlayAudio;
         rule.AudioSourceMode = values.AudioSourceMode;
@@ -93,6 +105,18 @@ public sealed record RuleEditorFormValues(
     MediaSourceMode ObsVideoSourceMode,
     string ObsVideoAssetId,
     string ObsVideoGroupId,
+    bool UseVirtualLights,
+    bool VirtualLightsToObs,
+    bool VirtualLightsToScreen,
+    string VirtualLightsScreenId,
+    LightPattern VirtualLightsPattern,
+    string VirtualLightsPrimaryColor,
+    string VirtualLightsSecondaryColor,
+    string VirtualLightsTertiaryColor,
+    double VirtualLightsBrightness,
+    double VirtualLightsDurationMs,
+    double VirtualLightsCycleMs,
+    double VirtualLightsStepMs,
     bool UseLights,
     bool PlayAudio,
     AudioSourceMode AudioSourceMode,

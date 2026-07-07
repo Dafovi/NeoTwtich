@@ -79,6 +79,7 @@ public partial class MainWindow
     private ObsMediaHideRequest? _mediaPreviewHideRequest;
     private ObsSceneRestoreRequest? _currentObsRestore;
     private readonly List<ObsMediaHideRequest> _currentObsMediaHides = [];
+    private string _currentVirtualLightsObsSceneName = "";
     private bool _currentObsCleanedByStop;
     private EventRule? _editingRule;
     private EventRule? _loadedRuleSnapshot;

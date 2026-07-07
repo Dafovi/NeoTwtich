@@ -350,6 +350,13 @@
                                                                    Opacity="{Binding LightsActionOpacity}"
                                                                    ToolTip="{Binding LightsActionToolTip}"
                                                                    Visibility="{Binding LightsActionVisibility}" />
+                                                            <Image Source="/Assets/Icons/lights_fx_rave.png"
+                                                                   Width="16"
+                                                                   Height="16"
+                                                                   Margin="0,0,10,0"
+                                                                   Opacity="{Binding VirtualLightsActionOpacity}"
+                                                                   ToolTip="{Binding VirtualLightsActionToolTip}"
+                                                                   Visibility="{Binding VirtualLightsActionVisibility}" />
                                                             <Image Source="/Assets/Icons/action_message_green.png"
                                                                    Width="16"
                                                                    Height="16"
@@ -1165,6 +1172,325 @@
                                                             </WrapPanel>
 
                                                         </StackPanel>
+                                                </Grid>
+                                            </Border>
+
+                                            <Border x:Name="VirtualLightsActionCard"
+                                                    BorderBrush="{DynamicResource ThemeBorderBrush}"
+                                                    BorderThickness="1"
+                                                    CornerRadius="12"
+                                                    Padding="12"
+                                                    Margin="0,0,0,10"
+                                                    Background="{DynamicResource ThemeInputBrush}">
+                                                <Grid>
+                                                    <Grid.ColumnDefinitions>
+                                                        <ColumnDefinition Width="220" />
+                                                        <ColumnDefinition Width="16" />
+                                                        <ColumnDefinition Width="*" />
+                                                    </Grid.ColumnDefinitions>
+
+                                                    <Grid MinWidth="190" VerticalAlignment="Center">
+                                                        <Grid.ColumnDefinitions>
+                                                            <ColumnDefinition Width="42" />
+                                                            <ColumnDefinition Width="*" />
+                                                            <ColumnDefinition Width="Auto" />
+                                                        </Grid.ColumnDefinitions>
+                                                        <Image Source="/Assets/Icons/lights_fx_rave.png"
+                                                               Width="26"
+                                                               Height="26"
+                                                               Stretch="Uniform"
+                                                               VerticalAlignment="Center" />
+                                                        <StackPanel Grid.Column="1"
+                                                                    VerticalAlignment="Center">
+                                                            <TextBlock Text="Luces virtuales"
+                                                                       FontWeight="SemiBold" />
+                                                            <TextBlock Text="Simula luces en OBS o pantalla."
+                                                                       Style="{StaticResource MutedText}"
+                                                                       FontSize="12"
+                                                                       TextWrapping="Wrap" />
+                                                        </StackPanel>
+                                                        <CheckBox x:Name="VirtualLightsCheck"
+                                                                  Grid.Column="2"
+                                                                  Content=""
+                                                                  Style="{StaticResource AlertToggleSwitchStyle}"
+                                                                  IsChecked="{Binding Editor.UseVirtualLights, Mode=TwoWay, UpdateSourceTrigger=PropertyChanged}"
+                                                                  Checked="RuleFieldChanged"
+                                                                  Unchecked="RuleFieldChanged" />
+                                                    </Grid>
+
+                                                    <StackPanel x:Name="VirtualLightsDetailsPanel"
+                                                                Grid.Column="2"
+                                                                VerticalAlignment="Center">
+                                                        <Grid Margin="0,10,0,0">
+                                                            <Grid.ColumnDefinitions>
+                                                                <ColumnDefinition Width="*" />
+                                                                <ColumnDefinition Width="10" />
+                                                                <ColumnDefinition Width="*" />
+                                                            </Grid.ColumnDefinitions>
+                                                            <StackPanel>
+                                                                <TextBlock Text="Pantalla"
+                                                                           Style="{StaticResource MutedText}" />
+                                                                <ComboBox ItemsSource="{Binding VirtualScreenChoices}"
+                                                                          DisplayMemberPath="Label"
+                                                                          SelectedValuePath="Value"
+                                                                          SelectedValue="{Binding Editor.VirtualLightsScreenId, Mode=TwoWay, UpdateSourceTrigger=PropertyChanged}"
+                                                                          SelectionChanged="RuleFieldChanged"
+                                                                          Margin="0,4,0,0" />
+                                                            </StackPanel>
+                                                            <StackPanel Grid.Column="2">
+                                                                <TextBlock Text="Modo"
+                                                                           Style="{StaticResource MutedText}" />
+                                                                <WrapPanel Margin="0,6,0,0">
+                                                                    <CheckBox x:Name="VirtualLightsObsCheck"
+                                                                              Content="OBS"
+                                                                              IsChecked="{Binding Editor.VirtualLightsToObs, Mode=TwoWay, UpdateSourceTrigger=PropertyChanged}"
+                                                                              Checked="RuleFieldChanged"
+                                                                              Unchecked="RuleFieldChanged" />
+                                                                    <CheckBox x:Name="VirtualLightsScreenCheck"
+                                                                              Content="Pantalla"
+                                                                              Margin="14,0,0,0"
+                                                                              IsChecked="{Binding Editor.VirtualLightsToScreen, Mode=TwoWay, UpdateSourceTrigger=PropertyChanged}"
+                                                                              Checked="RuleFieldChanged"
+                                                                              Unchecked="RuleFieldChanged" />
+                                                                </WrapPanel>
+                                                            </StackPanel>
+                                                        </Grid>
+                                                        <TextBlock Text="Patron virtual"
+                                                                   Style="{StaticResource MutedText}"
+                                                                   Margin="0,10,0,4" />
+                                                        <UniformGrid Columns="7"
+                                                                     Margin="-3,0,-3,2">
+                                                            <Button x:Name="VirtualPatternSolidTileButton"
+                                                                    Tag="Virtual:Solid"
+                                                                    Style="{StaticResource AlertLightPatternButtonStyle}"
+                                                                    Command="{Binding SelectLightPatternCommand}"
+                                                                    CommandParameter="{Binding Tag, RelativeSource={RelativeSource Self}}">
+                                                                <StackPanel Orientation="Horizontal"
+                                                                            HorizontalAlignment="Center">
+                                                                    <Rectangle Width="18"
+                                                                               Height="18"
+                                                                               Margin="0,0,5,0"
+                                                                               Fill="{Binding Foreground, RelativeSource={RelativeSource AncestorType=Button}}">
+                                                                        <Rectangle.OpacityMask>
+                                                                            <ImageBrush ImageSource="/Assets/Icons/lights_fx_static.png"
+                                                                                        Stretch="Uniform" />
+                                                                        </Rectangle.OpacityMask>
+                                                                    </Rectangle>
+                                                                    <TextBlock Text="Fijo"
+                                                                               FontSize="10"
+                                                                               FontWeight="SemiBold" />
+                                                                </StackPanel>
+                                                            </Button>
+                                                            <Button x:Name="VirtualPatternPulseTileButton"
+                                                                    Tag="Virtual:Pulse"
+                                                                    Style="{StaticResource AlertLightPatternButtonStyle}"
+                                                                    Command="{Binding SelectLightPatternCommand}"
+                                                                    CommandParameter="{Binding Tag, RelativeSource={RelativeSource Self}}">
+                                                                <StackPanel Orientation="Horizontal"
+                                                                            HorizontalAlignment="Center">
+                                                                    <Rectangle Width="18"
+                                                                               Height="18"
+                                                                               Margin="0,0,5,0"
+                                                                               Fill="{Binding Foreground, RelativeSource={RelativeSource AncestorType=Button}}">
+                                                                        <Rectangle.OpacityMask>
+                                                                            <ImageBrush ImageSource="/Assets/Icons/lights_fx_pulse.png"
+                                                                                        Stretch="Uniform" />
+                                                                        </Rectangle.OpacityMask>
+                                                                    </Rectangle>
+                                                                    <TextBlock Text="Pulso"
+                                                                               FontSize="10"
+                                                                               FontWeight="SemiBold" />
+                                                                </StackPanel>
+                                                            </Button>
+                                                            <Button x:Name="VirtualPatternRainbowTileButton"
+                                                                    Tag="Virtual:Rainbow"
+                                                                    Style="{StaticResource AlertLightPatternButtonStyle}"
+                                                                    Command="{Binding SelectLightPatternCommand}"
+                                                                    CommandParameter="{Binding Tag, RelativeSource={RelativeSource Self}}">
+                                                                <StackPanel Orientation="Horizontal"
+                                                                            HorizontalAlignment="Center">
+                                                                    <Rectangle Width="18"
+                                                                               Height="18"
+                                                                               Margin="0,0,5,0"
+                                                                               Fill="{Binding Foreground, RelativeSource={RelativeSource AncestorType=Button}}">
+                                                                        <Rectangle.OpacityMask>
+                                                                            <ImageBrush ImageSource="/Assets/Icons/lights_fx_rainbow.png"
+                                                                                        Stretch="Uniform" />
+                                                                        </Rectangle.OpacityMask>
+                                                                    </Rectangle>
+                                                                    <TextBlock Text="Arcoiris"
+                                                                               FontSize="10"
+                                                                               FontWeight="SemiBold" />
+                                                                </StackPanel>
+                                                            </Button>
+                                                            <Button x:Name="VirtualPatternChaseTileButton"
+                                                                    Tag="Virtual:Chase"
+                                                                    Style="{StaticResource AlertLightPatternButtonStyle}"
+                                                                    Command="{Binding SelectLightPatternCommand}"
+                                                                    CommandParameter="{Binding Tag, RelativeSource={RelativeSource Self}}">
+                                                                <StackPanel Orientation="Horizontal"
+                                                                            HorizontalAlignment="Center">
+                                                                    <Rectangle Width="18"
+                                                                               Height="18"
+                                                                               Margin="0,0,5,0"
+                                                                               Fill="{Binding Foreground, RelativeSource={RelativeSource AncestorType=Button}}">
+                                                                        <Rectangle.OpacityMask>
+                                                                            <ImageBrush ImageSource="/Assets/Icons/lights_fx_wave.png"
+                                                                                        Stretch="Uniform" />
+                                                                        </Rectangle.OpacityMask>
+                                                                    </Rectangle>
+                                                                    <TextBlock Text="Carrera"
+                                                                               FontSize="10"
+                                                                               FontWeight="SemiBold" />
+                                                                </StackPanel>
+                                                            </Button>
+                                                            <Button x:Name="VirtualPatternTheaterTileButton"
+                                                                    Tag="Virtual:Theater"
+                                                                    Style="{StaticResource AlertLightPatternButtonStyle}"
+                                                                    Command="{Binding SelectLightPatternCommand}"
+                                                                    CommandParameter="{Binding Tag, RelativeSource={RelativeSource Self}}">
+                                                                <StackPanel Orientation="Horizontal"
+                                                                            HorizontalAlignment="Center">
+                                                                    <Rectangle Width="18"
+                                                                               Height="18"
+                                                                               Margin="0,0,5,0"
+                                                                               Fill="{Binding Foreground, RelativeSource={RelativeSource AncestorType=Button}}">
+                                                                        <Rectangle.OpacityMask>
+                                                                            <ImageBrush ImageSource="/Assets/Icons/lights_fx_breathe.png"
+                                                                                        Stretch="Uniform" />
+                                                                        </Rectangle.OpacityMask>
+                                                                    </Rectangle>
+                                                                    <TextBlock Text="Teatro"
+                                                                               FontSize="10"
+                                                                               FontWeight="SemiBold" />
+                                                                </StackPanel>
+                                                            </Button>
+                                                            <Button x:Name="VirtualPatternSparkleTileButton"
+                                                                    Tag="Virtual:Sparkle"
+                                                                    Style="{StaticResource AlertLightPatternButtonStyle}"
+                                                                    Command="{Binding SelectLightPatternCommand}"
+                                                                    CommandParameter="{Binding Tag, RelativeSource={RelativeSource Self}}">
+                                                                <StackPanel Orientation="Horizontal"
+                                                                            HorizontalAlignment="Center">
+                                                                    <Rectangle Width="18"
+                                                                               Height="18"
+                                                                               Margin="0,0,5,0"
+                                                                               Fill="{Binding Foreground, RelativeSource={RelativeSource AncestorType=Button}}">
+                                                                        <Rectangle.OpacityMask>
+                                                                            <ImageBrush ImageSource="/Assets/Icons/activity_notification_lime.png"
+                                                                                        Stretch="Uniform" />
+                                                                        </Rectangle.OpacityMask>
+                                                                    </Rectangle>
+                                                                    <TextBlock Text="Destellos"
+                                                                               FontSize="10"
+                                                                               FontWeight="SemiBold" />
+                                                                </StackPanel>
+                                                            </Button>
+                                                            <Button x:Name="VirtualPatternRaveTileButton"
+                                                                    Tag="Virtual:Rave"
+                                                                    Style="{StaticResource AlertLightPatternButtonStyle}"
+                                                                    Command="{Binding SelectLightPatternCommand}"
+                                                                    CommandParameter="{Binding Tag, RelativeSource={RelativeSource Self}}">
+                                                                <StackPanel Orientation="Horizontal"
+                                                                            HorizontalAlignment="Center">
+                                                                    <Rectangle Width="18"
+                                                                               Height="18"
+                                                                               Margin="0,0,5,0"
+                                                                               Fill="{Binding Foreground, RelativeSource={RelativeSource AncestorType=Button}}">
+                                                                        <Rectangle.OpacityMask>
+                                                                            <ImageBrush ImageSource="/Assets/Icons/lights_fx_rave.png"
+                                                                                        Stretch="Uniform" />
+                                                                        </Rectangle.OpacityMask>
+                                                                    </Rectangle>
+                                                                    <TextBlock Text="Rave"
+                                                                               FontSize="10"
+                                                                               FontWeight="SemiBold" />
+                                                                </StackPanel>
+                                                            </Button>
+                                                        </UniformGrid>
+                                                        <UniformGrid Columns="3"
+                                                                     Margin="0,10,0,0">
+                                                            <StackPanel Margin="0,0,8,0">
+                                                                <TextBlock Text="Color principal"
+                                                                           Style="{StaticResource MutedText}" />
+                                                                <DockPanel Margin="0,4,0,0">
+                                                                    <Button x:Name="VirtualPrimaryColorButton"
+                                                                            Width="30"
+                                                                            Height="30"
+                                                                            Padding="0"
+                                                                            Command="{Binding PickLightColorCommand}"
+                                                                            CommandParameter="VirtualPrimary" />
+                                                                    <TextBox x:Name="VirtualPrimaryColorBox"
+                                                                             Text="{Binding Editor.VirtualLightsPrimaryColor, Mode=TwoWay, UpdateSourceTrigger=PropertyChanged}"
+                                                                             TextChanged="RuleFieldChanged"
+                                                                             Margin="6,0,0,0" />
+                                                                </DockPanel>
+                                                            </StackPanel>
+                                                            <StackPanel Margin="0,0,8,0">
+                                                                <TextBlock Text="Color secundario"
+                                                                           Style="{StaticResource MutedText}" />
+                                                                <DockPanel Margin="0,4,0,0">
+                                                                    <Button x:Name="VirtualSecondaryColorButton"
+                                                                            Width="30"
+                                                                            Height="30"
+                                                                            Padding="0"
+                                                                            Command="{Binding PickLightColorCommand}"
+                                                                            CommandParameter="VirtualSecondary" />
+                                                                    <TextBox x:Name="VirtualSecondaryColorBox"
+                                                                             Text="{Binding Editor.VirtualLightsSecondaryColor, Mode=TwoWay, UpdateSourceTrigger=PropertyChanged}"
+                                                                             TextChanged="RuleFieldChanged"
+                                                                             Margin="6,0,0,0" />
+                                                                </DockPanel>
+                                                            </StackPanel>
+                                                            <StackPanel>
+                                                                <TextBlock Text="Tercer color"
+                                                                           Style="{StaticResource MutedText}" />
+                                                                <DockPanel Margin="0,4,0,0">
+                                                                    <Button x:Name="VirtualTertiaryColorButton"
+                                                                            Width="30"
+                                                                            Height="30"
+                                                                            Padding="0"
+                                                                            Command="{Binding PickLightColorCommand}"
+                                                                            CommandParameter="VirtualTertiary" />
+                                                                    <TextBox x:Name="VirtualTertiaryColorBox"
+                                                                             Text="{Binding Editor.VirtualLightsTertiaryColor, Mode=TwoWay, UpdateSourceTrigger=PropertyChanged}"
+                                                                             TextChanged="RuleFieldChanged"
+                                                                             Margin="6,0,0,0" />
+                                                                </DockPanel>
+                                                            </StackPanel>
+                                                        </UniformGrid>
+                                                        <UniformGrid Columns="4"
+                                                                     Margin="0,10,0,0">
+                                                            <StackPanel Margin="0,0,8,0">
+                                                                <TextBlock Text="Brillo"
+                                                                           Style="{StaticResource MutedText}" />
+                                                                <TextBox Text="{Binding Editor.VirtualLightsBrightness, Mode=TwoWay, UpdateSourceTrigger=PropertyChanged}"
+                                                                         TextChanged="RuleFieldChanged"
+                                                                         Margin="0,4,0,0" />
+                                                            </StackPanel>
+                                                            <StackPanel Margin="0,0,8,0">
+                                                                <TextBlock Text="Duracion"
+                                                                           Style="{StaticResource MutedText}" />
+                                                                <TextBox Text="{Binding Editor.VirtualLightsDurationMs, Mode=TwoWay, UpdateSourceTrigger=PropertyChanged}"
+                                                                         TextChanged="RuleFieldChanged"
+                                                                         Margin="0,4,0,0" />
+                                                            </StackPanel>
+                                                            <StackPanel Margin="0,0,8,0">
+                                                                <TextBlock Text="Ciclo"
+                                                                           Style="{StaticResource MutedText}" />
+                                                                <TextBox Text="{Binding Editor.VirtualLightsCycleMs, Mode=TwoWay, UpdateSourceTrigger=PropertyChanged}"
+                                                                         TextChanged="RuleFieldChanged"
+                                                                         Margin="0,4,0,0" />
+                                                            </StackPanel>
+                                                            <StackPanel>
+                                                                <TextBlock Text="Delay"
+                                                                           Style="{StaticResource MutedText}" />
+                                                                <TextBox Text="{Binding Editor.VirtualLightsStepMs, Mode=TwoWay, UpdateSourceTrigger=PropertyChanged}"
+                                                                         TextChanged="RuleFieldChanged"
+                                                                         Margin="0,4,0,0" />
+                                                            </StackPanel>
+                                                        </UniformGrid>
+                                                    </StackPanel>
                                                 </Grid>
                                             </Border>
 

@@ -39,6 +39,7 @@ public partial class MainWindow
             kind,
             arduinoAvailable,
             useLights,
+            editor.UseVirtualLights,
             playAudio,
             editor.AudioSourceMode,
             _config.AudioLibrary.Count > 0,

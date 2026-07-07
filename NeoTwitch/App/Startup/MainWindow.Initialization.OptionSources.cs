@@ -23,6 +23,7 @@ public partial class MainWindow
             _obsSceneChoices,
             _obsMediaKindOptions,
             _mediaSourceModeOptions);
+        _alertsViewModel.UpdateVirtualScreenChoices(_virtualScreenService.CreateScreenChoices());
 
     }
 

@@ -99,6 +99,7 @@ public static class UiTextKeys
     public const string RuleRowStatusActive = "rule_row.status_active";
     public const string RuleRowStatusInactive = "rule_row.status_inactive";
     public const string RuleRowActionLights = "rule_row.action_lights";
+    public const string RuleRowActionVirtualLights = "rule_row.action_virtual_lights";
     public const string RuleRowActionAudio = "rule_row.action_audio";
     public const string RuleRowActionChat = "rule_row.action_chat";
     public const string RuleRowActionVideo = "rule_row.action_video";
@@ -108,6 +109,8 @@ public static class UiTextKeys
     public const string RuleRowNoActions = "rule_row.no_actions";
     public const string RuleRowLightsActive = "rule_row.lights_active";
     public const string RuleRowLightsUnavailable = "rule_row.lights_unavailable";
+    public const string RuleRowVirtualLightsActive = "rule_row.virtual_lights_active";
+    public const string RuleRowVirtualLightsUnavailable = "rule_row.virtual_lights_unavailable";
     public const string RuleRowAlexaActive = "rule_row.alexa_active";
     public const string RuleRowAlexaUnavailable = "rule_row.alexa_unavailable";
     public const string RuleRowObsActive = "rule_row.obs_active";

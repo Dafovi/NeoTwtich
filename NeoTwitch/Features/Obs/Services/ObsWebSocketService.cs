@@ -261,6 +261,11 @@ public sealed partial class ObsWebSocketService : IAsyncDisposable
                 }
 
                 await SetSceneItemEnabledAsync(sceneName, sourceName, enabled: true, token);
+                var sceneItemId = await GetSceneItemIdAsync(sceneName, sourceName, token);
+                await SendRequestAsync(
+                    ObsProtocol.SetSceneItemTransform,
+                    ObsWebSocketRequestFactory.BuildFullSceneItemTransformRequest(sceneName, sceneItemId, width, height),
+                    token);
                 await RefreshScenesCoreAsync(token);
                 return Snapshot();
             });

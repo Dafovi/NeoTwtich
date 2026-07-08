@@ -50,6 +50,9 @@ public sealed class RuleEditorViewModel : ObservableObject
     private double _virtualLightsDurationMs = 4500d;
     private double _virtualLightsCycleMs = 80d;
     private double _virtualLightsStepMs = 120d;
+    private double _virtualLightsObsOpacity = 35d;
+    private double _virtualLightsScreenPixelSize = 18d;
+    private double _virtualLightsScreenSaturation = 100d;
     private AudioSourceMode _audioSourceMode = AudioSourceMode.Single;
     private string _audioAssetId = "";
     private string _audioGroupId = "";
@@ -334,6 +337,24 @@ public sealed class RuleEditorViewModel : ObservableObject
         set => SetProperty(ref _virtualLightsStepMs, value);
     }
 
+    public double VirtualLightsObsOpacity
+    {
+        get => _virtualLightsObsOpacity;
+        set => SetProperty(ref _virtualLightsObsOpacity, value);
+    }
+
+    public double VirtualLightsScreenPixelSize
+    {
+        get => _virtualLightsScreenPixelSize;
+        set => SetProperty(ref _virtualLightsScreenPixelSize, value);
+    }
+
+    public double VirtualLightsScreenSaturation
+    {
+        get => _virtualLightsScreenSaturation;
+        set => SetProperty(ref _virtualLightsScreenSaturation, value);
+    }
+
     public AudioSourceMode AudioSourceMode
     {
         get => _audioSourceMode;
@@ -464,6 +485,9 @@ public sealed class RuleEditorViewModel : ObservableObject
         VirtualLightsDurationMs = rule.VirtualLightsDurationMs;
         VirtualLightsCycleMs = rule.VirtualLightsCycleMs;
         VirtualLightsStepMs = rule.VirtualLightsStepMs;
+        VirtualLightsObsOpacity = rule.VirtualLightsObsOpacity;
+        VirtualLightsScreenPixelSize = rule.VirtualLightsScreenPixelSize;
+        VirtualLightsScreenSaturation = rule.VirtualLightsScreenSaturation;
         AudioSourceMode = rule.AudioSourceMode;
         AudioAssetId = rule.AudioAssetId;
         AudioGroupId = rule.AudioGroupId;
@@ -523,6 +547,9 @@ public sealed class RuleEditorViewModel : ObservableObject
         VirtualLightsDurationMs = 4500d;
         VirtualLightsCycleMs = 80d;
         VirtualLightsStepMs = 120d;
+        VirtualLightsObsOpacity = 35d;
+        VirtualLightsScreenPixelSize = 18d;
+        VirtualLightsScreenSaturation = 100d;
         AudioSourceMode = AudioSourceMode.Single;
         AudioAssetId = "";
         AudioGroupId = "";

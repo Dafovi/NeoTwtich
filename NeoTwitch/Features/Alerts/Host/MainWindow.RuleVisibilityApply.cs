@@ -18,6 +18,8 @@ public partial class MainWindow
         UiVisibilityService.SetVisible(visibility.ShowLightsAction, UseLightsActionCard);
         UiVisibilityService.SetVisible(visibility.ShowVirtualLightsAction, VirtualLightsActionCard);
         UiVisibilityService.SetVisible(visibility.ShowVirtualLightsDetails, VirtualLightsDetailsPanel);
+        UiVisibilityService.SetVisible(_alertsViewModel.Editor.VirtualLightsToObs, VirtualObsOptionsPanel);
+        UiVisibilityService.SetVisible(_alertsViewModel.Editor.VirtualLightsToScreen, VirtualScreenOptionsPanel);
         UiVisibilityService.SetVisible(visibility.ShowVirtualLightColorOptions, VirtualColorOptionsGrid);
         UiVisibilityService.SetVisible(visibility.ShowVirtualPrimaryColor, VirtualPrimaryColorPanel);
         UiVisibilityService.SetVisible(visibility.ShowVirtualSecondaryColor, VirtualSecondaryColorLabel, VirtualSecondaryColorPanel);
@@ -66,7 +68,7 @@ public partial class MainWindow
     {
         var editor = _alertsViewModel.Editor;
         var lightsEnabled = _config.ArduinoEnabled && editor.UseLights;
-        var virtualLightsEnabled = editor.UseVirtualLights && (editor.VirtualLightsToObs || editor.VirtualLightsToScreen);
+        var virtualLightsEnabled = editor.UseVirtualLights;
         var audioEnabled = editor.PlayAudio;
         var chatEnabled = editor.SendChatMessage;
         var alexaEnabled = _config.Alexa.IsConfigured && editor.SendAlexaEvent;

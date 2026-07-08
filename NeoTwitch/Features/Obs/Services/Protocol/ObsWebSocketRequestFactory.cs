@@ -183,6 +183,27 @@ public static class ObsWebSocketRequestFactory
         };
     }
 
+    public static Dictionary<string, object?> BuildFullSceneItemTransformRequest(
+        string sceneName,
+        int sceneItemId,
+        int width,
+        int height)
+    {
+        return new Dictionary<string, object?>
+        {
+            [ObsWebSocketProtocol.SceneName] = sceneName.Trim(),
+            [ObsWebSocketProtocol.SceneItemId] = sceneItemId,
+            [ObsWebSocketProtocol.SceneItemTransform] = new Dictionary<string, object?>
+            {
+                [ObsWebSocketProtocol.PositionX] = 0,
+                [ObsWebSocketProtocol.PositionY] = 0,
+                [ObsWebSocketProtocol.BoundsType] = ObsWebSocketProtocol.BoundsStretch,
+                [ObsWebSocketProtocol.BoundsWidth] = Math.Max(ApplicationLimits.MinObsOverlayMediaSize, width),
+                [ObsWebSocketProtocol.BoundsHeight] = Math.Max(ApplicationLimits.MinObsOverlayMediaSize, height)
+            }
+        };
+    }
+
     public static Dictionary<string, object?> BuildInputVolumeRequest(string sourceName, int volumePercent)
     {
         return new Dictionary<string, object?>

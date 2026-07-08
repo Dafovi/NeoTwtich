@@ -53,6 +53,7 @@ public static class ObsWebSocketProtocol
     public const string PositionY = "positionY";
     public const string BoundsType = "boundsType";
     public const string BoundsScaleInner = "OBS_BOUNDS_SCALE_INNER";
+    public const string BoundsStretch = "OBS_BOUNDS_STRETCH";
     public const string BoundsWidth = "boundsWidth";
     public const string BoundsHeight = "boundsHeight";
     public const string InputVolumeMul = "inputVolumeMul";

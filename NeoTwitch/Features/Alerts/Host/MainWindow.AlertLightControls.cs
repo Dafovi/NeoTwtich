@@ -5,7 +5,6 @@ using WpfComboBox = System.Windows.Controls.ComboBox;
 using WpfDockPanel = System.Windows.Controls.DockPanel;
 using WpfGrid = System.Windows.Controls.Grid;
 using WpfItemsControl = System.Windows.Controls.ItemsControl;
-using WpfPath = System.Windows.Shapes.Path;
 using WpfSeparator = System.Windows.Controls.Separator;
 using WpfSlider = System.Windows.Controls.Slider;
 using WpfStackPanel = System.Windows.Controls.StackPanel;
@@ -23,6 +22,11 @@ public partial class MainWindow
     private WpfStackPanel VirtualLightsDetailsPanel => AlertsView.VirtualLightsDetailsPanel;
     private WpfCheckBox VirtualLightsObsCheck => AlertsView.VirtualLightsObsCheck;
     private WpfCheckBox VirtualLightsScreenCheck => AlertsView.VirtualLightsScreenCheck;
+    private WpfStackPanel VirtualObsOptionsPanel => AlertsView.VirtualObsOptionsPanel;
+    private WpfGrid VirtualScreenOptionsPanel => AlertsView.VirtualScreenOptionsPanel;
+    private WpfTextBox VirtualObsOpacityValueText => AlertsView.VirtualObsOpacityValueText;
+    private WpfTextBox VirtualScreenPixelValueText => AlertsView.VirtualScreenPixelValueText;
+    private WpfTextBox VirtualScreenSaturationValueText => AlertsView.VirtualScreenSaturationValueText;
     private WpfButton VirtualPrimaryColorButton => AlertsView.VirtualPrimaryColorButton;
     private WpfTextBox VirtualPrimaryColorBox => AlertsView.VirtualPrimaryColorBox;
     private WpfButton VirtualSecondaryColorButton => AlertsView.VirtualSecondaryColorButton;
@@ -36,7 +40,6 @@ public partial class MainWindow
     private WpfTextBlock VirtualTertiaryColorLabel => AlertsView.VirtualTertiaryColorLabel;
     private WpfDockPanel VirtualTertiaryColorPanel => AlertsView.VirtualTertiaryColorPanel;
     private WpfGrid VirtualBrightnessGrid => AlertsView.VirtualBrightnessGrid;
-    private WpfPath VirtualBrightnessArc => AlertsView.VirtualBrightnessArc;
     private WpfSlider VirtualBrightnessSlider => AlertsView.VirtualBrightnessSlider;
     private WpfGrid VirtualDurationGrid => AlertsView.VirtualDurationGrid;
     private WpfTextBox VirtualDurationValueText => AlertsView.VirtualDurationValueText;
@@ -84,7 +87,6 @@ public partial class MainWindow
     private WpfButton TertiaryColorButton => AlertsView.TertiaryColorButton;
     private WpfTextBox TertiaryColorBox => AlertsView.TertiaryColorBox;
     private WpfGrid BrightnessGrid => AlertsView.BrightnessGrid;
-    private WpfPath BrightnessArc => AlertsView.BrightnessArc;
     private WpfSlider BrightnessSlider => AlertsView.BrightnessSlider;
     private WpfGrid DurationGrid => AlertsView.DurationGrid;
     private WpfTextBox DurationValueText => AlertsView.DurationValueText;

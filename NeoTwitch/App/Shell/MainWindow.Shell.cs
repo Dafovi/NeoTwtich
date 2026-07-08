@@ -117,6 +117,9 @@ public partial class MainWindow
             VirtualDurationValueText.Text = ((int)Math.Round(_alertsViewModel.Editor.VirtualLightsDurationMs)).ToString();
             VirtualCycleValueText.Text = ((int)Math.Round(_alertsViewModel.Editor.VirtualLightsCycleMs)).ToString();
             VirtualStepValueText.Text = ((int)Math.Round(_alertsViewModel.Editor.VirtualLightsStepMs)).ToString();
+            VirtualObsOpacityValueText.Text = ((int)Math.Round(_alertsViewModel.Editor.VirtualLightsObsOpacity)).ToString();
+            VirtualScreenPixelValueText.Text = ((int)Math.Round(_alertsViewModel.Editor.VirtualLightsScreenPixelSize)).ToString();
+            VirtualScreenSaturationValueText.Text = ((int)Math.Round(_alertsViewModel.Editor.VirtualLightsScreenSaturation)).ToString();
             BackgroundCycleValueText.Text = ((int)Math.Round(_lightsViewModel.BackgroundCycleMs)).ToString();
             BackgroundStepValueText.Text = ((int)Math.Round(_lightsViewModel.BackgroundStepMs)).ToString();
         }
@@ -125,8 +128,6 @@ public partial class MainWindow
             _updatingLightValueFields = false;
         }
 
-        UpdateCircularProgress(BrightnessArc, brightnessPercent / 100d);
-        UpdateCircularProgress(VirtualBrightnessArc, _alertsViewModel.Editor.VirtualBrightnessPercent / 100d);
         UpdateCircularProgress(BackgroundBrightnessArc, backgroundBrightnessPercent / 100d);
     }
 

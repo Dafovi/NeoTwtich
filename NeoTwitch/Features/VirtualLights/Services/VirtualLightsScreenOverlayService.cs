@@ -57,7 +57,7 @@ internal sealed class VirtualLightsOverlayWindow : Window
     private readonly DispatcherTimer _timer;
     private readonly Random _random = new();
     private readonly List<Ellipse> _dots = [];
-    private VirtualLightCommand _command = new(LightPattern.Solid, "#14B8A6", "#B56CFF", "#FFFFFF", 180, 2500, 400, 120);
+    private VirtualLightCommand _command = new(LightPattern.Solid, "#14B8A6", "#B56CFF", "#FFFFFF", 180, 2500, 400, 120, 35, 18, 100);
     private int _step;
     private int _lastDotCount;
 
@@ -154,19 +154,20 @@ internal sealed class VirtualLightsOverlayWindow : Window
         }
 
         var brightness = Math.Clamp(_command.Brightness / 255d, 0.08, 1d);
+        var saturation = Math.Clamp(_command.ScreenSaturation / 100d, 0d, 2d);
         var primary = LedPreviewService.ParseColor(_command.PrimaryColor, "#14B8A6");
         var secondary = LedPreviewService.ParseColor(_command.SecondaryColor, "#B56CFF");
         var tertiary = LedPreviewService.ParseColor(_command.TertiaryColor, "#FFFFFF");
         var frame = LedPreviewService.BuildFrame(_command.Pattern, _step++, _dots.Count, brightness, primary, secondary, tertiary, _random);
-        var dotSize = 8d + (brightness * 10d);
-        var glow = 12d + (brightness * 32d);
+        var dotSize = Math.Clamp(_command.ScreenPixelSize, 4, 80);
+        var glow = (dotSize * 1.25d) + (brightness * 24d);
         var width = Math.Max(0, ActualWidth > 0 ? ActualWidth : Width);
         var height = Math.Max(0, ActualHeight > 0 ? ActualHeight : Height);
         var perimeter = Math.Max(1d, ((width - (DotInset * 2d)) + (height - (DotInset * 2d))) * 2d);
 
         for (var i = 0; i < _dots.Count; i++)
         {
-            var color = frame[i];
+            var color = ApplySaturation(frame[i], saturation);
             var dot = _dots[i];
             var point = PointOnPerimeter(i * (perimeter / _dots.Count), width, height, DotInset);
             dot.Width = dotSize;
@@ -182,6 +183,20 @@ internal sealed class VirtualLightsOverlayWindow : Window
                 shadow.BlurRadius = glow;
             }
         }
+    }
+
+    private static System.Windows.Media.Color ApplySaturation(System.Windows.Media.Color color, double saturation)
+    {
+        var gray = (color.R * 0.299d) + (color.G * 0.587d) + (color.B * 0.114d);
+        return System.Windows.Media.Color.FromRgb(
+            ClampChannel(gray + ((color.R - gray) * saturation)),
+            ClampChannel(gray + ((color.G - gray) * saturation)),
+            ClampChannel(gray + ((color.B - gray) * saturation)));
+    }
+
+    private static byte ClampChannel(double value)
+    {
+        return (byte)Math.Clamp((int)Math.Round(value), 0, 255);
     }
 
     private static WpfPoint PointOnPerimeter(double distance, double width, double height, double inset)

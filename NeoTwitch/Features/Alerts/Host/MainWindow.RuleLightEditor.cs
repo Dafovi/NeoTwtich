@@ -71,6 +71,9 @@ public partial class MainWindow
             (true, "Duration") => _alertsViewModel.Editor.VirtualLightsDurationMs,
             (true, "Cycle") => _alertsViewModel.Editor.VirtualLightsCycleMs,
             (true, "Step") => _alertsViewModel.Editor.VirtualLightsStepMs,
+            (true, "ObsOpacity") => _alertsViewModel.Editor.VirtualLightsObsOpacity,
+            (true, "ScreenPixel") => _alertsViewModel.Editor.VirtualLightsScreenPixelSize,
+            (true, "ScreenSaturation") => _alertsViewModel.Editor.VirtualLightsScreenSaturation,
             _ => double.NaN
         };
 
@@ -106,6 +109,15 @@ public partial class MainWindow
             case (true, "Step"):
                 _alertsViewModel.Editor.VirtualLightsStepMs = value;
                 break;
+            case (true, "ObsOpacity"):
+                _alertsViewModel.Editor.VirtualLightsObsOpacity = value;
+                break;
+            case (true, "ScreenPixel"):
+                _alertsViewModel.Editor.VirtualLightsScreenPixelSize = value;
+                break;
+            case (true, "ScreenSaturation"):
+                _alertsViewModel.Editor.VirtualLightsScreenSaturation = value;
+                break;
         }
 
         if (SaveCurrentRuleFromFields())
@@ -122,6 +134,18 @@ public partial class MainWindow
     {
         if (_initializingComponent || _loadingRule || _updatingLightValueFields || sender is not System.Windows.Controls.TextBox textBox)
         {
+            return;
+        }
+
+        if (TryApplyVirtualOptionText(textBox))
+        {
+            if (SaveCurrentRuleFromFields())
+            {
+                UpdateRuleDirtyStateFromSnapshot();
+            }
+
+            UpdateSliderLabels();
+            UpdateVirtualRuleLedPreviewFrame();
             return;
         }
 
@@ -153,6 +177,39 @@ public partial class MainWindow
         UpdateSliderLabels();
         UpdateRuleLedPreviewFrame();
         UpdateVirtualRuleLedPreviewFrame();
+    }
+
+    private bool TryApplyVirtualOptionText(System.Windows.Controls.TextBox textBox)
+    {
+        var target = ReferenceEquals(textBox, VirtualObsOpacityValueText)
+            ? "ObsOpacity"
+            : ReferenceEquals(textBox, VirtualScreenPixelValueText)
+                ? "ScreenPixel"
+                : ReferenceEquals(textBox, VirtualScreenSaturationValueText)
+                    ? "ScreenSaturation"
+                    : "";
+
+        if (string.IsNullOrWhiteSpace(target)
+            || !LightControlInputService.TryGetRuleRange(target, out var range)
+            || !LightControlInputService.TryParseSliderText(textBox.Text, range.Minimum, range.Maximum, out var value))
+        {
+            return false;
+        }
+
+        switch (target)
+        {
+            case "ObsOpacity":
+                _alertsViewModel.Editor.VirtualLightsObsOpacity = value;
+                break;
+            case "ScreenPixel":
+                _alertsViewModel.Editor.VirtualLightsScreenPixelSize = value;
+                break;
+            case "ScreenSaturation":
+                _alertsViewModel.Editor.VirtualLightsScreenSaturation = value;
+                break;
+        }
+
+        return true;
     }
 
     private void RefreshRulePinChoices()

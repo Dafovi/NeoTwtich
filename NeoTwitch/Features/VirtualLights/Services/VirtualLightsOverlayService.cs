@@ -38,6 +38,7 @@ public sealed class VirtualLightsOverlayService
             brightness = command.Brightness,
             cycleMs = command.CycleMs,
             stepMs = command.StepMs,
+            opacity = command.ObsOpacity,
             hideAt = _timeProvider.GetUtcNow().Add(duration).ToUnixTimeMilliseconds()
         };
 
@@ -63,7 +64,7 @@ public sealed class VirtualLightsOverlayService
     private void EnsureFiles()
     {
         Directory.CreateDirectory(_directory);
-        if (!File.Exists(GetHtmlPath()))
+        if (!File.Exists(GetHtmlPath()) || !string.Equals(File.ReadAllText(GetHtmlPath()), OverlayHtml, StringComparison.Ordinal))
         {
             File.WriteAllText(GetHtmlPath(), OverlayHtml);
         }
@@ -163,23 +164,21 @@ public sealed class VirtualLightsOverlayService
       const primary = hexToRgb(state.primaryColor);
       const secondary = hexToRgb(state.secondaryColor);
       const tertiary = hexToRgb(state.tertiaryColor);
-      const alpha = Math.max(0.12, Math.min(1, Number(state.brightness || 180) / 255));
-      const thickness = Math.max(18, Math.min(44, Math.round(18 + (alpha * 24))));
-      const count = 72;
-      const perimeter = (w + h) * 2;
-      const step = perimeter / count;
+      const brightness = Math.max(0.04, Math.min(1, Number(state.brightness || 180) / 255));
+      const opacity = Math.max(0, Math.min(1, Number(state.opacity ?? 35) / 100));
+      const alpha = Math.max(0, Math.min(1, brightness * opacity));
+      const base = colorAt(state.pattern, Math.floor(phase * 100), 100, primary, secondary, tertiary);
+      const accent = colorAt(state.pattern, Math.floor((phase + 0.35) * 100), 100, primary, secondary, tertiary);
 
-      ctx.shadowBlur = 26 * alpha;
-      ctx.lineCap = 'round';
-      ctx.lineWidth = thickness;
-      for (let i = 0; i < count; i++) {
-        const start = i * step;
-        const end = start + Math.max(8, step * 0.72);
-        const c = colorAt(state.pattern, i, count, primary, secondary, tertiary);
-        ctx.strokeStyle = rgbToCss(c, alpha);
-        ctx.shadowColor = rgbToCss(c, alpha);
-        drawPerimeterSegment(start, end, w, h, thickness / 2);
-      }
+      ctx.fillStyle = rgbToCss(base, alpha);
+      ctx.fillRect(0, 0, w, h);
+
+      const glow = ctx.createRadialGradient(w * 0.5, h * 0.5, 0, w * 0.5, h * 0.5, Math.max(w, h) * 0.72);
+      glow.addColorStop(0, rgbToCss(accent, Math.min(0.55, alpha * 1.4)));
+      glow.addColorStop(0.72, rgbToCss(base, Math.min(0.32, alpha)));
+      glow.addColorStop(1, rgbToCss(base, 0));
+      ctx.fillStyle = glow;
+      ctx.fillRect(0, 0, w, h);
 
       phase += Math.max(0.002, Math.min(0.06, 35 / Math.max(30, Number(state.stepMs || 120))));
       requestAnimationFrame(draw);

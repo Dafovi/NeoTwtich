@@ -441,6 +441,7 @@
                                     <TextBlock Style="{StaticResource MutedText}"
                                                Text="{Binding AlexaStatusText}"
                                                TextWrapping="Wrap"
+                                               Foreground="{Binding AlexaBadge.ForegroundBrush}"
                                                VerticalAlignment="Center" />
                                     <WrapPanel Grid.Column="1"
                                                HorizontalAlignment="Right">
@@ -580,6 +581,7 @@
                                     <TextBlock Style="{StaticResource MutedText}"
                                                Text="{Binding ObsConnectionHelpText}"
                                                TextWrapping="Wrap"
+                                               Foreground="{Binding ObsBadge.ForegroundBrush}"
                                                VerticalAlignment="Center" />
                                     <WrapPanel Grid.Column="1"
                                                HorizontalAlignment="Right">

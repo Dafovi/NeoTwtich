@@ -8,7 +8,10 @@ public sealed record VirtualLightCommand(
     int Brightness,
     int DurationMs,
     int CycleMs,
-    int StepMs)
+    int StepMs,
+    int ObsOpacity,
+    int ScreenPixelSize,
+    int ScreenSaturation)
 {
     public static VirtualLightCommand FromRule(EventRule rule, int? durationOverrideMs = null)
     {
@@ -20,6 +23,9 @@ public sealed record VirtualLightCommand(
             Math.Clamp(rule.VirtualLightsBrightness, ApplicationLimits.MinBrightness, ApplicationLimits.MaxBrightness),
             Math.Clamp(durationOverrideMs ?? rule.VirtualLightsDurationMs, ApplicationLimits.MinAlertDurationMs, ApplicationLimits.MaxAlertDurationMs),
             Math.Clamp(rule.VirtualLightsCycleMs, ApplicationLimits.MinCycleMs, ApplicationLimits.MaxCycleMs),
-            Math.Clamp(rule.VirtualLightsStepMs, ApplicationLimits.MinStepMs, ApplicationLimits.MaxStepMs));
+            Math.Clamp(rule.VirtualLightsStepMs, ApplicationLimits.MinStepMs, ApplicationLimits.MaxStepMs),
+            Math.Clamp(rule.VirtualLightsObsOpacity, 0, 100),
+            Math.Clamp(rule.VirtualLightsScreenPixelSize, 4, 80),
+            Math.Clamp(rule.VirtualLightsScreenSaturation, 0, 200));
     }
 }

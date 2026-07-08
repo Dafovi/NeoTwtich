@@ -137,6 +137,9 @@ public static class AppConfigNormalizer
             rule.VirtualLightsDurationMs = Math.Clamp(rule.VirtualLightsDurationMs, ApplicationLimits.MinAlertDurationMs, ApplicationLimits.MaxAlertDurationMs);
             rule.VirtualLightsCycleMs = Math.Clamp(rule.VirtualLightsCycleMs, ApplicationLimits.MinCycleMs, ApplicationLimits.MaxCycleMs);
             rule.VirtualLightsStepMs = Math.Clamp(rule.VirtualLightsStepMs, ApplicationLimits.MinStepMs, ApplicationLimits.MaxStepMs);
+            rule.VirtualLightsObsOpacity = Math.Clamp(rule.VirtualLightsObsOpacity, 0, 100);
+            rule.VirtualLightsScreenPixelSize = Math.Clamp(rule.VirtualLightsScreenPixelSize, 4, 80);
+            rule.VirtualLightsScreenSaturation = Math.Clamp(rule.VirtualLightsScreenSaturation, 0, 200);
             rule.PrimaryColor = LightCommand.NormalizeColor(rule.PrimaryColor);
             rule.SecondaryColor = LightCommand.NormalizeColor(rule.SecondaryColor);
             rule.TertiaryColor = LightCommand.NormalizeColor(rule.TertiaryColor);

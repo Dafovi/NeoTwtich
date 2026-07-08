@@ -54,6 +54,9 @@ public static class RuleEditorFormService
         rule.VirtualLightsDurationMs = (int)Math.Round(values.VirtualLightsDurationMs);
         rule.VirtualLightsCycleMs = (int)Math.Round(values.VirtualLightsCycleMs);
         rule.VirtualLightsStepMs = (int)Math.Round(values.VirtualLightsStepMs);
+        rule.VirtualLightsObsOpacity = (int)Math.Round(values.VirtualLightsObsOpacity);
+        rule.VirtualLightsScreenPixelSize = (int)Math.Round(values.VirtualLightsScreenPixelSize);
+        rule.VirtualLightsScreenSaturation = (int)Math.Round(values.VirtualLightsScreenSaturation);
         rule.UseLights = values.UseLights;
         rule.PlayAudio = values.PlayAudio;
         rule.AudioSourceMode = values.AudioSourceMode;
@@ -117,6 +120,9 @@ public sealed record RuleEditorFormValues(
     double VirtualLightsDurationMs,
     double VirtualLightsCycleMs,
     double VirtualLightsStepMs,
+    double VirtualLightsObsOpacity,
+    double VirtualLightsScreenPixelSize,
+    double VirtualLightsScreenSaturation,
     bool UseLights,
     bool PlayAudio,
     AudioSourceMode AudioSourceMode,

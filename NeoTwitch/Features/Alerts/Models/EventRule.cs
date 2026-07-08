@@ -53,6 +53,9 @@ public sealed class EventRule : INotifyPropertyChanged
     private int _virtualLightsDurationMs = 4500;
     private int _virtualLightsCycleMs = 80;
     private int _virtualLightsStepMs = 120;
+    private int _virtualLightsObsOpacity = 35;
+    private int _virtualLightsScreenPixelSize = 18;
+    private int _virtualLightsScreenSaturation = 100;
     private LightPattern _pattern = LightPattern.Pulse;
     private string _targetPins = "";
     private string _primaryColor = "#FF2D55";
@@ -354,6 +357,24 @@ public sealed class EventRule : INotifyPropertyChanged
     {
         get => _virtualLightsStepMs;
         set => SetField(ref _virtualLightsStepMs, Math.Clamp(value, ApplicationLimits.MinStepMs, ApplicationLimits.MaxStepMs));
+    }
+
+    public int VirtualLightsObsOpacity
+    {
+        get => _virtualLightsObsOpacity;
+        set => SetField(ref _virtualLightsObsOpacity, Math.Clamp(value, 0, 100));
+    }
+
+    public int VirtualLightsScreenPixelSize
+    {
+        get => _virtualLightsScreenPixelSize;
+        set => SetField(ref _virtualLightsScreenPixelSize, Math.Clamp(value, 4, 80));
+    }
+
+    public int VirtualLightsScreenSaturation
+    {
+        get => _virtualLightsScreenSaturation;
+        set => SetField(ref _virtualLightsScreenSaturation, Math.Clamp(value, 0, 200));
     }
 
     public LightPattern Pattern

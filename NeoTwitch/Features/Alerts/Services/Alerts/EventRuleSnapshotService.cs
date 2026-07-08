@@ -76,6 +76,9 @@ public static class EventRuleSnapshotService
         target.VirtualLightsDurationMs = source.VirtualLightsDurationMs;
         target.VirtualLightsCycleMs = source.VirtualLightsCycleMs;
         target.VirtualLightsStepMs = source.VirtualLightsStepMs;
+        target.VirtualLightsObsOpacity = source.VirtualLightsObsOpacity;
+        target.VirtualLightsScreenPixelSize = source.VirtualLightsScreenPixelSize;
+        target.VirtualLightsScreenSaturation = source.VirtualLightsScreenSaturation;
         target.Pattern = source.Pattern;
         target.TargetPins = source.TargetPins;
         target.PrimaryColor = source.PrimaryColor;
@@ -140,6 +143,9 @@ public static class EventRuleSnapshotService
             && left.VirtualLightsDurationMs == right.VirtualLightsDurationMs
             && left.VirtualLightsCycleMs == right.VirtualLightsCycleMs
             && left.VirtualLightsStepMs == right.VirtualLightsStepMs
+            && left.VirtualLightsObsOpacity == right.VirtualLightsObsOpacity
+            && left.VirtualLightsScreenPixelSize == right.VirtualLightsScreenPixelSize
+            && left.VirtualLightsScreenSaturation == right.VirtualLightsScreenSaturation
             && left.Pattern == right.Pattern
             && left.TargetPins == right.TargetPins
             && left.PrimaryColor == right.PrimaryColor

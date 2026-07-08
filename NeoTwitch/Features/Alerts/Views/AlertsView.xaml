@@ -56,6 +56,61 @@
             <Setter Property="HorizontalContentAlignment" Value="Center" />
             <Setter Property="VerticalContentAlignment" Value="Center" />
         </Style>
+
+        <Style x:Key="AlertStepButtonStyle" TargetType="{x:Type Button}" BasedOn="{StaticResource {x:Type Button}}">
+            <Setter Property="Width" Value="30" />
+            <Setter Property="Height" Value="30" />
+            <Setter Property="MinWidth" Value="30" />
+            <Setter Property="Padding" Value="0" />
+            <Setter Property="FontFamily" Value="Segoe UI" />
+            <Setter Property="FontSize" Value="15" />
+            <Setter Property="FontWeight" Value="SemiBold" />
+        </Style>
+
+        <Style x:Key="AlertBrightnessSliderStyle" TargetType="{x:Type Slider}">
+            <Setter Property="Height" Value="30" />
+            <Setter Property="Template">
+                <Setter.Value>
+                    <ControlTemplate TargetType="{x:Type Slider}">
+                        <Grid Height="{TemplateBinding Height}">
+                            <Track x:Name="PART_Track"
+                                   Height="14"
+                                   VerticalAlignment="Center">
+                                <Track.DecreaseRepeatButton>
+                                    <RepeatButton Command="Slider.DecreaseLarge"
+                                                  IsTabStop="False">
+                                        <RepeatButton.Template>
+                                            <ControlTemplate TargetType="{x:Type RepeatButton}">
+                                                <Border Background="#14B8A6"
+                                                        CornerRadius="7" />
+                                            </ControlTemplate>
+                                        </RepeatButton.Template>
+                                    </RepeatButton>
+                                </Track.DecreaseRepeatButton>
+                                <Track.IncreaseRepeatButton>
+                                    <RepeatButton Command="Slider.IncreaseLarge"
+                                                  IsTabStop="False">
+                                        <RepeatButton.Template>
+                                            <ControlTemplate TargetType="{x:Type RepeatButton}">
+                                                <Border Background="#263445"
+                                                        CornerRadius="7" />
+                                            </ControlTemplate>
+                                        </RepeatButton.Template>
+                                    </RepeatButton>
+                                </Track.IncreaseRepeatButton>
+                                <Track.Thumb>
+                                    <Thumb Width="20"
+                                           Height="20"
+                                           Background="#E7FFFB"
+                                           BorderBrush="#14B8A6"
+                                           BorderThickness="2" />
+                                </Track.Thumb>
+                            </Track>
+                        </Grid>
+                    </ControlTemplate>
+                </Setter.Value>
+            </Setter>
+        </Style>
     </views:NeoTwitchView.Resources>
 
                     <Grid Margin="24">
@@ -933,6 +988,7 @@
                                                                                     <ColumnDefinition Width="30" />
                                                                                 </Grid.ColumnDefinitions>
                                                                                 <Button Content="-"
+                                                                                        Style="{StaticResource AlertStepButtonStyle}"
                                                                                         Width="28"
                                                                                         Height="28"
                                                                                         Tag="Brightness:-15"
@@ -944,6 +1000,7 @@
                                                                                         Maximum="255"
                                                                                         TickFrequency="1"
                                                                                         Margin="8,0"
+                                                                                        Style="{StaticResource AlertBrightnessSliderStyle}"
                                                                                         VerticalAlignment="Center"
                                                                                         Value="{Binding Editor.Brightness, Mode=TwoWay, UpdateSourceTrigger=PropertyChanged}"
                                                                                         ValueChanged="RuleFieldChanged" />
@@ -957,6 +1014,7 @@
                                                                                            IsHitTestVisible="False" />
                                                                                 <Button Grid.Column="2"
                                                                                         Content="+"
+                                                                                        Style="{StaticResource AlertStepButtonStyle}"
                                                                                         Width="28"
                                                                                         Height="28"
                                                                                         Tag="Brightness:15"
@@ -967,8 +1025,8 @@
                                                                     </Border>
                                                                 </Grid>
                                                                 <Grid x:Name="DurationGrid"
-                                                                      MinWidth="156"
-                                                                      Width="172"
+                                                                      MinWidth="190"
+                                                                      Width="210"
                                                                       Margin="0,0,8,8">
                                                                     <Border BorderBrush="{DynamicResource ThemeBorderBrush}"
                                                                             BorderThickness="1"
@@ -980,12 +1038,14 @@
                                                                                        Style="{StaticResource MutedText}" />
                                                                             <DockPanel Margin="0,8,0,0">
                                                                                 <Button Content="-"
+                                                                                        Style="{StaticResource AlertStepButtonStyle}"
                                                                                         DockPanel.Dock="Left"
                                                                                         Width="28"
                                                                                         Tag="Duration:-250"
                                                                                         Command="{Binding AdjustLightValueCommand}"
                                                                                         CommandParameter="{Binding Tag, RelativeSource={RelativeSource Self}}" />
                                                                                 <Button Content="+"
+                                                                                        Style="{StaticResource AlertStepButtonStyle}"
                                                                                         DockPanel.Dock="Right"
                                                                                         Width="28"
                                                                                         Tag="Duration:250"
@@ -993,9 +1053,9 @@
                                                                                         CommandParameter="{Binding Tag, RelativeSource={RelativeSource Self}}" />
                                                                                 <StackPanel Orientation="Horizontal"
                                                                                             HorizontalAlignment="Center"
-                                                                                            MinWidth="86">
+                                                                                            MinWidth="108">
                                                                                     <TextBox x:Name="DurationValueText"
-                                                                                             Width="54"
+                                                                                             Width="70"
                                                                                              TextAlignment="Center"
                                                                                              FontWeight="SemiBold"
                                                                                              TextChanged="LightNumberBox_TextChanged" />
@@ -1021,8 +1081,8 @@
                                                                     </Border>
                                                                 </Grid>
                                                                 <Grid x:Name="CycleGrid"
-                                                                      MinWidth="156"
-                                                                      Width="172"
+                                                                      MinWidth="190"
+                                                                      Width="210"
                                                                       Margin="0,0,8,8">
                                                                     <Border BorderBrush="{DynamicResource ThemeBorderBrush}"
                                                                             BorderThickness="1"
@@ -1034,12 +1094,14 @@
                                                                                        Style="{StaticResource MutedText}" />
                                                                             <DockPanel Margin="0,8,0,0">
                                                                                 <Button Content="-"
+                                                                                        Style="{StaticResource AlertStepButtonStyle}"
                                                                                         DockPanel.Dock="Left"
                                                                                         Width="28"
                                                                                         Tag="Cycle:-10"
                                                                                         Command="{Binding AdjustLightValueCommand}"
                                                                                         CommandParameter="{Binding Tag, RelativeSource={RelativeSource Self}}" />
                                                                                 <Button Content="+"
+                                                                                        Style="{StaticResource AlertStepButtonStyle}"
                                                                                         DockPanel.Dock="Right"
                                                                                         Width="28"
                                                                                         Tag="Cycle:10"
@@ -1047,9 +1109,9 @@
                                                                                         CommandParameter="{Binding Tag, RelativeSource={RelativeSource Self}}" />
                                                                                 <StackPanel Orientation="Horizontal"
                                                                                             HorizontalAlignment="Center"
-                                                                                            MinWidth="86">
+                                                                                            MinWidth="108">
                                                                                     <TextBox x:Name="CycleValueText"
-                                                                                             Width="54"
+                                                                                             Width="70"
                                                                                              TextAlignment="Center"
                                                                                              FontWeight="SemiBold"
                                                                                              TextChanged="LightNumberBox_TextChanged" />
@@ -1075,8 +1137,8 @@
                                                                     </Border>
                                                                 </Grid>
                                                                 <Grid x:Name="StepGrid"
-                                                                      MinWidth="156"
-                                                                      Width="172"
+                                                                      MinWidth="190"
+                                                                      Width="210"
                                                                       Margin="0,0,8,8">
                                                                     <Border BorderBrush="{DynamicResource ThemeBorderBrush}"
                                                                             BorderThickness="1"
@@ -1088,12 +1150,14 @@
                                                                                        Style="{StaticResource MutedText}" />
                                                                             <DockPanel Margin="0,8,0,0">
                                                                                 <Button Content="-"
+                                                                                        Style="{StaticResource AlertStepButtonStyle}"
                                                                                         DockPanel.Dock="Left"
                                                                                         Width="28"
                                                                                         Tag="Step:-10"
                                                                                         Command="{Binding AdjustLightValueCommand}"
                                                                                         CommandParameter="{Binding Tag, RelativeSource={RelativeSource Self}}" />
                                                                                 <Button Content="+"
+                                                                                        Style="{StaticResource AlertStepButtonStyle}"
                                                                                         DockPanel.Dock="Right"
                                                                                         Width="28"
                                                                                         Tag="Step:10"
@@ -1101,9 +1165,9 @@
                                                                                         CommandParameter="{Binding Tag, RelativeSource={RelativeSource Self}}" />
                                                                                 <StackPanel Orientation="Horizontal"
                                                                                             HorizontalAlignment="Center"
-                                                                                            MinWidth="86">
+                                                                                            MinWidth="108">
                                                                                     <TextBox x:Name="StepValueText"
-                                                                                             Width="54"
+                                                                                             Width="70"
                                                                                              TextAlignment="Center"
                                                                                              FontWeight="SemiBold"
                                                                                              TextChanged="LightNumberBox_TextChanged" />
@@ -1258,90 +1322,107 @@
                                                                 </WrapPanel>
                                                             </StackPanel>
                                                         </Grid>
-                                                        <Grid Margin="0,10,0,0">
-                                                            <Grid.ColumnDefinitions>
-                                                                <ColumnDefinition Width="*" />
-                                                                <ColumnDefinition Width="10" />
-                                                                <ColumnDefinition Width="*" />
-                                                            </Grid.ColumnDefinitions>
-                                                            <StackPanel x:Name="VirtualObsOptionsPanel">
-                                                                <TextBlock Text="Opacidad en OBS"
-                                                                           Style="{StaticResource MutedText}" />
-                                                                <DockPanel Margin="0,6,0,0">
-                                                                    <Button Content="-"
-                                                                            DockPanel.Dock="Left"
-                                                                            Width="28"
-                                                                            Tag="VirtualObsOpacity:-5"
-                                                                            Command="{Binding AdjustLightValueCommand}"
-                                                                            CommandParameter="{Binding Tag, RelativeSource={RelativeSource Self}}" />
-                                                                    <Button Content="+"
-                                                                            DockPanel.Dock="Right"
-                                                                            Width="28"
-                                                                            Tag="VirtualObsOpacity:5"
-                                                                            Command="{Binding AdjustLightValueCommand}"
-                                                                            CommandParameter="{Binding Tag, RelativeSource={RelativeSource Self}}" />
-                                                                    <TextBox x:Name="VirtualObsOpacityValueText"
-                                                                             Width="80"
-                                                                             TextAlignment="Center"
-                                                                             FontWeight="SemiBold"
-                                                                             TextChanged="LightNumberBox_TextChanged" />
-                                                                </DockPanel>
+                                                        <WrapPanel Margin="0,10,0,0">
+                                                            <StackPanel x:Name="VirtualObsOptionsPanel"
+                                                                        Width="210"
+                                                                        Margin="0,0,8,8">
+                                                                <Border BorderBrush="{DynamicResource ThemeBorderBrush}"
+                                                                        BorderThickness="1"
+                                                                        CornerRadius="12"
+                                                                        Padding="8"
+                                                                        Background="{DynamicResource ThemeSurfaceBrush}">
+                                                                    <StackPanel>
+                                                                        <TextBlock Text="Opacidad en OBS"
+                                                                                   Style="{StaticResource MutedText}" />
+                                                                        <DockPanel Margin="0,8,0,0">
+                                                                            <Button Content="-"
+                                                                                    Style="{StaticResource AlertStepButtonStyle}"
+                                                                                    DockPanel.Dock="Left"
+                                                                                    Tag="VirtualObsOpacity:-5"
+                                                                                    Command="{Binding AdjustLightValueCommand}"
+                                                                                    CommandParameter="{Binding Tag, RelativeSource={RelativeSource Self}}" />
+                                                                            <Button Content="+"
+                                                                                    Style="{StaticResource AlertStepButtonStyle}"
+                                                                                    DockPanel.Dock="Right"
+                                                                                    Tag="VirtualObsOpacity:5"
+                                                                                    Command="{Binding AdjustLightValueCommand}"
+                                                                                    CommandParameter="{Binding Tag, RelativeSource={RelativeSource Self}}" />
+                                                                            <TextBox x:Name="VirtualObsOpacityValueText"
+                                                                                     Width="88"
+                                                                                     TextAlignment="Center"
+                                                                                     FontWeight="SemiBold"
+                                                                                     TextChanged="LightNumberBox_TextChanged" />
+                                                                        </DockPanel>
+                                                                    </StackPanel>
+                                                                </Border>
                                                             </StackPanel>
-                                                            <Grid x:Name="VirtualScreenOptionsPanel"
-                                                                  Grid.Column="2">
-                                                                <Grid.ColumnDefinitions>
-                                                                    <ColumnDefinition Width="*" />
-                                                                    <ColumnDefinition Width="8" />
-                                                                    <ColumnDefinition Width="*" />
-                                                                </Grid.ColumnDefinitions>
-                                                                <StackPanel>
-                                                                    <TextBlock Text="Tamano pixel"
-                                                                               Style="{StaticResource MutedText}" />
-                                                                    <DockPanel Margin="0,6,0,0">
-                                                                        <Button Content="-"
-                                                                                DockPanel.Dock="Left"
-                                                                                Width="28"
-                                                                                Tag="VirtualScreenPixel:-2"
-                                                                                Command="{Binding AdjustLightValueCommand}"
-                                                                                CommandParameter="{Binding Tag, RelativeSource={RelativeSource Self}}" />
-                                                                        <Button Content="+"
-                                                                                DockPanel.Dock="Right"
-                                                                                Width="28"
-                                                                                Tag="VirtualScreenPixel:2"
-                                                                                Command="{Binding AdjustLightValueCommand}"
-                                                                                CommandParameter="{Binding Tag, RelativeSource={RelativeSource Self}}" />
-                                                                        <TextBox x:Name="VirtualScreenPixelValueText"
-                                                                                 Width="68"
-                                                                                 TextAlignment="Center"
-                                                                                 FontWeight="SemiBold"
-                                                                                 TextChanged="LightNumberBox_TextChanged" />
-                                                                    </DockPanel>
-                                                                </StackPanel>
-                                                                <StackPanel Grid.Column="2">
-                                                                    <TextBlock Text="Saturacion"
-                                                                               Style="{StaticResource MutedText}" />
-                                                                    <DockPanel Margin="0,6,0,0">
-                                                                        <Button Content="-"
-                                                                                DockPanel.Dock="Left"
-                                                                                Width="28"
-                                                                                Tag="VirtualScreenSaturation:-10"
-                                                                                Command="{Binding AdjustLightValueCommand}"
-                                                                                CommandParameter="{Binding Tag, RelativeSource={RelativeSource Self}}" />
-                                                                        <Button Content="+"
-                                                                                DockPanel.Dock="Right"
-                                                                                Width="28"
-                                                                                Tag="VirtualScreenSaturation:10"
-                                                                                Command="{Binding AdjustLightValueCommand}"
-                                                                                CommandParameter="{Binding Tag, RelativeSource={RelativeSource Self}}" />
-                                                                        <TextBox x:Name="VirtualScreenSaturationValueText"
-                                                                                 Width="68"
-                                                                                 TextAlignment="Center"
-                                                                                 FontWeight="SemiBold"
-                                                                                 TextChanged="LightNumberBox_TextChanged" />
-                                                                    </DockPanel>
-                                                                </StackPanel>
+                                                            <Grid x:Name="VirtualScreenOptionsPanel">
+                                                                <WrapPanel>
+                                                                    <Border Width="210"
+                                                                            Margin="0,0,8,8"
+                                                                            BorderBrush="{DynamicResource ThemeBorderBrush}"
+                                                                            BorderThickness="1"
+                                                                            CornerRadius="12"
+                                                                            Padding="8"
+                                                                            Background="{DynamicResource ThemeSurfaceBrush}">
+                                                                        <StackPanel>
+                                                                            <TextBlock Text="Tamano pixel"
+                                                                                       Style="{StaticResource MutedText}" />
+                                                                            <DockPanel Margin="0,8,0,0">
+                                                                                <Button Content="-"
+                                                                                        Style="{StaticResource AlertStepButtonStyle}"
+                                                                                        DockPanel.Dock="Left"
+                                                                                        Tag="VirtualScreenPixel:-2"
+                                                                                        Command="{Binding AdjustLightValueCommand}"
+                                                                                        CommandParameter="{Binding Tag, RelativeSource={RelativeSource Self}}" />
+                                                                                <Button Content="+"
+                                                                                        Style="{StaticResource AlertStepButtonStyle}"
+                                                                                        DockPanel.Dock="Right"
+                                                                                        Tag="VirtualScreenPixel:2"
+                                                                                        Command="{Binding AdjustLightValueCommand}"
+                                                                                        CommandParameter="{Binding Tag, RelativeSource={RelativeSource Self}}" />
+                                                                                <TextBox x:Name="VirtualScreenPixelValueText"
+                                                                                         Width="88"
+                                                                                         TextAlignment="Center"
+                                                                                         FontWeight="SemiBold"
+                                                                                         TextChanged="LightNumberBox_TextChanged" />
+                                                                            </DockPanel>
+                                                                        </StackPanel>
+                                                                    </Border>
+                                                                    <Border Width="210"
+                                                                            Margin="0,0,8,8"
+                                                                            BorderBrush="{DynamicResource ThemeBorderBrush}"
+                                                                            BorderThickness="1"
+                                                                            CornerRadius="12"
+                                                                            Padding="8"
+                                                                            Background="{DynamicResource ThemeSurfaceBrush}">
+                                                                        <StackPanel>
+                                                                            <TextBlock Text="Saturacion"
+                                                                                       Style="{StaticResource MutedText}" />
+                                                                            <DockPanel Margin="0,8,0,0">
+                                                                                <Button Content="-"
+                                                                                        Style="{StaticResource AlertStepButtonStyle}"
+                                                                                        DockPanel.Dock="Left"
+                                                                                        Tag="VirtualScreenSaturation:-10"
+                                                                                        Command="{Binding AdjustLightValueCommand}"
+                                                                                        CommandParameter="{Binding Tag, RelativeSource={RelativeSource Self}}" />
+                                                                                <Button Content="+"
+                                                                                        Style="{StaticResource AlertStepButtonStyle}"
+                                                                                        DockPanel.Dock="Right"
+                                                                                        Tag="VirtualScreenSaturation:10"
+                                                                                        Command="{Binding AdjustLightValueCommand}"
+                                                                                        CommandParameter="{Binding Tag, RelativeSource={RelativeSource Self}}" />
+                                                                                <TextBox x:Name="VirtualScreenSaturationValueText"
+                                                                                         Width="88"
+                                                                                         TextAlignment="Center"
+                                                                                         FontWeight="SemiBold"
+                                                                                         TextChanged="LightNumberBox_TextChanged" />
+                                                                            </DockPanel>
+                                                                        </StackPanel>
+                                                                    </Border>
+                                                                </WrapPanel>
                                                             </Grid>
-                                                        </Grid>
+                                                        </WrapPanel>
                                                         <TextBlock Text="Patron virtual"
                                                                    Style="{StaticResource MutedText}"
                                                                    Margin="0,10,0,4" />
@@ -1637,6 +1718,7 @@
                                                                                 <ColumnDefinition Width="30" />
                                                                             </Grid.ColumnDefinitions>
                                                                             <Button Content="-"
+                                                                                    Style="{StaticResource AlertStepButtonStyle}"
                                                                                     Width="28"
                                                                                     Height="28"
                                                                                     Tag="VirtualBrightness:-15"
@@ -1648,6 +1730,7 @@
                                                                                     Maximum="255"
                                                                                     TickFrequency="1"
                                                                                     Margin="8,0"
+                                                                                    Style="{StaticResource AlertBrightnessSliderStyle}"
                                                                                     VerticalAlignment="Center"
                                                                                     Value="{Binding Editor.VirtualLightsBrightness, Mode=TwoWay, UpdateSourceTrigger=PropertyChanged}"
                                                                                     ValueChanged="RuleFieldChanged" />
@@ -1660,6 +1743,7 @@
                                                                                        IsHitTestVisible="False" />
                                                                             <Button Grid.Column="2"
                                                                                     Content="+"
+                                                                                    Style="{StaticResource AlertStepButtonStyle}"
                                                                                     Width="28"
                                                                                     Height="28"
                                                                                     Tag="VirtualBrightness:15"
@@ -1670,8 +1754,8 @@
                                                                 </Border>
                                                             </Grid>
                                                             <Grid x:Name="VirtualDurationGrid"
-                                                                  MinWidth="156"
-                                                                  Width="172"
+                                                                  MinWidth="190"
+                                                                  Width="210"
                                                                   Margin="0,0,8,8">
                                                                 <Border BorderBrush="{DynamicResource ThemeBorderBrush}"
                                                                         BorderThickness="1"
@@ -1683,12 +1767,14 @@
                                                                                    Style="{StaticResource MutedText}" />
                                                                         <DockPanel Margin="0,8,0,0">
                                                                             <Button Content="-"
+                                                                                    Style="{StaticResource AlertStepButtonStyle}"
                                                                                     DockPanel.Dock="Left"
                                                                                     Width="28"
                                                                                     Tag="VirtualDuration:-250"
                                                                                     Command="{Binding AdjustLightValueCommand}"
                                                                                     CommandParameter="{Binding Tag, RelativeSource={RelativeSource Self}}" />
                                                                             <Button Content="+"
+                                                                                    Style="{StaticResource AlertStepButtonStyle}"
                                                                                     DockPanel.Dock="Right"
                                                                                     Width="28"
                                                                                     Tag="VirtualDuration:250"
@@ -1696,9 +1782,9 @@
                                                                                     CommandParameter="{Binding Tag, RelativeSource={RelativeSource Self}}" />
                                                                             <StackPanel Orientation="Horizontal"
                                                                                         HorizontalAlignment="Center"
-                                                                                        MinWidth="86">
+                                                                                        MinWidth="108">
                                                                                 <TextBox x:Name="VirtualDurationValueText"
-                                                                                         Width="54"
+                                                                                         Width="70"
                                                                                          TextAlignment="Center"
                                                                                          FontWeight="SemiBold"
                                                                                          TextChanged="LightNumberBox_TextChanged" />
@@ -1724,8 +1810,8 @@
                                                                 </Border>
                                                             </Grid>
                                                             <Grid x:Name="VirtualCycleGrid"
-                                                                  MinWidth="156"
-                                                                  Width="172"
+                                                                  MinWidth="190"
+                                                                  Width="210"
                                                                   Margin="0,0,8,8">
                                                                 <Border BorderBrush="{DynamicResource ThemeBorderBrush}"
                                                                         BorderThickness="1"
@@ -1737,12 +1823,14 @@
                                                                                    Style="{StaticResource MutedText}" />
                                                                         <DockPanel Margin="0,8,0,0">
                                                                             <Button Content="-"
+                                                                                    Style="{StaticResource AlertStepButtonStyle}"
                                                                                     DockPanel.Dock="Left"
                                                                                     Width="28"
                                                                                     Tag="VirtualCycle:-10"
                                                                                     Command="{Binding AdjustLightValueCommand}"
                                                                                     CommandParameter="{Binding Tag, RelativeSource={RelativeSource Self}}" />
                                                                             <Button Content="+"
+                                                                                    Style="{StaticResource AlertStepButtonStyle}"
                                                                                     DockPanel.Dock="Right"
                                                                                     Width="28"
                                                                                     Tag="VirtualCycle:10"
@@ -1750,9 +1838,9 @@
                                                                                     CommandParameter="{Binding Tag, RelativeSource={RelativeSource Self}}" />
                                                                             <StackPanel Orientation="Horizontal"
                                                                                         HorizontalAlignment="Center"
-                                                                                        MinWidth="86">
+                                                                                        MinWidth="108">
                                                                                 <TextBox x:Name="VirtualCycleValueText"
-                                                                                         Width="54"
+                                                                                         Width="70"
                                                                                          TextAlignment="Center"
                                                                                          FontWeight="SemiBold"
                                                                                          TextChanged="LightNumberBox_TextChanged" />
@@ -1778,8 +1866,8 @@
                                                                 </Border>
                                                             </Grid>
                                                             <Grid x:Name="VirtualStepGrid"
-                                                                  MinWidth="156"
-                                                                  Width="172"
+                                                                  MinWidth="190"
+                                                                  Width="210"
                                                                   Margin="0,0,8,8">
                                                                 <Border BorderBrush="{DynamicResource ThemeBorderBrush}"
                                                                         BorderThickness="1"
@@ -1791,12 +1879,14 @@
                                                                                    Style="{StaticResource MutedText}" />
                                                                         <DockPanel Margin="0,8,0,0">
                                                                             <Button Content="-"
+                                                                                    Style="{StaticResource AlertStepButtonStyle}"
                                                                                     DockPanel.Dock="Left"
                                                                                     Width="28"
                                                                                     Tag="VirtualStep:-10"
                                                                                     Command="{Binding AdjustLightValueCommand}"
                                                                                     CommandParameter="{Binding Tag, RelativeSource={RelativeSource Self}}" />
                                                                             <Button Content="+"
+                                                                                    Style="{StaticResource AlertStepButtonStyle}"
                                                                                     DockPanel.Dock="Right"
                                                                                     Width="28"
                                                                                     Tag="VirtualStep:10"
@@ -1804,9 +1894,9 @@
                                                                                     CommandParameter="{Binding Tag, RelativeSource={RelativeSource Self}}" />
                                                                             <StackPanel Orientation="Horizontal"
                                                                                         HorizontalAlignment="Center"
-                                                                                        MinWidth="86">
+                                                                                        MinWidth="108">
                                                                                 <TextBox x:Name="VirtualStepValueText"
-                                                                                         Width="54"
+                                                                                         Width="70"
                                                                                          TextAlignment="Center"
                                                                                          FontWeight="SemiBold"
                                                                                          TextChanged="LightNumberBox_TextChanged" />

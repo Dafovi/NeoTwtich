@@ -21,6 +21,7 @@ public static class ObsWebSocketProtocol
     public const string GetVersion = "GetVersion";
     public const string GetSceneList = "GetSceneList";
     public const string GetStudioModeEnabled = "GetStudioModeEnabled";
+    public const string GetVideoSettings = "GetVideoSettings";
     public const string CreateSceneItem = "CreateSceneItem";
     public const string SetSceneItemEnabled = "SetSceneItemEnabled";
     public const string SetSceneItemTransform = "SetSceneItemTransform";
@@ -57,6 +58,10 @@ public static class ObsWebSocketProtocol
     public const string BoundsWidth = "boundsWidth";
     public const string BoundsHeight = "boundsHeight";
     public const string InputVolumeMul = "inputVolumeMul";
+    public const string BaseWidth = "baseWidth";
+    public const string BaseHeight = "baseHeight";
+    public const string OutputWidth = "outputWidth";
+    public const string OutputHeight = "outputHeight";
 
     public const string ImageSourceKind = "image_source";
     public const string FfmpegSourceKind = "ffmpeg_source";

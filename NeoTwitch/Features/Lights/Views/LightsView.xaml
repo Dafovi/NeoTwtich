@@ -505,6 +505,9 @@
                                                             HorizontalAlignment="Center"
                                                             VerticalAlignment="Top">
                                                     <Button Content="-"
+                                                            FontFamily="Segoe UI"
+                                                            FontSize="15"
+                                                            FontWeight="SemiBold"
                                                             Width="34"
                                                             Height="30"
                                                             Margin="0,0,6,0"
@@ -512,6 +515,9 @@
                                                             Command="{Binding AdjustBackgroundLightValueCommand}"
                                                             CommandParameter="{Binding Tag, RelativeSource={RelativeSource Self}}" />
                                                     <Button Content="+"
+                                                            FontFamily="Segoe UI"
+                                                            FontSize="15"
+                                                            FontWeight="SemiBold"
                                                             Width="34"
                                                             Height="30"
                                                             Tag="Brightness:15"
@@ -541,12 +547,18 @@
                                                            Style="{StaticResource MutedText}" />
                                                 <DockPanel Margin="0,8,0,8">
                                                     <Button Content="-"
+                                                            FontFamily="Segoe UI"
+                                                            FontSize="15"
+                                                            FontWeight="SemiBold"
                                                             DockPanel.Dock="Left"
                                                             Width="32"
                                                             Tag="Cycle:-10"
                                                             Command="{Binding AdjustBackgroundLightValueCommand}"
                                                             CommandParameter="{Binding Tag, RelativeSource={RelativeSource Self}}" />
                                                     <Button Content="+"
+                                                            FontFamily="Segoe UI"
+                                                            FontSize="15"
+                                                            FontWeight="SemiBold"
                                                             DockPanel.Dock="Right"
                                                             Width="32"
                                                             Tag="Cycle:10"
@@ -595,12 +607,18 @@
                                                            Style="{StaticResource MutedText}" />
                                                 <DockPanel Margin="0,8,0,8">
                                                     <Button Content="-"
+                                                            FontFamily="Segoe UI"
+                                                            FontSize="15"
+                                                            FontWeight="SemiBold"
                                                             DockPanel.Dock="Left"
                                                             Width="32"
                                                             Tag="Step:-10"
                                                             Command="{Binding AdjustBackgroundLightValueCommand}"
                                                             CommandParameter="{Binding Tag, RelativeSource={RelativeSource Self}}" />
                                                     <Button Content="+"
+                                                            FontFamily="Segoe UI"
+                                                            FontSize="15"
+                                                            FontWeight="SemiBold"
                                                             DockPanel.Dock="Right"
                                                             Width="32"
                                                             Tag="Step:10"

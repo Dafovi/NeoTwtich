@@ -104,6 +104,29 @@ public sealed partial class ObsWebSocketService : IAsyncDisposable
             });
     }
 
+    public async Task<ObsCanvasSize> GetCanvasSizeAsync(CancellationToken cancellationToken)
+    {
+        using var timeoutToken = CreateTimeoutToken(cancellationToken, RequestTimeout);
+        var token = timeoutToken.Token;
+
+        await _gate.WaitAsync(token);
+        try
+        {
+            EnsureConnected();
+            using var response = await SendRequestAsync(ObsProtocol.GetVideoSettings, null, token);
+            return ObsWebSocketResponseReader.ReadCanvasSize(response);
+        }
+        catch (OperationCanceledException) when (!cancellationToken.IsCancellationRequested)
+        {
+            await DisposeSocketAsync();
+            throw new TimeoutException(_text.Get(UiTextKeys.ObsRefreshScenesTimeout));
+        }
+        finally
+        {
+            _gate.Release();
+        }
+    }
+
     public async Task<ObsConnectionResult> SetCurrentProgramSceneAsync(string sceneName, CancellationToken cancellationToken)
     {
         if (string.IsNullOrWhiteSpace(sceneName))

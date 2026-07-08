@@ -77,12 +77,26 @@ public partial class MainWindow
             return;
         }
 
+        var width = _config.Obs.OverlayWidth;
+        var height = _config.Obs.OverlayHeight;
+        try
+        {
+            var canvas = await _obsService.GetCanvasSizeAsync(cancellationToken);
+            width = canvas.Width;
+            height = canvas.Height;
+        }
+        catch (Exception ex)
+        {
+            AddLog($"Luces virtuales OBS: no pude leer el tamano del canvas, uso la resolucion configurada. {ex.Message}", ActivityLogKind.Important);
+        }
+
+        var overlayUrl = $"{BuildVirtualLightsOverlayUrl()}?v={DateTimeOffset.UtcNow.ToUnixTimeMilliseconds()}";
         var result = await _obsService.ShowBrowserSourceAsync(
             sceneName,
             NeoTwitchProduct.Obs.VirtualLightsSourceName,
-            BuildVirtualLightsOverlayUrl(),
-            _config.Obs.OverlayWidth,
-            _config.Obs.OverlayHeight,
+            overlayUrl,
+            width,
+            height,
             cancellationToken);
 
         _currentVirtualLightsObsSceneName = sceneName;

@@ -516,7 +516,7 @@ La rutina de Alexa debe usar el evento virtual que aparece en la app de Alexa. E
 
 Neo Twitch tambien puede mantener un fondo con Alexa. Esto sirve, por ejemplo, para dejar un bombillo encendido mientras no hay eventos y restaurarlo cuando termina una regla.
 
-En `Luces de fondo`, selecciona la salida `Alexa`:
+En la pestaña `Alexa`, configura el fondo Alexa:
 
 1. Activa `Mantener fondo Alexa encendido`.
 2. En `Evento Alexa encendido`, deja `luz_encendida` o escribe el evento que configuraste en tu Lambda.
@@ -528,7 +528,7 @@ Cuando el fondo Alexa esta activo:
 
 - Al aplicar el fondo, Neo Twitch envia `luz_encendida`.
 - Si presionas `Apagar fondo Alexa`, Neo Twitch envia `luz_apagada`.
-- Si una regla usa Alexa o luces, al terminar Neo Twitch vuelve a enviar `luz_encendida` o `luz_apagada` segun la configuracion elegida.
+- Si una alerta usa Alexa, al terminar Neo Twitch vuelve a enviar `luz_encendida` o `luz_apagada` segun la configuracion elegida.
 
 En la app de Alexa puedes crear dos rutinas:
 

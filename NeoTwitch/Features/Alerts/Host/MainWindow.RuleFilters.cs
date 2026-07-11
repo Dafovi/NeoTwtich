@@ -29,6 +29,8 @@ public partial class MainWindow
         {
             _alertsViewModel.SelectedRule = _alertsViewModel.FirstVisibleRule();
         }
+
+        RefreshDashboardConnectionStates();
     }
 
     private void UpdateRuleExternalActionAvailability()

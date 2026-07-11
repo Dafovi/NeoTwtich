@@ -7,33 +7,102 @@ using System.Windows.Shapes;
 using WpfBinding = System.Windows.Data.Binding;
 using WpfBrushes = System.Windows.Media.Brushes;
 using WpfButton = System.Windows.Controls.Button;
+using WpfControl = System.Windows.Controls.Control;
 using WpfHorizontalAlignment = System.Windows.HorizontalAlignment;
+using WpfImage = System.Windows.Controls.Image;
 using WpfOrientation = System.Windows.Controls.Orientation;
+using WpfTextBlock = System.Windows.Controls.TextBlock;
+using WpfToolTip = System.Windows.Controls.ToolTip;
 
 namespace NeoTwitch.Services.Ui;
 
 public static class ButtonIconContentService
 {
-    public static StackPanel CreateNavigationItem(string iconPath, string label)
-    {
-        var panel = new StackPanel
-        {
-            Orientation = WpfOrientation.Horizontal,
-            VerticalAlignment = VerticalAlignment.Center
-        };
+    private const string NavigationStatusFrameTag = "NavigationStatusFrame";
+    private const string NavigationStatusIconTag = "NavigationStatusIcon";
 
-        panel.Children.Add(CreateTintedImageIcon(iconPath, 18));
+    public static FrameworkElement CreateNavigationItem(string iconPath, string label)
+    {
+        var grid = new Grid
+        {
+            VerticalAlignment = VerticalAlignment.Center,
+            HorizontalAlignment = WpfHorizontalAlignment.Stretch
+        };
+        grid.ColumnDefinitions.Add(new ColumnDefinition { Width = GridLength.Auto });
+        grid.ColumnDefinitions.Add(new ColumnDefinition { Width = new GridLength(1, GridUnitType.Star) });
+        grid.ColumnDefinitions.Add(new ColumnDefinition { Width = GridLength.Auto });
+
+        var icon = CreateTintedImageIcon(iconPath, 18);
+        Grid.SetColumn(icon, 0);
+        grid.Children.Add(icon);
+
         var text = new TextBlock
         {
             Text = label,
             Margin = new Thickness(10, 0, 0, 0),
             VerticalAlignment = VerticalAlignment.Center,
-            FontWeight = FontWeights.SemiBold
+            FontWeight = FontWeights.SemiBold,
+            TextTrimming = TextTrimming.CharacterEllipsis
         };
         BindToAncestorForeground<TextBlock>(text, TextBlock.ForegroundProperty, typeof(WpfButton));
-        panel.Children.Add(text);
+        Grid.SetColumn(text, 1);
+        grid.Children.Add(text);
 
-        return panel;
+        var statusFrame = new Border
+        {
+            Tag = NavigationStatusFrameTag,
+            Width = 22,
+            Height = 22,
+            Margin = new Thickness(8, 0, 0, 0),
+            Padding = new Thickness(4),
+            VerticalAlignment = VerticalAlignment.Center,
+            HorizontalAlignment = WpfHorizontalAlignment.Right,
+            Background = UiBrushFactory.TranslucentBrushFrom("#94A3B8"),
+            BorderBrush = UiBrushFactory.FrozenBrushFrom("#94A3B8"),
+            BorderThickness = new Thickness(1),
+            CornerRadius = new CornerRadius(11),
+            Visibility = Visibility.Collapsed,
+        };
+
+        var statusIcon = new WpfImage
+        {
+            Tag = NavigationStatusIconTag,
+            Stretch = Stretch.Uniform
+        };
+        statusFrame.Child = statusIcon;
+        Grid.SetColumn(statusFrame, 2);
+        grid.Children.Add(statusFrame);
+
+        return grid;
+    }
+
+    public static void SetNavigationStatus(
+        WpfButton button,
+        string iconPath,
+        string tooltip,
+        bool isVisible,
+        string? defaultTooltip = null,
+        string? accentColor = null)
+    {
+        if (button.Content is not DependencyObject content
+            || FindChildByTag<Border>(content, NavigationStatusFrameTag) is not { } statusFrame
+            || FindChildByTag<WpfImage>(content, NavigationStatusIconTag) is not { } statusIcon)
+        {
+            return;
+        }
+
+        statusFrame.Visibility = isVisible ? Visibility.Visible : Visibility.Collapsed;
+        button.ToolTip = isVisible ? CreateStatusToolTip(tooltip, accentColor) : defaultTooltip ?? button.ToolTip;
+        if (!isVisible)
+        {
+            return;
+        }
+
+        var color = accentColor ?? "#94A3B8";
+        statusFrame.Background = UiBrushFactory.TranslucentBrushFrom(color);
+        statusFrame.BorderBrush = UiBrushFactory.FrozenBrushFrom(color);
+        statusIcon.Source = PackImageLoader.Load(iconPath);
+        statusFrame.ToolTip = button.ToolTip;
     }
 
     public static bool TrySetButtonIcon(WpfButton button, string label)
@@ -117,5 +186,47 @@ public static class ButtonIconContentService
             {
                 RelativeSource = new RelativeSource(RelativeSourceMode.FindAncestor, ancestorType, 1)
             });
+    }
+
+    private static WpfToolTip CreateStatusToolTip(string tooltip, string? accentColor)
+    {
+        var content = new WpfTextBlock
+        {
+            Text = tooltip,
+            TextWrapping = TextWrapping.Wrap,
+            MaxWidth = 320
+        };
+        content.SetResourceReference(WpfTextBlock.ForegroundProperty, "ThemeTextBrush");
+
+        var toolTip = new WpfToolTip
+        {
+            Content = content,
+            BorderBrush = UiBrushFactory.FrozenBrushFrom(accentColor ?? "#94A3B8")
+        };
+        toolTip.SetResourceReference(WpfControl.BackgroundProperty, "ThemeSurfaceBrush");
+        toolTip.SetResourceReference(WpfControl.ForegroundProperty, "ThemeTextBrush");
+        return toolTip;
+    }
+
+    private static TElement? FindChildByTag<TElement>(DependencyObject parent, string tag)
+        where TElement : FrameworkElement
+    {
+        var childCount = VisualTreeHelper.GetChildrenCount(parent);
+        for (var i = 0; i < childCount; i++)
+        {
+            var child = VisualTreeHelper.GetChild(parent, i);
+            if (child is TElement element && Equals(element.Tag, tag))
+            {
+                return element;
+            }
+
+            var descendant = FindChildByTag<TElement>(child, tag);
+            if (descendant is not null)
+            {
+                return descendant;
+            }
+        }
+
+        return null;
     }
 }

@@ -48,6 +48,12 @@ public partial class MainWindow
             arduinoVisual,
             alexaVisual,
             obsVisual);
+        UpdateNavigationHealthIndicators(
+            states,
+            twitchVisual,
+            arduinoVisual,
+            alexaVisual,
+            obsVisual);
     }
 
     private ConnectionStateLabels GetConnectionStateLabels(string warningKey)

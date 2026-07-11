@@ -8,6 +8,8 @@ public sealed class VirtualLightsOverlayService
 {
     private const string HtmlFileName = "virtual-lights-overlay.html";
     private const string StateFileName = "virtual-lights-state.json";
+    private const string ActiveHtmlPrefix = "virtual-lights-active-";
+    private const int DefaultObsOpacity = 35;
     private readonly string _directory;
     private readonly TimeProvider _timeProvider;
 
@@ -25,24 +27,20 @@ public sealed class VirtualLightsOverlayService
         return new Uri(GetHtmlPath()).AbsoluteUri;
     }
 
+    public string BuildActiveOverlayUrl(VirtualLightCommand command, TimeSpan duration)
+    {
+        EnsureFiles();
+        var json = BuildStateJson(command, duration);
+        var activePath = GetActiveHtmlPath();
+        File.WriteAllText(activePath, OverlayHtml.Replace("const embeddedState = null;", $"const embeddedState = {json};"));
+        DeleteOldActiveHtmlFiles(activePath);
+        return new Uri(activePath).AbsoluteUri;
+    }
+
     public void WriteState(VirtualLightCommand command, TimeSpan duration)
     {
         EnsureFiles();
-        var state = new
-        {
-            visible = true,
-            pattern = command.Pattern.ToString(),
-            primaryColor = command.PrimaryColor,
-            secondaryColor = command.SecondaryColor,
-            tertiaryColor = command.TertiaryColor,
-            brightness = command.Brightness,
-            cycleMs = command.CycleMs,
-            stepMs = command.StepMs,
-            opacity = command.ObsOpacity,
-            hideAt = _timeProvider.GetUtcNow().Add(duration).ToUnixTimeMilliseconds()
-        };
-
-        File.WriteAllText(GetStatePath(), JsonSerializer.Serialize(state));
+        File.WriteAllText(GetStatePath(), BuildStateJson(command, duration));
     }
 
     public void ClearState()
@@ -61,6 +59,30 @@ public sealed class VirtualLightsOverlayService
         return Path.Combine(_directory, StateFileName);
     }
 
+    private string GetActiveHtmlPath()
+    {
+        var timestamp = _timeProvider.GetUtcNow().ToUnixTimeMilliseconds();
+        return Path.Combine(_directory, $"{ActiveHtmlPrefix}{timestamp}.html");
+    }
+
+    private void DeleteOldActiveHtmlFiles(string keepPath)
+    {
+        try
+        {
+            foreach (var file in Directory.EnumerateFiles(_directory, $"{ActiveHtmlPrefix}*.html"))
+            {
+                if (!string.Equals(Path.GetFullPath(file), Path.GetFullPath(keepPath), StringComparison.OrdinalIgnoreCase))
+                {
+                    File.Delete(file);
+                }
+            }
+        }
+        catch
+        {
+            // Old temporary overlays are harmless if Windows keeps one locked briefly.
+        }
+    }
+
     private void EnsureFiles()
     {
         Directory.CreateDirectory(_directory);
@@ -75,6 +97,31 @@ public sealed class VirtualLightsOverlayService
         }
     }
 
+    private string BuildStateJson(VirtualLightCommand command, TimeSpan duration)
+    {
+        var obsOpacity = Math.Clamp(command.ObsOpacity, 0, 100);
+        if (obsOpacity <= 0)
+        {
+            obsOpacity = DefaultObsOpacity;
+        }
+
+        var state = new
+        {
+            visible = true,
+            pattern = command.Pattern.ToString(),
+            primaryColor = command.PrimaryColor,
+            secondaryColor = command.SecondaryColor,
+            tertiaryColor = command.TertiaryColor,
+            brightness = command.Brightness,
+            cycleMs = command.CycleMs,
+            stepMs = command.StepMs,
+            opacity = obsOpacity,
+            hideAt = _timeProvider.GetUtcNow().Add(duration).ToUnixTimeMilliseconds()
+        };
+
+        return JsonSerializer.Serialize(state);
+    }
+
     private static string OverlayHtml => $$"""
 <!doctype html>
 <html lang="es">
@@ -83,8 +130,8 @@ public sealed class VirtualLightsOverlayService
   <meta name="viewport" content="width=device-width,initial-scale=1">
   <title>Neo Twitch - Luces virtuales</title>
   <style>
-    html, body { width: 100%; height: 100%; margin: 0; overflow: hidden; background: transparent; }
-    canvas { width: 100vw; height: 100vh; display: block; opacity: 0; transition: opacity 160ms ease; }
+    html, body { width: 100%; height: 100%; margin: 0; overflow: hidden; background: rgba(0,0,0,0); }
+    canvas { width: 100vw; height: 100vh; display: block; background: rgba(0,0,0,0); opacity: 0; transition: opacity 160ms ease; }
     canvas.visible { opacity: 1; }
   </style>
 </head>
@@ -97,6 +144,8 @@ public sealed class VirtualLightsOverlayService
     let lastState = '';
     let lastPoll = 0;
     let phase = 0;
+    let stateFromUrl = false;
+    const embeddedState = null;
 
     function resize() {
       const scale = window.devicePixelRatio || 1;
@@ -206,6 +255,7 @@ public sealed class VirtualLightsOverlayService
     }
 
     async function poll() {
+      if (stateFromUrl) return;
       if (Date.now() - lastPoll < {{ApplicationLimits.ObsOverlayPollMs}}) return;
       lastPoll = Date.now();
       try {
@@ -220,10 +270,35 @@ public sealed class VirtualLightsOverlayService
       }
     }
 
+    function loadStateFromUrl() {
+      const encoded = new URLSearchParams(window.location.search).get('state');
+      if (!encoded) return;
+      try {
+        state = JSON.parse(atob(encoded));
+        lastState = JSON.stringify(state);
+        stateFromUrl = true;
+      } catch {
+        state = { visible: false };
+      }
+    }
+
+    function loadEmbeddedState() {
+      if (!embeddedState) return;
+      state = embeddedState;
+      lastState = JSON.stringify(state);
+      stateFromUrl = true;
+    }
+
     setInterval(poll, {{ApplicationLimits.ObsOverlayPollMs}});
     window.addEventListener('resize', resize);
     resize();
-    poll();
+    loadEmbeddedState();
+    if (!stateFromUrl) {
+      loadStateFromUrl();
+    }
+    if (!stateFromUrl) {
+      poll();
+    }
     draw();
   </script>
 </body>

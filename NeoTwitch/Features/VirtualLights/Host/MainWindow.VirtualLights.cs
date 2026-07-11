@@ -26,7 +26,7 @@ public partial class MainWindow
             try
             {
                 _virtualLightsOverlayService.WriteState(command, duration);
-                await ShowVirtualLightsBrowserSourceAsync(cancellationToken);
+                await ShowVirtualLightsBrowserSourceAsync(command, duration, cancellationToken);
             }
             catch (Exception ex)
             {
@@ -52,7 +52,10 @@ public partial class MainWindow
         return duration;
     }
 
-    private async Task ShowVirtualLightsBrowserSourceAsync(CancellationToken cancellationToken)
+    private async Task ShowVirtualLightsBrowserSourceAsync(
+        VirtualLightCommand command,
+        TimeSpan duration,
+        CancellationToken cancellationToken)
     {
         if (!_config.Obs.IsConfigured)
         {
@@ -90,7 +93,7 @@ public partial class MainWindow
             AddLog($"Luces virtuales OBS: no pude leer el tamano del canvas, uso la resolucion configurada. {ex.Message}", ActivityLogKind.Important);
         }
 
-        var overlayUrl = $"{BuildVirtualLightsOverlayUrl()}?v={DateTimeOffset.UtcNow.ToUnixTimeMilliseconds()}";
+        var overlayUrl = _virtualLightsOverlayService.BuildActiveOverlayUrl(command, duration);
         var result = await _obsService.ShowBrowserSourceAsync(
             sceneName,
             NeoTwitchProduct.Obs.VirtualLightsSourceName,

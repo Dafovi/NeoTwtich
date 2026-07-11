@@ -1004,14 +1004,18 @@
                                                                                         VerticalAlignment="Center"
                                                                                         Value="{Binding Editor.Brightness, Mode=TwoWay, UpdateSourceTrigger=PropertyChanged}"
                                                                                         ValueChanged="RuleFieldChanged" />
-                                                                                <TextBlock x:Name="BrightnessValueText"
-                                                                                           Grid.Column="1"
-                                                                                           Text="{Binding Editor.BrightnessPercentText}"
-                                                                                           FontWeight="SemiBold"
-                                                                                           Foreground="#14B8A6"
-                                                                                           HorizontalAlignment="Center"
-                                                                                           VerticalAlignment="Center"
-                                                                                           IsHitTestVisible="False" />
+                                                                                <Border Grid.Column="1"
+                                                                                        HorizontalAlignment="Center"
+                                                                                        VerticalAlignment="Center"
+                                                                                        Background="#99000811"
+                                                                                        CornerRadius="8"
+                                                                                        Padding="8,1"
+                                                                                        IsHitTestVisible="False">
+                                                                                    <TextBlock x:Name="BrightnessValueText"
+                                                                                               Text="{Binding Editor.BrightnessPercentText}"
+                                                                                               FontWeight="SemiBold"
+                                                                                               Foreground="#FFFFFF" />
+                                                                                </Border>
                                                                                 <Button Grid.Column="2"
                                                                                         Content="+"
                                                                                         Style="{StaticResource AlertStepButtonStyle}"
@@ -1734,13 +1738,17 @@
                                                                                     VerticalAlignment="Center"
                                                                                     Value="{Binding Editor.VirtualLightsBrightness, Mode=TwoWay, UpdateSourceTrigger=PropertyChanged}"
                                                                                     ValueChanged="RuleFieldChanged" />
-                                                                            <TextBlock Text="{Binding Editor.VirtualBrightnessPercentText}"
-                                                                                       Grid.Column="1"
-                                                                                       FontWeight="SemiBold"
-                                                                                       Foreground="#14B8A6"
-                                                                                       HorizontalAlignment="Center"
-                                                                                       VerticalAlignment="Center"
-                                                                                       IsHitTestVisible="False" />
+                                                                            <Border Grid.Column="1"
+                                                                                    HorizontalAlignment="Center"
+                                                                                    VerticalAlignment="Center"
+                                                                                    Background="#99000811"
+                                                                                    CornerRadius="8"
+                                                                                    Padding="8,1"
+                                                                                    IsHitTestVisible="False">
+                                                                                <TextBlock Text="{Binding Editor.VirtualBrightnessPercentText}"
+                                                                                           FontWeight="SemiBold"
+                                                                                           Foreground="#FFFFFF" />
+                                                                            </Border>
                                                                             <Button Grid.Column="2"
                                                                                     Content="+"
                                                                                     Style="{StaticResource AlertStepButtonStyle}"

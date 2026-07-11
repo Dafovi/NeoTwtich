@@ -85,7 +85,7 @@ public static class ObsWebSocketRequestFactory
             [ObsWebSocketProtocol.BrowserWidth] = Math.Max(ApplicationLimits.MinObsOverlayMediaSize, width),
             [ObsWebSocketProtocol.BrowserHeight] = Math.Max(ApplicationLimits.MinObsOverlayMediaSize, height),
             [ObsWebSocketProtocol.BrowserShutdown] = false,
-            [ObsWebSocketProtocol.BrowserRestartWhenActive] = false
+            [ObsWebSocketProtocol.BrowserRestartWhenActive] = true
         };
     }
 

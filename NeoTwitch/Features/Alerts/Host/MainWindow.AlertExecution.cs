@@ -77,7 +77,7 @@ public partial class MainWindow
 
             var virtualLightsDuration = await StartRuleVirtualLightsAsync(
                 rule,
-                plan.SynchronizedDurationMs ?? rule.DurationMs,
+                plan.SynchronizedDurationMs,
                 effectCts.Token);
 
             if (!plan.UseLights)

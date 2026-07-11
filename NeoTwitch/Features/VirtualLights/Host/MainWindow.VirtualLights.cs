@@ -11,14 +11,14 @@ public partial class MainWindow
         return _virtualLightsOverlayService.BuildOverlayUrl();
     }
 
-    private async Task<TimeSpan?> StartRuleVirtualLightsAsync(EventRule rule, int durationMs, CancellationToken cancellationToken)
+    private async Task<TimeSpan?> StartRuleVirtualLightsAsync(EventRule rule, int? synchronizedDurationMs, CancellationToken cancellationToken)
     {
         if (!rule.UseVirtualLights || (!rule.VirtualLightsToObs && !rule.VirtualLightsToScreen))
         {
             return null;
         }
 
-        var command = VirtualLightCommand.FromRule(rule, durationMs);
+        var command = VirtualLightCommand.FromRule(rule, synchronizedDurationMs);
         var duration = TimeSpan.FromMilliseconds(command.DurationMs);
 
         if (rule.VirtualLightsToObs)

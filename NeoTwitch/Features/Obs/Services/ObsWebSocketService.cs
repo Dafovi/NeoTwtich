@@ -104,6 +104,29 @@ public sealed partial class ObsWebSocketService : IAsyncDisposable
             });
     }
 
+    public async Task<ObsCanvasSize> GetCanvasSizeAsync(CancellationToken cancellationToken)
+    {
+        using var timeoutToken = CreateTimeoutToken(cancellationToken, RequestTimeout);
+        var token = timeoutToken.Token;
+
+        await _gate.WaitAsync(token);
+        try
+        {
+            EnsureConnected();
+            using var response = await SendRequestAsync(ObsProtocol.GetVideoSettings, null, token);
+            return ObsWebSocketResponseReader.ReadCanvasSize(response);
+        }
+        catch (OperationCanceledException) when (!cancellationToken.IsCancellationRequested)
+        {
+            await DisposeSocketAsync();
+            throw new TimeoutException(_text.Get(UiTextKeys.ObsRefreshScenesTimeout));
+        }
+        finally
+        {
+            _gate.Release();
+        }
+    }
+
     public async Task<ObsConnectionResult> SetCurrentProgramSceneAsync(string sceneName, CancellationToken cancellationToken)
     {
         if (string.IsNullOrWhiteSpace(sceneName))
@@ -212,6 +235,63 @@ public sealed partial class ObsWebSocketService : IAsyncDisposable
                 return Snapshot();
             },
             invalidOperationFallback: Snapshot);
+    }
+
+    public async Task<ObsConnectionResult> ShowBrowserSourceAsync(
+        string sceneName,
+        string sourceName,
+        string url,
+        int width,
+        int height,
+        CancellationToken cancellationToken)
+    {
+        if (string.IsNullOrWhiteSpace(sceneName))
+        {
+            throw new InvalidOperationException(_text.Get(UiTextKeys.ObsSelectMediaScene));
+        }
+
+        if (string.IsNullOrWhiteSpace(sourceName))
+        {
+            throw new InvalidOperationException(_text.Get(UiTextKeys.ObsMissingSourceName));
+        }
+
+        if (string.IsNullOrWhiteSpace(url))
+        {
+            throw new InvalidOperationException(_text.Get(UiTextKeys.ObsMissingMediaFile));
+        }
+
+        return await ExecuteExclusiveAsync(
+            cancellationToken,
+            RequestTimeout,
+            UiTextKeys.ObsShowMediaTimeout,
+            async token =>
+            {
+                EnsureConnected();
+                try
+                {
+                    await SendRequestAsync(
+                        ObsProtocol.CreateInput,
+                        ObsWebSocketRequestFactory.BuildCreateBrowserInputRequest(sceneName, sourceName, url, width, height),
+                        token);
+                }
+                catch (InvalidOperationException)
+                {
+                    await SendRequestAsync(
+                        ObsProtocol.SetInputSettings,
+                        ObsWebSocketRequestFactory.BuildSetBrowserInputSettingsRequest(sourceName, url, width, height),
+                        token);
+                    await EnsureSceneItemAsync(sceneName, sourceName, token);
+                }
+
+                await SetSceneItemEnabledAsync(sceneName, sourceName, enabled: true, token);
+                var sceneItemId = await GetSceneItemIdAsync(sceneName, sourceName, token);
+                await SendRequestAsync(
+                    ObsProtocol.SetSceneItemTransform,
+                    ObsWebSocketRequestFactory.BuildFullSceneItemTransformRequest(sceneName, sceneItemId, width, height),
+                    token);
+                await RefreshScenesCoreAsync(token);
+                return Snapshot();
+            });
     }
 
     public async Task DisconnectAsync()

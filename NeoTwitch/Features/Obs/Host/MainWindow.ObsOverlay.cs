@@ -37,6 +37,21 @@ public partial class MainWindow
         }
     }
 
+    private void CopyVirtualLightsOverlayUrl()
+    {
+        try
+        {
+            var url = BuildVirtualLightsOverlayUrl();
+            _clipboard.SetText(url);
+            AddLog("OBS: URL de luces virtuales copiada.", ActivityLogKind.Obs);
+        }
+        catch (Exception ex)
+        {
+            AddLog(_text.Format(Services.Text.UiTextKeys.ObsOverlayFailureLog, ex.Message), ActivityLogKind.Important);
+            _dialog.ShowWarning(_text.Get(Services.Text.UiTextKeys.ObsTitle), ex.Message);
+        }
+    }
+
     private void SaveObsOverlaySettings()
     {
         if (_initializingComponent || _loadingUi)
@@ -62,7 +77,7 @@ public partial class MainWindow
             return;
         }
 
-        _obsViewModel.UpdateOverlayUrl(BuildObsOverlayUrl());
+        _obsViewModel.UpdateOverlayUrl(BuildObsOverlayUrl(), BuildVirtualLightsOverlayUrl());
     }
 
     private string BuildObsOverlayUrl()

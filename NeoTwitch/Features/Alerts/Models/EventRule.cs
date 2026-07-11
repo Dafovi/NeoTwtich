@@ -41,6 +41,21 @@ public sealed class EventRule : INotifyPropertyChanged
     private MediaSourceMode _obsVideoSourceMode = MediaSourceMode.Single;
     private string _obsVideoAssetId = "";
     private string _obsVideoGroupId = "";
+    private bool _useVirtualLights;
+    private bool _virtualLightsToObs = true;
+    private bool _virtualLightsToScreen;
+    private string _virtualLightsScreenId = "";
+    private LightPattern _virtualLightsPattern = LightPattern.Pulse;
+    private string _virtualLightsPrimaryColor = "#14B8A6";
+    private string _virtualLightsSecondaryColor = "#B56CFF";
+    private string _virtualLightsTertiaryColor = "#FFFFFF";
+    private int _virtualLightsBrightness = 180;
+    private int _virtualLightsDurationMs = 4500;
+    private int _virtualLightsCycleMs = 80;
+    private int _virtualLightsStepMs = 120;
+    private int _virtualLightsObsOpacity = 35;
+    private int _virtualLightsScreenPixelSize = 18;
+    private int _virtualLightsScreenSaturation = 100;
     private LightPattern _pattern = LightPattern.Pulse;
     private string _targetPins = "";
     private string _primaryColor = "#FF2D55";
@@ -270,6 +285,96 @@ public sealed class EventRule : INotifyPropertyChanged
     {
         get => _obsVideoGroupId;
         set => SetField(ref _obsVideoGroupId, value);
+    }
+
+    public bool UseVirtualLights
+    {
+        get => _useVirtualLights;
+        set => SetField(ref _useVirtualLights, value);
+    }
+
+    public bool VirtualLightsToObs
+    {
+        get => _virtualLightsToObs;
+        set => SetField(ref _virtualLightsToObs, value);
+    }
+
+    public bool VirtualLightsToScreen
+    {
+        get => _virtualLightsToScreen;
+        set => SetField(ref _virtualLightsToScreen, value);
+    }
+
+    public string VirtualLightsScreenId
+    {
+        get => _virtualLightsScreenId;
+        set => SetField(ref _virtualLightsScreenId, value);
+    }
+
+    public LightPattern VirtualLightsPattern
+    {
+        get => _virtualLightsPattern;
+        set => SetField(ref _virtualLightsPattern, value);
+    }
+
+    public string VirtualLightsPrimaryColor
+    {
+        get => _virtualLightsPrimaryColor;
+        set => SetField(ref _virtualLightsPrimaryColor, value);
+    }
+
+    public string VirtualLightsSecondaryColor
+    {
+        get => _virtualLightsSecondaryColor;
+        set => SetField(ref _virtualLightsSecondaryColor, value);
+    }
+
+    public string VirtualLightsTertiaryColor
+    {
+        get => _virtualLightsTertiaryColor;
+        set => SetField(ref _virtualLightsTertiaryColor, value);
+    }
+
+    public int VirtualLightsBrightness
+    {
+        get => _virtualLightsBrightness;
+        set => SetField(ref _virtualLightsBrightness, Math.Clamp(value, ApplicationLimits.MinBrightness, ApplicationLimits.MaxBrightness));
+    }
+
+    public int VirtualLightsDurationMs
+    {
+        get => _virtualLightsDurationMs;
+        set => SetField(ref _virtualLightsDurationMs, Math.Clamp(value, ApplicationLimits.MinAlertDurationMs, ApplicationLimits.MaxLegacyAlertDurationMs));
+    }
+
+    public int VirtualLightsCycleMs
+    {
+        get => _virtualLightsCycleMs;
+        set => SetField(ref _virtualLightsCycleMs, Math.Clamp(value, ApplicationLimits.MinCycleMs, ApplicationLimits.MaxCycleMs));
+    }
+
+    public int VirtualLightsStepMs
+    {
+        get => _virtualLightsStepMs;
+        set => SetField(ref _virtualLightsStepMs, Math.Clamp(value, ApplicationLimits.MinStepMs, ApplicationLimits.MaxStepMs));
+    }
+
+    public int VirtualLightsObsOpacity
+    {
+        get => _virtualLightsObsOpacity;
+        set => SetField(ref _virtualLightsObsOpacity, Math.Clamp(value, 0, 100));
+    }
+
+    public int VirtualLightsScreenPixelSize
+    {
+        get => _virtualLightsScreenPixelSize;
+        set => SetField(ref _virtualLightsScreenPixelSize, Math.Clamp(value, 4, 80));
+    }
+
+    public int VirtualLightsScreenSaturation
+    {
+        get => _virtualLightsScreenSaturation;
+        set => SetField(ref _virtualLightsScreenSaturation, Math.Clamp(value, 0, 200));
     }
 
     public LightPattern Pattern

@@ -7,6 +7,8 @@ public sealed record ObsRequestStatus(bool Succeeded, int Code, string Comment);
 
 public sealed record ObsSceneSnapshot(string CurrentScene, bool StudioMode, IReadOnlyList<ObsSceneInfo> Scenes);
 
+public sealed record ObsCanvasSize(int Width, int Height);
+
 public static class ObsWebSocketResponseReader
 {
     public static int ReadOperation(JsonDocument document)
@@ -65,6 +67,23 @@ public static class ObsWebSocketResponseReader
     {
         var data = ReadResponseData(response);
         return ReadInt(data, ObsWebSocketProtocol.SceneItemId);
+    }
+
+    public static ObsCanvasSize ReadCanvasSize(JsonDocument response)
+    {
+        var data = ReadResponseData(response);
+        var width = ReadInt(data, ObsWebSocketProtocol.BaseWidth);
+        var height = ReadInt(data, ObsWebSocketProtocol.BaseHeight);
+
+        if (width <= 0 || height <= 0)
+        {
+            width = ReadInt(data, ObsWebSocketProtocol.OutputWidth);
+            height = ReadInt(data, ObsWebSocketProtocol.OutputHeight);
+        }
+
+        return new ObsCanvasSize(
+            Math.Max(ApplicationLimits.MinObsOverlayMediaSize, width),
+            Math.Max(ApplicationLimits.MinObsOverlayMediaSize, height));
     }
 
     public static string ReadRequestId(JsonDocument response)

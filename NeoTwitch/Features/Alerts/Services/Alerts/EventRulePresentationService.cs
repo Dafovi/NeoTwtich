@@ -60,6 +60,11 @@ public static class EventRulePresentationService
             actions.Add(text.Get(UiTextKeys.RuleRowActionLights));
         }
 
+        if (rule.UseVirtualLights)
+        {
+            actions.Add(text.Get(UiTextKeys.RuleRowActionVirtualLights));
+        }
+
         if (rule.SendChatMessage)
         {
             actions.Add(text.Get(UiTextKeys.RuleRowActionChat));
@@ -70,12 +75,12 @@ public static class EventRulePresentationService
             actions.Add(text.Get(UiTextKeys.RuleRowActionAudio));
         }
 
-        if (rule.SendObsVideo || (rule.SendObsMedia && rule.ObsMediaKind == ObsMediaKind.Video))
+        if (rule.SendObsVideo)
         {
             actions.Add(text.Get(UiTextKeys.RuleRowActionVideo));
         }
 
-        if (rule.SendObsImage || (rule.SendObsMedia && rule.ObsMediaKind == ObsMediaKind.Image))
+        if (rule.SendObsImage)
         {
             actions.Add(text.Get(UiTextKeys.RuleRowActionImage));
         }
@@ -100,6 +105,13 @@ public static class EventRulePresentationService
         return rule.LightsActionAvailable
             ? text.Get(UiTextKeys.RuleRowLightsActive)
             : text.Get(UiTextKeys.RuleRowLightsUnavailable);
+    }
+
+    public static string BuildVirtualLightsToolTip(EventRule rule, IUiTextService text)
+    {
+        return rule.VirtualLightsToObs || rule.VirtualLightsToScreen
+            ? text.Get(UiTextKeys.RuleRowVirtualLightsActive)
+            : text.Get(UiTextKeys.RuleRowVirtualLightsUnavailable);
     }
 
     public static string BuildAlexaToolTip(EventRule rule, IUiTextService text)

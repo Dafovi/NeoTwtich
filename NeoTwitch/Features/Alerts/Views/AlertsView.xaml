@@ -56,6 +56,74 @@
             <Setter Property="HorizontalContentAlignment" Value="Center" />
             <Setter Property="VerticalContentAlignment" Value="Center" />
         </Style>
+
+        <Style x:Key="AlertStepButtonStyle" TargetType="{x:Type Button}" BasedOn="{StaticResource {x:Type Button}}">
+            <Setter Property="Width" Value="30" />
+            <Setter Property="Height" Value="30" />
+            <Setter Property="MinWidth" Value="30" />
+            <Setter Property="Padding" Value="0" />
+            <Setter Property="FontFamily" Value="Segoe UI" />
+            <Setter Property="FontSize" Value="15" />
+            <Setter Property="FontWeight" Value="SemiBold" />
+        </Style>
+
+        <Style x:Key="AlertBrightnessSliderStyle" TargetType="{x:Type Slider}">
+            <Setter Property="Height" Value="30" />
+            <Setter Property="Template">
+                <Setter.Value>
+                    <ControlTemplate TargetType="{x:Type Slider}">
+                        <Grid Height="{TemplateBinding Height}">
+                            <Track x:Name="PART_Track"
+                                   Height="14"
+                                   VerticalAlignment="Center">
+                                <Track.DecreaseRepeatButton>
+                                    <RepeatButton Command="Slider.DecreaseLarge"
+                                                  IsTabStop="False">
+                                        <RepeatButton.Template>
+                                            <ControlTemplate TargetType="{x:Type RepeatButton}">
+                                                <Border Background="#14B8A6"
+                                                        CornerRadius="7" />
+                                            </ControlTemplate>
+                                        </RepeatButton.Template>
+                                    </RepeatButton>
+                                </Track.DecreaseRepeatButton>
+                                <Track.IncreaseRepeatButton>
+                                    <RepeatButton Command="Slider.IncreaseLarge"
+                                                  IsTabStop="False">
+                                        <RepeatButton.Template>
+                                            <ControlTemplate TargetType="{x:Type RepeatButton}">
+                                                <Border Background="#263445"
+                                                        CornerRadius="7" />
+                                            </ControlTemplate>
+                                        </RepeatButton.Template>
+                                    </RepeatButton>
+                                </Track.IncreaseRepeatButton>
+                                <Track.Thumb>
+                                    <Thumb Width="20"
+                                           Height="20"
+                                           Background="#E7FFFB"
+                                           BorderBrush="#14B8A6"
+                                           BorderThickness="2" />
+                                </Track.Thumb>
+                            </Track>
+                        </Grid>
+                    </ControlTemplate>
+                </Setter.Value>
+            </Setter>
+        </Style>
+
+        <Style x:Key="AlertCategoryScrollButtonStyle" TargetType="{x:Type Button}" BasedOn="{StaticResource {x:Type Button}}">
+            <Setter Property="Width" Value="38" />
+            <Setter Property="Height" Value="46" />
+            <Setter Property="MinWidth" Value="38" />
+            <Setter Property="Padding" Value="0" />
+            <Setter Property="BorderThickness" Value="1" />
+            <Setter Property="Background" Value="#CC101C2A" />
+            <Setter Property="BorderBrush" Value="{DynamicResource ThemeSelectionBrush}" />
+            <Setter Property="HorizontalContentAlignment" Value="Center" />
+            <Setter Property="VerticalContentAlignment" Value="Center" />
+            <Setter Property="Panel.ZIndex" Value="5" />
+        </Style>
     </views:NeoTwitchView.Resources>
 
                     <Grid Margin="24">
@@ -101,89 +169,123 @@
                                     Margin="0,16,0,0"
                                     Padding="18">
                                 <StackPanel>
-                                    <ScrollViewer HorizontalScrollBarVisibility="Auto"
-                                                  VerticalScrollBarVisibility="Disabled"
-                                                  Padding="0,0,0,4">
-                                        <StackPanel Orientation="Horizontal">
-                                            <Button x:Name="EventFollowTileButton"
-                                                    Tag="Follow"
-                                                    MinWidth="190"
-                                                    MinHeight="50"
-                                                    Padding="12,6"
-                                                    Margin="0,0,8,0"
-                                                    Command="{Binding SelectCategoryFilterCommand}"
-                                                    CommandParameter="{Binding Tag, RelativeSource={RelativeSource Self}}">
-                                                <StackPanel Orientation="Horizontal" HorizontalAlignment="Center">
-                                                    <Image Source="/Assets/Icons/action_follower_teal.png" Width="30" Height="30" Margin="0,0,10,0" />
-                                                    <TextBlock Text="Nuevo seguidor" FontWeight="SemiBold" VerticalAlignment="Center" TextTrimming="CharacterEllipsis" />
-                                                </StackPanel>
-                                            </Button>
-                                            <Button x:Name="EventSubscriptionTileButton"
-                                                    Tag="Subscription"
-                                                    MinWidth="190"
-                                                    MinHeight="50"
-                                                    Padding="12,6"
-                                                    Margin="0,0,8,0"
-                                                    Command="{Binding SelectCategoryFilterCommand}"
-                                                    CommandParameter="{Binding Tag, RelativeSource={RelativeSource Self}}">
-                                                <StackPanel Orientation="Horizontal" HorizontalAlignment="Center">
-                                                    <Image Source="/Assets/Icons/action_subscription_purple.png" Width="30" Height="30" Margin="0,0,10,0" />
-                                                    <TextBlock Text="Nueva suscripcion" FontWeight="SemiBold" VerticalAlignment="Center" TextTrimming="CharacterEllipsis" />
-                                                </StackPanel>
-                                            </Button>
-                                            <Button x:Name="EventRaidTileButton"
-                                                    Tag="Raid"
-                                                    MinWidth="170"
-                                                    MinHeight="50"
-                                                    Padding="12,6"
-                                                    Margin="0,0,8,0"
-                                                    Command="{Binding SelectCategoryFilterCommand}"
-                                                    CommandParameter="{Binding Tag, RelativeSource={RelativeSource Self}}">
-                                                <StackPanel Orientation="Horizontal" HorizontalAlignment="Center">
-                                                    <Image Source="/Assets/Icons/activity_notification.png" Width="30" Height="30" Margin="0,0,10,0" />
-                                                    <TextBlock Text="Raid recibida" FontWeight="SemiBold" VerticalAlignment="Center" TextTrimming="CharacterEllipsis" />
-                                                </StackPanel>
-                                            </Button>
-                                            <Button x:Name="EventCheerTileButton"
-                                                    Tag="Cheer"
-                                                    MinWidth="150"
-                                                    MinHeight="50"
-                                                    Padding="12,6"
-                                                    Margin="0,0,8,0"
-                                                    Command="{Binding SelectCategoryFilterCommand}"
-                                                    CommandParameter="{Binding Tag, RelativeSource={RelativeSource Self}}">
-                                                <StackPanel Orientation="Horizontal" HorizontalAlignment="Center">
-                                                    <Image Source="/Assets/Icons/action_bits_blue.png" Width="30" Height="30" Margin="0,0,10,0" />
-                                                    <TextBlock Text="Bits" FontWeight="SemiBold" VerticalAlignment="Center" TextTrimming="CharacterEllipsis" />
-                                                </StackPanel>
-                                            </Button>
-                                            <Button x:Name="EventChatCommandTileButton"
-                                                    Tag="ChatCommand"
-                                                    MinWidth="190"
-                                                    MinHeight="50"
-                                                    Padding="12,6"
-                                                    Margin="0,0,8,0"
-                                                    Command="{Binding SelectCategoryFilterCommand}"
-                                                    CommandParameter="{Binding Tag, RelativeSource={RelativeSource Self}}">
-                                                <StackPanel Orientation="Horizontal" HorizontalAlignment="Center">
-                                                    <Image Source="/Assets/Icons/action_message_green.png" Width="30" Height="30" Margin="0,0,10,0" />
-                                                    <TextBlock Text="Comando de chat" FontWeight="SemiBold" VerticalAlignment="Center" TextTrimming="CharacterEllipsis" />
-                                                </StackPanel>
-                                            </Button>
-                                            <Button x:Name="EventRedemptionTileButton"
-                                                    Tag="ChannelPointRedemption"
-                                                    MinWidth="190"
-                                                    MinHeight="50"
-                                                    Padding="12,6"
-                                                    Command="{Binding SelectCategoryFilterCommand}"
-                                                    CommandParameter="{Binding Tag, RelativeSource={RelativeSource Self}}">
-                                                <StackPanel Orientation="Horizontal" HorizontalAlignment="Center">
-                                                    <Image Source="/Assets/Icons/activity_notification_lime.png" Width="30" Height="30" Margin="0,0,10,0" />
-                                                    <TextBlock Text="Canje de puntos" FontWeight="SemiBold" VerticalAlignment="Center" TextTrimming="CharacterEllipsis" />
-                                                </StackPanel>
-                                            </Button>
-                                        </StackPanel>
-                                    </ScrollViewer>
+                                    <Grid>
+                                        <ScrollViewer x:Name="AlertCategoryScrollViewer"
+                                                      HorizontalScrollBarVisibility="Hidden"
+                                                      VerticalScrollBarVisibility="Disabled"
+                                                      Padding="0,0,0,4"
+                                                      ScrollChanged="AlertCategoryScrollViewer_ScrollChanged"
+                                                      SizeChanged="AlertCategoryScrollViewer_SizeChanged">
+                                            <StackPanel Orientation="Horizontal">
+                                                <Button x:Name="EventFollowTileButton"
+                                                        Tag="Follow"
+                                                        MinWidth="190"
+                                                        MinHeight="50"
+                                                        Padding="12,6"
+                                                        Margin="0,0,8,0"
+                                                        Command="{Binding SelectCategoryFilterCommand}"
+                                                        CommandParameter="{Binding Tag, RelativeSource={RelativeSource Self}}">
+                                                    <StackPanel Orientation="Horizontal" HorizontalAlignment="Center">
+                                                        <Image Source="/Assets/Icons/action_follower_teal.png" Width="30" Height="30" Margin="0,0,10,0" />
+                                                        <TextBlock Text="Nuevo seguidor" FontWeight="SemiBold" VerticalAlignment="Center" TextTrimming="CharacterEllipsis" />
+                                                    </StackPanel>
+                                                </Button>
+                                                <Button x:Name="EventSubscriptionTileButton"
+                                                        Tag="Subscription"
+                                                        MinWidth="190"
+                                                        MinHeight="50"
+                                                        Padding="12,6"
+                                                        Margin="0,0,8,0"
+                                                        Command="{Binding SelectCategoryFilterCommand}"
+                                                        CommandParameter="{Binding Tag, RelativeSource={RelativeSource Self}}">
+                                                    <StackPanel Orientation="Horizontal" HorizontalAlignment="Center">
+                                                        <Image Source="/Assets/Icons/action_subscription_purple.png" Width="30" Height="30" Margin="0,0,10,0" />
+                                                        <TextBlock Text="Nueva suscripcion" FontWeight="SemiBold" VerticalAlignment="Center" TextTrimming="CharacterEllipsis" />
+                                                    </StackPanel>
+                                                </Button>
+                                                <Button x:Name="EventRaidTileButton"
+                                                        Tag="Raid"
+                                                        MinWidth="170"
+                                                        MinHeight="50"
+                                                        Padding="12,6"
+                                                        Margin="0,0,8,0"
+                                                        Command="{Binding SelectCategoryFilterCommand}"
+                                                        CommandParameter="{Binding Tag, RelativeSource={RelativeSource Self}}">
+                                                    <StackPanel Orientation="Horizontal" HorizontalAlignment="Center">
+                                                        <Image Source="/Assets/Icons/activity_notification.png" Width="30" Height="30" Margin="0,0,10,0" />
+                                                        <TextBlock Text="Raid recibida" FontWeight="SemiBold" VerticalAlignment="Center" TextTrimming="CharacterEllipsis" />
+                                                    </StackPanel>
+                                                </Button>
+                                                <Button x:Name="EventCheerTileButton"
+                                                        Tag="Cheer"
+                                                        MinWidth="150"
+                                                        MinHeight="50"
+                                                        Padding="12,6"
+                                                        Margin="0,0,8,0"
+                                                        Command="{Binding SelectCategoryFilterCommand}"
+                                                        CommandParameter="{Binding Tag, RelativeSource={RelativeSource Self}}">
+                                                    <StackPanel Orientation="Horizontal" HorizontalAlignment="Center">
+                                                        <Image Source="/Assets/Icons/action_bits_blue.png" Width="30" Height="30" Margin="0,0,10,0" />
+                                                        <TextBlock Text="Bits" FontWeight="SemiBold" VerticalAlignment="Center" TextTrimming="CharacterEllipsis" />
+                                                    </StackPanel>
+                                                </Button>
+                                                <Button x:Name="EventChatCommandTileButton"
+                                                        Tag="ChatCommand"
+                                                        MinWidth="190"
+                                                        MinHeight="50"
+                                                        Padding="12,6"
+                                                        Margin="0,0,8,0"
+                                                        Command="{Binding SelectCategoryFilterCommand}"
+                                                        CommandParameter="{Binding Tag, RelativeSource={RelativeSource Self}}">
+                                                    <StackPanel Orientation="Horizontal" HorizontalAlignment="Center">
+                                                        <Image Source="/Assets/Icons/action_message_green.png" Width="30" Height="30" Margin="0,0,10,0" />
+                                                        <TextBlock Text="Comando de chat" FontWeight="SemiBold" VerticalAlignment="Center" TextTrimming="CharacterEllipsis" />
+                                                    </StackPanel>
+                                                </Button>
+                                                <Button x:Name="EventRedemptionTileButton"
+                                                        Tag="ChannelPointRedemption"
+                                                        MinWidth="190"
+                                                        MinHeight="50"
+                                                        Padding="12,6"
+                                                        Command="{Binding SelectCategoryFilterCommand}"
+                                                        CommandParameter="{Binding Tag, RelativeSource={RelativeSource Self}}">
+                                                    <StackPanel Orientation="Horizontal" HorizontalAlignment="Center">
+                                                        <Image Source="/Assets/Icons/activity_notification_lime.png" Width="30" Height="30" Margin="0,0,10,0" />
+                                                        <TextBlock Text="Canje de puntos" FontWeight="SemiBold" VerticalAlignment="Center" TextTrimming="CharacterEllipsis" />
+                                                    </StackPanel>
+                                                </Button>
+                                            </StackPanel>
+                                        </ScrollViewer>
+
+                                        <Button x:Name="AlertCategoryScrollLeftButton"
+                                                Style="{StaticResource AlertCategoryScrollButtonStyle}"
+                                                HorizontalAlignment="Left"
+                                                VerticalAlignment="Center"
+                                                Visibility="Collapsed"
+                                                Click="AlertCategoryScrollLeftButton_Click"
+                                                ToolTip="Ver opciones anteriores">
+                                            <Image Source="/Assets/Icons/icon_arrow_left.png"
+                                                   Width="18"
+                                                   Height="18" />
+                                        </Button>
+
+                                        <Button x:Name="AlertCategoryScrollRightButton"
+                                                Style="{StaticResource AlertCategoryScrollButtonStyle}"
+                                                HorizontalAlignment="Right"
+                                                VerticalAlignment="Center"
+                                                Visibility="Collapsed"
+                                                Click="AlertCategoryScrollRightButton_Click"
+                                                ToolTip="Ver mas opciones">
+                                            <Image Source="/Assets/Icons/icon_arrow_left.png"
+                                                   Width="18"
+                                                   Height="18"
+                                                   RenderTransformOrigin="0.5,0.5">
+                                                <Image.RenderTransform>
+                                                    <ScaleTransform ScaleX="-1" />
+                                                </Image.RenderTransform>
+                                            </Image>
+                                        </Button>
+                                    </Grid>
 
                                     <Border BorderBrush="{DynamicResource ThemeBorderBrush}"
                                             BorderThickness="1"
@@ -350,6 +452,13 @@
                                                                    Opacity="{Binding LightsActionOpacity}"
                                                                    ToolTip="{Binding LightsActionToolTip}"
                                                                    Visibility="{Binding LightsActionVisibility}" />
+                                                            <Image Source="/Assets/Icons/lights_fx_rave.png"
+                                                                   Width="16"
+                                                                   Height="16"
+                                                                   Margin="0,0,10,0"
+                                                                   Opacity="{Binding VirtualLightsActionOpacity}"
+                                                                   ToolTip="{Binding VirtualLightsActionToolTip}"
+                                                                   Visibility="{Binding VirtualLightsActionVisibility}" />
                                                             <Image Source="/Assets/Icons/action_message_green.png"
                                                                    Width="16"
                                                                    Height="16"
@@ -907,8 +1016,8 @@
                                                                        Margin="0,0,0,8" />
                                                             <WrapPanel Margin="0,0,0,12">
                                                                 <Grid x:Name="BrightnessGrid"
-                                                                      MinWidth="138"
-                                                                      Width="150"
+                                                                      MinWidth="260"
+                                                                      Width="360"
                                                                       Margin="0,0,8,8">
                                                                     <Border BorderBrush="{DynamicResource ThemeBorderBrush}"
                                                                             BorderThickness="1"
@@ -918,63 +1027,57 @@
                                                                         <StackPanel>
                                                                             <TextBlock Text="Brillo"
                                                                                        Style="{StaticResource MutedText}" />
-                                                                            <Grid Margin="0,4,0,0"
-                                                                                  Height="124">
-                                                                                <Ellipse Width="82"
-                                                                                         Height="82"
-                                                                                         Stroke="#3014B8A6"
-                                                                                         StrokeThickness="10"
-                                                                                         HorizontalAlignment="Center"
-                                                                                         VerticalAlignment="Top" />
-                                                                                <Path x:Name="BrightnessArc"
-                                                                                      Width="82"
-                                                                                      Height="82"
-                                                                                      Stretch="None"
-                                                                                      Stroke="#14B8A6"
-                                                                                      StrokeThickness="10"
-                                                                                      StrokeStartLineCap="Round"
-                                                                                      StrokeEndLineCap="Round"
-                                                                                      Fill="Transparent"
-                                                                                      HorizontalAlignment="Center"
-                                                                                      VerticalAlignment="Top" />
-                                                                                <TextBlock x:Name="BrightnessValueText"
-                                                                                           Text="{Binding Editor.BrightnessPercentText}"
-                                                                                           FontSize="19"
-                                                                                           FontWeight="SemiBold"
-                                                                                           Margin="0,28,0,0"
-                                                                                           HorizontalAlignment="Center"
-                                                                                           VerticalAlignment="Top" />
-                                                                                <StackPanel Orientation="Horizontal"
-                                                                                            HorizontalAlignment="Center"
-                                                                                            VerticalAlignment="Bottom">
-                                                                                    <Button Content="-"
-                                                                                            Width="28"
-                                                                                            Height="26"
-                                                                                            Margin="0,0,6,0"
-                                                                                            Tag="Brightness:-15"
-                                                                                            Command="{Binding AdjustLightValueCommand}"
-                                                                                            CommandParameter="{Binding Tag, RelativeSource={RelativeSource Self}}" />
-                                                                                    <Button Content="+"
-                                                                                            Width="28"
-                                                                                            Height="26"
-                                                                                            Tag="Brightness:15"
-                                                                                            Command="{Binding AdjustLightValueCommand}"
-                                                                                            CommandParameter="{Binding Tag, RelativeSource={RelativeSource Self}}" />
-                                                                                </StackPanel>
+                                                                            <Grid Margin="0,6,0,0"
+                                                                                  Height="34">
+                                                                                <Grid.ColumnDefinitions>
+                                                                                    <ColumnDefinition Width="30" />
+                                                                                    <ColumnDefinition Width="*" />
+                                                                                    <ColumnDefinition Width="30" />
+                                                                                </Grid.ColumnDefinitions>
+                                                                                <Button Content="-"
+                                                                                        Style="{StaticResource AlertStepButtonStyle}"
+                                                                                        Width="28"
+                                                                                        Height="28"
+                                                                                        Tag="Brightness:-15"
+                                                                                        Command="{Binding AdjustLightValueCommand}"
+                                                                                        CommandParameter="{Binding Tag, RelativeSource={RelativeSource Self}}" />
                                                                                 <Slider x:Name="BrightnessSlider"
+                                                                                        Grid.Column="1"
                                                                                         Minimum="0"
                                                                                         Maximum="255"
                                                                                         TickFrequency="1"
-                                                                                        Visibility="Collapsed"
+                                                                                        Margin="8,0"
+                                                                                        Style="{StaticResource AlertBrightnessSliderStyle}"
+                                                                                        VerticalAlignment="Center"
                                                                                         Value="{Binding Editor.Brightness, Mode=TwoWay, UpdateSourceTrigger=PropertyChanged}"
                                                                                         ValueChanged="RuleFieldChanged" />
+                                                                                <Border Grid.Column="1"
+                                                                                        HorizontalAlignment="Center"
+                                                                                        VerticalAlignment="Center"
+                                                                                        Background="#99000811"
+                                                                                        CornerRadius="8"
+                                                                                        Padding="8,1"
+                                                                                        IsHitTestVisible="False">
+                                                                                    <TextBlock x:Name="BrightnessValueText"
+                                                                                               Text="{Binding Editor.BrightnessPercentText}"
+                                                                                               FontWeight="SemiBold"
+                                                                                               Foreground="#FFFFFF" />
+                                                                                </Border>
+                                                                                <Button Grid.Column="2"
+                                                                                        Content="+"
+                                                                                        Style="{StaticResource AlertStepButtonStyle}"
+                                                                                        Width="28"
+                                                                                        Height="28"
+                                                                                        Tag="Brightness:15"
+                                                                                        Command="{Binding AdjustLightValueCommand}"
+                                                                                        CommandParameter="{Binding Tag, RelativeSource={RelativeSource Self}}" />
                                                                             </Grid>
                                                                         </StackPanel>
                                                                     </Border>
                                                                 </Grid>
                                                                 <Grid x:Name="DurationGrid"
-                                                                      MinWidth="156"
-                                                                      Width="172"
+                                                                      MinWidth="190"
+                                                                      Width="210"
                                                                       Margin="0,0,8,8">
                                                                     <Border BorderBrush="{DynamicResource ThemeBorderBrush}"
                                                                             BorderThickness="1"
@@ -986,12 +1089,14 @@
                                                                                        Style="{StaticResource MutedText}" />
                                                                             <DockPanel Margin="0,8,0,0">
                                                                                 <Button Content="-"
+                                                                                        Style="{StaticResource AlertStepButtonStyle}"
                                                                                         DockPanel.Dock="Left"
                                                                                         Width="28"
                                                                                         Tag="Duration:-250"
                                                                                         Command="{Binding AdjustLightValueCommand}"
                                                                                         CommandParameter="{Binding Tag, RelativeSource={RelativeSource Self}}" />
                                                                                 <Button Content="+"
+                                                                                        Style="{StaticResource AlertStepButtonStyle}"
                                                                                         DockPanel.Dock="Right"
                                                                                         Width="28"
                                                                                         Tag="Duration:250"
@@ -999,9 +1104,9 @@
                                                                                         CommandParameter="{Binding Tag, RelativeSource={RelativeSource Self}}" />
                                                                                 <StackPanel Orientation="Horizontal"
                                                                                             HorizontalAlignment="Center"
-                                                                                            MinWidth="86">
+                                                                                            MinWidth="108">
                                                                                     <TextBox x:Name="DurationValueText"
-                                                                                             Width="54"
+                                                                                             Width="70"
                                                                                              TextAlignment="Center"
                                                                                              FontWeight="SemiBold"
                                                                                              TextChanged="LightNumberBox_TextChanged" />
@@ -1027,8 +1132,8 @@
                                                                     </Border>
                                                                 </Grid>
                                                                 <Grid x:Name="CycleGrid"
-                                                                      MinWidth="156"
-                                                                      Width="172"
+                                                                      MinWidth="190"
+                                                                      Width="210"
                                                                       Margin="0,0,8,8">
                                                                     <Border BorderBrush="{DynamicResource ThemeBorderBrush}"
                                                                             BorderThickness="1"
@@ -1040,12 +1145,14 @@
                                                                                        Style="{StaticResource MutedText}" />
                                                                             <DockPanel Margin="0,8,0,0">
                                                                                 <Button Content="-"
+                                                                                        Style="{StaticResource AlertStepButtonStyle}"
                                                                                         DockPanel.Dock="Left"
                                                                                         Width="28"
                                                                                         Tag="Cycle:-10"
                                                                                         Command="{Binding AdjustLightValueCommand}"
                                                                                         CommandParameter="{Binding Tag, RelativeSource={RelativeSource Self}}" />
                                                                                 <Button Content="+"
+                                                                                        Style="{StaticResource AlertStepButtonStyle}"
                                                                                         DockPanel.Dock="Right"
                                                                                         Width="28"
                                                                                         Tag="Cycle:10"
@@ -1053,9 +1160,9 @@
                                                                                         CommandParameter="{Binding Tag, RelativeSource={RelativeSource Self}}" />
                                                                                 <StackPanel Orientation="Horizontal"
                                                                                             HorizontalAlignment="Center"
-                                                                                            MinWidth="86">
+                                                                                            MinWidth="108">
                                                                                     <TextBox x:Name="CycleValueText"
-                                                                                             Width="54"
+                                                                                             Width="70"
                                                                                              TextAlignment="Center"
                                                                                              FontWeight="SemiBold"
                                                                                              TextChanged="LightNumberBox_TextChanged" />
@@ -1081,8 +1188,8 @@
                                                                     </Border>
                                                                 </Grid>
                                                                 <Grid x:Name="StepGrid"
-                                                                      MinWidth="156"
-                                                                      Width="172"
+                                                                      MinWidth="190"
+                                                                      Width="210"
                                                                       Margin="0,0,8,8">
                                                                     <Border BorderBrush="{DynamicResource ThemeBorderBrush}"
                                                                             BorderThickness="1"
@@ -1094,12 +1201,14 @@
                                                                                        Style="{StaticResource MutedText}" />
                                                                             <DockPanel Margin="0,8,0,0">
                                                                                 <Button Content="-"
+                                                                                        Style="{StaticResource AlertStepButtonStyle}"
                                                                                         DockPanel.Dock="Left"
                                                                                         Width="28"
                                                                                         Tag="Step:-10"
                                                                                         Command="{Binding AdjustLightValueCommand}"
                                                                                         CommandParameter="{Binding Tag, RelativeSource={RelativeSource Self}}" />
                                                                                 <Button Content="+"
+                                                                                        Style="{StaticResource AlertStepButtonStyle}"
                                                                                         DockPanel.Dock="Right"
                                                                                         Width="28"
                                                                                         Tag="Step:10"
@@ -1107,9 +1216,9 @@
                                                                                         CommandParameter="{Binding Tag, RelativeSource={RelativeSource Self}}" />
                                                                                 <StackPanel Orientation="Horizontal"
                                                                                             HorizontalAlignment="Center"
-                                                                                            MinWidth="86">
+                                                                                            MinWidth="108">
                                                                                     <TextBox x:Name="StepValueText"
-                                                                                             Width="54"
+                                                                                             Width="70"
                                                                                              TextAlignment="Center"
                                                                                              FontWeight="SemiBold"
                                                                                              TextChanged="LightNumberBox_TextChanged" />
@@ -1165,6 +1274,738 @@
                                                             </WrapPanel>
 
                                                         </StackPanel>
+                                                </Grid>
+                                            </Border>
+
+                                            <Border x:Name="VirtualLightsActionCard"
+                                                    BorderBrush="{DynamicResource ThemeBorderBrush}"
+                                                    BorderThickness="1"
+                                                    CornerRadius="12"
+                                                    Padding="12"
+                                                    Margin="0,0,0,10"
+                                                    Background="{DynamicResource ThemeInputBrush}">
+                                                <Grid>
+                                                    <Grid.ColumnDefinitions>
+                                                        <ColumnDefinition Width="220" />
+                                                        <ColumnDefinition Width="16" />
+                                                        <ColumnDefinition Width="*" />
+                                                    </Grid.ColumnDefinitions>
+
+                                                    <Grid MinWidth="190" VerticalAlignment="Center">
+                                                        <Grid.ColumnDefinitions>
+                                                            <ColumnDefinition Width="42" />
+                                                            <ColumnDefinition Width="*" />
+                                                            <ColumnDefinition Width="Auto" />
+                                                        </Grid.ColumnDefinitions>
+                                                        <Image Source="/Assets/Icons/lights_fx_rave.png"
+                                                               Width="26"
+                                                               Height="26"
+                                                               Stretch="Uniform"
+                                                               VerticalAlignment="Center" />
+                                                        <StackPanel Grid.Column="1"
+                                                                    VerticalAlignment="Center">
+                                                            <TextBlock Text="Luces virtuales"
+                                                                       FontWeight="SemiBold" />
+                                                            <TextBlock Text="Simula luces en OBS o pantalla."
+                                                                       Style="{StaticResource MutedText}"
+                                                                       FontSize="12"
+                                                                       TextWrapping="Wrap" />
+                                                        </StackPanel>
+                                                        <CheckBox x:Name="VirtualLightsCheck"
+                                                                  Grid.Column="2"
+                                                                  Content=""
+                                                                  Style="{StaticResource AlertToggleSwitchStyle}"
+                                                                  IsChecked="{Binding Editor.UseVirtualLights, Mode=TwoWay, UpdateSourceTrigger=PropertyChanged}"
+                                                                  Checked="RuleFieldChanged"
+                                                                  Unchecked="RuleFieldChanged" />
+                                                    </Grid>
+
+                                                    <StackPanel x:Name="VirtualLightsDetailsPanel"
+                                                                Grid.Column="2"
+                                                                VerticalAlignment="Center">
+                                                        <Grid Margin="0,10,0,0">
+                                                            <Grid.ColumnDefinitions>
+                                                                <ColumnDefinition Width="*" />
+                                                                <ColumnDefinition Width="10" />
+                                                                <ColumnDefinition Width="*" />
+                                                            </Grid.ColumnDefinitions>
+                                                            <StackPanel>
+                                                                <TextBlock Text="Pantalla"
+                                                                           Style="{StaticResource MutedText}" />
+                                                                <ComboBox ItemsSource="{Binding VirtualScreenChoices}"
+                                                                          DisplayMemberPath="Label"
+                                                                          SelectedValuePath="Value"
+                                                                          SelectedValue="{Binding Editor.VirtualLightsScreenId, Mode=TwoWay, UpdateSourceTrigger=PropertyChanged}"
+                                                                          SelectionChanged="RuleFieldChanged"
+                                                                          Margin="0,4,0,0" />
+                                                            </StackPanel>
+                                                            <StackPanel Grid.Column="2">
+                                                                <TextBlock Text="Modo"
+                                                                           Style="{StaticResource MutedText}" />
+                                                                <WrapPanel Margin="0,6,0,0">
+                                                                    <StackPanel Orientation="Horizontal"
+                                                                                VerticalAlignment="Center">
+                                                                        <CheckBox x:Name="VirtualLightsObsCheck"
+                                                                                  Content=""
+                                                                                  Style="{StaticResource AlertToggleSwitchStyle}"
+                                                                                  IsChecked="{Binding Editor.VirtualLightsToObs, Mode=TwoWay, UpdateSourceTrigger=PropertyChanged}"
+                                                                                  Checked="RuleFieldChanged"
+                                                                                  Unchecked="RuleFieldChanged" />
+                                                                        <TextBlock Text="OBS"
+                                                                                   Margin="8,0,0,0"
+                                                                                   VerticalAlignment="Center"
+                                                                                   FontWeight="SemiBold" />
+                                                                    </StackPanel>
+                                                                    <StackPanel Orientation="Horizontal"
+                                                                                Margin="18,0,0,0"
+                                                                                VerticalAlignment="Center">
+                                                                        <CheckBox x:Name="VirtualLightsScreenCheck"
+                                                                                  Content=""
+                                                                                  Style="{StaticResource AlertToggleSwitchStyle}"
+                                                                                  IsChecked="{Binding Editor.VirtualLightsToScreen, Mode=TwoWay, UpdateSourceTrigger=PropertyChanged}"
+                                                                                  Checked="RuleFieldChanged"
+                                                                                  Unchecked="RuleFieldChanged" />
+                                                                        <TextBlock Text="Pantalla"
+                                                                                   Margin="8,0,0,0"
+                                                                                   VerticalAlignment="Center"
+                                                                                   FontWeight="SemiBold" />
+                                                                    </StackPanel>
+                                                                </WrapPanel>
+                                                            </StackPanel>
+                                                        </Grid>
+                                                        <WrapPanel Margin="0,10,0,0">
+                                                            <StackPanel x:Name="VirtualObsOptionsPanel"
+                                                                        Width="210"
+                                                                        Margin="0,0,8,8">
+                                                                <Border BorderBrush="{DynamicResource ThemeBorderBrush}"
+                                                                        BorderThickness="1"
+                                                                        CornerRadius="12"
+                                                                        Padding="8"
+                                                                        Background="{DynamicResource ThemeSurfaceBrush}">
+                                                                    <StackPanel>
+                                                                        <TextBlock Text="Opacidad en OBS"
+                                                                                   Style="{StaticResource MutedText}" />
+                                                                        <DockPanel Margin="0,8,0,0">
+                                                                            <Button Content="-"
+                                                                                    Style="{StaticResource AlertStepButtonStyle}"
+                                                                                    DockPanel.Dock="Left"
+                                                                                    Tag="VirtualObsOpacity:-5"
+                                                                                    Command="{Binding AdjustLightValueCommand}"
+                                                                                    CommandParameter="{Binding Tag, RelativeSource={RelativeSource Self}}" />
+                                                                            <Button Content="+"
+                                                                                    Style="{StaticResource AlertStepButtonStyle}"
+                                                                                    DockPanel.Dock="Right"
+                                                                                    Tag="VirtualObsOpacity:5"
+                                                                                    Command="{Binding AdjustLightValueCommand}"
+                                                                                    CommandParameter="{Binding Tag, RelativeSource={RelativeSource Self}}" />
+                                                                            <TextBox x:Name="VirtualObsOpacityValueText"
+                                                                                     Width="88"
+                                                                                     TextAlignment="Center"
+                                                                                     FontWeight="SemiBold"
+                                                                                     TextChanged="LightNumberBox_TextChanged" />
+                                                                        </DockPanel>
+                                                                    </StackPanel>
+                                                                </Border>
+                                                            </StackPanel>
+                                                            <Grid x:Name="VirtualScreenOptionsPanel">
+                                                                <WrapPanel>
+                                                                    <Border Width="210"
+                                                                            Margin="0,0,8,8"
+                                                                            BorderBrush="{DynamicResource ThemeBorderBrush}"
+                                                                            BorderThickness="1"
+                                                                            CornerRadius="12"
+                                                                            Padding="8"
+                                                                            Background="{DynamicResource ThemeSurfaceBrush}">
+                                                                        <StackPanel>
+                                                                            <TextBlock Text="Tamano pixel"
+                                                                                       Style="{StaticResource MutedText}" />
+                                                                            <DockPanel Margin="0,8,0,0">
+                                                                                <Button Content="-"
+                                                                                        Style="{StaticResource AlertStepButtonStyle}"
+                                                                                        DockPanel.Dock="Left"
+                                                                                        Tag="VirtualScreenPixel:-2"
+                                                                                        Command="{Binding AdjustLightValueCommand}"
+                                                                                        CommandParameter="{Binding Tag, RelativeSource={RelativeSource Self}}" />
+                                                                                <Button Content="+"
+                                                                                        Style="{StaticResource AlertStepButtonStyle}"
+                                                                                        DockPanel.Dock="Right"
+                                                                                        Tag="VirtualScreenPixel:2"
+                                                                                        Command="{Binding AdjustLightValueCommand}"
+                                                                                        CommandParameter="{Binding Tag, RelativeSource={RelativeSource Self}}" />
+                                                                                <TextBox x:Name="VirtualScreenPixelValueText"
+                                                                                         Width="88"
+                                                                                         TextAlignment="Center"
+                                                                                         FontWeight="SemiBold"
+                                                                                         TextChanged="LightNumberBox_TextChanged" />
+                                                                            </DockPanel>
+                                                                        </StackPanel>
+                                                                    </Border>
+                                                                    <Border Width="210"
+                                                                            Margin="0,0,8,8"
+                                                                            BorderBrush="{DynamicResource ThemeBorderBrush}"
+                                                                            BorderThickness="1"
+                                                                            CornerRadius="12"
+                                                                            Padding="8"
+                                                                            Background="{DynamicResource ThemeSurfaceBrush}">
+                                                                        <StackPanel>
+                                                                            <TextBlock Text="Saturacion"
+                                                                                       Style="{StaticResource MutedText}" />
+                                                                            <DockPanel Margin="0,8,0,0">
+                                                                                <Button Content="-"
+                                                                                        Style="{StaticResource AlertStepButtonStyle}"
+                                                                                        DockPanel.Dock="Left"
+                                                                                        Tag="VirtualScreenSaturation:-10"
+                                                                                        Command="{Binding AdjustLightValueCommand}"
+                                                                                        CommandParameter="{Binding Tag, RelativeSource={RelativeSource Self}}" />
+                                                                                <Button Content="+"
+                                                                                        Style="{StaticResource AlertStepButtonStyle}"
+                                                                                        DockPanel.Dock="Right"
+                                                                                        Tag="VirtualScreenSaturation:10"
+                                                                                        Command="{Binding AdjustLightValueCommand}"
+                                                                                        CommandParameter="{Binding Tag, RelativeSource={RelativeSource Self}}" />
+                                                                                <TextBox x:Name="VirtualScreenSaturationValueText"
+                                                                                         Width="88"
+                                                                                         TextAlignment="Center"
+                                                                                         FontWeight="SemiBold"
+                                                                                         TextChanged="LightNumberBox_TextChanged" />
+                                                                            </DockPanel>
+                                                                        </StackPanel>
+                                                                    </Border>
+                                                                </WrapPanel>
+                                                            </Grid>
+                                                        </WrapPanel>
+                                                        <TextBlock Text="Patron virtual"
+                                                                   Style="{StaticResource MutedText}"
+                                                                   Margin="0,10,0,4" />
+                                                        <UniformGrid Columns="7"
+                                                                     Margin="-3,0,-3,2">
+                                                            <Button x:Name="VirtualPatternSolidTileButton"
+                                                                    Tag="Virtual:Solid"
+                                                                    Style="{StaticResource AlertLightPatternButtonStyle}"
+                                                                    Command="{Binding SelectLightPatternCommand}"
+                                                                    CommandParameter="{Binding Tag, RelativeSource={RelativeSource Self}}">
+                                                                <StackPanel Orientation="Horizontal"
+                                                                            HorizontalAlignment="Center">
+                                                                    <Rectangle Width="18"
+                                                                               Height="18"
+                                                                               Margin="0,0,5,0"
+                                                                               Fill="{Binding Foreground, RelativeSource={RelativeSource AncestorType=Button}}">
+                                                                        <Rectangle.OpacityMask>
+                                                                            <ImageBrush ImageSource="/Assets/Icons/lights_fx_static.png"
+                                                                                        Stretch="Uniform" />
+                                                                        </Rectangle.OpacityMask>
+                                                                    </Rectangle>
+                                                                    <TextBlock Text="Fijo"
+                                                                               FontSize="10"
+                                                                               FontWeight="SemiBold" />
+                                                                </StackPanel>
+                                                            </Button>
+                                                            <Button x:Name="VirtualPatternPulseTileButton"
+                                                                    Tag="Virtual:Pulse"
+                                                                    Style="{StaticResource AlertLightPatternButtonStyle}"
+                                                                    Command="{Binding SelectLightPatternCommand}"
+                                                                    CommandParameter="{Binding Tag, RelativeSource={RelativeSource Self}}">
+                                                                <StackPanel Orientation="Horizontal"
+                                                                            HorizontalAlignment="Center">
+                                                                    <Rectangle Width="18"
+                                                                               Height="18"
+                                                                               Margin="0,0,5,0"
+                                                                               Fill="{Binding Foreground, RelativeSource={RelativeSource AncestorType=Button}}">
+                                                                        <Rectangle.OpacityMask>
+                                                                            <ImageBrush ImageSource="/Assets/Icons/lights_fx_pulse.png"
+                                                                                        Stretch="Uniform" />
+                                                                        </Rectangle.OpacityMask>
+                                                                    </Rectangle>
+                                                                    <TextBlock Text="Pulso"
+                                                                               FontSize="10"
+                                                                               FontWeight="SemiBold" />
+                                                                </StackPanel>
+                                                            </Button>
+                                                            <Button x:Name="VirtualPatternRainbowTileButton"
+                                                                    Tag="Virtual:Rainbow"
+                                                                    Style="{StaticResource AlertLightPatternButtonStyle}"
+                                                                    Command="{Binding SelectLightPatternCommand}"
+                                                                    CommandParameter="{Binding Tag, RelativeSource={RelativeSource Self}}">
+                                                                <StackPanel Orientation="Horizontal"
+                                                                            HorizontalAlignment="Center">
+                                                                    <Rectangle Width="18"
+                                                                               Height="18"
+                                                                               Margin="0,0,5,0"
+                                                                               Fill="{Binding Foreground, RelativeSource={RelativeSource AncestorType=Button}}">
+                                                                        <Rectangle.OpacityMask>
+                                                                            <ImageBrush ImageSource="/Assets/Icons/lights_fx_rainbow.png"
+                                                                                        Stretch="Uniform" />
+                                                                        </Rectangle.OpacityMask>
+                                                                    </Rectangle>
+                                                                    <TextBlock Text="Arcoiris"
+                                                                               FontSize="10"
+                                                                               FontWeight="SemiBold" />
+                                                                </StackPanel>
+                                                            </Button>
+                                                            <Button x:Name="VirtualPatternChaseTileButton"
+                                                                    Tag="Virtual:Chase"
+                                                                    Style="{StaticResource AlertLightPatternButtonStyle}"
+                                                                    Command="{Binding SelectLightPatternCommand}"
+                                                                    CommandParameter="{Binding Tag, RelativeSource={RelativeSource Self}}">
+                                                                <StackPanel Orientation="Horizontal"
+                                                                            HorizontalAlignment="Center">
+                                                                    <Rectangle Width="18"
+                                                                               Height="18"
+                                                                               Margin="0,0,5,0"
+                                                                               Fill="{Binding Foreground, RelativeSource={RelativeSource AncestorType=Button}}">
+                                                                        <Rectangle.OpacityMask>
+                                                                            <ImageBrush ImageSource="/Assets/Icons/lights_fx_wave.png"
+                                                                                        Stretch="Uniform" />
+                                                                        </Rectangle.OpacityMask>
+                                                                    </Rectangle>
+                                                                    <TextBlock Text="Carrera"
+                                                                               FontSize="10"
+                                                                               FontWeight="SemiBold" />
+                                                                </StackPanel>
+                                                            </Button>
+                                                            <Button x:Name="VirtualPatternTheaterTileButton"
+                                                                    Tag="Virtual:Theater"
+                                                                    Style="{StaticResource AlertLightPatternButtonStyle}"
+                                                                    Command="{Binding SelectLightPatternCommand}"
+                                                                    CommandParameter="{Binding Tag, RelativeSource={RelativeSource Self}}">
+                                                                <StackPanel Orientation="Horizontal"
+                                                                            HorizontalAlignment="Center">
+                                                                    <Rectangle Width="18"
+                                                                               Height="18"
+                                                                               Margin="0,0,5,0"
+                                                                               Fill="{Binding Foreground, RelativeSource={RelativeSource AncestorType=Button}}">
+                                                                        <Rectangle.OpacityMask>
+                                                                            <ImageBrush ImageSource="/Assets/Icons/lights_fx_breathe.png"
+                                                                                        Stretch="Uniform" />
+                                                                        </Rectangle.OpacityMask>
+                                                                    </Rectangle>
+                                                                    <TextBlock Text="Teatro"
+                                                                               FontSize="10"
+                                                                               FontWeight="SemiBold" />
+                                                                </StackPanel>
+                                                            </Button>
+                                                            <Button x:Name="VirtualPatternSparkleTileButton"
+                                                                    Tag="Virtual:Sparkle"
+                                                                    Style="{StaticResource AlertLightPatternButtonStyle}"
+                                                                    Command="{Binding SelectLightPatternCommand}"
+                                                                    CommandParameter="{Binding Tag, RelativeSource={RelativeSource Self}}">
+                                                                <StackPanel Orientation="Horizontal"
+                                                                            HorizontalAlignment="Center">
+                                                                    <Rectangle Width="18"
+                                                                               Height="18"
+                                                                               Margin="0,0,5,0"
+                                                                               Fill="{Binding Foreground, RelativeSource={RelativeSource AncestorType=Button}}">
+                                                                        <Rectangle.OpacityMask>
+                                                                            <ImageBrush ImageSource="/Assets/Icons/activity_notification_lime.png"
+                                                                                        Stretch="Uniform" />
+                                                                        </Rectangle.OpacityMask>
+                                                                    </Rectangle>
+                                                                    <TextBlock Text="Destellos"
+                                                                               FontSize="10"
+                                                                               FontWeight="SemiBold" />
+                                                                </StackPanel>
+                                                            </Button>
+                                                            <Button x:Name="VirtualPatternRaveTileButton"
+                                                                    Tag="Virtual:Rave"
+                                                                    Style="{StaticResource AlertLightPatternButtonStyle}"
+                                                                    Command="{Binding SelectLightPatternCommand}"
+                                                                    CommandParameter="{Binding Tag, RelativeSource={RelativeSource Self}}">
+                                                                <StackPanel Orientation="Horizontal"
+                                                                            HorizontalAlignment="Center">
+                                                                    <Rectangle Width="18"
+                                                                               Height="18"
+                                                                               Margin="0,0,5,0"
+                                                                               Fill="{Binding Foreground, RelativeSource={RelativeSource AncestorType=Button}}">
+                                                                        <Rectangle.OpacityMask>
+                                                                            <ImageBrush ImageSource="/Assets/Icons/lights_fx_rave.png"
+                                                                                        Stretch="Uniform" />
+                                                                        </Rectangle.OpacityMask>
+                                                                    </Rectangle>
+                                                                    <TextBlock Text="Rave"
+                                                                               FontSize="10"
+                                                                               FontWeight="SemiBold" />
+                                                                </StackPanel>
+                                                            </Button>
+                                                        </UniformGrid>
+                                                        <Grid x:Name="VirtualColorOptionsGrid"
+                                                              MinWidth="0"
+                                                              HorizontalAlignment="Stretch"
+                                                              Margin="0,10,0,8">
+                                                            <Border BorderBrush="{DynamicResource ThemeBorderBrush}"
+                                                                    BorderThickness="1"
+                                                                    CornerRadius="14"
+                                                                    Padding="10"
+                                                                    Background="{DynamicResource ThemeSurfaceBrush}">
+                                                                <UniformGrid Columns="3">
+                                                                    <StackPanel x:Name="VirtualPrimaryColorPanel"
+                                                                                Margin="0,0,8,0">
+                                                                        <TextBlock Text="Color principal"
+                                                                                   Style="{StaticResource MutedText}"
+                                                                                   Margin="0,0,0,4" />
+                                                                        <DockPanel LastChildFill="True">
+                                                                            <Button x:Name="VirtualPrimaryColorButton"
+                                                                                    DockPanel.Dock="Left"
+                                                                                    Width="34"
+                                                                                    Height="34"
+                                                                                    Margin="0,0,8,0"
+                                                                                    Padding="0"
+                                                                                    ToolTip="Escoger color"
+                                                                                    Command="{Binding PickLightColorCommand}"
+                                                                                    CommandParameter="VirtualPrimary" />
+                                                                            <TextBox x:Name="VirtualPrimaryColorBox"
+                                                                                     MinWidth="0"
+                                                                                     Text="{Binding Editor.VirtualLightsPrimaryColor, Mode=TwoWay, UpdateSourceTrigger=PropertyChanged}"
+                                                                                     TextChanged="RuleFieldChanged" />
+                                                                        </DockPanel>
+                                                                    </StackPanel>
+                                                                    <StackPanel Margin="0,0,8,0">
+                                                                        <TextBlock x:Name="VirtualSecondaryColorLabel"
+                                                                                   Text="Color secundario"
+                                                                                   Style="{StaticResource MutedText}"
+                                                                                   Margin="0,0,0,4" />
+                                                                        <DockPanel x:Name="VirtualSecondaryColorPanel"
+                                                                                   LastChildFill="True">
+                                                                            <Button x:Name="VirtualSecondaryColorButton"
+                                                                                    DockPanel.Dock="Left"
+                                                                                    Width="34"
+                                                                                    Height="34"
+                                                                                    Margin="0,0,8,0"
+                                                                                    Padding="0"
+                                                                                    ToolTip="Escoger color"
+                                                                                    Command="{Binding PickLightColorCommand}"
+                                                                                    CommandParameter="VirtualSecondary" />
+                                                                            <TextBox x:Name="VirtualSecondaryColorBox"
+                                                                                     MinWidth="0"
+                                                                                     Text="{Binding Editor.VirtualLightsSecondaryColor, Mode=TwoWay, UpdateSourceTrigger=PropertyChanged}"
+                                                                                     TextChanged="RuleFieldChanged" />
+                                                                        </DockPanel>
+                                                                    </StackPanel>
+                                                                    <StackPanel>
+                                                                        <TextBlock x:Name="VirtualTertiaryColorLabel"
+                                                                                   Text="Tercer color"
+                                                                                   Style="{StaticResource MutedText}"
+                                                                                   Margin="0,0,0,4" />
+                                                                        <DockPanel x:Name="VirtualTertiaryColorPanel"
+                                                                                   LastChildFill="True">
+                                                                            <Button x:Name="VirtualTertiaryColorButton"
+                                                                                    DockPanel.Dock="Left"
+                                                                                    Width="34"
+                                                                                    Height="34"
+                                                                                    Margin="0,0,8,0"
+                                                                                    Padding="0"
+                                                                                    ToolTip="Escoger color"
+                                                                                    Command="{Binding PickLightColorCommand}"
+                                                                                    CommandParameter="VirtualTertiary" />
+                                                                            <TextBox x:Name="VirtualTertiaryColorBox"
+                                                                                     MinWidth="0"
+                                                                                     Text="{Binding Editor.VirtualLightsTertiaryColor, Mode=TwoWay, UpdateSourceTrigger=PropertyChanged}"
+                                                                                     TextChanged="RuleFieldChanged" />
+                                                                        </DockPanel>
+                                                                    </StackPanel>
+                                                                </UniformGrid>
+                                                            </Border>
+                                                        </Grid>
+
+                                                        <TextBlock x:Name="VirtualLedPreviewTitle"
+                                                                   Text="Vista previa virtual"
+                                                                   FontWeight="SemiBold"
+                                                                   Margin="0,8,0,6" />
+                                                        <Border x:Name="VirtualRuleLedPreviewPanel"
+                                                                BorderBrush="{DynamicResource ThemeBorderBrush}"
+                                                                BorderThickness="1"
+                                                                CornerRadius="10"
+                                                                Padding="10"
+                                                                Background="{DynamicResource ThemeSurfaceBrush}"
+                                                                IsVisibleChanged="RuleLedPreviewPanel_IsVisibleChanged">
+                                                            <ItemsControl x:Name="VirtualRuleLedPreviewList"
+                                                                          ItemsSource="{Binding VirtualLedPreviewDots}">
+                                                                <ItemsControl.ItemsPanel>
+                                                                    <ItemsPanelTemplate>
+                                                                        <UniformGrid Rows="1" />
+                                                                    </ItemsPanelTemplate>
+                                                                </ItemsControl.ItemsPanel>
+                                                                <ItemsControl.ItemTemplate>
+                                                                    <DataTemplate>
+                                                                        <Ellipse Width="16"
+                                                                                 Height="16"
+                                                                                 Fill="{Binding Fill}"
+                                                                                 Stroke="#80FFFFFF"
+                                                                                 StrokeThickness="1"
+                                                                                 Margin="4">
+                                                                            <Ellipse.Effect>
+                                                                                <DropShadowEffect Color="{Binding GlowColor}"
+                                                                                                  BlurRadius="{Binding GlowRadius}"
+                                                                                                  ShadowDepth="0"
+                                                                                                  Opacity="{Binding GlowOpacity}" />
+                                                                            </Ellipse.Effect>
+                                                                        </Ellipse>
+                                                                    </DataTemplate>
+                                                                </ItemsControl.ItemTemplate>
+                                                            </ItemsControl>
+                                                        </Border>
+
+                                                        <TextBlock x:Name="VirtualTimingTitle"
+                                                                   Text="Brillo y tiempos virtuales"
+                                                                   FontWeight="SemiBold"
+                                                                   Margin="0,10,0,8" />
+                                                        <WrapPanel Margin="0,0,0,0">
+                                                            <Grid x:Name="VirtualBrightnessGrid"
+                                                                  MinWidth="260"
+                                                                  Width="360"
+                                                                  Margin="0,0,8,8">
+                                                                <Border BorderBrush="{DynamicResource ThemeBorderBrush}"
+                                                                        BorderThickness="1"
+                                                                        CornerRadius="12"
+                                                                        Padding="8"
+                                                                        Background="{DynamicResource ThemeSurfaceBrush}">
+                                                                    <StackPanel>
+                                                                        <TextBlock Text="Brillo"
+                                                                                   Style="{StaticResource MutedText}" />
+                                                                        <Grid Margin="0,4,0,0"
+                                                                              Height="34">
+                                                                            <Grid.ColumnDefinitions>
+                                                                                <ColumnDefinition Width="30" />
+                                                                                <ColumnDefinition Width="*" />
+                                                                                <ColumnDefinition Width="30" />
+                                                                            </Grid.ColumnDefinitions>
+                                                                            <Button Content="-"
+                                                                                    Style="{StaticResource AlertStepButtonStyle}"
+                                                                                    Width="28"
+                                                                                    Height="28"
+                                                                                    Tag="VirtualBrightness:-15"
+                                                                                    Command="{Binding AdjustLightValueCommand}"
+                                                                                    CommandParameter="{Binding Tag, RelativeSource={RelativeSource Self}}" />
+                                                                            <Slider x:Name="VirtualBrightnessSlider"
+                                                                                    Grid.Column="1"
+                                                                                    Minimum="0"
+                                                                                    Maximum="255"
+                                                                                    TickFrequency="1"
+                                                                                    Margin="8,0"
+                                                                                    Style="{StaticResource AlertBrightnessSliderStyle}"
+                                                                                    VerticalAlignment="Center"
+                                                                                    Value="{Binding Editor.VirtualLightsBrightness, Mode=TwoWay, UpdateSourceTrigger=PropertyChanged}"
+                                                                                    ValueChanged="RuleFieldChanged" />
+                                                                            <Border Grid.Column="1"
+                                                                                    HorizontalAlignment="Center"
+                                                                                    VerticalAlignment="Center"
+                                                                                    Background="#99000811"
+                                                                                    CornerRadius="8"
+                                                                                    Padding="8,1"
+                                                                                    IsHitTestVisible="False">
+                                                                                <TextBlock Text="{Binding Editor.VirtualBrightnessPercentText}"
+                                                                                           FontWeight="SemiBold"
+                                                                                           Foreground="#FFFFFF" />
+                                                                            </Border>
+                                                                            <Button Grid.Column="2"
+                                                                                    Content="+"
+                                                                                    Style="{StaticResource AlertStepButtonStyle}"
+                                                                                    Width="28"
+                                                                                    Height="28"
+                                                                                    Tag="VirtualBrightness:15"
+                                                                                    Command="{Binding AdjustLightValueCommand}"
+                                                                                    CommandParameter="{Binding Tag, RelativeSource={RelativeSource Self}}" />
+                                                                        </Grid>
+                                                                    </StackPanel>
+                                                                </Border>
+                                                            </Grid>
+                                                            <Grid x:Name="VirtualDurationGrid"
+                                                                  MinWidth="190"
+                                                                  Width="210"
+                                                                  Margin="0,0,8,8">
+                                                                <Border BorderBrush="{DynamicResource ThemeBorderBrush}"
+                                                                        BorderThickness="1"
+                                                                        CornerRadius="12"
+                                                                        Padding="8"
+                                                                        Background="{DynamicResource ThemeSurfaceBrush}">
+                                                                    <StackPanel>
+                                                                        <TextBlock Text="Duracion"
+                                                                                   Style="{StaticResource MutedText}" />
+                                                                        <DockPanel Margin="0,8,0,0">
+                                                                            <Button Content="-"
+                                                                                    Style="{StaticResource AlertStepButtonStyle}"
+                                                                                    DockPanel.Dock="Left"
+                                                                                    Width="28"
+                                                                                    Tag="VirtualDuration:-250"
+                                                                                    Command="{Binding AdjustLightValueCommand}"
+                                                                                    CommandParameter="{Binding Tag, RelativeSource={RelativeSource Self}}" />
+                                                                            <Button Content="+"
+                                                                                    Style="{StaticResource AlertStepButtonStyle}"
+                                                                                    DockPanel.Dock="Right"
+                                                                                    Width="28"
+                                                                                    Tag="VirtualDuration:250"
+                                                                                    Command="{Binding AdjustLightValueCommand}"
+                                                                                    CommandParameter="{Binding Tag, RelativeSource={RelativeSource Self}}" />
+                                                                            <StackPanel Orientation="Horizontal"
+                                                                                        HorizontalAlignment="Center"
+                                                                                        MinWidth="108">
+                                                                                <TextBox x:Name="VirtualDurationValueText"
+                                                                                         Width="70"
+                                                                                         TextAlignment="Center"
+                                                                                         FontWeight="SemiBold"
+                                                                                         TextChanged="LightNumberBox_TextChanged" />
+                                                                                <Border BorderBrush="{DynamicResource ThemeBorderBrush}"
+                                                                                        BorderThickness="1"
+                                                                                        CornerRadius="6"
+                                                                                        Padding="8,0"
+                                                                                        Margin="4,0,0,0">
+                                                                                    <TextBlock Text="ms"
+                                                                                               VerticalAlignment="Center"
+                                                                                               Style="{StaticResource MutedText}" />
+                                                                                </Border>
+                                                                            </StackPanel>
+                                                                        </DockPanel>
+                                                                        <Slider x:Name="VirtualDurationSlider"
+                                                                                Minimum="250"
+                                                                                Maximum="60000"
+                                                                                TickFrequency="250"
+                                                                                Visibility="Collapsed"
+                                                                                Value="{Binding Editor.VirtualLightsDurationMs, Mode=TwoWay, UpdateSourceTrigger=PropertyChanged}"
+                                                                                ValueChanged="RuleFieldChanged" />
+                                                                    </StackPanel>
+                                                                </Border>
+                                                            </Grid>
+                                                            <Grid x:Name="VirtualCycleGrid"
+                                                                  MinWidth="190"
+                                                                  Width="210"
+                                                                  Margin="0,0,8,8">
+                                                                <Border BorderBrush="{DynamicResource ThemeBorderBrush}"
+                                                                        BorderThickness="1"
+                                                                        CornerRadius="12"
+                                                                        Padding="8"
+                                                                        Background="{DynamicResource ThemeSurfaceBrush}">
+                                                                    <StackPanel>
+                                                                        <TextBlock Text="Delay entre pasos"
+                                                                                   Style="{StaticResource MutedText}" />
+                                                                        <DockPanel Margin="0,8,0,0">
+                                                                            <Button Content="-"
+                                                                                    Style="{StaticResource AlertStepButtonStyle}"
+                                                                                    DockPanel.Dock="Left"
+                                                                                    Width="28"
+                                                                                    Tag="VirtualCycle:-10"
+                                                                                    Command="{Binding AdjustLightValueCommand}"
+                                                                                    CommandParameter="{Binding Tag, RelativeSource={RelativeSource Self}}" />
+                                                                            <Button Content="+"
+                                                                                    Style="{StaticResource AlertStepButtonStyle}"
+                                                                                    DockPanel.Dock="Right"
+                                                                                    Width="28"
+                                                                                    Tag="VirtualCycle:10"
+                                                                                    Command="{Binding AdjustLightValueCommand}"
+                                                                                    CommandParameter="{Binding Tag, RelativeSource={RelativeSource Self}}" />
+                                                                            <StackPanel Orientation="Horizontal"
+                                                                                        HorizontalAlignment="Center"
+                                                                                        MinWidth="108">
+                                                                                <TextBox x:Name="VirtualCycleValueText"
+                                                                                         Width="70"
+                                                                                         TextAlignment="Center"
+                                                                                         FontWeight="SemiBold"
+                                                                                         TextChanged="LightNumberBox_TextChanged" />
+                                                                                <Border BorderBrush="{DynamicResource ThemeBorderBrush}"
+                                                                                        BorderThickness="1"
+                                                                                        CornerRadius="6"
+                                                                                        Padding="8,0"
+                                                                                        Margin="4,0,0,0">
+                                                                                    <TextBlock Text="ms"
+                                                                                               VerticalAlignment="Center"
+                                                                                               Style="{StaticResource MutedText}" />
+                                                                                </Border>
+                                                                            </StackPanel>
+                                                                        </DockPanel>
+                                                                        <Slider x:Name="VirtualCycleSlider"
+                                                                                Minimum="10"
+                                                                                Maximum="2000"
+                                                                                TickFrequency="10"
+                                                                                Visibility="Collapsed"
+                                                                                Value="{Binding Editor.VirtualLightsCycleMs, Mode=TwoWay, UpdateSourceTrigger=PropertyChanged}"
+                                                                                ValueChanged="RuleFieldChanged" />
+                                                                    </StackPanel>
+                                                                </Border>
+                                                            </Grid>
+                                                            <Grid x:Name="VirtualStepGrid"
+                                                                  MinWidth="190"
+                                                                  Width="210"
+                                                                  Margin="0,0,8,8">
+                                                                <Border BorderBrush="{DynamicResource ThemeBorderBrush}"
+                                                                        BorderThickness="1"
+                                                                        CornerRadius="12"
+                                                                        Padding="8"
+                                                                        Background="{DynamicResource ThemeSurfaceBrush}">
+                                                                    <StackPanel>
+                                                                        <TextBlock Text="Duracion del paso"
+                                                                                   Style="{StaticResource MutedText}" />
+                                                                        <DockPanel Margin="0,8,0,0">
+                                                                            <Button Content="-"
+                                                                                    Style="{StaticResource AlertStepButtonStyle}"
+                                                                                    DockPanel.Dock="Left"
+                                                                                    Width="28"
+                                                                                    Tag="VirtualStep:-10"
+                                                                                    Command="{Binding AdjustLightValueCommand}"
+                                                                                    CommandParameter="{Binding Tag, RelativeSource={RelativeSource Self}}" />
+                                                                            <Button Content="+"
+                                                                                    Style="{StaticResource AlertStepButtonStyle}"
+                                                                                    DockPanel.Dock="Right"
+                                                                                    Width="28"
+                                                                                    Tag="VirtualStep:10"
+                                                                                    Command="{Binding AdjustLightValueCommand}"
+                                                                                    CommandParameter="{Binding Tag, RelativeSource={RelativeSource Self}}" />
+                                                                            <StackPanel Orientation="Horizontal"
+                                                                                        HorizontalAlignment="Center"
+                                                                                        MinWidth="108">
+                                                                                <TextBox x:Name="VirtualStepValueText"
+                                                                                         Width="70"
+                                                                                         TextAlignment="Center"
+                                                                                         FontWeight="SemiBold"
+                                                                                         TextChanged="LightNumberBox_TextChanged" />
+                                                                                <Border BorderBrush="{DynamicResource ThemeBorderBrush}"
+                                                                                        BorderThickness="1"
+                                                                                        CornerRadius="6"
+                                                                                        Padding="8,0"
+                                                                                        Margin="4,0,0,0">
+                                                                                    <TextBlock Text="ms"
+                                                                                               VerticalAlignment="Center"
+                                                                                               Style="{StaticResource MutedText}" />
+                                                                                </Border>
+                                                                            </StackPanel>
+                                                                        </DockPanel>
+                                                                        <Slider x:Name="VirtualStepSlider"
+                                                                                Minimum="10"
+                                                                                Maximum="5000"
+                                                                                TickFrequency="10"
+                                                                                Visibility="Collapsed"
+                                                                                Value="{Binding Editor.VirtualLightsStepMs, Mode=TwoWay, UpdateSourceTrigger=PropertyChanged}"
+                                                                                ValueChanged="RuleFieldChanged" />
+                                                                    </StackPanel>
+                                                                </Border>
+                                                            </Grid>
+                                                            <Border BorderBrush="{DynamicResource ThemeBorderBrush}"
+                                                                    BorderThickness="1"
+                                                                    CornerRadius="12"
+                                                                    Padding="8"
+                                                                    MinWidth="180"
+                                                                    Width="198"
+                                                                    Margin="0,0,8,8"
+                                                                    Background="{DynamicResource ThemeSurfaceBrush}">
+                                                                <StackPanel>
+                                                                    <TextBlock Text="Presets rapidos"
+                                                                               Style="{StaticResource MutedText}"
+                                                                               Margin="0,0,0,8" />
+                                                                    <UniformGrid Columns="3">
+                                                                        <Button Content="Suave"
+                                                                                Tag="Virtual:Soft"
+                                                                                Command="{Binding SelectLightPresetCommand}"
+                                                                                CommandParameter="{Binding Tag, RelativeSource={RelativeSource Self}}" />
+                                                                        <Button Content="Medio"
+                                                                                Tag="Virtual:Medium"
+                                                                                Command="{Binding SelectLightPresetCommand}"
+                                                                                CommandParameter="{Binding Tag, RelativeSource={RelativeSource Self}}" />
+                                                                        <Button Content="Rapido"
+                                                                                Tag="Virtual:Fast"
+                                                                                Command="{Binding SelectLightPresetCommand}"
+                                                                                CommandParameter="{Binding Tag, RelativeSource={RelativeSource Self}}" />
+                                                                    </UniformGrid>
+                                                                </StackPanel>
+                                                            </Border>
+                                                        </WrapPanel>
+                                                    </StackPanel>
                                                 </Grid>
                                             </Border>
 
@@ -1643,13 +2484,19 @@
                                                                     <ColumnDefinition Width="12" />
                                                                     <ColumnDefinition Width="170" />
                                                                 </Grid.ColumnDefinitions>
-                                                                <CheckBox x:Name="ObsReturnCheck"
-                                                                          Content="Volver a la escena anterior"
-                                                                          VerticalAlignment="Center"
-                                                                          MinHeight="34"
-                                                                          IsChecked="{Binding Editor.ObsReturnToPreviousScene, Mode=TwoWay, UpdateSourceTrigger=PropertyChanged}"
-                                                                          Checked="RuleFieldChanged"
-                                                                          Unchecked="RuleFieldChanged" />
+                                                                <StackPanel Orientation="Horizontal"
+                                                                            VerticalAlignment="Center">
+                                                                    <CheckBox x:Name="ObsReturnCheck"
+                                                                              Content=""
+                                                                              Style="{StaticResource AlertToggleSwitchStyle}"
+                                                                              IsChecked="{Binding Editor.ObsReturnToPreviousScene, Mode=TwoWay, UpdateSourceTrigger=PropertyChanged}"
+                                                                              Checked="RuleFieldChanged"
+                                                                              Unchecked="RuleFieldChanged" />
+                                                                    <TextBlock Text="Volver a la escena anterior"
+                                                                               Margin="8,0,0,0"
+                                                                               VerticalAlignment="Center"
+                                                                               FontWeight="SemiBold" />
+                                                                </StackPanel>
                                                                 <StackPanel Grid.Column="2">
                                                                     <TextBlock Text="Esperar antes (ms)"
                                                                                Style="{StaticResource MutedText}" />

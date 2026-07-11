@@ -180,6 +180,22 @@
                                             Margin="0"
                                             Command="{Binding CopyOverlayUrlCommand}" />
                                 </Grid>
+                                <TextBlock Text="URL de luces virtuales"
+                                           Style="{StaticResource MutedText}" />
+                                <Grid Margin="0,4,0,10">
+                                    <Grid.ColumnDefinitions>
+                                        <ColumnDefinition Width="*" />
+                                        <ColumnDefinition Width="10" />
+                                        <ColumnDefinition Width="120" />
+                                    </Grid.ColumnDefinitions>
+                                    <TextBox IsReadOnly="True"
+                                             Text="{Binding VirtualLightsOverlayUrl, Mode=OneWay}"
+                                             Margin="0" />
+                                    <Button Grid.Column="2"
+                                            Content="Copiar"
+                                            Margin="0"
+                                            Command="{Binding CopyVirtualLightsOverlayUrlCommand}" />
+                                </Grid>
                                 <Grid>
                                     <Grid.ColumnDefinitions>
                                         <ColumnDefinition Width="*" />

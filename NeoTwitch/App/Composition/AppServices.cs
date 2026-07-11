@@ -19,6 +19,9 @@ public sealed class AppServices
         AlexaRelayService alexaRelayService,
         ObsWebSocketService obsService,
         ObsOverlayService obsOverlayService,
+        VirtualLightsOverlayService virtualLightsOverlayService,
+        VirtualLightsScreenOverlayService virtualLightsScreenOverlayService,
+        VirtualScreenService virtualScreenService,
         WindowsStartupService windowsStartupService,
         AppUpdateService updateService,
         DiagnosticReportService diagnosticReportService,
@@ -42,6 +45,9 @@ public sealed class AppServices
         AlexaRelayService = alexaRelayService;
         ObsService = obsService;
         ObsOverlayService = obsOverlayService;
+        VirtualLightsOverlayService = virtualLightsOverlayService;
+        VirtualLightsScreenOverlayService = virtualLightsScreenOverlayService;
+        VirtualScreenService = virtualScreenService;
         WindowsStartupService = windowsStartupService;
         UpdateService = updateService;
         DiagnosticReportService = diagnosticReportService;
@@ -73,6 +79,12 @@ public sealed class AppServices
     public ObsWebSocketService ObsService { get; }
 
     public ObsOverlayService ObsOverlayService { get; }
+
+    public VirtualLightsOverlayService VirtualLightsOverlayService { get; }
+
+    public VirtualLightsScreenOverlayService VirtualLightsScreenOverlayService { get; }
+
+    public VirtualScreenService VirtualScreenService { get; }
 
     public WindowsStartupService WindowsStartupService { get; }
 
@@ -118,6 +130,9 @@ public sealed class AppServices
             new AlexaRelayService(text, timeProvider),
             new ObsWebSocketService(text),
             new ObsOverlayService(timeProvider),
+            new VirtualLightsOverlayService(timeProvider),
+            new VirtualLightsScreenOverlayService(),
+            new VirtualScreenService(),
             new WindowsStartupService(text),
             updateService,
             new DiagnosticReportService(updateService.CheckLatestAsync, text, timeProvider),

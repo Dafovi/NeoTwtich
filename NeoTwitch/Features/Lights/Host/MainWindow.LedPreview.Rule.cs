@@ -52,6 +52,52 @@ public partial class MainWindow
         }
     }
 
+    private void UpdateVirtualRuleLedPreviewFrame()
+    {
+        if (_initializingComponent)
+        {
+            return;
+        }
+
+        if (!Dispatcher.CheckAccess())
+        {
+            _ = Dispatcher.InvokeAsync(UpdateVirtualRuleLedPreviewFrame);
+            return;
+        }
+
+        if (!ShouldRunVirtualRuleLedPreview())
+        {
+            UpdateRuleLedPreviewTimerState();
+            return;
+        }
+
+        ResizeLedPreviewDots(_virtualRuleLedPreviewDots, VirtualRuleLedPreviewPanel.ActualWidth);
+        var editor = _alertsViewModel.Editor;
+        var pattern = editor.VirtualLightsPattern;
+        var brightness = Math.Clamp(editor.VirtualLightsBrightness / 255d, 0d, 1d);
+        var primary = LedPreviewService.ParseColor(editor.VirtualLightsPrimaryColor, "#14B8A6");
+        var secondary = LedPreviewService.ParseColor(editor.VirtualLightsSecondaryColor, "#B56CFF");
+        var tertiary = LedPreviewService.ParseColor(editor.VirtualLightsTertiaryColor, "#FFFFFF");
+        var count = _virtualRuleLedPreviewDots.Count;
+        _virtualRuleLedPreviewStep++;
+        var frame = LedPreviewService.BuildFrame(pattern, _virtualRuleLedPreviewStep, count, brightness, primary, secondary, tertiary, _previewRandom);
+
+        for (var i = 0; i < count; i++)
+        {
+            _virtualRuleLedPreviewDots[i] = PreviewDot(frame[i], brightness);
+        }
+    }
+
+    private void SetVirtualRuleLedPreviewAll(string color)
+    {
+        ResizeLedPreviewDots(_virtualRuleLedPreviewDots, VirtualRuleLedPreviewPanel.ActualWidth);
+        var previewColor = LedPreviewService.ParseColor(color, "#334155");
+        for (var i = 0; i < _virtualRuleLedPreviewDots.Count; i++)
+        {
+            _virtualRuleLedPreviewDots[i] = PreviewDot(previewColor, 0.08);
+        }
+    }
+
     private void UpdateRuleLedPreviewTimerState()
     {
         if (_initializingComponent || !Dispatcher.CheckAccess())
@@ -59,7 +105,7 @@ public partial class MainWindow
             return;
         }
 
-        var shouldRun = ShouldRunRuleLedPreview();
+        var shouldRun = ShouldRunRuleLedPreview() || ShouldRunVirtualRuleLedPreview();
         if (shouldRun)
         {
             if (!_ruleLedPreviewTimer.IsEnabled)
@@ -79,6 +125,12 @@ public partial class MainWindow
         {
             SetRuleLedPreviewAll("#334155");
         }
+
+        if (!_alertsViewModel.Editor.UseVirtualLights
+            || (!_alertsViewModel.Editor.VirtualLightsToObs && !_alertsViewModel.Editor.VirtualLightsToScreen))
+        {
+            SetVirtualRuleLedPreviewAll("#334155");
+        }
     }
 
     private bool ShouldRunRuleLedPreview()
@@ -88,5 +140,15 @@ public partial class MainWindow
             && _shellViewModel.SelectedTabIndex == ShellViewModel.AlertsTabIndex
             && LightConfigurationPanel.IsVisible
             && RuleLedPreviewPanel.IsVisible;
+    }
+
+    private bool ShouldRunVirtualRuleLedPreview()
+    {
+        var editor = _alertsViewModel.Editor;
+        return editor.UseVirtualLights
+            && (editor.VirtualLightsToObs || editor.VirtualLightsToScreen)
+            && _shellViewModel.SelectedTabIndex == ShellViewModel.AlertsTabIndex
+            && VirtualLightsDetailsPanel.IsVisible
+            && VirtualRuleLedPreviewPanel.IsVisible;
     }
 }

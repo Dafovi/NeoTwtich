@@ -17,6 +17,7 @@ public partial class MainWindow
         IReadOnlyCollection<Task> obsMediaHideTasks)
     {
         ClearCurrentPlayback(effectCts);
+        await ClearVirtualLightsEffectAsync();
         await RestoreBackgroundAfterRuleAsync(shouldRestoreBackground, wasCancelled);
         await CleanupRuleObsMediaAsync(wasCancelled, obsMediaHides, obsMediaHideTasks);
 

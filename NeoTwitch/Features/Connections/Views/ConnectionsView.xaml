@@ -7,6 +7,42 @@
                      xmlns:views="clr-namespace:NeoTwitch.Views"
                      mc:Ignorable="d">
                 <views:NeoTwitchView.Resources>
+                    <Style x:Key="ConnectionStateBadgeText" TargetType="{x:Type TextBlock}">
+                        <Setter Property="FontFamily" Value="Segoe UI Variable Text, Segoe UI" />
+                        <Setter Property="FontSize" Value="12" />
+                        <Setter Property="FontWeight" Value="SemiBold" />
+                        <Setter Property="Foreground" Value="#94A3B8" />
+                        <Style.Triggers>
+                            <DataTrigger Binding="{Binding Text, RelativeSource={RelativeSource Self}}" Value="Conectado">
+                                <Setter Property="Foreground" Value="#22C55E" />
+                            </DataTrigger>
+                            <DataTrigger Binding="{Binding Text, RelativeSource={RelativeSource Self}}" Value="Listo">
+                                <Setter Property="Foreground" Value="#22C55E" />
+                            </DataTrigger>
+                            <DataTrigger Binding="{Binding Text, RelativeSource={RelativeSource Self}}" Value="Activo">
+                                <Setter Property="Foreground" Value="#22C55E" />
+                            </DataTrigger>
+                            <DataTrigger Binding="{Binding Text, RelativeSource={RelativeSource Self}}" Value="Revisar">
+                                <Setter Property="Foreground" Value="#FFB020" />
+                            </DataTrigger>
+                            <DataTrigger Binding="{Binding Text, RelativeSource={RelativeSource Self}}" Value="Configurado">
+                                <Setter Property="Foreground" Value="#FFB020" />
+                            </DataTrigger>
+                            <DataTrigger Binding="{Binding Text, RelativeSource={RelativeSource Self}}" Value="Conectando">
+                                <Setter Property="Foreground" Value="#FFB020" />
+                            </DataTrigger>
+                            <DataTrigger Binding="{Binding Text, RelativeSource={RelativeSource Self}}" Value="Desconectado">
+                                <Setter Property="Foreground" Value="#F43F5E" />
+                            </DataTrigger>
+                            <DataTrigger Binding="{Binding Text, RelativeSource={RelativeSource Self}}" Value="Error">
+                                <Setter Property="Foreground" Value="#F43F5E" />
+                            </DataTrigger>
+                            <DataTrigger Binding="{Binding Text, RelativeSource={RelativeSource Self}}" Value="Desactivado">
+                                <Setter Property="Foreground" Value="#94A3B8" />
+                            </DataTrigger>
+                        </Style.Triggers>
+                    </Style>
+
                     <DataTemplate DataType="{x:Type connections:ConnectionButtonViewModel}">
                         <StackPanel Orientation="Horizontal"
                                     HorizontalAlignment="Center"
@@ -106,7 +142,9 @@
                                                    Style="{StaticResource MutedText}"
                                                    Margin="0,4,0,0" />
                                     </StackPanel>
-                                    <Border Grid.Column="2"
+                                    <Border x:Name="TwitchBadgeBorder"
+                                            Grid.Column="2"
+                                            Tag="StaticBrush"
                                             CornerRadius="14"
                                             Padding="11,5"
                                             HorizontalAlignment="Right"
@@ -115,9 +153,9 @@
                                             BorderBrush="{Binding TwitchBadge.BorderBrush}"
                                             BorderThickness="1">
                                         <TextBlock Text="{Binding TwitchBadge.Text}"
-                                                   FontSize="12"
-                                                   FontWeight="SemiBold"
-                                                   Foreground="{Binding TwitchBadge.ForegroundBrush}" />
+                                                   Style="{StaticResource ConnectionStateBadgeText}"
+                                                   Foreground="{Binding TwitchBadge.ForegroundBrush}"
+                                                   Tag="StaticBrush" />
                                     </Border>
                                 </Grid>
 
@@ -237,7 +275,9 @@
                                                    Style="{StaticResource MutedText}"
                                                    Margin="0,4,0,0" />
                                     </StackPanel>
-                                    <Border Grid.Column="2"
+                                    <Border x:Name="ArduinoBadgeBorder"
+                                            Grid.Column="2"
+                                            Tag="StaticBrush"
                                             CornerRadius="14"
                                             Padding="11,5"
                                             HorizontalAlignment="Right"
@@ -246,9 +286,9 @@
                                             BorderBrush="{Binding ArduinoBadge.BorderBrush}"
                                             BorderThickness="1">
                                         <TextBlock Text="{Binding ArduinoBadge.Text}"
-                                                   FontSize="12"
-                                                   FontWeight="SemiBold"
-                                                   Foreground="{Binding ArduinoBadge.ForegroundBrush}" />
+                                                   Style="{StaticResource ConnectionStateBadgeText}"
+                                                   Foreground="{Binding ArduinoBadge.ForegroundBrush}"
+                                                   Tag="StaticBrush" />
                                     </Border>
                                 </Grid>
 
@@ -342,7 +382,9 @@
                                                    Style="{StaticResource MutedText}"
                                                    Margin="0,4,0,0" />
                                     </StackPanel>
-                                    <Border Grid.Column="2"
+                                    <Border x:Name="AlexaBadgeBorder"
+                                            Grid.Column="2"
+                                            Tag="StaticBrush"
                                             CornerRadius="14"
                                             Padding="11,5"
                                             HorizontalAlignment="Right"
@@ -351,9 +393,9 @@
                                             BorderBrush="{Binding AlexaBadge.BorderBrush}"
                                             BorderThickness="1">
                                         <TextBlock Text="{Binding AlexaBadge.Text}"
-                                                   FontSize="12"
-                                                   FontWeight="SemiBold"
-                                                   Foreground="{Binding AlexaBadge.ForegroundBrush}" />
+                                                   Style="{StaticResource ConnectionStateBadgeText}"
+                                                   Foreground="{Binding AlexaBadge.ForegroundBrush}"
+                                                   Tag="StaticBrush" />
                                     </Border>
                                 </Grid>
 
@@ -441,6 +483,8 @@
                                     <TextBlock Style="{StaticResource MutedText}"
                                                Text="{Binding AlexaStatusText}"
                                                TextWrapping="Wrap"
+                                               Foreground="{Binding AlexaBadge.ForegroundBrush}"
+                                               Tag="StaticBrush"
                                                VerticalAlignment="Center" />
                                     <WrapPanel Grid.Column="1"
                                                HorizontalAlignment="Right">
@@ -492,7 +536,9 @@
                                                    Style="{StaticResource MutedText}"
                                                    Margin="0,4,0,0" />
                                     </StackPanel>
-                                    <Border Grid.Column="2"
+                                    <Border x:Name="ObsBadgeBorder"
+                                            Grid.Column="2"
+                                            Tag="StaticBrush"
                                             CornerRadius="14"
                                             Padding="11,5"
                                             HorizontalAlignment="Right"
@@ -501,9 +547,9 @@
                                             BorderBrush="{Binding ObsBadge.BorderBrush}"
                                             BorderThickness="1">
                                         <TextBlock Text="{Binding ObsBadge.Text}"
-                                                   FontSize="12"
-                                                   FontWeight="SemiBold"
-                                                   Foreground="{Binding ObsBadge.ForegroundBrush}" />
+                                                   Style="{StaticResource ConnectionStateBadgeText}"
+                                                   Foreground="{Binding ObsBadge.ForegroundBrush}"
+                                                   Tag="StaticBrush" />
                                     </Border>
                                 </Grid>
 
@@ -580,6 +626,8 @@
                                     <TextBlock Style="{StaticResource MutedText}"
                                                Text="{Binding ObsConnectionHelpText}"
                                                TextWrapping="Wrap"
+                                               Foreground="{Binding ObsBadge.ForegroundBrush}"
+                                               Tag="StaticBrush"
                                                VerticalAlignment="Center" />
                                     <WrapPanel Grid.Column="1"
                                                HorizontalAlignment="Right">

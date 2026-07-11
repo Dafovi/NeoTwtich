@@ -77,6 +77,49 @@ public static class ObsWebSocketRequestFactory
         };
     }
 
+    public static Dictionary<string, object?> BuildBrowserInputSettings(string url, int width, int height)
+    {
+        return new Dictionary<string, object?>
+        {
+            [ObsWebSocketProtocol.BrowserUrl] = url,
+            [ObsWebSocketProtocol.BrowserWidth] = Math.Max(ApplicationLimits.MinObsOverlayMediaSize, width),
+            [ObsWebSocketProtocol.BrowserHeight] = Math.Max(ApplicationLimits.MinObsOverlayMediaSize, height),
+            [ObsWebSocketProtocol.BrowserShutdown] = false,
+            [ObsWebSocketProtocol.BrowserRestartWhenActive] = true
+        };
+    }
+
+    public static Dictionary<string, object?> BuildCreateBrowserInputRequest(
+        string sceneName,
+        string sourceName,
+        string url,
+        int width,
+        int height)
+    {
+        return new Dictionary<string, object?>
+        {
+            [ObsWebSocketProtocol.SceneName] = sceneName.Trim(),
+            [ObsWebSocketProtocol.InputName] = sourceName.Trim(),
+            [ObsWebSocketProtocol.InputKind] = ObsWebSocketProtocol.BrowserSourceKind,
+            [ObsWebSocketProtocol.InputSettings] = BuildBrowserInputSettings(url, width, height),
+            [ObsWebSocketProtocol.SceneItemEnabled] = true
+        };
+    }
+
+    public static Dictionary<string, object?> BuildSetBrowserInputSettingsRequest(
+        string sourceName,
+        string url,
+        int width,
+        int height)
+    {
+        return new Dictionary<string, object?>
+        {
+            [ObsWebSocketProtocol.InputName] = sourceName.Trim(),
+            [ObsWebSocketProtocol.InputSettings] = BuildBrowserInputSettings(url, width, height),
+            [ObsWebSocketProtocol.Overlay] = true
+        };
+    }
+
     public static Dictionary<string, object?> BuildCreateSceneItemRequest(string sceneName, string sourceName)
     {
         return new Dictionary<string, object?>
@@ -136,6 +179,27 @@ public static class ObsWebSocketRequestFactory
                 [ObsWebSocketProtocol.BoundsType] = ObsWebSocketProtocol.BoundsScaleInner,
                 [ObsWebSocketProtocol.BoundsWidth] = mediaWidth,
                 [ObsWebSocketProtocol.BoundsHeight] = mediaHeight
+            }
+        };
+    }
+
+    public static Dictionary<string, object?> BuildFullSceneItemTransformRequest(
+        string sceneName,
+        int sceneItemId,
+        int width,
+        int height)
+    {
+        return new Dictionary<string, object?>
+        {
+            [ObsWebSocketProtocol.SceneName] = sceneName.Trim(),
+            [ObsWebSocketProtocol.SceneItemId] = sceneItemId,
+            [ObsWebSocketProtocol.SceneItemTransform] = new Dictionary<string, object?>
+            {
+                [ObsWebSocketProtocol.PositionX] = 0,
+                [ObsWebSocketProtocol.PositionY] = 0,
+                [ObsWebSocketProtocol.BoundsType] = ObsWebSocketProtocol.BoundsStretch,
+                [ObsWebSocketProtocol.BoundsWidth] = Math.Max(ApplicationLimits.MinObsOverlayMediaSize, width),
+                [ObsWebSocketProtocol.BoundsHeight] = Math.Max(ApplicationLimits.MinObsOverlayMediaSize, height)
             }
         };
     }

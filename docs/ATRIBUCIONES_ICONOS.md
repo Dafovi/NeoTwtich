@@ -52,6 +52,7 @@ Neo Twitch usa iconos y logos de terceros. Esta pagina recopila las atribuciones
 - Aleatorio: [Aleatorio iconos](https://www.flaticon.es/iconos-gratis/aleatorio), creados por Afian Rochmah Afif - Flaticon.
 - Temporizador: [Hora y fecha iconos](https://www.flaticon.es/iconos-gratis/hora-y-fecha), creados por chehuna - Flaticon.
 - Sincronizacion: [Sincronizacion iconos](https://www.flaticon.es/iconos-gratis/sincronizacion), creados por Bamicon - Flaticon.
+- Flecha: [Flecha iconos](https://www.flaticon.es/iconos-gratis/flecha), creados por syafii5758 - Flaticon.
 
 ## Logos y marcas
 

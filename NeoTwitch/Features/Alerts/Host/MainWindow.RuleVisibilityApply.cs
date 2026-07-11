@@ -16,6 +16,22 @@ public partial class MainWindow
         UiVisibilityService.SetVisible(visibility.ShowAudioEmptyHint, RuleAudioEmptyHintText);
         UiVisibilityService.SetVisible(visibility.ShowChatDetails, ChatDetailsPanel, ChatMessageLabel, ChatMessageBox);
         UiVisibilityService.SetVisible(visibility.ShowLightsAction, UseLightsActionCard);
+        UiVisibilityService.SetVisible(visibility.ShowVirtualLightsAction, VirtualLightsActionCard);
+        UiVisibilityService.SetVisible(visibility.ShowVirtualLightsDetails, VirtualLightsDetailsPanel);
+        UiVisibilityService.SetVisible(_alertsViewModel.Editor.VirtualLightsToObs, VirtualObsOptionsPanel);
+        UiVisibilityService.SetVisible(_alertsViewModel.Editor.VirtualLightsToScreen, VirtualScreenOptionsPanel);
+        UiVisibilityService.SetVisible(visibility.ShowVirtualLightColorOptions, VirtualColorOptionsGrid);
+        UiVisibilityService.SetVisible(visibility.ShowVirtualPrimaryColor, VirtualPrimaryColorPanel);
+        UiVisibilityService.SetVisible(visibility.ShowVirtualSecondaryColor, VirtualSecondaryColorLabel, VirtualSecondaryColorPanel);
+        UiVisibilityService.SetVisible(visibility.ShowVirtualTertiaryColor, VirtualTertiaryColorLabel, VirtualTertiaryColorPanel);
+        UiVisibilityService.SetVisible(visibility.ShowVirtualLightConfiguration, VirtualLedPreviewTitle, VirtualRuleLedPreviewPanel);
+        UiVisibilityService.SetVisible(
+            visibility.ShowVirtualBrightness || visibility.ShowVirtualDuration || visibility.ShowVirtualCycle || visibility.ShowVirtualStep,
+            VirtualTimingTitle);
+        UiVisibilityService.SetVisible(visibility.ShowVirtualBrightness, VirtualBrightnessGrid);
+        UiVisibilityService.SetVisible(visibility.ShowVirtualDuration, VirtualDurationGrid);
+        UiVisibilityService.SetVisible(visibility.ShowVirtualCycle, VirtualCycleGrid);
+        UiVisibilityService.SetVisible(visibility.ShowVirtualStep, VirtualStepGrid);
         UiVisibilityService.SetVisible(visibility.ShowObsVideoAction, VideoActionCard);
         UiVisibilityService.SetVisible(visibility.ShowObsVideoDetails, ObsVideoDetailsPanel);
         UiVisibilityService.SetVisible(visibility.ShowObsVideoAsset, RuleObsVideoAssetPanel);
@@ -34,7 +50,8 @@ public partial class MainWindow
         UiVisibilityService.SetVisible(visibility.ShowObsEmptyHint, RuleObsEmptyHintText);
         UiVisibilityService.SetVisible(visibility.ShowAlexaAction, AlexaActionCard);
         UiVisibilityService.SetVisible(visibility.ShowAlexaDetails, AlexaDetailsPanel, AlexaRuleHintText);
-        UiVisibilityService.SetVisible(visibility.ShowLightConfiguration, LightConfigurationPanel, LightOptionsSeparator, TargetPinsLabel, TargetPinsChoiceBox, PatternGrid, RuleLedPreviewPanel);
+        UiVisibilityService.SetVisible(visibility.ShowLightConfiguration, LightConfigurationPanel, LightOptionsSeparator, PatternGrid, RuleLedPreviewPanel);
+        UiVisibilityService.SetVisible(visibility.ShowTargetPins, TargetPinsLabel, TargetPinsChoiceBox);
         UiVisibilityService.SetVisible(visibility.ShowLightColorOptions, ColorOptionsGrid);
         UiVisibilityService.SetVisible(visibility.ShowPrimaryColor, PrimaryColorPanel);
         UiVisibilityService.SetVisible(visibility.ShowSecondaryColor, SecondaryColorLabel, SecondaryColorPanel);
@@ -51,6 +68,7 @@ public partial class MainWindow
     {
         var editor = _alertsViewModel.Editor;
         var lightsEnabled = _config.ArduinoEnabled && editor.UseLights;
+        var virtualLightsEnabled = editor.UseVirtualLights;
         var audioEnabled = editor.PlayAudio;
         var chatEnabled = editor.SendChatMessage;
         var alexaEnabled = _config.Alexa.IsConfigured && editor.SendAlexaEvent;
@@ -59,6 +77,7 @@ public partial class MainWindow
         var obsVideoEnabled = _config.Obs.IsConfigured && editor.SendObsVideo;
 
         SetRuleOptionAvailability(lightsEnabled, LightConfigurationPanel);
+        SetRuleOptionAvailability(virtualLightsEnabled, VirtualLightsDetailsPanel);
         SetRuleOptionAvailability(audioEnabled, AudioDetailsPanel);
         SetRuleOptionAvailability(chatEnabled, ChatDetailsPanel);
         SetRuleOptionAvailability(alexaEnabled, AlexaDetailsPanel);

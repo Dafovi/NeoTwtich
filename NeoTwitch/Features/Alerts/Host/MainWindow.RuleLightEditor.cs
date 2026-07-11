@@ -14,11 +14,27 @@ public partial class MainWindow
             return;
         }
 
+        var isVirtual = preset.StartsWith("Virtual:", StringComparison.OrdinalIgnoreCase);
+        if (isVirtual)
+        {
+            preset = preset["Virtual:".Length..];
+        }
+
         var values = LightControlInputService.GetRulePreset(preset);
-        _alertsViewModel.Editor.Brightness = values.Brightness;
-        _alertsViewModel.Editor.DurationMs = values.DurationMs;
-        _alertsViewModel.Editor.CycleMs = values.CycleMs;
-        _alertsViewModel.Editor.StepMs = values.StepMs;
+        if (isVirtual)
+        {
+            _alertsViewModel.Editor.VirtualLightsBrightness = values.Brightness;
+            _alertsViewModel.Editor.VirtualLightsDurationMs = values.DurationMs;
+            _alertsViewModel.Editor.VirtualLightsCycleMs = values.CycleMs;
+            _alertsViewModel.Editor.VirtualLightsStepMs = values.StepMs;
+        }
+        else
+        {
+            _alertsViewModel.Editor.Brightness = values.Brightness;
+            _alertsViewModel.Editor.DurationMs = values.DurationMs;
+            _alertsViewModel.Editor.CycleMs = values.CycleMs;
+            _alertsViewModel.Editor.StepMs = values.StepMs;
+        }
 
         if (SaveCurrentRuleFromFields())
         {
@@ -27,6 +43,7 @@ public partial class MainWindow
 
         UpdateSliderLabels();
         UpdateRuleLedPreviewFrame();
+        UpdateVirtualRuleLedPreviewFrame();
     }
 
     private void AdjustRuleLightValue(object? parameter)
@@ -41,34 +58,65 @@ public partial class MainWindow
             return;
         }
 
-        var current = delta.Target switch
+        var isVirtual = delta.Target.StartsWith("Virtual", StringComparison.OrdinalIgnoreCase);
+        var target = isVirtual ? delta.Target["Virtual".Length..] : delta.Target;
+
+        var current = (isVirtual, target) switch
         {
-            "Brightness" => _alertsViewModel.Editor.Brightness,
-            "Duration" => _alertsViewModel.Editor.DurationMs,
-            "Cycle" => _alertsViewModel.Editor.CycleMs,
-            "Step" => _alertsViewModel.Editor.StepMs,
+            (false, "Brightness") => _alertsViewModel.Editor.Brightness,
+            (false, "Duration") => _alertsViewModel.Editor.DurationMs,
+            (false, "Cycle") => _alertsViewModel.Editor.CycleMs,
+            (false, "Step") => _alertsViewModel.Editor.StepMs,
+            (true, "Brightness") => _alertsViewModel.Editor.VirtualLightsBrightness,
+            (true, "Duration") => _alertsViewModel.Editor.VirtualLightsDurationMs,
+            (true, "Cycle") => _alertsViewModel.Editor.VirtualLightsCycleMs,
+            (true, "Step") => _alertsViewModel.Editor.VirtualLightsStepMs,
+            (true, "ObsOpacity") => _alertsViewModel.Editor.VirtualLightsObsOpacity,
+            (true, "ScreenPixel") => _alertsViewModel.Editor.VirtualLightsScreenPixelSize,
+            (true, "ScreenSaturation") => _alertsViewModel.Editor.VirtualLightsScreenSaturation,
             _ => double.NaN
         };
 
-        if (double.IsNaN(current) || !LightControlInputService.TryGetRuleRange(delta.Target, out var range))
+        if (double.IsNaN(current) || !LightControlInputService.TryGetRuleRange(target, out var range))
         {
             return;
         }
 
         var value = LightControlInputService.AdjustValue(current, delta.Amount, range.Minimum, range.Maximum);
-        switch (delta.Target)
+        switch (isVirtual, target)
         {
-            case "Brightness":
+            case (false, "Brightness"):
                 _alertsViewModel.Editor.Brightness = value;
                 break;
-            case "Duration":
+            case (false, "Duration"):
                 _alertsViewModel.Editor.DurationMs = value;
                 break;
-            case "Cycle":
+            case (false, "Cycle"):
                 _alertsViewModel.Editor.CycleMs = value;
                 break;
-            case "Step":
+            case (false, "Step"):
                 _alertsViewModel.Editor.StepMs = value;
+                break;
+            case (true, "Brightness"):
+                _alertsViewModel.Editor.VirtualLightsBrightness = value;
+                break;
+            case (true, "Duration"):
+                _alertsViewModel.Editor.VirtualLightsDurationMs = value;
+                break;
+            case (true, "Cycle"):
+                _alertsViewModel.Editor.VirtualLightsCycleMs = value;
+                break;
+            case (true, "Step"):
+                _alertsViewModel.Editor.VirtualLightsStepMs = value;
+                break;
+            case (true, "ObsOpacity"):
+                _alertsViewModel.Editor.VirtualLightsObsOpacity = value;
+                break;
+            case (true, "ScreenPixel"):
+                _alertsViewModel.Editor.VirtualLightsScreenPixelSize = value;
+                break;
+            case (true, "ScreenSaturation"):
+                _alertsViewModel.Editor.VirtualLightsScreenSaturation = value;
                 break;
         }
 
@@ -79,6 +127,7 @@ public partial class MainWindow
 
         UpdateSliderLabels();
         UpdateRuleLedPreviewFrame();
+        UpdateVirtualRuleLedPreviewFrame();
     }
 
     internal void LightNumberBox_TextChanged(object sender, TextChangedEventArgs e)
@@ -88,13 +137,31 @@ public partial class MainWindow
             return;
         }
 
+        if (TryApplyVirtualOptionText(textBox))
+        {
+            if (SaveCurrentRuleFromFields())
+            {
+                UpdateRuleDirtyStateFromSnapshot();
+            }
+
+            UpdateSliderLabels();
+            UpdateVirtualRuleLedPreviewFrame();
+            return;
+        }
+
         var slider = ReferenceEquals(textBox, DurationValueText)
             ? DurationSlider
             : ReferenceEquals(textBox, CycleValueText)
                 ? CycleSlider
                 : ReferenceEquals(textBox, StepValueText)
                     ? StepSlider
-                    : null;
+                    : ReferenceEquals(textBox, VirtualDurationValueText)
+                        ? VirtualDurationSlider
+                        : ReferenceEquals(textBox, VirtualCycleValueText)
+                            ? VirtualCycleSlider
+                            : ReferenceEquals(textBox, VirtualStepValueText)
+                                ? VirtualStepSlider
+                                : null;
 
         if (slider is null || !LightControlInputService.TryParseSliderText(textBox.Text, slider.Minimum, slider.Maximum, out var value))
         {
@@ -109,6 +176,40 @@ public partial class MainWindow
 
         UpdateSliderLabels();
         UpdateRuleLedPreviewFrame();
+        UpdateVirtualRuleLedPreviewFrame();
+    }
+
+    private bool TryApplyVirtualOptionText(System.Windows.Controls.TextBox textBox)
+    {
+        var target = ReferenceEquals(textBox, VirtualObsOpacityValueText)
+            ? "ObsOpacity"
+            : ReferenceEquals(textBox, VirtualScreenPixelValueText)
+                ? "ScreenPixel"
+                : ReferenceEquals(textBox, VirtualScreenSaturationValueText)
+                    ? "ScreenSaturation"
+                    : "";
+
+        if (string.IsNullOrWhiteSpace(target)
+            || !LightControlInputService.TryGetRuleRange(target, out var range)
+            || !LightControlInputService.TryParseSliderText(textBox.Text, range.Minimum, range.Maximum, out var value))
+        {
+            return false;
+        }
+
+        switch (target)
+        {
+            case "ObsOpacity":
+                _alertsViewModel.Editor.VirtualLightsObsOpacity = value;
+                break;
+            case "ScreenPixel":
+                _alertsViewModel.Editor.VirtualLightsScreenPixelSize = value;
+                break;
+            case "ScreenSaturation":
+                _alertsViewModel.Editor.VirtualLightsScreenSaturation = value;
+                break;
+        }
+
+        return true;
     }
 
     private void RefreshRulePinChoices()
@@ -130,6 +231,22 @@ public partial class MainWindow
 
     private void SelectRuleLightPattern(object? parameter)
     {
+        var raw = parameter?.ToString() ?? "";
+        if (raw.StartsWith("Virtual:", StringComparison.OrdinalIgnoreCase)
+            && Enum.TryParse<LightPattern>(raw["Virtual:".Length..], out var virtualPattern))
+        {
+            _alertsViewModel.Editor.VirtualLightsPattern = virtualPattern;
+            UpdateVirtualPatternTileSelection();
+            if (SaveCurrentRuleFromFields())
+            {
+                UpdateRuleDirtyStateFromSnapshot();
+            }
+
+            UpdateRuleOptionVisibility();
+            UpdateVirtualRuleLedPreviewFrame();
+            return;
+        }
+
         if (!TryParseEnumParameter<LightPattern>(parameter, out var pattern))
         {
             return;
@@ -137,6 +254,11 @@ public partial class MainWindow
 
         _alertsViewModel.Editor.Pattern = pattern;
         UpdatePatternTileSelection();
+        if (SaveCurrentRuleFromFields())
+        {
+            UpdateRuleDirtyStateFromSnapshot();
+        }
+
         UpdateRuleLedPreviewFrame();
     }
 

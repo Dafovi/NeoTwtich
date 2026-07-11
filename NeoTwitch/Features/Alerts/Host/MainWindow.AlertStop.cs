@@ -11,6 +11,7 @@ public partial class MainWindow
         _currentEffectCts?.Cancel();
         _currentPlayback?.Stop();
         await StopLightsAsync(LightCommand.ResolveTargets(_config, ""));
+        await ClearVirtualLightsEffectAsync();
         await CleanupCurrentObsEffectAsync();
         await SendBackgroundAlexaEventAsync(_config.BackgroundAlexaOffEventName, "Fondo Alexa apagado");
 

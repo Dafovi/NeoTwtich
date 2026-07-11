@@ -10,6 +10,7 @@ public partial class MainWindow
     private async void Window_Loaded(object sender, RoutedEventArgs e)
     {
         ApplyWindowChromeColor();
+        MaximizeWindowToWorkArea();
         ConfigureActionIcons();
         AddLog(_text.Get(UiTextKeys.StartupReadyLog));
         AddLog(_text.Format(UiTextKeys.StartupSettingsPathLog, _settingsStore.SettingsPath));

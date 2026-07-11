@@ -13,6 +13,9 @@ public partial class MainWindow
             "Primary" => PrimaryColorBox,
             "Secondary" => SecondaryColorBox,
             "Tertiary" => TertiaryColorBox,
+            "VirtualPrimary" => VirtualPrimaryColorBox,
+            "VirtualSecondary" => VirtualSecondaryColorBox,
+            "VirtualTertiary" => VirtualTertiaryColorBox,
             _ => null
         });
     }
@@ -33,6 +36,9 @@ public partial class MainWindow
         PrimaryColorButton.Background = ToBrush(_alertsViewModel.Editor.PrimaryColor);
         SecondaryColorButton.Background = ToBrush(_alertsViewModel.Editor.SecondaryColor);
         TertiaryColorButton.Background = ToBrush(_alertsViewModel.Editor.TertiaryColor);
+        VirtualPrimaryColorButton.Background = ToBrush(_alertsViewModel.Editor.VirtualLightsPrimaryColor);
+        VirtualSecondaryColorButton.Background = ToBrush(_alertsViewModel.Editor.VirtualLightsSecondaryColor);
+        VirtualTertiaryColorButton.Background = ToBrush(_alertsViewModel.Editor.VirtualLightsTertiaryColor);
         BackgroundPrimaryColorButton.Background = ToBrush(_lightsViewModel.BackgroundPrimaryColor);
         BackgroundSecondaryColorButton.Background = ToBrush(_lightsViewModel.BackgroundSecondaryColor);
         BackgroundTertiaryColorButton.Background = ToBrush(_lightsViewModel.BackgroundTertiaryColor);
@@ -82,6 +88,9 @@ public partial class MainWindow
         yield return _alertsViewModel.Editor.PrimaryColor;
         yield return _alertsViewModel.Editor.SecondaryColor;
         yield return _alertsViewModel.Editor.TertiaryColor;
+        yield return _alertsViewModel.Editor.VirtualLightsPrimaryColor;
+        yield return _alertsViewModel.Editor.VirtualLightsSecondaryColor;
+        yield return _alertsViewModel.Editor.VirtualLightsTertiaryColor;
         yield return _lightsViewModel.BackgroundPrimaryColor;
         yield return _lightsViewModel.BackgroundSecondaryColor;
         yield return _lightsViewModel.BackgroundTertiaryColor;
@@ -91,6 +100,9 @@ public partial class MainWindow
             yield return rule.PrimaryColor;
             yield return rule.SecondaryColor;
             yield return rule.TertiaryColor;
+            yield return rule.VirtualLightsPrimaryColor;
+            yield return rule.VirtualLightsSecondaryColor;
+            yield return rule.VirtualLightsTertiaryColor;
         }
     }
 

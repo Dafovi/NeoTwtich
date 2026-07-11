@@ -38,6 +38,21 @@ public sealed class RuleEditorViewModel : ObservableObject
     private MediaSourceMode _obsVideoSourceMode = MediaSourceMode.Single;
     private string _obsVideoAssetId = "";
     private string _obsVideoGroupId = "";
+    private bool _useVirtualLights;
+    private bool _virtualLightsToObs = true;
+    private bool _virtualLightsToScreen;
+    private string _virtualLightsScreenId = "";
+    private LightPattern _virtualLightsPattern = LightPattern.Pulse;
+    private string _virtualLightsPrimaryColor = "#14B8A6";
+    private string _virtualLightsSecondaryColor = "#B56CFF";
+    private string _virtualLightsTertiaryColor = "#FFFFFF";
+    private double _virtualLightsBrightness = 180d;
+    private double _virtualLightsDurationMs = 4500d;
+    private double _virtualLightsCycleMs = 80d;
+    private double _virtualLightsStepMs = 120d;
+    private double _virtualLightsObsOpacity = 35d;
+    private double _virtualLightsScreenPixelSize = 18d;
+    private double _virtualLightsScreenSaturation = 100d;
     private AudioSourceMode _audioSourceMode = AudioSourceMode.Single;
     private string _audioAssetId = "";
     private string _audioGroupId = "";
@@ -237,6 +252,109 @@ public sealed class RuleEditorViewModel : ObservableObject
         set => SetProperty(ref _obsVideoGroupId, value ?? "");
     }
 
+    public bool UseVirtualLights
+    {
+        get => _useVirtualLights;
+        set => SetProperty(ref _useVirtualLights, value);
+    }
+
+    public bool VirtualLightsToObs
+    {
+        get => _virtualLightsToObs;
+        set => SetProperty(ref _virtualLightsToObs, value);
+    }
+
+    public bool VirtualLightsToScreen
+    {
+        get => _virtualLightsToScreen;
+        set => SetProperty(ref _virtualLightsToScreen, value);
+    }
+
+    public string VirtualLightsScreenId
+    {
+        get => _virtualLightsScreenId;
+        set => SetProperty(ref _virtualLightsScreenId, value ?? "");
+    }
+
+    public LightPattern VirtualLightsPattern
+    {
+        get => _virtualLightsPattern;
+        set => SetProperty(ref _virtualLightsPattern, value);
+    }
+
+    public string VirtualLightsPrimaryColor
+    {
+        get => _virtualLightsPrimaryColor;
+        set => SetProperty(ref _virtualLightsPrimaryColor, value ?? "");
+    }
+
+    public string VirtualLightsSecondaryColor
+    {
+        get => _virtualLightsSecondaryColor;
+        set => SetProperty(ref _virtualLightsSecondaryColor, value ?? "");
+    }
+
+    public string VirtualLightsTertiaryColor
+    {
+        get => _virtualLightsTertiaryColor;
+        set => SetProperty(ref _virtualLightsTertiaryColor, value ?? "");
+    }
+
+    public double VirtualLightsBrightness
+    {
+        get => _virtualLightsBrightness;
+        set
+        {
+            if (SetProperty(ref _virtualLightsBrightness, value))
+            {
+                OnPropertyChanged(nameof(VirtualBrightnessPercent));
+                OnPropertyChanged(nameof(VirtualBrightnessPercentText));
+            }
+        }
+    }
+
+    public int VirtualBrightnessPercent => BrightnessMaximum <= 0d
+        ? 0
+        : (int)Math.Round(Math.Clamp(VirtualLightsBrightness / BrightnessMaximum, 0d, 1d) * 100d);
+
+    public string VirtualBrightnessPercentText => $"{VirtualBrightnessPercent}%";
+
+    public double VirtualLightsDurationMs
+    {
+        get => _virtualLightsDurationMs;
+        set => SetProperty(ref _virtualLightsDurationMs, value);
+    }
+
+    public double VirtualLightsCycleMs
+    {
+        get => _virtualLightsCycleMs;
+        set => SetProperty(ref _virtualLightsCycleMs, value);
+    }
+
+    public double VirtualLightsStepMs
+    {
+        get => _virtualLightsStepMs;
+        set => SetProperty(ref _virtualLightsStepMs, value);
+    }
+
+    public double VirtualLightsObsOpacity
+    {
+        get => _virtualLightsObsOpacity;
+        set => SetProperty(ref _virtualLightsObsOpacity, value);
+    }
+
+    public double VirtualLightsScreenPixelSize
+    {
+        get => _virtualLightsScreenPixelSize;
+        set => SetProperty(ref _virtualLightsScreenPixelSize, value);
+    }
+
+    public double VirtualLightsScreenSaturation
+    {
+        get => _virtualLightsScreenSaturation;
+        set => SetProperty(ref _virtualLightsScreenSaturation, value);
+    }
+
     public AudioSourceMode AudioSourceMode
     {
         get => _audioSourceMode;
@@ -340,33 +458,36 @@ public sealed class RuleEditorViewModel : ObservableObject
         ObsSceneDelayText = rule.ObsSceneDelayMs.ToString();
         ObsReturnToPreviousScene = rule.ObsReturnToPreviousScene;
         ObsReturnDelayText = rule.ObsReturnDelayMs.ToString();
-        SendObsMedia = rule.SendObsMedia;
+        SendObsMedia = false;
         ObsMediaKind = rule.ObsMediaKind;
         ObsMediaSourceMode = rule.ObsMediaSourceMode;
-        ObsMediaAssetId = rule.ObsMediaAssetId;
-        ObsMediaGroupId = rule.ObsMediaGroupId;
+        ObsMediaAssetId = "";
+        ObsMediaGroupId = "";
         ObsMediaDurationText = rule.ObsMediaDurationMs.ToString();
-        SendObsImage = rule.SendObsImage || (rule.SendObsMedia && rule.ObsMediaKind == ObsMediaKind.Image);
-        ObsImageSourceMode = !string.IsNullOrWhiteSpace(rule.ObsImageAssetId) || !string.IsNullOrWhiteSpace(rule.ObsImageGroupId)
-            ? rule.ObsImageSourceMode
-            : rule.ObsMediaKind == ObsMediaKind.Image ? rule.ObsMediaSourceMode : rule.ObsImageSourceMode;
-        ObsImageAssetId = !string.IsNullOrWhiteSpace(rule.ObsImageAssetId)
-            ? rule.ObsImageAssetId
-            : rule.ObsMediaKind == ObsMediaKind.Image ? rule.ObsMediaAssetId : "";
-        ObsImageGroupId = !string.IsNullOrWhiteSpace(rule.ObsImageGroupId)
-            ? rule.ObsImageGroupId
-            : rule.ObsMediaKind == ObsMediaKind.Image ? rule.ObsMediaGroupId : "";
-        ObsImageDurationText = (rule.ObsImageDurationMs > 0 ? rule.ObsImageDurationMs : rule.ObsMediaDurationMs).ToString();
-        SendObsVideo = rule.SendObsVideo || (rule.SendObsMedia && rule.ObsMediaKind == ObsMediaKind.Video);
-        ObsVideoSourceMode = !string.IsNullOrWhiteSpace(rule.ObsVideoAssetId) || !string.IsNullOrWhiteSpace(rule.ObsVideoGroupId)
-            ? rule.ObsVideoSourceMode
-            : rule.ObsMediaKind == ObsMediaKind.Video ? rule.ObsMediaSourceMode : rule.ObsVideoSourceMode;
-        ObsVideoAssetId = !string.IsNullOrWhiteSpace(rule.ObsVideoAssetId)
-            ? rule.ObsVideoAssetId
-            : rule.ObsMediaKind == ObsMediaKind.Video ? rule.ObsMediaAssetId : "";
-        ObsVideoGroupId = !string.IsNullOrWhiteSpace(rule.ObsVideoGroupId)
-            ? rule.ObsVideoGroupId
-            : rule.ObsMediaKind == ObsMediaKind.Video ? rule.ObsMediaGroupId : "";
+        SendObsImage = rule.SendObsImage;
+        ObsImageSourceMode = rule.ObsImageSourceMode;
+        ObsImageAssetId = rule.ObsImageAssetId;
+        ObsImageGroupId = rule.ObsImageGroupId;
+        ObsImageDurationText = rule.ObsImageDurationMs.ToString();
+        SendObsVideo = rule.SendObsVideo;
+        ObsVideoSourceMode = rule.ObsVideoSourceMode;
+        ObsVideoAssetId = rule.ObsVideoAssetId;
+        ObsVideoGroupId = rule.ObsVideoGroupId;
+        UseVirtualLights = rule.UseVirtualLights;
+        VirtualLightsToObs = rule.VirtualLightsToObs;
+        VirtualLightsToScreen = rule.VirtualLightsToScreen;
+        VirtualLightsScreenId = rule.VirtualLightsScreenId;
+        VirtualLightsPattern = rule.VirtualLightsPattern;
+        VirtualLightsPrimaryColor = rule.VirtualLightsPrimaryColor;
+        VirtualLightsSecondaryColor = rule.VirtualLightsSecondaryColor;
+        VirtualLightsTertiaryColor = rule.VirtualLightsTertiaryColor;
+        VirtualLightsBrightness = rule.VirtualLightsBrightness;
+        VirtualLightsDurationMs = rule.VirtualLightsDurationMs;
+        VirtualLightsCycleMs = rule.VirtualLightsCycleMs;
+        VirtualLightsStepMs = rule.VirtualLightsStepMs;
+        VirtualLightsObsOpacity = rule.VirtualLightsObsOpacity;
+        VirtualLightsScreenPixelSize = rule.VirtualLightsScreenPixelSize;
+        VirtualLightsScreenSaturation = rule.VirtualLightsScreenSaturation;
         AudioSourceMode = rule.AudioSourceMode;
         AudioAssetId = rule.AudioAssetId;
         AudioGroupId = rule.AudioGroupId;
@@ -414,6 +535,21 @@ public sealed class RuleEditorViewModel : ObservableObject
         ObsVideoSourceMode = MediaSourceMode.Single;
         ObsVideoAssetId = "";
         ObsVideoGroupId = "";
+        UseVirtualLights = false;
+        VirtualLightsToObs = true;
+        VirtualLightsToScreen = false;
+        VirtualLightsScreenId = "";
+        VirtualLightsPattern = LightPattern.Pulse;
+        VirtualLightsPrimaryColor = "#14B8A6";
+        VirtualLightsSecondaryColor = "#B56CFF";
+        VirtualLightsTertiaryColor = "#FFFFFF";
+        VirtualLightsBrightness = 180d;
+        VirtualLightsDurationMs = 4500d;
+        VirtualLightsCycleMs = 80d;
+        VirtualLightsStepMs = 120d;
+        VirtualLightsObsOpacity = 35d;
+        VirtualLightsScreenPixelSize = 18d;
+        VirtualLightsScreenSaturation = 100d;
         AudioSourceMode = AudioSourceMode.Single;
         AudioAssetId = "";
         AudioGroupId = "";

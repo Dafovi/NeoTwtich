@@ -26,35 +26,7 @@ public partial class MainWindow
 
     private void ArrangeAlertActionCards()
     {
-        if (ObsActionCard.Parent is not StackPanel parent)
-        {
-            return;
-        }
-
-        var insertIndex = parent.Children.IndexOf(UseLightsActionCard);
-        if (insertIndex < 0)
-        {
-            return;
-        }
-
-        var orderedCards = new UIElement[]
-        {
-            ObsActionCard,
-            AudioActionCard,
-            ChatActionCard,
-            UseLightsActionCard,
-            AlexaActionCard
-        };
-
-        foreach (var card in orderedCards)
-        {
-            parent.Children.Remove(card);
-        }
-
-        for (var index = 0; index < orderedCards.Length; index++)
-        {
-            parent.Children.Insert(insertIndex + index, orderedCards[index]);
-        }
+        // The alert editor order now lives in XAML so the visual tree stays stable.
     }
 
     private void ConfigureActionIcons()

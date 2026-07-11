@@ -53,6 +53,9 @@ public static class LightControlInputService
             "Duration" => new LightValueRange(250, 60000),
             "Cycle" => new LightValueRange(10, 2000),
             "Step" => new LightValueRange(10, 5000),
+            "ObsOpacity" => new LightValueRange(0, 100),
+            "ScreenPixel" => new LightValueRange(4, 80),
+            "ScreenSaturation" => new LightValueRange(0, 200),
             _ => new LightValueRange(0, 0)
         };
 

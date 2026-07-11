@@ -36,4 +36,6 @@ public static class ApplicationPaths
     public static string LocalUpdaterDirectory => Path.Combine(LocalAppDataDirectory, "Updater");
 
     public static string ObsOverlayDirectory => Path.Combine(RoamingAppDataDirectory, "obs");
+
+    public static string VirtualLightsOverlayDirectory => Path.Combine(RoamingAppDataDirectory, "virtual-lights");
 }

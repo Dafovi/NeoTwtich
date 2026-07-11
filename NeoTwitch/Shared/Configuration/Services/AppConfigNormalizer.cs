@@ -116,6 +116,30 @@ public static class AppConfigNormalizer
             rule.ChatMessageTemplate ??= "";
             rule.AlexaEventName ??= "";
             rule.TargetPins ??= "";
+            MigrateLegacyObsMedia(rule);
+            if (rule.UseVirtualLights && !rule.VirtualLightsToObs && !rule.VirtualLightsToScreen)
+            {
+                rule.VirtualLightsToObs = true;
+            }
+
+            rule.VirtualLightsScreenId ??= "";
+            rule.VirtualLightsPattern = Enum.IsDefined(rule.VirtualLightsPattern) ? rule.VirtualLightsPattern : LightPattern.Pulse;
+            rule.VirtualLightsPrimaryColor = LightCommand.NormalizeColor(string.IsNullOrWhiteSpace(rule.VirtualLightsPrimaryColor)
+                ? "#14B8A6"
+                : rule.VirtualLightsPrimaryColor);
+            rule.VirtualLightsSecondaryColor = LightCommand.NormalizeColor(string.IsNullOrWhiteSpace(rule.VirtualLightsSecondaryColor)
+                ? "#B56CFF"
+                : rule.VirtualLightsSecondaryColor);
+            rule.VirtualLightsTertiaryColor = LightCommand.NormalizeColor(string.IsNullOrWhiteSpace(rule.VirtualLightsTertiaryColor)
+                ? "#FFFFFF"
+                : rule.VirtualLightsTertiaryColor);
+            rule.VirtualLightsBrightness = Math.Clamp(rule.VirtualLightsBrightness, ApplicationLimits.MinBrightness, ApplicationLimits.MaxBrightness);
+            rule.VirtualLightsDurationMs = Math.Clamp(rule.VirtualLightsDurationMs, ApplicationLimits.MinAlertDurationMs, ApplicationLimits.MaxAlertDurationMs);
+            rule.VirtualLightsCycleMs = Math.Clamp(rule.VirtualLightsCycleMs, ApplicationLimits.MinCycleMs, ApplicationLimits.MaxCycleMs);
+            rule.VirtualLightsStepMs = Math.Clamp(rule.VirtualLightsStepMs, ApplicationLimits.MinStepMs, ApplicationLimits.MaxStepMs);
+            rule.VirtualLightsObsOpacity = Math.Clamp(rule.VirtualLightsObsOpacity, 0, 100);
+            rule.VirtualLightsScreenPixelSize = Math.Clamp(rule.VirtualLightsScreenPixelSize, 4, 80);
+            rule.VirtualLightsScreenSaturation = Math.Clamp(rule.VirtualLightsScreenSaturation, 0, 200);
             rule.PrimaryColor = LightCommand.NormalizeColor(rule.PrimaryColor);
             rule.SecondaryColor = LightCommand.NormalizeColor(rule.SecondaryColor);
             rule.TertiaryColor = LightCommand.NormalizeColor(rule.TertiaryColor);
@@ -129,6 +153,59 @@ public static class AppConfigNormalizer
         }
 
         return rules;
+    }
+
+    private static void MigrateLegacyObsMedia(EventRule rule)
+    {
+        rule.ObsMediaAssetId ??= "";
+        rule.ObsMediaGroupId ??= "";
+        rule.ObsImageAssetId ??= "";
+        rule.ObsImageGroupId ??= "";
+        rule.ObsVideoAssetId ??= "";
+        rule.ObsVideoGroupId ??= "";
+
+        if (!rule.SendObsMedia)
+        {
+            return;
+        }
+
+        if (rule.ObsMediaKind == ObsMediaKind.Image)
+        {
+            rule.SendObsImage = true;
+            rule.ObsImageSourceMode = rule.ObsMediaSourceMode;
+            if (string.IsNullOrWhiteSpace(rule.ObsImageAssetId))
+            {
+                rule.ObsImageAssetId = rule.ObsMediaAssetId;
+            }
+
+            if (string.IsNullOrWhiteSpace(rule.ObsImageGroupId))
+            {
+                rule.ObsImageGroupId = rule.ObsMediaGroupId;
+            }
+
+            if (rule.ObsImageDurationMs <= 0)
+            {
+                rule.ObsImageDurationMs = rule.ObsMediaDurationMs;
+            }
+        }
+        else if (rule.ObsMediaKind == ObsMediaKind.Video)
+        {
+            rule.SendObsVideo = true;
+            rule.ObsVideoSourceMode = rule.ObsMediaSourceMode;
+            if (string.IsNullOrWhiteSpace(rule.ObsVideoAssetId))
+            {
+                rule.ObsVideoAssetId = rule.ObsMediaAssetId;
+            }
+
+            if (string.IsNullOrWhiteSpace(rule.ObsVideoGroupId))
+            {
+                rule.ObsVideoGroupId = rule.ObsMediaGroupId;
+            }
+        }
+
+        rule.SendObsMedia = false;
+        rule.ObsMediaAssetId = "";
+        rule.ObsMediaGroupId = "";
     }
 
     private static void MigrateRuleAudioLibrary(AppConfig config, Func<string> idFactory)

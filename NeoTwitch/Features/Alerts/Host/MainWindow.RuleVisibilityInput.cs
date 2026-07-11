@@ -39,6 +39,7 @@ public partial class MainWindow
             kind,
             arduinoAvailable,
             useLights,
+            editor.UseVirtualLights,
             playAudio,
             editor.AudioSourceMode,
             _config.AudioLibrary.Count > 0,
@@ -59,6 +60,7 @@ public partial class MainWindow
             editor.ObsVideoSourceMode,
             videoChoices.HasAssets,
             videoChoices.HasGroups,
-            pattern);
+            pattern,
+            editor.VirtualLightsPattern);
     }
 }

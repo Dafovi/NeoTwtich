@@ -21,6 +21,7 @@ public static class ObsWebSocketProtocol
     public const string GetVersion = "GetVersion";
     public const string GetSceneList = "GetSceneList";
     public const string GetStudioModeEnabled = "GetStudioModeEnabled";
+    public const string GetVideoSettings = "GetVideoSettings";
     public const string CreateSceneItem = "CreateSceneItem";
     public const string SetSceneItemEnabled = "SetSceneItemEnabled";
     public const string SetSceneItemTransform = "SetSceneItemTransform";
@@ -53,15 +54,26 @@ public static class ObsWebSocketProtocol
     public const string PositionY = "positionY";
     public const string BoundsType = "boundsType";
     public const string BoundsScaleInner = "OBS_BOUNDS_SCALE_INNER";
+    public const string BoundsStretch = "OBS_BOUNDS_STRETCH";
     public const string BoundsWidth = "boundsWidth";
     public const string BoundsHeight = "boundsHeight";
     public const string InputVolumeMul = "inputVolumeMul";
+    public const string BaseWidth = "baseWidth";
+    public const string BaseHeight = "baseHeight";
+    public const string OutputWidth = "outputWidth";
+    public const string OutputHeight = "outputHeight";
 
     public const string ImageSourceKind = "image_source";
     public const string FfmpegSourceKind = "ffmpeg_source";
+    public const string BrowserSourceKind = "browser_source";
     public const string ImageFile = "file";
     public const string IsLocalFile = "is_local_file";
     public const string LocalFile = "local_file";
+    public const string BrowserUrl = "url";
+    public const string BrowserWidth = "width";
+    public const string BrowserHeight = "height";
+    public const string BrowserShutdown = "shutdown";
+    public const string BrowserRestartWhenActive = "restart_when_active";
     public const string Looping = "looping";
     public const string RestartOnActivate = "restart_on_activate";
     public const string CloseWhenInactive = "close_when_inactive";

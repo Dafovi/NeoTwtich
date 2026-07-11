@@ -7,6 +7,9 @@ namespace NeoTwitch.Views;
 
 public partial class AlertsView : NeoTwitchView
 {
+    private const double CategoryScrollStep = 260d;
+    private const double CategoryScrollTolerance = 1d;
+
     public AlertsView()
     {
         InitializeComponent();
@@ -25,6 +28,44 @@ public partial class AlertsView : NeoTwitchView
     private void LightNumberBox_TextChanged(object sender, TextChangedEventArgs e) => Host?.LightNumberBox_TextChanged(sender, e);
 
     private void RuleLedPreviewPanel_IsVisibleChanged(object sender, DependencyPropertyChangedEventArgs e) => Host?.RuleLedPreviewPanel_IsVisibleChanged(sender, e);
+
+    private void AlertCategoryScrollViewer_ScrollChanged(object sender, ScrollChangedEventArgs e) => UpdateCategoryScrollButtons();
+
+    private void AlertCategoryScrollViewer_SizeChanged(object sender, SizeChangedEventArgs e)
+    {
+        _ = Dispatcher.InvokeAsync(UpdateCategoryScrollButtons);
+    }
+
+    private void AlertCategoryScrollLeftButton_Click(object sender, RoutedEventArgs e)
+    {
+        AlertCategoryScrollViewer.ScrollToHorizontalOffset(Math.Max(0, AlertCategoryScrollViewer.HorizontalOffset - CategoryScrollStep));
+        UpdateCategoryScrollButtons();
+    }
+
+    private void AlertCategoryScrollRightButton_Click(object sender, RoutedEventArgs e)
+    {
+        var maxOffset = Math.Max(0, AlertCategoryScrollViewer.ExtentWidth - AlertCategoryScrollViewer.ViewportWidth);
+        AlertCategoryScrollViewer.ScrollToHorizontalOffset(Math.Min(maxOffset, AlertCategoryScrollViewer.HorizontalOffset + CategoryScrollStep));
+        UpdateCategoryScrollButtons();
+    }
+
+    private void UpdateCategoryScrollButtons()
+    {
+        if (AlertCategoryScrollViewer is null
+            || AlertCategoryScrollLeftButton is null
+            || AlertCategoryScrollRightButton is null)
+        {
+            return;
+        }
+
+        var maxOffset = Math.Max(0, AlertCategoryScrollViewer.ExtentWidth - AlertCategoryScrollViewer.ViewportWidth);
+        AlertCategoryScrollLeftButton.Visibility = AlertCategoryScrollViewer.HorizontalOffset > CategoryScrollTolerance
+            ? Visibility.Visible
+            : Visibility.Collapsed;
+        AlertCategoryScrollRightButton.Visibility = AlertCategoryScrollViewer.HorizontalOffset < maxOffset - CategoryScrollTolerance
+            ? Visibility.Visible
+            : Visibility.Collapsed;
+    }
 
     private void RuleFilterButtonStateChanged(object sender, RoutedEventArgs e)
     {

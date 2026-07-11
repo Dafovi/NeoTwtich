@@ -111,6 +111,19 @@
                 </Setter.Value>
             </Setter>
         </Style>
+
+        <Style x:Key="AlertCategoryScrollButtonStyle" TargetType="{x:Type Button}" BasedOn="{StaticResource {x:Type Button}}">
+            <Setter Property="Width" Value="38" />
+            <Setter Property="Height" Value="46" />
+            <Setter Property="MinWidth" Value="38" />
+            <Setter Property="Padding" Value="0" />
+            <Setter Property="BorderThickness" Value="1" />
+            <Setter Property="Background" Value="#CC101C2A" />
+            <Setter Property="BorderBrush" Value="{DynamicResource ThemeSelectionBrush}" />
+            <Setter Property="HorizontalContentAlignment" Value="Center" />
+            <Setter Property="VerticalContentAlignment" Value="Center" />
+            <Setter Property="Panel.ZIndex" Value="5" />
+        </Style>
     </views:NeoTwitchView.Resources>
 
                     <Grid Margin="24">
@@ -156,89 +169,123 @@
                                     Margin="0,16,0,0"
                                     Padding="18">
                                 <StackPanel>
-                                    <ScrollViewer HorizontalScrollBarVisibility="Auto"
-                                                  VerticalScrollBarVisibility="Disabled"
-                                                  Padding="0,0,0,4">
-                                        <StackPanel Orientation="Horizontal">
-                                            <Button x:Name="EventFollowTileButton"
-                                                    Tag="Follow"
-                                                    MinWidth="190"
-                                                    MinHeight="50"
-                                                    Padding="12,6"
-                                                    Margin="0,0,8,0"
-                                                    Command="{Binding SelectCategoryFilterCommand}"
-                                                    CommandParameter="{Binding Tag, RelativeSource={RelativeSource Self}}">
-                                                <StackPanel Orientation="Horizontal" HorizontalAlignment="Center">
-                                                    <Image Source="/Assets/Icons/action_follower_teal.png" Width="30" Height="30" Margin="0,0,10,0" />
-                                                    <TextBlock Text="Nuevo seguidor" FontWeight="SemiBold" VerticalAlignment="Center" TextTrimming="CharacterEllipsis" />
-                                                </StackPanel>
-                                            </Button>
-                                            <Button x:Name="EventSubscriptionTileButton"
-                                                    Tag="Subscription"
-                                                    MinWidth="190"
-                                                    MinHeight="50"
-                                                    Padding="12,6"
-                                                    Margin="0,0,8,0"
-                                                    Command="{Binding SelectCategoryFilterCommand}"
-                                                    CommandParameter="{Binding Tag, RelativeSource={RelativeSource Self}}">
-                                                <StackPanel Orientation="Horizontal" HorizontalAlignment="Center">
-                                                    <Image Source="/Assets/Icons/action_subscription_purple.png" Width="30" Height="30" Margin="0,0,10,0" />
-                                                    <TextBlock Text="Nueva suscripcion" FontWeight="SemiBold" VerticalAlignment="Center" TextTrimming="CharacterEllipsis" />
-                                                </StackPanel>
-                                            </Button>
-                                            <Button x:Name="EventRaidTileButton"
-                                                    Tag="Raid"
-                                                    MinWidth="170"
-                                                    MinHeight="50"
-                                                    Padding="12,6"
-                                                    Margin="0,0,8,0"
-                                                    Command="{Binding SelectCategoryFilterCommand}"
-                                                    CommandParameter="{Binding Tag, RelativeSource={RelativeSource Self}}">
-                                                <StackPanel Orientation="Horizontal" HorizontalAlignment="Center">
-                                                    <Image Source="/Assets/Icons/activity_notification.png" Width="30" Height="30" Margin="0,0,10,0" />
-                                                    <TextBlock Text="Raid recibida" FontWeight="SemiBold" VerticalAlignment="Center" TextTrimming="CharacterEllipsis" />
-                                                </StackPanel>
-                                            </Button>
-                                            <Button x:Name="EventCheerTileButton"
-                                                    Tag="Cheer"
-                                                    MinWidth="150"
-                                                    MinHeight="50"
-                                                    Padding="12,6"
-                                                    Margin="0,0,8,0"
-                                                    Command="{Binding SelectCategoryFilterCommand}"
-                                                    CommandParameter="{Binding Tag, RelativeSource={RelativeSource Self}}">
-                                                <StackPanel Orientation="Horizontal" HorizontalAlignment="Center">
-                                                    <Image Source="/Assets/Icons/action_bits_blue.png" Width="30" Height="30" Margin="0,0,10,0" />
-                                                    <TextBlock Text="Bits" FontWeight="SemiBold" VerticalAlignment="Center" TextTrimming="CharacterEllipsis" />
-                                                </StackPanel>
-                                            </Button>
-                                            <Button x:Name="EventChatCommandTileButton"
-                                                    Tag="ChatCommand"
-                                                    MinWidth="190"
-                                                    MinHeight="50"
-                                                    Padding="12,6"
-                                                    Margin="0,0,8,0"
-                                                    Command="{Binding SelectCategoryFilterCommand}"
-                                                    CommandParameter="{Binding Tag, RelativeSource={RelativeSource Self}}">
-                                                <StackPanel Orientation="Horizontal" HorizontalAlignment="Center">
-                                                    <Image Source="/Assets/Icons/action_message_green.png" Width="30" Height="30" Margin="0,0,10,0" />
-                                                    <TextBlock Text="Comando de chat" FontWeight="SemiBold" VerticalAlignment="Center" TextTrimming="CharacterEllipsis" />
-                                                </StackPanel>
-                                            </Button>
-                                            <Button x:Name="EventRedemptionTileButton"
-                                                    Tag="ChannelPointRedemption"
-                                                    MinWidth="190"
-                                                    MinHeight="50"
-                                                    Padding="12,6"
-                                                    Command="{Binding SelectCategoryFilterCommand}"
-                                                    CommandParameter="{Binding Tag, RelativeSource={RelativeSource Self}}">
-                                                <StackPanel Orientation="Horizontal" HorizontalAlignment="Center">
-                                                    <Image Source="/Assets/Icons/activity_notification_lime.png" Width="30" Height="30" Margin="0,0,10,0" />
-                                                    <TextBlock Text="Canje de puntos" FontWeight="SemiBold" VerticalAlignment="Center" TextTrimming="CharacterEllipsis" />
-                                                </StackPanel>
-                                            </Button>
-                                        </StackPanel>
-                                    </ScrollViewer>
+                                    <Grid>
+                                        <ScrollViewer x:Name="AlertCategoryScrollViewer"
+                                                      HorizontalScrollBarVisibility="Hidden"
+                                                      VerticalScrollBarVisibility="Disabled"
+                                                      Padding="0,0,0,4"
+                                                      ScrollChanged="AlertCategoryScrollViewer_ScrollChanged"
+                                                      SizeChanged="AlertCategoryScrollViewer_SizeChanged">
+                                            <StackPanel Orientation="Horizontal">
+                                                <Button x:Name="EventFollowTileButton"
+                                                        Tag="Follow"
+                                                        MinWidth="190"
+                                                        MinHeight="50"
+                                                        Padding="12,6"
+                                                        Margin="0,0,8,0"
+                                                        Command="{Binding SelectCategoryFilterCommand}"
+                                                        CommandParameter="{Binding Tag, RelativeSource={RelativeSource Self}}">
+                                                    <StackPanel Orientation="Horizontal" HorizontalAlignment="Center">
+                                                        <Image Source="/Assets/Icons/action_follower_teal.png" Width="30" Height="30" Margin="0,0,10,0" />
+                                                        <TextBlock Text="Nuevo seguidor" FontWeight="SemiBold" VerticalAlignment="Center" TextTrimming="CharacterEllipsis" />
+                                                    </StackPanel>
+                                                </Button>
+                                                <Button x:Name="EventSubscriptionTileButton"
+                                                        Tag="Subscription"
+                                                        MinWidth="190"
+                                                        MinHeight="50"
+                                                        Padding="12,6"
+                                                        Margin="0,0,8,0"
+                                                        Command="{Binding SelectCategoryFilterCommand}"
+                                                        CommandParameter="{Binding Tag, RelativeSource={RelativeSource Self}}">
+                                                    <StackPanel Orientation="Horizontal" HorizontalAlignment="Center">
+                                                        <Image Source="/Assets/Icons/action_subscription_purple.png" Width="30" Height="30" Margin="0,0,10,0" />
+                                                        <TextBlock Text="Nueva suscripcion" FontWeight="SemiBold" VerticalAlignment="Center" TextTrimming="CharacterEllipsis" />
+                                                    </StackPanel>
+                                                </Button>
+                                                <Button x:Name="EventRaidTileButton"
+                                                        Tag="Raid"
+                                                        MinWidth="170"
+                                                        MinHeight="50"
+                                                        Padding="12,6"
+                                                        Margin="0,0,8,0"
+                                                        Command="{Binding SelectCategoryFilterCommand}"
+                                                        CommandParameter="{Binding Tag, RelativeSource={RelativeSource Self}}">
+                                                    <StackPanel Orientation="Horizontal" HorizontalAlignment="Center">
+                                                        <Image Source="/Assets/Icons/activity_notification.png" Width="30" Height="30" Margin="0,0,10,0" />
+                                                        <TextBlock Text="Raid recibida" FontWeight="SemiBold" VerticalAlignment="Center" TextTrimming="CharacterEllipsis" />
+                                                    </StackPanel>
+                                                </Button>
+                                                <Button x:Name="EventCheerTileButton"
+                                                        Tag="Cheer"
+                                                        MinWidth="150"
+                                                        MinHeight="50"
+                                                        Padding="12,6"
+                                                        Margin="0,0,8,0"
+                                                        Command="{Binding SelectCategoryFilterCommand}"
+                                                        CommandParameter="{Binding Tag, RelativeSource={RelativeSource Self}}">
+                                                    <StackPanel Orientation="Horizontal" HorizontalAlignment="Center">
+                                                        <Image Source="/Assets/Icons/action_bits_blue.png" Width="30" Height="30" Margin="0,0,10,0" />
+                                                        <TextBlock Text="Bits" FontWeight="SemiBold" VerticalAlignment="Center" TextTrimming="CharacterEllipsis" />
+                                                    </StackPanel>
+                                                </Button>
+                                                <Button x:Name="EventChatCommandTileButton"
+                                                        Tag="ChatCommand"
+                                                        MinWidth="190"
+                                                        MinHeight="50"
+                                                        Padding="12,6"
+                                                        Margin="0,0,8,0"
+                                                        Command="{Binding SelectCategoryFilterCommand}"
+                                                        CommandParameter="{Binding Tag, RelativeSource={RelativeSource Self}}">
+                                                    <StackPanel Orientation="Horizontal" HorizontalAlignment="Center">
+                                                        <Image Source="/Assets/Icons/action_message_green.png" Width="30" Height="30" Margin="0,0,10,0" />
+                                                        <TextBlock Text="Comando de chat" FontWeight="SemiBold" VerticalAlignment="Center" TextTrimming="CharacterEllipsis" />
+                                                    </StackPanel>
+                                                </Button>
+                                                <Button x:Name="EventRedemptionTileButton"
+                                                        Tag="ChannelPointRedemption"
+                                                        MinWidth="190"
+                                                        MinHeight="50"
+                                                        Padding="12,6"
+                                                        Command="{Binding SelectCategoryFilterCommand}"
+                                                        CommandParameter="{Binding Tag, RelativeSource={RelativeSource Self}}">
+                                                    <StackPanel Orientation="Horizontal" HorizontalAlignment="Center">
+                                                        <Image Source="/Assets/Icons/activity_notification_lime.png" Width="30" Height="30" Margin="0,0,10,0" />
+                                                        <TextBlock Text="Canje de puntos" FontWeight="SemiBold" VerticalAlignment="Center" TextTrimming="CharacterEllipsis" />
+                                                    </StackPanel>
+                                                </Button>
+                                            </StackPanel>
+                                        </ScrollViewer>
+
+                                        <Button x:Name="AlertCategoryScrollLeftButton"
+                                                Style="{StaticResource AlertCategoryScrollButtonStyle}"
+                                                HorizontalAlignment="Left"
+                                                VerticalAlignment="Center"
+                                                Visibility="Collapsed"
+                                                Click="AlertCategoryScrollLeftButton_Click"
+                                                ToolTip="Ver opciones anteriores">
+                                            <Image Source="/Assets/Icons/icon_arrow_left.png"
+                                                   Width="18"
+                                                   Height="18" />
+                                        </Button>
+
+                                        <Button x:Name="AlertCategoryScrollRightButton"
+                                                Style="{StaticResource AlertCategoryScrollButtonStyle}"
+                                                HorizontalAlignment="Right"
+                                                VerticalAlignment="Center"
+                                                Visibility="Collapsed"
+                                                Click="AlertCategoryScrollRightButton_Click"
+                                                ToolTip="Ver mas opciones">
+                                            <Image Source="/Assets/Icons/icon_arrow_left.png"
+                                                   Width="18"
+                                                   Height="18"
+                                                   RenderTransformOrigin="0.5,0.5">
+                                                <Image.RenderTransform>
+                                                    <ScaleTransform ScaleX="-1" />
+                                                </Image.RenderTransform>
+                                            </Image>
+                                        </Button>
+                                    </Grid>
 
                                     <Border BorderBrush="{DynamicResource ThemeBorderBrush}"
                                             BorderThickness="1"

@@ -38,43 +38,98 @@ public partial class MainWindow
             Hide();
         }
 
-        if (!_startupOptions.SuppressAutoConnect && _config.ArduinoEnabled && _config.AutoConnectArduino && !string.IsNullOrWhiteSpace(_config.SerialPort))
+        if (!_startupOptions.SuppressAutoConnect)
         {
-            try
-            {
-                await ConnectArduinoAsync();
-                await ApplyBackgroundAsync();
-            }
-            catch (Exception ex)
-            {
-                CrashReporter.Log(ex, _text.Format(UiTextKeys.StartupArduinoAutoConnectFailureCrash, _config.SerialPort));
-                AddLog(_text.Format(UiTextKeys.StartupArduinoAutoConnectFailureLog, _config.SerialPort), ActivityLogKind.Important);
-                UpdateStatusText();
-            }
+            await AutoConnectArduinoAtStartupAsync();
+            await AutoConnectTwitchAtStartupAsync();
+            await AutoConnectObsAtStartupAsync();
+            InitializeAlexaRelayStatusAtStartup();
+        }
+    }
+
+    private async Task AutoConnectArduinoAtStartupAsync()
+    {
+        if (!_config.ArduinoEnabled || !_config.AutoConnectArduino)
+        {
+            return;
         }
 
-        if (!_startupOptions.SuppressAutoConnect && _config.AutoConnectTwitch && _config.Token.HasToken)
+        if (!TryPrepareArduinoAutoConnectPort(out var selectedPort))
         {
-            try
-            {
-                await StartTwitchAsync();
-            }
-            catch (Exception ex)
-            {
-                AddLog($"Twitch: {ex.Message}");
-            }
+            AddLog(_text.Get(UiTextKeys.StartupArduinoAutoConnectMissingPortLog), ActivityLogKind.Important);
+            UpdateStatusText();
+            return;
         }
 
-        if (!_startupOptions.SuppressAutoConnect && _config.Obs.Enabled && _config.Obs.AutoReconnect)
+        try
         {
-            try
-            {
-                await ConnectObsAsync();
-            }
-            catch (Exception ex)
-            {
-                AddLog($"OBS: {ex.Message}", ActivityLogKind.Important);
-            }
+            await ConnectArduinoAsync();
+            await ApplyBackgroundAsync();
         }
+        catch (Exception ex)
+        {
+            CrashReporter.Log(ex, _text.Format(UiTextKeys.StartupArduinoAutoConnectFailureCrash, selectedPort));
+            AddLog(_text.Format(UiTextKeys.StartupArduinoAutoConnectFailureLog, selectedPort), ActivityLogKind.Important);
+            UpdateStatusText();
+        }
+    }
+
+    private async Task AutoConnectTwitchAtStartupAsync()
+    {
+        if (!_config.AutoConnectTwitch)
+        {
+            return;
+        }
+
+        if (!_config.Token.HasToken)
+        {
+            AddLog(_text.Get(UiTextKeys.StartupTwitchAutoConnectMissingTokenLog), ActivityLogKind.Twitch);
+            UpdateStatusText();
+            return;
+        }
+
+        try
+        {
+            await StartTwitchAsync();
+        }
+        catch (Exception ex)
+        {
+            AddLog(_text.Format(UiTextKeys.StartupTwitchAutoConnectFailureLog, ex.Message), ActivityLogKind.Important);
+            UpdateStatusText();
+        }
+    }
+
+    private async Task AutoConnectObsAtStartupAsync()
+    {
+        if (!_config.Obs.Enabled || !_config.Obs.AutoReconnect)
+        {
+            return;
+        }
+
+        try
+        {
+            await ConnectObsAsync();
+        }
+        catch (Exception ex)
+        {
+            _obsConnectionError = ex.Message;
+            AddLog(_text.Format(UiTextKeys.StartupObsAutoConnectFailureLog, ex.Message), ActivityLogKind.Important);
+            UpdateObsStatusText();
+        }
+    }
+
+    private void InitializeAlexaRelayStatusAtStartup()
+    {
+        if (!_config.Alexa.Enabled)
+        {
+            return;
+        }
+
+        if (_config.Alexa.IsConfigured)
+        {
+            AddLog(_text.Get(UiTextKeys.StartupAlexaRelayConfiguredLog), ActivityLogKind.Alexa);
+        }
+
+        UpdateAlexaStatusText();
     }
 }

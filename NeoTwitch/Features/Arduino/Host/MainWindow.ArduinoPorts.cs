@@ -38,6 +38,38 @@ public partial class MainWindow
         }
     }
 
+    private bool TryPrepareArduinoAutoConnectPort(out string selectedPort)
+    {
+        RefreshPortList(choosePreferred: false);
+
+        var configuredPort = ParsePort(_config.SerialPort);
+        if (!string.IsNullOrWhiteSpace(configuredPort)
+            && _availablePorts.Any(port => string.Equals(port.PortName, configuredPort, StringComparison.OrdinalIgnoreCase)))
+        {
+            selectedPort = configuredPort;
+            _connectionsViewModel.SerialPort = configuredPort;
+            return true;
+        }
+
+        selectedPort = ChoosePreferredPort(_availablePorts);
+        if (string.IsNullOrWhiteSpace(selectedPort))
+        {
+            _connectionsViewModel.SerialPort = configuredPort;
+            return false;
+        }
+
+        if (!string.IsNullOrWhiteSpace(configuredPort)
+            && !string.Equals(configuredPort, selectedPort, StringComparison.OrdinalIgnoreCase))
+        {
+            AddLog($"Arduino: el puerto guardado {configuredPort} no esta disponible. Intentare usar {selectedPort}.");
+        }
+
+        _config.SerialPort = selectedPort;
+        _connectionsViewModel.SerialPort = selectedPort;
+        SaveConfig();
+        return true;
+    }
+
     private void DetectPorts()
     {
         RefreshPortList(choosePreferred: true);

@@ -539,6 +539,11 @@ public static class UiTextKeys
     public const string StartupPreviousSettingsReadFailureLog = "startup.previous_settings_read_failure_log";
     public const string StartupDebugModeLog = "startup.debug_mode_log";
     public const string StartupAutoConnectSuppressedLog = "startup.auto_connect_suppressed_log";
+    public const string StartupTwitchAutoConnectMissingTokenLog = "startup.twitch_auto_connect_missing_token_log";
+    public const string StartupTwitchAutoConnectFailureLog = "startup.twitch_auto_connect_failure_log";
+    public const string StartupArduinoAutoConnectMissingPortLog = "startup.arduino_auto_connect_missing_port_log";
     public const string StartupArduinoAutoConnectFailureCrash = "startup.arduino_auto_connect_failure_crash";
     public const string StartupArduinoAutoConnectFailureLog = "startup.arduino_auto_connect_failure_log";
+    public const string StartupObsAutoConnectFailureLog = "startup.obs_auto_connect_failure_log";
+    public const string StartupAlexaRelayConfiguredLog = "startup.alexa_relay_configured_log";
 }

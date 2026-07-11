@@ -16,6 +16,11 @@ public partial class MainWindow
         var configuredPort = ParsePort(_config.SerialPort);
         if (string.IsNullOrWhiteSpace(configuredPort))
         {
+            if (_config.AutoConnectArduino && !_isArduinoConnecting)
+            {
+                await TryReconnectArduinoFromAvailablePortAsync("Arduino: buscando puerto para reconexion automatica.");
+            }
+
             return;
         }
 
@@ -35,6 +40,11 @@ public partial class MainWindow
                 }
 
                 _lastArduinoPortPresent = false;
+                if (_config.AutoConnectArduino && !_isArduinoConnecting)
+                {
+                    await TryReconnectArduinoFromAvailablePortAsync($"Arduino: {_config.SerialPort} no esta disponible. Buscando otro puerto.");
+                }
+
                 return;
             }
 
@@ -71,5 +81,27 @@ public partial class MainWindow
         {
             _arduinoMonitorBusy = false;
         }
+    }
+
+    private async Task TryReconnectArduinoFromAvailablePortAsync(string logMessage)
+    {
+        var now = _timeProvider.GetUtcNow();
+        if (now - _lastArduinoReconnectAttempt < TimeSpan.FromSeconds(8))
+        {
+            return;
+        }
+
+        _lastArduinoReconnectAttempt = now;
+        AddLog(logMessage, ActivityLogKind.Important);
+        if (!TryPrepareArduinoAutoConnectPort(out var selectedPort))
+        {
+            AddLog(_text.Get(Services.Text.UiTextKeys.StartupArduinoAutoConnectMissingPortLog), ActivityLogKind.Important);
+            UpdateStatusText();
+            return;
+        }
+
+        AddLog($"Arduino: intentando reconectar automaticamente en {selectedPort}.");
+        await ConnectArduinoAsync();
+        await ApplyBackgroundAsync();
     }
 }

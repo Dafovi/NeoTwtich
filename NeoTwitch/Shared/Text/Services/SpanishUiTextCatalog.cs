@@ -538,8 +538,13 @@ public static class SpanishUiTextCatalog
             [UiTextKeys.StartupPreviousSettingsReadFailureLog] = "No pude leer la configuracion anterior: {0}",
             [UiTextKeys.StartupDebugModeLog] = "Modo debug activo.",
             [UiTextKeys.StartupAutoConnectSuppressedLog] = "Conexiones automaticas omitidas por opciones de depuracion.",
+            [UiTextKeys.StartupTwitchAutoConnectMissingTokenLog] = "Twitch: autoconexion omitida porque falta autorizar la cuenta.",
+            [UiTextKeys.StartupTwitchAutoConnectFailureLog] = "Twitch: no pude conectar automaticamente: {0}",
+            [UiTextKeys.StartupArduinoAutoConnectMissingPortLog] = "Arduino: autoconexion omitida porque no encontre un puerto COM disponible.",
             [UiTextKeys.StartupArduinoAutoConnectFailureCrash] = "No se pudo conectar Arduino automaticamente en {0}.",
-            [UiTextKeys.StartupArduinoAutoConnectFailureLog] = "Arduino: no pude conectar {0}. Las luces quedan desactivadas hasta reconectar el puerto."
+            [UiTextKeys.StartupArduinoAutoConnectFailureLog] = "Arduino: no pude conectar {0}. Las luces quedan desactivadas hasta reconectar el puerto.",
+            [UiTextKeys.StartupObsAutoConnectFailureLog] = "OBS: no pude conectar automaticamente: {0}",
+            [UiTextKeys.StartupAlexaRelayConfiguredLog] = "Alexa: relay configurado. Se validara cuando pruebes o ejecutes un evento."
         };
     }
 }

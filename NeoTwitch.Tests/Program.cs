@@ -828,6 +828,30 @@ static class RuleEditorFormTests
                 ObsMediaAssetId: " media-1 ",
                 ObsMediaGroupId: " group-1 ",
                 ObsMediaDurationText: "10",
+                SendObsImage: true,
+                ObsImageSourceMode: MediaSourceMode.Single,
+                ObsImageAssetId: " image-1 ",
+                ObsImageGroupId: " image-group ",
+                ObsImageDurationText: "999999",
+                SendObsVideo: true,
+                ObsVideoSourceMode: MediaSourceMode.Group,
+                ObsVideoAssetId: " video-1 ",
+                ObsVideoGroupId: " video-group ",
+                UseVirtualLights: true,
+                VirtualLightsToObs: true,
+                VirtualLightsToScreen: true,
+                VirtualLightsScreenId: " screen-1 ",
+                VirtualLightsPattern: LightPattern.Pulse,
+                VirtualLightsPrimaryColor: "ff0000",
+                VirtualLightsSecondaryColor: "#00ff00",
+                VirtualLightsTertiaryColor: "",
+                VirtualLightsBrightness: 121.4,
+                VirtualLightsDurationMs: 2345.6,
+                VirtualLightsCycleMs: 33.3,
+                VirtualLightsStepMs: 44.4,
+                VirtualLightsObsOpacity: 55.5,
+                VirtualLightsScreenPixelSize: 12.2,
+                VirtualLightsScreenSaturation: 201.8,
                 UseLights: true,
                 PlayAudio: true,
                 AudioSourceMode: AudioSourceMode.Single,
@@ -853,6 +877,28 @@ static class RuleEditorFormTests
         TestAssert.Equal(0, rule.ObsSceneDelayMs);
         TestAssert.Equal(15000, rule.ObsReturnDelayMs);
         TestAssert.Equal(250, rule.ObsMediaDurationMs);
+        TestAssert.True(rule.SendObsImage);
+        TestAssert.Equal("image-1", rule.ObsImageAssetId);
+        TestAssert.Equal("image-group", rule.ObsImageGroupId);
+        TestAssert.Equal(600000, rule.ObsImageDurationMs);
+        TestAssert.True(rule.SendObsVideo);
+        TestAssert.Equal("video-1", rule.ObsVideoAssetId);
+        TestAssert.Equal("video-group", rule.ObsVideoGroupId);
+        TestAssert.True(rule.UseVirtualLights);
+        TestAssert.True(rule.VirtualLightsToObs);
+        TestAssert.True(rule.VirtualLightsToScreen);
+        TestAssert.Equal("screen-1", rule.VirtualLightsScreenId);
+        TestAssert.Equal(LightPattern.Pulse, rule.VirtualLightsPattern);
+        TestAssert.Equal("#FF0000", rule.VirtualLightsPrimaryColor);
+        TestAssert.Equal("#00FF00", rule.VirtualLightsSecondaryColor);
+        TestAssert.Equal("#FFFFFF", rule.VirtualLightsTertiaryColor);
+        TestAssert.Equal(121, rule.VirtualLightsBrightness);
+        TestAssert.Equal(2346, rule.VirtualLightsDurationMs);
+        TestAssert.Equal(33, rule.VirtualLightsCycleMs);
+        TestAssert.Equal(44, rule.VirtualLightsStepMs);
+        TestAssert.Equal(56, rule.VirtualLightsObsOpacity);
+        TestAssert.Equal(12, rule.VirtualLightsScreenPixelSize);
+        TestAssert.Equal(202, rule.VirtualLightsScreenSaturation);
         TestAssert.Equal(@"C:\audios\alerta.mp3", rule.AudioPath);
         TestAssert.Equal("2, 3", rule.TargetPins);
         TestAssert.Equal("#00FF00", rule.PrimaryColor);
@@ -3121,9 +3167,13 @@ static class ObsViewModelTests
         config.Obs.OverlayPositionMode = "Custom";
         config.Obs.OverlayX = 20;
         config.Obs.OverlayY = 40;
-        viewModel.LoadOverlayConfig(config, "http://localhost:1234/overlay");
+        viewModel.LoadOverlayConfig(
+            config,
+            "http://localhost:1234/overlay",
+            "http://localhost:1234/virtual-lights");
 
         TestAssert.Equal("http://localhost:1234/overlay", viewModel.OverlayUrl);
+        TestAssert.Equal("http://localhost:1234/virtual-lights", viewModel.VirtualLightsOverlayUrl);
         TestAssert.Equal("1280", viewModel.OverlayWidthText);
         TestAssert.Equal("720", viewModel.OverlayHeightText);
         TestAssert.Equal("320", viewModel.OverlayMediaWidthText);
@@ -3153,16 +3203,18 @@ static class ObsViewModelTests
 
         viewModel.ConfigureActions(
             () => actions.Add("copy"),
+            () => actions.Add("copy-virtual"),
             () => actions.Add("refresh"),
             parameter => actions.Add($"preview:{parameter}"),
             parameter => actions.Add($"change:{parameter}"));
 
         viewModel.CopyOverlayUrlCommand.Execute(null);
+        viewModel.CopyVirtualLightsOverlayUrlCommand.Execute(null);
         viewModel.RefreshScenesCommand.Execute(null);
         viewModel.PreviewSceneCommand.Execute("BRB");
         viewModel.ChangeSceneCommand.Execute("Gameplay");
 
-        TestAssert.Equal("copy,refresh,preview:BRB,change:Gameplay", string.Join(",", actions));
+        TestAssert.Equal("copy,copy-virtual,refresh,preview:BRB,change:Gameplay", string.Join(",", actions));
     }
 }
 
@@ -4438,11 +4490,12 @@ static class OptionVisibilityTests
     public static void ResolvesRulePanels()
     {
         var visibility = OptionVisibilityService.ResolveRule(new RuleOptionVisibilityInput(
-            TwitchEventKind.Cheer,
+            EventKind: TwitchEventKind.Cheer,
             ArduinoAvailable: true,
             UseLights: true,
+            UseVirtualLights: true,
             PlayAudio: true,
-            AudioSourceMode.Single,
+            AudioSourceMode: AudioSourceMode.Single,
             HasAudioAssets: false,
             HasAudioGroups: false,
             SendChatMessage: true,
@@ -4453,12 +4506,16 @@ static class OptionVisibilityTests
             SelectedObsSceneName: "Recortes",
             ReturnObsScene: true,
             HasObsScenes: true,
-            SendObsMedia: true,
-            ObsMediaKind.Image,
-            MediaSourceMode.Single,
-            HasObsMediaAssets: true,
-            HasObsMediaGroups: false,
-            LightPattern.Pulse));
+            SendObsImage: true,
+            ObsImageSourceMode: MediaSourceMode.Single,
+            HasObsImageAssets: true,
+            HasObsImageGroups: false,
+            SendObsVideo: false,
+            ObsVideoSourceMode: MediaSourceMode.Group,
+            HasObsVideoAssets: false,
+            HasObsVideoGroups: false,
+            Pattern: LightPattern.Pulse,
+            VirtualLightsPattern: LightPattern.Rainbow));
 
         TestAssert.True(visibility.ShowMinimumBits);
         TestAssert.False(visibility.ShowRewardTitle);
@@ -4468,18 +4525,21 @@ static class OptionVisibilityTests
         TestAssert.True(visibility.ShowAlexaDetails);
         TestAssert.True(visibility.ShowObsSceneTiming);
         TestAssert.False(visibility.ShowObsReturnDelay);
-        TestAssert.True(visibility.ShowObsMediaDuration);
+        TestAssert.True(visibility.ShowObsImageAsset);
+        TestAssert.False(visibility.ShowObsVideoGroup);
         TestAssert.True(visibility.ShowLightConfiguration);
         TestAssert.True(visibility.ShowSecondaryColor);
         TestAssert.True(visibility.ShowBrightness);
         TestAssert.False(visibility.ShowDuration);
+        TestAssert.False(visibility.ShowVirtualDuration);
 
         var videoVisibility = OptionVisibilityService.ResolveRule(new RuleOptionVisibilityInput(
-            TwitchEventKind.Follow,
+            EventKind: TwitchEventKind.Follow,
             ArduinoAvailable: true,
             UseLights: false,
+            UseVirtualLights: false,
             PlayAudio: false,
-            AudioSourceMode.Single,
+            AudioSourceMode: AudioSourceMode.Single,
             HasAudioAssets: true,
             HasAudioGroups: false,
             SendChatMessage: false,
@@ -4490,14 +4550,19 @@ static class OptionVisibilityTests
             SelectedObsSceneName: "",
             ReturnObsScene: false,
             HasObsScenes: true,
-            SendObsMedia: true,
-            ObsMediaKind.Video,
-            MediaSourceMode.Group,
-            HasObsMediaAssets: false,
-            HasObsMediaGroups: true,
-            LightPattern.Solid));
+            SendObsImage: false,
+            ObsImageSourceMode: MediaSourceMode.Single,
+            HasObsImageAssets: false,
+            HasObsImageGroups: false,
+            SendObsVideo: true,
+            ObsVideoSourceMode: MediaSourceMode.Group,
+            HasObsVideoAssets: false,
+            HasObsVideoGroups: true,
+            Pattern: LightPattern.Solid,
+            VirtualLightsPattern: LightPattern.Solid));
 
-        TestAssert.False(videoVisibility.ShowObsMediaDuration);
+        TestAssert.True(videoVisibility.ShowObsVideoGroup);
+        TestAssert.False(videoVisibility.ShowDuration);
     }
 
     public static void ResolvesBackgroundPanels()

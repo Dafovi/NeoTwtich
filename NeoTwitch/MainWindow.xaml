@@ -252,14 +252,20 @@
             </DockPanel>
         </Border>
 
-        <TabControl Grid.Row="1"
-                    Grid.Column="1"
-                    x:Name="MainTabs"
-                    ItemContainerStyle="{StaticResource HiddenTabItem}"
-                    Background="Transparent"
-                    BorderThickness="0"
-                    Padding="0"
-                    SelectionChanged="MainTabs_SelectionChanged">
+        <Grid Grid.Row="1"
+              Grid.Column="1">
+            <Grid.RowDefinitions>
+                <RowDefinition Height="*" />
+                <RowDefinition Height="34" />
+            </Grid.RowDefinitions>
+
+            <TabControl Grid.Row="0"
+                        x:Name="MainTabs"
+                        ItemContainerStyle="{StaticResource HiddenTabItem}"
+                        Background="Transparent"
+                        BorderThickness="0"
+                        Padding="0"
+                        SelectionChanged="MainTabs_SelectionChanged">
             <TabItem x:Name="DashboardTab" Header="Inicio">
                 <views:DashboardView x:Name="DashboardView" />
             </TabItem>
@@ -303,7 +309,40 @@
             <TabItem x:Name="SettingsTab" Header="Configuracion">
                 <views:SettingsView x:Name="SettingsView" />
             </TabItem>
-        </TabControl>
+            </TabControl>
+
+            <Border x:Name="MiniConsoleBar"
+                    Grid.Row="1"
+                    Margin="24,0,24,8"
+                    Padding="10,0"
+                    Background="{DynamicResource ThemeSurfaceBrush}"
+                    BorderBrush="{DynamicResource ThemeBorderBrush}"
+                    BorderThickness="1"
+                    CornerRadius="9"
+                    Cursor="Hand"
+                    ToolTip="Abrir actividad"
+                    MouseLeftButtonUp="MiniConsoleBar_MouseLeftButtonUp">
+                <Grid VerticalAlignment="Center">
+                    <Grid.ColumnDefinitions>
+                        <ColumnDefinition Width="Auto" />
+                        <ColumnDefinition Width="*" />
+                    </Grid.ColumnDefinitions>
+                    <TextBlock Text="Consola"
+                               Foreground="{DynamicResource ThemeSelectionBrush}"
+                               FontSize="11"
+                               FontWeight="SemiBold"
+                               VerticalAlignment="Center"
+                               Margin="0,0,10,0" />
+                    <TextBlock Grid.Column="1"
+                               Text="{Binding LatestConsoleText}"
+                               Style="{StaticResource MutedText}"
+                               FontSize="11"
+                               VerticalAlignment="Center"
+                               TextTrimming="CharacterEllipsis"
+                               TextWrapping="NoWrap" />
+                </Grid>
+            </Border>
+        </Grid>
 
     </Grid>
 </Window>

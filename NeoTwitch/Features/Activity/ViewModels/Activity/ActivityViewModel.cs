@@ -1,5 +1,6 @@
 using System.Collections.ObjectModel;
 using System.ComponentModel;
+using System.Collections.Specialized;
 using System.Windows.Data;
 using System.Windows.Input;
 using NeoTwitch.Services.Activity;
@@ -21,12 +22,14 @@ public sealed class ActivityViewModel : ObservableObject
     private bool _systemFilterEnabled = true;
     private bool _importantFilterEnabled = true;
     private bool _suppressFilterUpdates;
+    private string _latestConsoleText = "Sin actividad reciente.";
 
     public ActivityViewModel(ActivityLogService activityLog)
     {
         _activityLog = activityLog;
         _entriesViewSource.Source = activityLog.Entries;
         _entriesViewSource.Filter += EntriesViewSource_Filter;
+        _activityLog.Entries.CollectionChanged += Entries_CollectionChanged;
         ClearFiltersCommand = new RelayCommand(ClearFilters);
         ClearHistoryCommand = new RelayCommand(ClearHistory);
     }
@@ -38,6 +41,12 @@ public sealed class ActivityViewModel : ObservableObject
     public ICommand ClearFiltersCommand { get; }
 
     public ICommand ClearHistoryCommand { get; }
+
+    public string LatestConsoleText
+    {
+        get => _latestConsoleText;
+        private set => SetProperty(ref _latestConsoleText, value);
+    }
 
     public bool TwitchFilterEnabled
     {
@@ -141,6 +150,18 @@ public sealed class ActivityViewModel : ObservableObject
         }
 
         e.Accepted = _activityLog.Matches(entry);
+    }
+
+    private void Entries_CollectionChanged(object? sender, NotifyCollectionChangedEventArgs e)
+    {
+        UpdateLatestConsoleText();
+    }
+
+    private void UpdateLatestConsoleText()
+    {
+        LatestConsoleText = _activityLog.Entries.FirstOrDefault() is { } entry
+            ? $"{entry.Time}  {entry.SourceName}: {entry.Message}"
+            : "Sin actividad reciente.";
     }
 
     private void SetFilterProperty(ref bool field, bool value, string filter)

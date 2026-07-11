@@ -121,6 +121,7 @@ public partial class MainWindow
             ObsView.DataContext = _obsViewModel;
             SettingsView.DataContext = _settingsViewModel;
             ActivityView.DataContext = _activityViewModel;
+            MiniConsoleBar.DataContext = _activityViewModel;
             AudioView.DataContext = _audioLibraryViewModel;
             ImagesView.DataContext = _imageLibraryViewModel;
             VideosView.DataContext = _videoLibraryViewModel;

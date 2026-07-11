@@ -1,5 +1,6 @@
 using System.Windows;
 using System.Windows.Controls;
+using System.Windows.Input;
 using System.Windows.Threading;
 
 namespace NeoTwitch;
@@ -52,6 +53,11 @@ public partial class MainWindow
     private void GoToActivity()
     {
         _shellViewModel.NavigateTo(ViewModels.Shell.ShellViewModel.ActivityTabIndex);
+    }
+
+    private void MiniConsoleBar_MouseLeftButtonUp(object sender, MouseButtonEventArgs e)
+    {
+        GoToActivity();
     }
 
     private bool TryNavigateToTab(int selectedIndex)

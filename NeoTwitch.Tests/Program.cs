@@ -674,7 +674,7 @@ static class EventRulePresentationTests
             IsEnabled = false,
             UseLights = true,
             PlayAudio = true,
-            SendObsMedia = true,
+            SendObsScene = true,
             ObsActionAvailable = false
         };
 
@@ -898,7 +898,7 @@ static class RuleEditorFormTests
         TestAssert.Equal(44, rule.VirtualLightsStepMs);
         TestAssert.Equal(56, rule.VirtualLightsObsOpacity);
         TestAssert.Equal(12, rule.VirtualLightsScreenPixelSize);
-        TestAssert.Equal(202, rule.VirtualLightsScreenSaturation);
+        TestAssert.Equal(200, rule.VirtualLightsScreenSaturation);
         TestAssert.Equal(@"C:\audios\alerta.mp3", rule.AudioPath);
         TestAssert.Equal("2, 3", rule.TargetPins);
         TestAssert.Equal("#00FF00", rule.PrimaryColor);
@@ -3981,6 +3981,15 @@ static class RuleEditorViewModelTests
             ObsMediaAssetId = "video-1",
             ObsMediaGroupId = "videos",
             ObsMediaDurationMs = 9000,
+            SendObsVideo = true,
+            ObsVideoSourceMode = MediaSourceMode.Group,
+            ObsVideoAssetId = "video-1",
+            ObsVideoGroupId = "videos",
+            SendObsImage = true,
+            ObsImageSourceMode = MediaSourceMode.Single,
+            ObsImageAssetId = "image-1",
+            ObsImageGroupId = "images",
+            ObsImageDurationMs = 4000,
             AudioSourceMode = AudioSourceMode.Group,
             AudioAssetId = "audio-1",
             AudioGroupId = "audios",
@@ -4013,12 +4022,21 @@ static class RuleEditorViewModelTests
         TestAssert.Equal("500", viewModel.ObsSceneDelayText);
         TestAssert.False(viewModel.ObsReturnToPreviousScene);
         TestAssert.Equal("7000", viewModel.ObsReturnDelayText);
-        TestAssert.True(viewModel.SendObsMedia);
+        TestAssert.False(viewModel.SendObsMedia);
         TestAssert.Equal(ObsMediaKind.Video, viewModel.ObsMediaKind);
         TestAssert.Equal(MediaSourceMode.Group, viewModel.ObsMediaSourceMode);
-        TestAssert.Equal("video-1", viewModel.ObsMediaAssetId);
-        TestAssert.Equal("videos", viewModel.ObsMediaGroupId);
+        TestAssert.Equal("", viewModel.ObsMediaAssetId);
+        TestAssert.Equal("", viewModel.ObsMediaGroupId);
         TestAssert.Equal("9000", viewModel.ObsMediaDurationText);
+        TestAssert.True(viewModel.SendObsVideo);
+        TestAssert.Equal(MediaSourceMode.Group, viewModel.ObsVideoSourceMode);
+        TestAssert.Equal("video-1", viewModel.ObsVideoAssetId);
+        TestAssert.Equal("videos", viewModel.ObsVideoGroupId);
+        TestAssert.True(viewModel.SendObsImage);
+        TestAssert.Equal(MediaSourceMode.Single, viewModel.ObsImageSourceMode);
+        TestAssert.Equal("image-1", viewModel.ObsImageAssetId);
+        TestAssert.Equal("images", viewModel.ObsImageGroupId);
+        TestAssert.Equal("4000", viewModel.ObsImageDurationText);
         TestAssert.Equal(AudioSourceMode.Group, viewModel.AudioSourceMode);
         TestAssert.Equal("audio-1", viewModel.AudioAssetId);
         TestAssert.Equal("audios", viewModel.AudioGroupId);
@@ -4056,6 +4074,15 @@ static class RuleEditorViewModelTests
         TestAssert.Equal("", viewModel.ObsMediaAssetId);
         TestAssert.Equal("", viewModel.ObsMediaGroupId);
         TestAssert.Equal("5000", viewModel.ObsMediaDurationText);
+        TestAssert.False(viewModel.SendObsImage);
+        TestAssert.Equal(MediaSourceMode.Single, viewModel.ObsImageSourceMode);
+        TestAssert.Equal("", viewModel.ObsImageAssetId);
+        TestAssert.Equal("", viewModel.ObsImageGroupId);
+        TestAssert.Equal("5000", viewModel.ObsImageDurationText);
+        TestAssert.False(viewModel.SendObsVideo);
+        TestAssert.Equal(MediaSourceMode.Single, viewModel.ObsVideoSourceMode);
+        TestAssert.Equal("", viewModel.ObsVideoAssetId);
+        TestAssert.Equal("", viewModel.ObsVideoGroupId);
         TestAssert.Equal(AudioSourceMode.Single, viewModel.AudioSourceMode);
         TestAssert.Equal("", viewModel.AudioAssetId);
         TestAssert.Equal("", viewModel.AudioGroupId);

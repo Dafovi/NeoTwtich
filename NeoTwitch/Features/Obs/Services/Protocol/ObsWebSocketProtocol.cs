@@ -26,6 +26,7 @@ public static class ObsWebSocketProtocol
     public const string SetSceneItemEnabled = "SetSceneItemEnabled";
     public const string SetSceneItemTransform = "SetSceneItemTransform";
     public const string SetInputVolume = "SetInputVolume";
+    public const string SetInputAudioMonitorType = "SetInputAudioMonitorType";
     public const string GetSceneItemId = "GetSceneItemId";
 
     public const string RequestType = "requestType";
@@ -58,6 +59,8 @@ public static class ObsWebSocketProtocol
     public const string BoundsWidth = "boundsWidth";
     public const string BoundsHeight = "boundsHeight";
     public const string InputVolumeMul = "inputVolumeMul";
+    public const string MonitorType = "monitorType";
+    public const string MonitorAndOutput = "OBS_MONITORING_TYPE_MONITOR_AND_OUTPUT";
     public const string BaseWidth = "baseWidth";
     public const string BaseHeight = "baseHeight";
     public const string OutputWidth = "outputWidth";

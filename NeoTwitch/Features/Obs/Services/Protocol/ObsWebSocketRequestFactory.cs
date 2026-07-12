@@ -214,6 +214,15 @@ public static class ObsWebSocketRequestFactory
         };
     }
 
+    public static Dictionary<string, object?> BuildInputAudioMonitorRequest(string sourceName)
+    {
+        return new Dictionary<string, object?>
+        {
+            [ObsWebSocketProtocol.InputName] = sourceName.Trim(),
+            [ObsWebSocketProtocol.MonitorType] = ObsWebSocketProtocol.MonitorAndOutput
+        };
+    }
+
     public static (int X, int Y) ResolveOverlayPosition(
         ObsIntegrationConfig config,
         int mediaWidth,

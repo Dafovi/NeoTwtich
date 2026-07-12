@@ -201,6 +201,7 @@ public sealed partial class ObsWebSocketService : IAsyncDisposable
                 if (kind == ObsMediaKind.Video && videoVolumePercent is int volumePercent)
                 {
                     await SetInputVolumeAsync(sourceName, volumePercent, token);
+                    await SetInputAudioMonitorAsync(sourceName, token);
                 }
 
                 if (overlayConfig is not null)
@@ -385,6 +386,16 @@ public sealed partial class ObsWebSocketService : IAsyncDisposable
         await SendRequestAsync(
             ObsProtocol.SetInputVolume,
             ObsWebSocketRequestFactory.BuildInputVolumeRequest(sourceName, volumePercent),
+            cancellationToken);
+    }
+
+    private async Task SetInputAudioMonitorAsync(
+        string sourceName,
+        CancellationToken cancellationToken)
+    {
+        await SendRequestAsync(
+            ObsProtocol.SetInputAudioMonitorType,
+            ObsWebSocketRequestFactory.BuildInputAudioMonitorRequest(sourceName),
             cancellationToken);
     }
 

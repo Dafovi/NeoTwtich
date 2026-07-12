@@ -1767,6 +1767,10 @@ static class ObsWebSocketRequestFactoryTests
         TestAssert.Equal("Video", volumeRequest[ObsWebSocketProtocol.InputName]);
         TestAssert.Equal(1d, volumeRequest[ObsWebSocketProtocol.InputVolumeMul]);
 
+        var monitorRequest = ObsWebSocketRequestFactory.BuildInputAudioMonitorRequest(" Video ");
+        TestAssert.Equal("Video", monitorRequest[ObsWebSocketProtocol.InputName]);
+        TestAssert.Equal(ObsWebSocketProtocol.MonitorAndOutput, monitorRequest[ObsWebSocketProtocol.MonitorType]);
+
         var sceneRequest = ObsWebSocketRequestFactory.BuildSetCurrentProgramSceneRequest(" Gameplay ");
         TestAssert.Equal("Gameplay", sceneRequest[ObsWebSocketProtocol.SceneName]);
 

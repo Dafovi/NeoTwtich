@@ -109,3 +109,7 @@ Mas detalles en [docs/DESARROLLO.md](docs/DESARROLLO.md).
 ## Creditos
 
 Los creditos de iconos, logos e imagenes estan recopilados en [docs/ATRIBUCIONES_ICONOS.md](docs/ATRIBUCIONES_ICONOS.md).
+
+## License
+
+This project is licensed under the MIT License. See the LICENSE file for details.

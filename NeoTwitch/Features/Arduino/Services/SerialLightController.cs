@@ -93,17 +93,17 @@ public sealed class SerialLightController : IDisposable
         }
     }
 
-    public async Task SendAsync(LightCommand command, Action<string> log, CancellationToken cancellationToken)
+    public async Task<bool> SendAsync(LightCommand command, Action<string> log, CancellationToken cancellationToken)
     {
-        await SendLineAsync(command.ToProtocolLine(), log, cancellationToken);
+        return await SendLineAsync(command.ToProtocolLine(), log, cancellationToken);
     }
 
-    public async Task StopAsync(IReadOnlyList<LightStripTarget> targets, Action<string> log, CancellationToken cancellationToken)
+    public async Task<bool> StopAsync(IReadOnlyList<LightStripTarget> targets, Action<string> log, CancellationToken cancellationToken)
     {
-        await SendLineAsync(LightCommand.ToStopProtocolLine(targets), log, cancellationToken);
+        return await SendLineAsync(LightCommand.ToStopProtocolLine(targets), log, cancellationToken);
     }
 
-    private async Task SendLineAsync(string line, Action<string> log, CancellationToken cancellationToken)
+    private async Task<bool> SendLineAsync(string line, Action<string> log, CancellationToken cancellationToken)
     {
         await _gate.WaitAsync(cancellationToken);
 
@@ -112,7 +112,7 @@ public sealed class SerialLightController : IDisposable
             if (!HasOpenPort || _handle is null)
             {
                 log(_text.Get(UiTextKeys.SerialNoArduinoLog));
-                return;
+                return false;
             }
 
             var commandName = SerialLightProtocol.ResolveCommandName(line);
@@ -125,15 +125,17 @@ public sealed class SerialLightController : IDisposable
             if (!WindowsSerialPortApi.TryWrite(_handle, bytes, out var written, out var error) || written != bytes.Length)
             {
                 log(_text.Format(UiTextKeys.SerialWriteFailureLog, _port, new Win32Exception(error).Message));
+                CloseCurrentPort(log);
+                return false;
             }
-            else
+
+            log(_text.Format(UiTextKeys.SerialCommandLog, _port, line.Trim()));
+            if (commandName is not null && _ackSupported != false)
             {
-                log(_text.Format(UiTextKeys.SerialCommandLog, _port, line.Trim()));
-                if (commandName is not null && _ackSupported != false)
-                {
-                    WaitForAck(commandName, log, cancellationToken);
-                }
+                WaitForAck(commandName, log, cancellationToken);
             }
+
+            return true;
         }
         finally
         {

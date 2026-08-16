@@ -2,6 +2,7 @@ using NeoTwitch.Models;
 using NeoTwitch.Services;
 using NeoTwitch.Services.Alerts;
 using NeoTwitch.Services.Text;
+using NeoTwitch.ViewModels.Activity;
 using NeoTwitch.ViewModels.Obs;
 
 namespace NeoTwitch;
@@ -41,9 +42,79 @@ public partial class MainWindow
                 _ = SendRuleAlexaEventAsync(rule, twitchEvent);
             }
 
-            obsRestore = await SendRuleObsSceneAsync(rule, effectCts.Token);
+            // OBS can be reconnecting or unavailable. Start its work now, but never make
+            // the serial command wait for it: local alerts must remain responsive.
+            var obsSceneTask = SendRuleObsSceneAsync(rule, effectCts.Token);
+            var obsMediaTask = SendRuleObsMediaAsync(rule, effectCts.Token);
+
+            AudioPlayback? playback = null;
+            AudioAssetConfig? playbackAsset = null;
+            if (rule.PlayAudio)
+            {
+                try
+                {
+                    playbackAsset = ResolveRuleAudioAsset(rule);
+                    var audioPath = playbackAsset?.FilePath ?? rule.AudioPath;
+                    playback = await _audioPlayer.PrepareAsync(audioPath, _config.AlertVolumePercent, AddLog);
+                    _currentPlayback = playback;
+                    if (playbackAsset is not null)
+                    {
+                        MarkAudioAssetUsed(playbackAsset, playback?.Duration);
+                    }
+                }
+                catch (Exception ex)
+                {
+                    CrashReporter.Log(ex, $"No se pudo preparar el audio de la regla '{rule.Name}'.");
+                    AddLog($"Audio '{rule.Name}': {ex.Message}", ActivityLogKind.Important);
+                }
+            }
+
+            var plan = AlertExecutionPlanService.Build(
+                rule,
+                _config,
+                _lightController.HasOpenPort,
+                playback?.Duration,
+                null);
+
+            TimeSpan? virtualLightsDuration = null;
+
+            if (!plan.UseLights)
+            {
+                playback?.Play();
+            }
+            else
+            {
+                if (plan.ShouldReconnectArduino)
+                {
+                    await ConnectArduinoAsync();
+                }
+
+                shouldRestoreBackground = plan.ShouldRestoreBackground;
+                await StopLightsAsync(plan.AllLightTargets);
+                await Task.Delay(LightStopSettleMs);
+
+                var ruleCommand = plan.LightCommand;
+                if (ruleCommand is not null)
+                {
+                    var sent = await _lightController.SendAsync(ruleCommand, AddLog, CancellationToken.None);
+                    if (!sent && !effectCts.IsCancellationRequested)
+                    {
+                        AddLog("Arduino: reconectando para reenviar la alerta.", ActivityLogKind.Important);
+                        await ConnectArduinoAsync();
+                        sent = await _lightController.SendAsync(ruleCommand, AddLog, CancellationToken.None);
+                    }
+
+                    UpdateStatusText();
+                }
+
+                playback?.Play();
+            }
+
+            // Resolve OBS after local output has already started. This keeps a slow OBS
+            // handshake from delaying Arduino, audio, or virtual screen effects.
+            obsRestore = await obsSceneTask;
             _currentObsRestore = obsRestore;
-            obsMediaHides = await SendRuleObsMediaAsync(rule, effectCts.Token);
+            obsMediaHides = await obsMediaTask;
             obsRestore = ObsRulePlanService.AlignSceneRestoreWithMedia(obsRestore, obsMediaHides);
             _currentObsRestore = obsRestore;
 
@@ -54,56 +125,12 @@ public partial class MainWindow
                 obsMediaHideTasks.Add(HideRuleObsMediaAfterDelayAsync(obsMediaHide, effectCts.Token));
             }
 
-            AudioPlayback? playback = null;
-            AudioAssetConfig? playbackAsset = null;
-            if (rule.PlayAudio)
-            {
-                playbackAsset = ResolveRuleAudioAsset(rule);
-                var audioPath = playbackAsset?.FilePath ?? rule.AudioPath;
-                playback = await _audioPlayer.PrepareAsync(audioPath, _config.AlertVolumePercent, AddLog);
-                _currentPlayback = playback;
-                if (playbackAsset is not null)
-                {
-                    MarkAudioAssetUsed(playbackAsset, playback?.Duration);
-                }
-            }
-
-            var plan = AlertExecutionPlanService.Build(
-                rule,
-                _config,
-                _lightController.HasOpenPort,
-                playback?.Duration,
-                obsMediaHides.Count == 0 ? null : obsMediaHides.Max(media => media.Duration));
-
-            var virtualLightsDuration = await StartRuleVirtualLightsAsync(
+            virtualLightsDuration = await StartRuleVirtualLightsAsync(
                 rule,
                 plan.SynchronizedDurationMs,
                 effectCts.Token);
 
-            if (!plan.UseLights)
-            {
-                playback?.Play();
-                await AlertEffectWaitService.WaitAsync(playback, null, obsMediaHides, effectCts.Token, virtualLightsDuration);
-                return;
-            }
-
-            if (plan.ShouldReconnectArduino)
-            {
-                await ConnectArduinoAsync();
-            }
-
-            shouldRestoreBackground = plan.ShouldRestoreBackground;
-            await StopLightsAsync(plan.AllLightTargets);
-            await Task.Delay(LightStopSettleMs);
-
             var command = plan.LightCommand;
-            if (command is not null)
-            {
-                await _lightController.SendAsync(command, AddLog, CancellationToken.None);
-                UpdateStatusText();
-            }
-
-            playback?.Play();
             await AlertEffectWaitService.WaitAsync(playback, command, obsMediaHides, effectCts.Token, virtualLightsDuration);
 
             if (command is not null)

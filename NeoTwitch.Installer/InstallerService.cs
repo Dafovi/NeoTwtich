@@ -10,10 +10,10 @@ namespace NeoTwitch.Installer;
 internal sealed class InstallerService
 {
     private const string WindowsRunKeyPath = @"Software\Microsoft\Windows\CurrentVersion\Run";
-    private readonly GitHubReleaseClient _releaseClient;
+    private readonly IReleaseClient _releaseClient;
     private readonly TimeProvider _timeProvider;
 
-    public InstallerService(GitHubReleaseClient? releaseClient = null, TimeProvider? timeProvider = null)
+    public InstallerService(IReleaseClient? releaseClient = null, TimeProvider? timeProvider = null)
     {
         _releaseClient = releaseClient ?? new GitHubReleaseClient();
         _timeProvider = timeProvider ?? TimeProvider.System;
@@ -39,13 +39,32 @@ internal sealed class InstallerService
             var releaseNotes = "";
             if (string.IsNullOrWhiteSpace(packagePath) || !File.Exists(packagePath))
             {
-                var asset = await _releaseClient.GetLatestInstallAssetAsync(cancellationToken);
+                var asset = await _releaseClient.DownloadLatestVerifiedAsync(tempRoot, progress, cancellationToken);
                 version = NormalizeVersion(asset.Version);
+                if (!string.IsNullOrWhiteSpace(options.RequestedVersion)
+                    && !string.Equals(
+                        version,
+                        NormalizeVersion(options.RequestedVersion),
+                        StringComparison.OrdinalIgnoreCase))
+                {
+                    throw new ReleaseIntegrityException(
+                        ReleaseIntegrityFailure.VersionMismatch,
+                        $"La versión verificada ({version}) no coincide con la actualización solicitada ({options.RequestedVersion}).");
+                }
+
                 releaseNotes = asset.ReleaseNotes;
-                packagePath = await _releaseClient.DownloadAsync(asset, tempRoot, progress, cancellationToken);
+                packagePath = asset.PackagePath;
             }
             else
             {
+                var localTarget = ValidateInstallTarget(options);
+                if (options.IsUpdate || localTarget.Kind != InstallTargetKind.NewInstallTarget)
+                {
+                    throw new InvalidOperationException(
+                        "Los paquetes locales sin verificar solo se admiten para una instalación nueva en una carpeta vacía. "
+                        + "Las actualizaciones deben usar el flujo automático con manifiesto firmado.");
+                }
+
                 version = string.IsNullOrWhiteSpace(options.RequestedVersion)
                     ? "local"
                     : NormalizeVersion(options.RequestedVersion);

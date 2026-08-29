@@ -12,6 +12,8 @@ public static class NeoTwitchProduct
     public const string InstallMarkerFileName = "neo-twitch-install.json";
     public const string ProductIdentifier = "com.dafovi.neotwitch";
     public const int InstallMarkerSchemaVersion = 1;
+    public const string ReleaseIntegrityManifestFileName = "neo-twitch-release.json";
+    public const string ReleaseIntegritySignatureFileName = "neo-twitch-release.json.sig";
     public const string StartupValueName = DisplayName;
     public const string SingleInstanceMutexName = "NeoTwitch.SingleInstance";
     public const string ShortcutExtension = ".lnk";

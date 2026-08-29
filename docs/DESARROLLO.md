@@ -507,10 +507,10 @@ Comandos:
 .\scripts\build.ps1 -Mode FullRelease -Clean
 ```
 
-Release:
+Release firmado:
 
 ```powershell
-.\scripts\release.ps1 -Version 2.2.4 -Clean
+.\scripts\release.ps1 -Version 2.2.4 -SigningKeyPath "D:\secure\neo-twitch-release-private.pem" -Clean
 ```
 
 Artifacts:
@@ -519,7 +519,31 @@ Artifacts:
 artifacts/V{version}/NeoTwitch-V{version}-Windows.zip
 artifacts/V{version}/NeoTwitch.exe
 artifacts/V{version}/NeoTwitch.Installer.exe
+artifacts/V{version}/neo-twitch-release.json
+artifacts/V{version}/neo-twitch-release.json.sig
 ```
+
+### Integridad de releases
+
+Las actualizaciones automáticas confían en un manifiesto autenticado, no únicamente en HTTPS o en los hashes publicados por GitHub. `neo-twitch-release.json` declara el esquema, `com.dafovi.neotwitch`, la versión y, para cada artefacto, su nombre exacto, tamaño y SHA-256. `neo-twitch-release.json.sig` contiene la firma ECDSA P-256/SHA-256 separada, codificada en Base64. Se firman los bytes UTF-8 exactos del manifiesto y las firmas usan el formato IEEE P1363.
+
+La clave pública de producción debe estar en `NeoTwitch.Installer/ReleaseIntegrityPublicKey.pem`; el proyecto la incrusta en el instalador. La clave privada correspondiente debe vivir fuera del repositorio, de sus artifacts, backups y logs. No existe una clave privada ni una clave pública de producción de ejemplo en el repositorio: mientras la clave pública no esté configurada, el instalador rechaza todas las actualizaciones automáticas.
+
+Para la ceremonia inicial, ejecuta PowerShell 7 y sustituye la ruta segura por almacenamiento cifrado y respaldado fuera del checkout:
+
+```powershell
+$curve = [System.Security.Cryptography.ECCurve]::CreateFromFriendlyName("nistP256")
+$key = [System.Security.Cryptography.ECDsa]::Create($curve)
+[System.IO.File]::WriteAllText("D:\secure\neo-twitch-release-private.pem", $key.ExportECPrivateKeyPem())
+[System.IO.File]::WriteAllText(".\NeoTwitch.Installer\ReleaseIntegrityPublicKey.pem", $key.ExportSubjectPublicKeyInfoPem())
+$key.Dispose()
+```
+
+Versiona únicamente `ReleaseIntegrityPublicKey.pem`. Nunca agregues `neo-twitch-release-private.pem`, otra clave privada o su contenido al repositorio. Después, `release.ps1` compila los artifacts, invoca `scripts/sign-release.ps1`, verifica que la clave privada corresponda a la pública incrustada, calcula hashes en streaming y produce el manifiesto y su firma. Publica juntos todos los artifacts de nivel superior, el manifiesto y la firma sin modificar ninguno después de firmar.
+
+El instalador descarga primero el manifiesto y la firma, valida la firma con la clave pública incrustada, comprueba producto/esquema/versión/nombres y solo entonces descarga el payload. Después verifica tamaño y SHA-256 antes de volver a validar el destino y empezar la limpieza. Releases legados sin ambos archivos se rechazan; no existe fallback automático sin firma. `--package` queda como instalación manual explícita para destinos nuevos, pero está prohibido junto con `--update`.
+
+La primera migración desde una versión cuyo instalador todavía no aplica estas reglas requiere que el usuario obtenga por un canal confiable el nuevo instalador que ya contiene la clave pública. El código antiguo no puede protegerse retroactivamente.
 
 `Verify` debe ser el comando de confianza antes de subir cambios grandes, porque compila y ejecuta tests.
 

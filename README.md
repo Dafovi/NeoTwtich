@@ -101,7 +101,7 @@ Comandos principales:
 .\scripts\build.ps1 -Mode Debug
 .\scripts\build.ps1 -Mode Verify
 .\scripts\build.ps1 -Mode FullRelease -Clean
-.\scripts\release.ps1 -Version 2.2.4 -Clean
+.\scripts\release.ps1 -Version 2.2.4 -SigningKeyPath "D:\secure\neo-twitch-release-private.pem" -Clean
 ```
 
 Mas detalles en [docs/DESARROLLO.md](docs/DESARROLLO.md).

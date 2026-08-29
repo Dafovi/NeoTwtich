@@ -14,6 +14,9 @@ using NeoTwitch.Services.Text;
 using NeoTwitch.Services.Ui;
 using NeoTwitch.Shared;
 using NeoTwitch.Installer;
+using System.Security.Cryptography;
+using System.Text;
+using System.Text.Json;
 using NeoTwitch.ViewModels.Activity;
 using NeoTwitch.ViewModels.Alexa;
 using NeoTwitch.ViewModels.Alerts;
@@ -137,6 +140,24 @@ var tests = new (string Name, Action Body)[]
     ("Installer target accepts valid marker", InstallerTargetSafetyTests.AcceptsValidMarker),
     ("Installer update classifies --target installation", InstallerTargetSafetyTests.ClassifiesUpdateTargetFromArguments),
     ("Installer fresh install classifies custom --target", InstallerTargetSafetyTests.ClassifiesFreshCustomTargetFromArguments),
+    ("Release integrity accepts valid signed manifest", ReleaseIntegrityTests.AcceptsValidSignedManifest),
+    ("Release integrity rejects modified manifest", ReleaseIntegrityTests.RejectsModifiedManifest),
+    ("Release integrity rejects malformed manifest", ReleaseIntegrityTests.RejectsMalformedManifest),
+    ("Release integrity rejects missing signature", ReleaseIntegrityTests.RejectsMissingSignature),
+    ("Release integrity rejects invalid signature", ReleaseIntegrityTests.RejectsInvalidSignature),
+    ("Release integrity rejects wrong public key", ReleaseIntegrityTests.RejectsWrongPublicKey),
+    ("Release integrity rejects missing production public key", ReleaseIntegrityTests.RejectsMissingPublicKey),
+    ("Release integrity rejects wrong product", ReleaseIntegrityTests.RejectsWrongProduct),
+    ("Release integrity rejects version mismatch", ReleaseIntegrityTests.RejectsVersionMismatch),
+    ("Release integrity rejects unsupported schema", ReleaseIntegrityTests.RejectsUnsupportedSchema),
+    ("Release integrity accepts correct artifact hash", ReleaseIntegrityTests.AcceptsCorrectArtifactHash),
+    ("Release integrity rejects modified artifact", ReleaseIntegrityTests.RejectsModifiedArtifact),
+    ("Release integrity rejects size mismatch", ReleaseIntegrityTests.RejectsSizeMismatch),
+    ("Release integrity rejects missing artifact", ReleaseIntegrityTests.RejectsMissingArtifact),
+    ("Release integrity rejects malformed SHA-256", ReleaseIntegrityTests.RejectsMalformedSha256),
+    ("Release integrity rejects duplicate artifacts", ReleaseIntegrityTests.RejectsDuplicateArtifacts),
+    ("Installer rejects update before destructive operations", ReleaseIntegrityTests.RejectsBeforeDestructiveOperations),
+    ("Release integrity rejects legacy unsigned release", ReleaseIntegrityTests.RejectsLegacyUnsignedRelease),
     ("AppUpdateService launches copied installer update", AppUpdateServiceTests.LaunchesCopiedInstallerUpdate),
     ("VersionCheckService parses latest release response", VersionCheckServiceTests.ParsesLatestReleaseResponse),
     ("VersionComparisonService compares normalized tags", VersionComparisonTests.ComparesNormalizedTags),
@@ -3456,6 +3477,385 @@ static class InstallerTargetSafetyTests
                 && fullPath.StartsWith(
                     System.IO.Path.GetFullPath(expectedParent) + System.IO.Path.DirectorySeparatorChar,
                     StringComparison.OrdinalIgnoreCase))
+            {
+                Directory.Delete(fullPath, recursive: true);
+            }
+        }
+    }
+}
+
+static class ReleaseIntegrityTests
+{
+    private const string ReleaseVersion = "2.3.3";
+    private const string ArtifactName = "NeoTwitch-V2.3.3-Windows.zip";
+
+    public static void AcceptsValidSignedManifest()
+    {
+        using var key = ECDsa.Create(ECCurve.NamedCurves.nistP256);
+        var artifact = Encoding.UTF8.GetBytes("trusted artifact");
+        var signed = CreateSignedManifest(key, artifact);
+
+        var result = CreateVerifier(key).VerifyManifest(signed.Manifest, signed.Signature, "V2.3.3", ArtifactName);
+
+        TestAssert.Equal(ReleaseVersion, result.Version);
+        TestAssert.Equal(ArtifactName, result.Artifact.FileName);
+    }
+
+    public static void RejectsModifiedManifest()
+    {
+        using var key = ECDsa.Create(ECCurve.NamedCurves.nistP256);
+        var signed = CreateSignedManifest(key, Encoding.UTF8.GetBytes("artifact"));
+        var modified = signed.Manifest.Concat([(byte)' ']).ToArray();
+
+        AssertFailure(
+            ReleaseIntegrityFailure.SignatureInvalid,
+            () => CreateVerifier(key).VerifyManifest(modified, signed.Signature, ReleaseVersion, ArtifactName));
+    }
+
+    public static void RejectsMalformedManifest()
+    {
+        using var key = ECDsa.Create(ECCurve.NamedCurves.nistP256);
+        var manifest = Encoding.UTF8.GetBytes("{");
+        var signature = SignManifest(key, manifest);
+
+        AssertFailure(
+            ReleaseIntegrityFailure.ManifestMalformed,
+            () => CreateVerifier(key).VerifyManifest(manifest, signature, ReleaseVersion, ArtifactName));
+    }
+
+    public static void RejectsMissingSignature()
+    {
+        using var key = ECDsa.Create(ECCurve.NamedCurves.nistP256);
+        var signed = CreateSignedManifest(key, Encoding.UTF8.GetBytes("artifact"));
+
+        AssertFailure(
+            ReleaseIntegrityFailure.SignatureMissing,
+            () => CreateVerifier(key).VerifyManifest(signed.Manifest, null, ReleaseVersion, ArtifactName));
+    }
+
+    public static void RejectsInvalidSignature()
+    {
+        using var key = ECDsa.Create(ECCurve.NamedCurves.nistP256);
+        var signed = CreateSignedManifest(key, Encoding.UTF8.GetBytes("artifact"));
+        var signature = Convert.FromBase64String(Encoding.ASCII.GetString(signed.Signature));
+        signature[0] ^= 0x01;
+
+        AssertFailure(
+            ReleaseIntegrityFailure.SignatureInvalid,
+            () => CreateVerifier(key).VerifyManifest(
+                signed.Manifest,
+                Encoding.ASCII.GetBytes(Convert.ToBase64String(signature)),
+                ReleaseVersion,
+                ArtifactName));
+    }
+
+    public static void RejectsWrongPublicKey()
+    {
+        using var signingKey = ECDsa.Create(ECCurve.NamedCurves.nistP256);
+        using var wrongKey = ECDsa.Create(ECCurve.NamedCurves.nistP256);
+        var signed = CreateSignedManifest(signingKey, Encoding.UTF8.GetBytes("artifact"));
+
+        AssertFailure(
+            ReleaseIntegrityFailure.SignatureInvalid,
+            () => CreateVerifier(wrongKey).VerifyManifest(signed.Manifest, signed.Signature, ReleaseVersion, ArtifactName));
+    }
+
+    public static void RejectsMissingPublicKey()
+    {
+        using var key = ECDsa.Create(ECCurve.NamedCurves.nistP256);
+        var signed = CreateSignedManifest(key, Encoding.UTF8.GetBytes("artifact"));
+
+        AssertFailure(
+            ReleaseIntegrityFailure.PublicKeyUnavailable,
+            () => new ReleaseIntegrityVerifier(null).VerifyManifest(
+                signed.Manifest,
+                signed.Signature,
+                ReleaseVersion,
+                ArtifactName));
+    }
+
+    public static void RejectsWrongProduct()
+    {
+        using var key = ECDsa.Create(ECCurve.NamedCurves.nistP256);
+        var signed = CreateSignedManifest(key, Encoding.UTF8.GetBytes("artifact"), product: "other.product");
+
+        AssertFailure(
+            ReleaseIntegrityFailure.WrongProduct,
+            () => CreateVerifier(key).VerifyManifest(signed.Manifest, signed.Signature, ReleaseVersion, ArtifactName));
+    }
+
+    public static void RejectsVersionMismatch()
+    {
+        using var key = ECDsa.Create(ECCurve.NamedCurves.nistP256);
+        var signed = CreateSignedManifest(key, Encoding.UTF8.GetBytes("artifact"), version: "2.3.4");
+
+        AssertFailure(
+            ReleaseIntegrityFailure.VersionMismatch,
+            () => CreateVerifier(key).VerifyManifest(signed.Manifest, signed.Signature, ReleaseVersion, ArtifactName));
+    }
+
+    public static void RejectsUnsupportedSchema()
+    {
+        using var key = ECDsa.Create(ECCurve.NamedCurves.nistP256);
+        var signed = CreateSignedManifest(key, Encoding.UTF8.GetBytes("artifact"), schemaVersion: 99);
+
+        AssertFailure(
+            ReleaseIntegrityFailure.UnsupportedSchema,
+            () => CreateVerifier(key).VerifyManifest(signed.Manifest, signed.Signature, ReleaseVersion, ArtifactName));
+    }
+
+    public static void AcceptsCorrectArtifactHash()
+    {
+        using var key = ECDsa.Create(ECCurve.NamedCurves.nistP256);
+        using var scope = IntegrityTestDirectory.Create();
+        var artifact = Encoding.UTF8.GetBytes("trusted artifact");
+        var path = Path.Combine(scope.Path, ArtifactName);
+        File.WriteAllBytes(path, artifact);
+        var signed = CreateSignedManifest(key, artifact);
+        var manifest = CreateVerifier(key).VerifyManifest(signed.Manifest, signed.Signature, ReleaseVersion, ArtifactName);
+
+        CreateVerifier(key).VerifyArtifactAsync(path, manifest.Artifact, CancellationToken.None).GetAwaiter().GetResult();
+    }
+
+    public static void RejectsModifiedArtifact()
+    {
+        using var key = ECDsa.Create(ECCurve.NamedCurves.nistP256);
+        using var scope = IntegrityTestDirectory.Create();
+        var trustedBytes = Encoding.UTF8.GetBytes("trusted artifact");
+        var path = Path.Combine(scope.Path, ArtifactName);
+        File.WriteAllBytes(path, Encoding.UTF8.GetBytes("modified artifact"));
+        var signed = CreateSignedManifest(key, trustedBytes, size: null);
+        var manifest = CreateVerifier(key).VerifyManifest(signed.Manifest, signed.Signature, ReleaseVersion, ArtifactName);
+
+        AssertFailure(
+            ReleaseIntegrityFailure.ArtifactHashMismatch,
+            () => CreateVerifier(key).VerifyArtifactAsync(path, manifest.Artifact, CancellationToken.None).GetAwaiter().GetResult());
+    }
+
+    public static void RejectsSizeMismatch()
+    {
+        using var key = ECDsa.Create(ECCurve.NamedCurves.nistP256);
+        using var scope = IntegrityTestDirectory.Create();
+        var artifact = Encoding.UTF8.GetBytes("trusted artifact");
+        var path = Path.Combine(scope.Path, ArtifactName);
+        File.WriteAllBytes(path, artifact);
+        var signed = CreateSignedManifest(key, artifact, size: artifact.Length + 1);
+        var manifest = CreateVerifier(key).VerifyManifest(signed.Manifest, signed.Signature, ReleaseVersion, ArtifactName);
+
+        AssertFailure(
+            ReleaseIntegrityFailure.ArtifactSizeMismatch,
+            () => CreateVerifier(key).VerifyArtifactAsync(path, manifest.Artifact, CancellationToken.None).GetAwaiter().GetResult());
+    }
+
+    public static void RejectsMissingArtifact()
+    {
+        using var key = ECDsa.Create(ECCurve.NamedCurves.nistP256);
+        var signed = CreateSignedManifest(key, Encoding.UTF8.GetBytes("artifact"), fileName: "other.zip");
+
+        AssertFailure(
+            ReleaseIntegrityFailure.ArtifactMissing,
+            () => CreateVerifier(key).VerifyManifest(signed.Manifest, signed.Signature, ReleaseVersion, ArtifactName));
+    }
+
+    public static void RejectsMalformedSha256()
+    {
+        using var key = ECDsa.Create(ECCurve.NamedCurves.nistP256);
+        var signed = CreateSignedManifest(key, Encoding.UTF8.GetBytes("artifact"), hash: "not-a-sha256");
+
+        AssertFailure(
+            ReleaseIntegrityFailure.MalformedHash,
+            () => CreateVerifier(key).VerifyManifest(signed.Manifest, signed.Signature, ReleaseVersion, ArtifactName));
+    }
+
+    public static void RejectsDuplicateArtifacts()
+    {
+        using var key = ECDsa.Create(ECCurve.NamedCurves.nistP256);
+        var artifact = Encoding.UTF8.GetBytes("artifact");
+        var signed = CreateSignedManifest(key, artifact, duplicateArtifact: true);
+
+        AssertFailure(
+            ReleaseIntegrityFailure.DuplicateArtifact,
+            () => CreateVerifier(key).VerifyManifest(signed.Manifest, signed.Signature, ReleaseVersion, ArtifactName));
+    }
+
+    public static void RejectsBeforeDestructiveOperations()
+    {
+        using var scope = IntegrityTestDirectory.Create();
+        WriteValidInstallation(scope.Path);
+        var sentinelPath = Path.Combine(scope.Path, "must-survive.txt");
+        File.WriteAllText(sentinelPath, "keep");
+        var options = new InstallerOptions
+        {
+            InstallPath = scope.Path,
+            IsUpdate = true,
+            CreateDesktopShortcut = false,
+            CreateStartMenuShortcut = false,
+            LaunchAfterInstall = false
+        };
+        var service = new InstallerService(new RejectingReleaseClient());
+
+        AssertFailure(
+            ReleaseIntegrityFailure.ArtifactHashMismatch,
+            () => service.InstallAsync(options, new Progress<InstallProgress>(), CancellationToken.None).GetAwaiter().GetResult());
+
+        TestAssert.True(File.Exists(sentinelPath));
+        TestAssert.True(File.Exists(Path.Combine(scope.Path, NeoTwitchProduct.AppExecutableName)));
+        TestAssert.True(File.Exists(Path.Combine(scope.Path, NeoTwitchProduct.InstallMarkerFileName)));
+    }
+
+    public static void RejectsLegacyUnsignedRelease()
+    {
+        const string responseJson = """
+            {
+              "tag_name": "V2.3.3",
+              "body": "legacy",
+              "assets": [
+                {
+                  "name": "NeoTwitch-V2.3.3-Windows.zip",
+                  "browser_download_url": "https://example.test/app.zip",
+                  "size": 8
+                }
+              ]
+            }
+            """;
+        using var http = new HttpClient(new FixedResponseHandler(responseJson));
+        using var key = ECDsa.Create(ECCurve.NamedCurves.nistP256);
+        using var client = new GitHubReleaseClient(http, CreateVerifier(key));
+        using var scope = IntegrityTestDirectory.Create();
+
+        AssertFailure(
+            ReleaseIntegrityFailure.ManifestMissing,
+            () => client.DownloadLatestVerifiedAsync(
+                scope.Path,
+                new Progress<InstallProgress>(),
+                CancellationToken.None).GetAwaiter().GetResult());
+    }
+
+    private static ReleaseIntegrityVerifier CreateVerifier(ECDsa key) =>
+        new(key.ExportSubjectPublicKeyInfoPem());
+
+    private static SignedManifest CreateSignedManifest(
+        ECDsa key,
+        byte[] artifact,
+        string product = NeoTwitchProduct.ProductIdentifier,
+        string version = ReleaseVersion,
+        int schemaVersion = 1,
+        string fileName = ArtifactName,
+        string? hash = null,
+        long? size = -1,
+        bool duplicateArtifact = false)
+    {
+        var actualSize = size == -1 ? artifact.LongLength : size;
+        var artifactEntry = new
+        {
+            file = fileName,
+            sha256 = hash ?? Convert.ToHexString(SHA256.HashData(artifact)).ToLowerInvariant(),
+            size = actualSize
+        };
+        object[] artifacts = duplicateArtifact ? [artifactEntry, artifactEntry] : [artifactEntry];
+        var manifest = JsonSerializer.SerializeToUtf8Bytes(new
+        {
+            schemaVersion,
+            product,
+            version,
+            artifacts
+        });
+        var signature = key.SignData(
+            manifest,
+            HashAlgorithmName.SHA256,
+            DSASignatureFormat.IeeeP1363FixedFieldConcatenation);
+        return new SignedManifest(manifest, Encoding.ASCII.GetBytes(Convert.ToBase64String(signature)));
+    }
+
+    private static byte[] SignManifest(ECDsa key, byte[] manifest)
+    {
+        var signature = key.SignData(
+            manifest,
+            HashAlgorithmName.SHA256,
+            DSASignatureFormat.IeeeP1363FixedFieldConcatenation);
+        return Encoding.ASCII.GetBytes(Convert.ToBase64String(signature));
+    }
+
+    private static void AssertFailure(ReleaseIntegrityFailure expected, Action action)
+    {
+        try
+        {
+            action();
+        }
+        catch (ReleaseIntegrityException ex)
+        {
+            TestAssert.Equal(expected, ex.Failure);
+            return;
+        }
+
+        throw new InvalidOperationException($"Se esperaba el fallo de integridad {expected}.");
+    }
+
+    private static void WriteValidInstallation(string path)
+    {
+        File.WriteAllText(Path.Combine(path, NeoTwitchProduct.AppExecutableName), "test executable");
+        File.WriteAllText(
+            Path.Combine(path, NeoTwitchProduct.InstallMarkerFileName),
+            $$"""
+            {
+              "productId": "{{NeoTwitchProduct.ProductIdentifier}}",
+              "schemaVersion": {{NeoTwitchProduct.InstallMarkerSchemaVersion}},
+              "version": "1.2.3"
+            }
+            """);
+    }
+
+    private sealed record SignedManifest(byte[] Manifest, byte[] Signature);
+
+    private sealed class RejectingReleaseClient : IReleaseClient
+    {
+        public Task<VerifiedReleaseAsset> DownloadLatestVerifiedAsync(
+            string targetDirectory,
+            IProgress<InstallProgress> progress,
+            CancellationToken cancellationToken) =>
+            Task.FromException<VerifiedReleaseAsset>(new ReleaseIntegrityException(
+                ReleaseIntegrityFailure.ArtifactHashMismatch,
+                "Prueba: artefacto modificado."));
+    }
+
+    private sealed class FixedResponseHandler(string json) : HttpMessageHandler
+    {
+        protected override Task<HttpResponseMessage> SendAsync(
+            HttpRequestMessage request,
+            CancellationToken cancellationToken) =>
+            Task.FromResult(new HttpResponseMessage(System.Net.HttpStatusCode.OK)
+            {
+                Content = new StringContent(json, Encoding.UTF8, "application/json")
+            });
+    }
+
+    private sealed class IntegrityTestDirectory : IDisposable
+    {
+        private IntegrityTestDirectory(string path)
+        {
+            Path = path;
+        }
+
+        public string Path { get; }
+
+        public static IntegrityTestDirectory Create()
+        {
+            var path = System.IO.Path.Combine(
+                System.IO.Path.GetTempPath(),
+                "NeoTwitchReleaseIntegrityTests",
+                Guid.NewGuid().ToString("N"));
+            Directory.CreateDirectory(path);
+            return new IntegrityTestDirectory(path);
+        }
+
+        public void Dispose()
+        {
+            var parent = System.IO.Path.GetFullPath(System.IO.Path.Combine(
+                System.IO.Path.GetTempPath(),
+                "NeoTwitchReleaseIntegrityTests"));
+            var fullPath = System.IO.Path.GetFullPath(Path);
+            if (Directory.Exists(fullPath)
+                && fullPath.StartsWith(parent + System.IO.Path.DirectorySeparatorChar, StringComparison.OrdinalIgnoreCase))
             {
                 Directory.Delete(fullPath, recursive: true);
             }

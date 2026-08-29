@@ -17,6 +17,7 @@
 
   <ItemGroup>
     <InternalsVisibleTo Include="NeoTwitch.Tests" />
+    <EmbeddedResource Include="ReleaseIntegrityPublicKey.pem" Condition="Exists('ReleaseIntegrityPublicKey.pem')" />
   </ItemGroup>
 
   <ItemGroup>

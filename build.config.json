@@ -13,5 +13,8 @@
   "selfContainedWorkDirectory": "self-contained",
   "installerWorkDirectory": "installer",
   "appExecutable": "NeoTwitch.exe",
-  "installerExecutable": "NeoTwitch.Installer.exe"
+  "installerExecutable": "NeoTwitch.Installer.exe",
+  "productIdentifier": "com.dafovi.neotwitch",
+  "releaseIntegrityManifest": "neo-twitch-release.json",
+  "releaseIntegritySignature": "neo-twitch-release.json.sig"
 }

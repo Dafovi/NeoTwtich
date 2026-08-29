@@ -7,3 +7,6 @@ obj/
 *.tmp
 artifacts/
 Release/
+**/*private*.pem
+*.pfx
+*.p12

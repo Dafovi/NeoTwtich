@@ -131,6 +131,16 @@ public partial class MainWindow
         return AudioRuleAssetService.ResolveRuleAudioAsset(rule, _config.AudioLibrary, _audioRandom);
     }
 
+    private AudioAssetConfig? ResolveRuleAudioAsset(AlertAudioActionSnapshot audio)
+    {
+        if (!Dispatcher.CheckAccess())
+        {
+            return Dispatcher.Invoke(() => ResolveRuleAudioAsset(audio));
+        }
+
+        return AudioRuleAssetService.ResolveRuleAudioAsset(audio, _config.AudioLibrary, _audioRandom);
+    }
+
     private void MarkAudioAssetUsed(AudioAssetConfig audio, TimeSpan? duration)
     {
         if (!Dispatcher.CheckAccess())

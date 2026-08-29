@@ -11,27 +11,36 @@ public static class AudioRuleAssetService
         Random random,
         Func<string, bool>? fileExists = null)
     {
-        if (!rule.PlayAudio)
+        return ResolveRuleAudioAsset(AlertExecutionSnapshotFactory.Create(rule).Audio, library, random, fileExists);
+    }
+
+    public static AudioAssetConfig? ResolveRuleAudioAsset(
+        AlertAudioActionSnapshot audio,
+        IEnumerable<AudioAssetConfig> library,
+        Random random,
+        Func<string, bool>? fileExists = null)
+    {
+        if (!audio.Enabled)
         {
             return null;
         }
 
         var audioLibrary = library.ToArray();
-        if (rule.AudioSourceMode == AudioSourceMode.Group)
+        if (audio.SourceMode == AudioSourceMode.Group)
         {
             fileExists ??= File.Exists;
             var candidates = audioLibrary
-                .Where(audio => string.Equals(audio.GroupId, rule.AudioGroupId, StringComparison.OrdinalIgnoreCase))
-                .Where(audio => fileExists(audio.FilePath))
+                .Where(candidate => string.Equals(candidate.GroupId, audio.GroupId, StringComparison.OrdinalIgnoreCase))
+                .Where(candidate => fileExists(candidate.FilePath))
                 .ToArray();
             return candidates.Length == 0
                 ? null
                 : candidates[random.Next(candidates.Length)];
         }
 
-        return audioLibrary.FirstOrDefault(audio => string.Equals(audio.Id, rule.AudioAssetId, StringComparison.OrdinalIgnoreCase))
-            ?? audioLibrary.FirstOrDefault(audio => !string.IsNullOrWhiteSpace(rule.AudioPath)
-                && string.Equals(audio.FilePath, rule.AudioPath, StringComparison.OrdinalIgnoreCase));
+        return audioLibrary.FirstOrDefault(candidate => string.Equals(candidate.Id, audio.AssetId, StringComparison.OrdinalIgnoreCase))
+            ?? audioLibrary.FirstOrDefault(candidate => !string.IsNullOrWhiteSpace(audio.LegacyPath)
+                && string.Equals(candidate.FilePath, audio.LegacyPath, StringComparison.OrdinalIgnoreCase));
     }
 
     public static bool HasValidAudio(

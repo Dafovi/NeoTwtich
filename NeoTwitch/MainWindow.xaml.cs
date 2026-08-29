@@ -1,12 +1,13 @@
 using System.Windows;
 using NeoTwitch.Models;
 using NeoTwitch.Services;
+using NeoTwitch.Services.Alerts;
 using NeoTwitch.Services.Ui;
 using NeoTwitch.ViewModels.Shell;
 
 namespace NeoTwitch;
 
-public partial class MainWindow : Window
+public partial class MainWindow : Window, IAlertExecutionCapabilities
 {
     public MainWindow()
         : this(AppStartupOptions.Default)

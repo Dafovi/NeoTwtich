@@ -55,7 +55,7 @@ public partial class MainWindow
         var slot = _alertQueue.TryReserve(
             rule,
             twitchEvent,
-            _effectGate.CurrentCount == 0,
+            _alertExecutionCoordinator.IsRunning,
             AlertQueueOptions.FromConfig(_config),
             out var reason);
         if (slot is null)

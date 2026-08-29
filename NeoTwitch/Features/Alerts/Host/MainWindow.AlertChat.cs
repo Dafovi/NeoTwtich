@@ -7,16 +7,16 @@ namespace NeoTwitch;
 public partial class MainWindow
 {
     private async Task SendRuleChatMessageAsync(
-        EventRule rule,
-        TwitchEvent twitchEvent,
+        AlertExecutionRuleSnapshot rule,
+        AlertTriggerSnapshot trigger,
         CancellationToken cancellationToken)
     {
-        if (!rule.SendChatMessage)
+        if (!rule.Chat.Enabled)
         {
             return;
         }
 
-        var message = _chatService.FormatMessage(rule.ChatMessageTemplate, twitchEvent);
+        var message = _chatService.FormatMessage(rule.Chat.MessageTemplate, trigger.ToTwitchEvent());
         if (string.IsNullOrWhiteSpace(message))
         {
             return;

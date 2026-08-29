@@ -11,17 +11,17 @@ public partial class MainWindow
         return _virtualLightsOverlayService.BuildOverlayUrl();
     }
 
-    private async Task<TimeSpan?> StartRuleVirtualLightsAsync(EventRule rule, int? synchronizedDurationMs, CancellationToken cancellationToken)
+    private async Task<TimeSpan?> StartRuleVirtualLightsAsync(AlertExecutionRuleSnapshot rule, int? synchronizedDurationMs, CancellationToken cancellationToken)
     {
-        if (!rule.UseVirtualLights || (!rule.VirtualLightsToObs && !rule.VirtualLightsToScreen))
+        if (!rule.VirtualLights.Enabled || (!rule.VirtualLights.ToObs && !rule.VirtualLights.ToScreen))
         {
             return null;
         }
 
-        var command = VirtualLightCommand.FromRule(rule, synchronizedDurationMs);
+        var command = VirtualLightCommand.FromSnapshot(rule, synchronizedDurationMs);
         var duration = TimeSpan.FromMilliseconds(command.DurationMs);
 
-        if (rule.VirtualLightsToObs)
+        if (rule.VirtualLights.ToObs)
         {
             try
             {
@@ -38,12 +38,12 @@ public partial class MainWindow
             }
         }
 
-        if (rule.VirtualLightsToScreen)
+        if (rule.VirtualLights.ToScreen)
         {
             cancellationToken.ThrowIfCancellationRequested();
             try
             {
-                var screen = _virtualScreenService.ResolveScreen(rule.VirtualLightsScreenId);
+                var screen = _virtualScreenService.ResolveScreen(rule.VirtualLights.ScreenId);
                 await _virtualLightsScreenOverlayService.ShowAsync(command, screen);
             }
             catch (OperationCanceledException) when (cancellationToken.IsCancellationRequested)

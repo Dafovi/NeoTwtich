@@ -20,7 +20,17 @@ public static class AlertExecutionPlanService
         TimeSpan? playbackDuration,
         TimeSpan? obsMediaDuration)
     {
-        var useLights = config.ArduinoEnabled && rule.UseLights;
+        return Build(AlertExecutionSnapshotFactory.Create(rule), config, hasOpenArduinoPort, playbackDuration, obsMediaDuration);
+    }
+
+    public static AlertExecutionPlan Build(
+        AlertExecutionRuleSnapshot rule,
+        AppConfig config,
+        bool hasOpenArduinoPort,
+        TimeSpan? playbackDuration,
+        TimeSpan? obsMediaDuration)
+    {
+        var useLights = config.ArduinoEnabled && rule.Lights.Enabled;
         if (!useLights)
         {
             return new AlertExecutionPlan(
@@ -39,8 +49,8 @@ public static class AlertExecutionPlanService
             ShouldReconnectArduino: !hasOpenArduinoPort && !string.IsNullOrWhiteSpace(config.SerialPort),
             ShouldRestoreBackground: true,
             AllLightTargets: LightCommand.ResolveTargets(config, ""),
-            RuleLightTargets: LightCommand.ResolveTargets(config, rule.TargetPins),
+            RuleLightTargets: LightCommand.ResolveTargets(config, rule.Lights.TargetPins),
             SynchronizedDurationMs: syncedDurationMs,
-            LightCommand: LightCommand.FromRule(rule, config, syncedDurationMs));
+            LightCommand: LightCommand.FromSnapshot(rule, config, syncedDurationMs));
     }
 }

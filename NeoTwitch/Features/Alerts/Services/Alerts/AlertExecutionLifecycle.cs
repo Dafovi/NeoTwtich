@@ -62,6 +62,8 @@ public sealed class AlertExecutionTracker
     private readonly int _maxActionsPerExecution;
     private readonly LinkedList<MutableTrace> _history = [];
 
+    internal TimeProvider TimeProvider => _timeProvider;
+
     public AlertExecutionTracker(
         TimeProvider timeProvider,
         Func<string>? idFactory = null,

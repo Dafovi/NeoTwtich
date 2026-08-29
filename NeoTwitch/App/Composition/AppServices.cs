@@ -33,6 +33,7 @@ public sealed class AppServices
         RuleSimulationService ruleSimulation,
         AlertQueueService alertQueue,
         AlertExecutionTracker alertExecutionTracker,
+        AlertExecutionCoordinator alertExecutionCoordinator,
         IDialogService dialog,
         IFilePickerService filePicker,
         IExternalLauncherService externalLauncher,
@@ -60,6 +61,7 @@ public sealed class AppServices
         RuleSimulation = ruleSimulation;
         AlertQueue = alertQueue;
         AlertExecutionTracker = alertExecutionTracker;
+        AlertExecutionCoordinator = alertExecutionCoordinator;
         Dialog = dialog;
         FilePicker = filePicker;
         ExternalLauncher = externalLauncher;
@@ -110,6 +112,8 @@ public sealed class AppServices
 
     public AlertExecutionTracker AlertExecutionTracker { get; }
 
+    public AlertExecutionCoordinator AlertExecutionCoordinator { get; }
+
     public IDialogService Dialog { get; }
 
     public IFilePickerService FilePicker { get; }
@@ -125,6 +129,8 @@ public sealed class AppServices
         var text = UiTextService.CreateDefault();
         var externalLauncher = new ExternalLauncherService();
         var updateService = new AppUpdateService(text, externalLauncher);
+        var alertQueue = new AlertQueueService(timeProvider);
+        var alertExecutionTracker = new AlertExecutionTracker(timeProvider);
         return new AppServices(
             new SettingsStore(text, timeProvider),
             new AudioPlayerService(text),
@@ -146,8 +152,9 @@ public sealed class AppServices
             new ActivityViewModel(activityLog),
             new DashboardSummaryService(),
             new RuleSimulationService(text),
-            new AlertQueueService(timeProvider),
-            new AlertExecutionTracker(timeProvider),
+            alertQueue,
+            alertExecutionTracker,
+            new AlertExecutionCoordinator(alertExecutionTracker, alertQueue),
             new DialogService(),
             new FilePickerService(),
             externalLauncher,

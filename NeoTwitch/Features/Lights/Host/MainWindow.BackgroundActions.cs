@@ -63,7 +63,7 @@ public partial class MainWindow
 
     private async Task ApplyBackgroundStateAsync()
     {
-        if (_effectGate.CurrentCount == 0)
+        if (_alertExecutionCoordinator.IsRunning)
         {
             return;
         }

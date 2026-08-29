@@ -8,7 +8,7 @@ namespace NeoTwitch;
 
 public partial class MainWindow
 {
-    private async Task<ObsSceneRestoreRequest?> SendRuleObsSceneAsync(EventRule rule, CancellationToken cancellationToken)
+    private async Task<ObsSceneRestoreRequest?> SendRuleObsSceneAsync(AlertExecutionRuleSnapshot rule, CancellationToken cancellationToken)
     {
         if (!ObsRulePlanService.ShouldSendScene(rule, _config.Obs.IsConfigured))
         {
@@ -27,16 +27,16 @@ public partial class MainWindow
                 return null;
             }
 
-            if (rule.ObsSceneDelayMs > 0)
+            if (rule.Obs.Scene.DelayMs > 0)
             {
-                await Task.Delay(rule.ObsSceneDelayMs, cancellationToken);
+                await Task.Delay(rule.Obs.Scene.DelayMs, cancellationToken);
             }
 
             var previousScene = _obsService.CurrentScene;
             var targetScene = ObsRulePlanService.ResolveTargetScene(rule);
             var result = await _obsService.SetCurrentProgramSceneAsync(targetScene, cancellationToken);
             ApplyObsResult(result);
-            AddLog(_text.Format(Services.Text.UiTextKeys.ObsRuleSceneSentLog, targetScene, rule.Name), ActivityLogKind.Obs);
+            AddLog(_text.Format(Services.Text.UiTextKeys.ObsRuleSceneSentLog, targetScene, rule.RuleName), ActivityLogKind.Obs);
 
             return ObsRulePlanService.BuildSceneRestoreRequest(
                 rule,
@@ -51,7 +51,7 @@ public partial class MainWindow
         catch (Exception ex)
         {
             _obsConnectionError = ex.Message;
-            CrashReporter.Log(ex, $"No se pudo enviar escena OBS para la regla '{rule.Name}'.");
+            CrashReporter.Log(ex, $"No se pudo enviar escena OBS para la regla '{rule.RuleName}'.");
             AddLog($"OBS: {ex.Message}", ActivityLogKind.Important);
             UpdateObsStatusText();
             throw;

@@ -322,6 +322,8 @@ Conceptos:
 - `RuleEditorFormService`: copia datos desde el editor a la regla.
 - `EventRuleSnapshotService`: detecta cambios sin guardar.
 - `AlertExecutionPlanService`: decide que acciones se ejecutan.
+- `AlertExecutionSnapshotFactory`: congela solamente los datos necesarios para una ejecución.
+- `AlertExecutionCoordinator`: coordina una ejecución y devuelve un resultado terminal explícito.
 
 Las acciones pueden incluir:
 
@@ -338,6 +340,30 @@ La duracion de la alerta usa la duracion mas larga entre medios y efectos config
 
 ### Ciclo de ejecución y cancelación
 
+El límite de aplicación para ejecutar alertas es:
+
+```text
+Twitch / prueba manual
+        ↓
+selección y matching de EventRule
+        ↓
+AlertExecutionRuleSnapshot + AlertTriggerSnapshot (inmutables)
+        ↓
+AlertExecutionCoordinator
+        ↓
+IAlertExecutionCapabilities (adaptador implementado por MainWindow)
+        ↓
+chat / Alexa / OBS / audio / Arduino / luces virtuales
+        ↓
+AlertExecutionResult + AlertExecutionTrace
+```
+
+`AlertExecutionCoordinator` posee la exclusión de una sola alerta, el slot de cola, el token cancelable actual, el ciclo de vida, el orden/concurrencia de acciones, la limpieza y el resultado final. Sus únicas dependencias permanentes son `AlertExecutionTracker` y `AlertQueueService`; no recibe `AppServices` ni objetos WPF. Por eso se prueba con capacidades falsas sin construir una ventana.
+
+`MainWindow` crea el snapshot antes del primer `await`, inicia el coordinador y presenta el estado final. Sigue siendo deliberadamente el adaptador de capacidades porque allí viven las operaciones concretas y el estado visual existente. El acceso a bibliotecas de medios y otras operaciones dependientes de WPF continúa comprobando `Dispatcher.CheckAccess()` y usa `Dispatcher.Invoke`; el coordinador no presupone un hilo de UI.
+
+`EventRule` conserva su forma persistida/editorial y los campos legacy necesarios para leer configuraciones existentes. La ejecución ya no consulta ese objeto mutable: `AlertExecutionRuleSnapshot` contiene records anidados enfocados para audio, chat, Alexa, OBS, luces y luces virtuales. No incluye disponibilidad calculada de controles ni estado transitorio del editor. No hubo cambio de esquema; los nombres legacy que aún representan datos persistidos se traducen una sola vez en la fábrica.
+
 Cada ejecución real crea un `AlertExecutionContext` distinto de la definición `EventRule` y del mensaje EventSub que la originó. Conserva un `ExecutionId` único, regla, ID EventSub opcional, slot de cola, origen, hora de cola/inicio y el token de cancelación. Los estados son `Starting`, `Running`, `Cancelling` y exactamente uno de `Completed`, `Cancelled` o `Failed`.
 
 Chat, Alexa, conexión/operaciones OBS, comandos de luces, luces virtuales y esperas reciben o respetan el token de la ejecución. Chat y Alexa se inician en paralelo con las salidas locales pero sus tareas quedan rastreadas y esperadas; sus excepciones no quedan fire-and-forget. Al detener una alerta se marca `Cancelling`, se cancela el token y no comienza ninguna acción todavía pendiente. Las operaciones de limpieza que deben deshacer un efecto ya aplicado —apagar luces, ocultar medios y restaurar escena/fondo— usan un token independiente porque deben intentarse incluso después de cancelar la ejecución.
@@ -345,6 +371,8 @@ Chat, Alexa, conexión/operaciones OBS, comandos de luces, luces virtuales y esp
 Una acción externa que falla se registra y, para Chat, Alexa y OBS, la alerta continúa con las demás salidas como hacía antes; el resultado terminal queda `Failed`. Una excepción no recuperable del coordinador cancela tareas todavía activas, ejecuta limpieza y también termina en `Failed`. Una acción externa completada es irreversible: cancelar más tarde no puede retirar un mensaje aceptado por Twitch ni un evento Alexa ya recibido.
 
 `AlertExecutionTracker` conserva solo las 50 ejecuciones más recientes y hasta 32 diagnósticos de acción por ejecución. Cada acción incluye el mismo `ExecutionId`, estado, inicio y duración obtenidos mediante `TimeProvider`. Las razones se normalizan y limitan a 256 caracteres; el trace no guarda cuerpos HTTP, tokens, contraseñas ni payloads de autenticación. Los logs visibles usan únicamente la forma corta del ID, mientras los diagnósticos internos conservan el ID completo.
+
+La separación es incremental. `MainWindow` todavía contiene la implementación WPF de efectos, conexiones y presentación; `AppServices` sigue siendo el composition root concreto; y `EventRule` todavía mezcla persistencia con notificación/editor y compatibilidad histórica. Esas deudas no se trasladan al coordinador y quedan fuera de este límite.
 
 ## 11. Arduino
 

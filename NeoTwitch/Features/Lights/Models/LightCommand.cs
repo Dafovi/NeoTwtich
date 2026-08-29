@@ -21,16 +21,25 @@ public sealed record LightCommand(
 
     public static LightCommand FromRule(EventRule rule, AppConfig config, int? durationOverrideMs = null)
     {
+        return FromSnapshot(AlertExecutionSnapshotFactory.Create(rule), config, durationOverrideMs);
+    }
+
+    public static LightCommand FromSnapshot(
+        AlertExecutionRuleSnapshot rule,
+        AppConfig config,
+        int? durationOverrideMs = null)
+    {
+        var lights = rule.Lights;
         return new LightCommand(
-            ResolveTargets(config, rule.TargetPins),
-            rule.Pattern,
-            NormalizeColor(rule.PrimaryColor),
-            NormalizeColor(rule.SecondaryColor),
-            NormalizeColor(rule.TertiaryColor),
-            Math.Clamp(rule.Brightness, ApplicationLimits.MinBrightness, ApplicationLimits.MaxBrightness),
-            Math.Clamp(durationOverrideMs ?? rule.DurationMs, ApplicationLimits.MinAlertDurationMs, ApplicationLimits.MaxAlertDurationMs),
-            Math.Clamp(rule.CycleMs, ApplicationLimits.MinCycleMs, ApplicationLimits.MaxCycleMs),
-            Math.Clamp(rule.StepMs, ApplicationLimits.MinStepMs, ApplicationLimits.MaxStepMs));
+            ResolveTargets(config, lights.TargetPins),
+            lights.Pattern,
+            NormalizeColor(lights.PrimaryColor),
+            NormalizeColor(lights.SecondaryColor),
+            NormalizeColor(lights.TertiaryColor),
+            Math.Clamp(lights.Brightness, ApplicationLimits.MinBrightness, ApplicationLimits.MaxBrightness),
+            Math.Clamp(durationOverrideMs ?? lights.DurationMs, ApplicationLimits.MinAlertDurationMs, ApplicationLimits.MaxAlertDurationMs),
+            Math.Clamp(lights.CycleMs, ApplicationLimits.MinCycleMs, ApplicationLimits.MaxCycleMs),
+            Math.Clamp(lights.StepMs, ApplicationLimits.MinStepMs, ApplicationLimits.MaxStepMs));
     }
 
     public static LightCommand FromBackground(AppConfig config)

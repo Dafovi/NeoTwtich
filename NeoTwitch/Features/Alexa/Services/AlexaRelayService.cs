@@ -30,7 +30,20 @@ public sealed class AlexaRelayService
 
     public async Task SendRuleEventAsync(AppConfig config, EventRule rule, TwitchEvent twitchEvent, CancellationToken cancellationToken)
     {
-        if (!config.Alexa.IsConfigured || !rule.SendAlexaEvent)
+        await SendRuleEventAsync(
+            config,
+            AlertExecutionSnapshotFactory.Create(rule),
+            AlertExecutionSnapshotFactory.Create(twitchEvent),
+            cancellationToken);
+    }
+
+    public async Task SendRuleEventAsync(
+        AppConfig config,
+        AlertExecutionRuleSnapshot rule,
+        AlertTriggerSnapshot twitchEvent,
+        CancellationToken cancellationToken)
+    {
+        if (!config.Alexa.IsConfigured || !rule.Alexa.Enabled)
         {
             return;
         }
@@ -39,13 +52,13 @@ public sealed class AlexaRelayService
         var payload = new AlexaRelayPayload(
             _text.Get(UiTextKeys.AlexaRelaySource),
             eventName,
-            rule.Name,
+            rule.RuleName,
             DisplayNameService.For(twitchEvent.Kind, _text),
-            twitchEvent.UserName ?? "",
-            twitchEvent.RewardTitle ?? "",
+            twitchEvent.UserName,
+            twitchEvent.RewardTitle,
             twitchEvent.Bits,
             twitchEvent.ViewerCount,
-            twitchEvent.Message ?? "",
+            twitchEvent.Message,
             twitchEvent.Title,
             _timeProvider.GetUtcNow());
 
@@ -129,6 +142,13 @@ public sealed class AlexaRelayService
         return string.IsNullOrWhiteSpace(rule.Name)
             ? DisplayNameService.For(twitchEvent.Kind, _text)
             : rule.Name.Trim();
+    }
+
+    private string ResolveEventName(AlertExecutionRuleSnapshot rule, AlertTriggerSnapshot twitchEvent)
+    {
+        return string.IsNullOrWhiteSpace(rule.RuleName)
+            ? DisplayNameService.For(twitchEvent.Kind, _text)
+            : rule.RuleName.Trim();
     }
 
     private sealed record AlexaRelayPayload(

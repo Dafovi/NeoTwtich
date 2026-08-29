@@ -22,6 +22,7 @@ public sealed class CriticalBoundaryTests
             Assert.IsNotNull(services.LightController);
             Assert.IsNotNull(services.AlertQueue);
             Assert.IsNotNull(services.AlertExecutionTracker);
+            Assert.IsNotNull(services.AlertExecutionCoordinator);
             Assert.AreSame(services.ActivityLog.DashboardEntries, services.ActivityViewModel.DashboardEntries);
         }
         finally

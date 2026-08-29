@@ -8,21 +8,19 @@ public partial class MainWindow
 {
     private async Task StopCurrentEffectAsync()
     {
-        var execution = _currentAlertExecution;
-        execution?.RequestCancellation("User requested stop");
-        if (execution is not null)
+        var executionId = _alertExecutionCoordinator.CurrentExecutionId;
+        if (_alertExecutionCoordinator.CancelCurrent("User requested stop"))
         {
-            AddLog($"Alerta [{execution.Context.ShortExecutionId}]: cancelacion solicitada.", ActivityLogKind.Important);
+            AddLog($"Alerta [{executionId[..Math.Min(8, executionId.Length)]}]: cancelacion solicitada.", ActivityLogKind.Important);
         }
 
-        _currentEffectCts?.Cancel();
         _currentPlayback?.Stop();
         await StopLightsAsync(LightCommand.ResolveTargets(_config, ""));
         await ClearVirtualLightsEffectAsync();
         await CleanupCurrentObsEffectAsync();
         await SendBackgroundAlexaEventAsync(_config.BackgroundAlexaOffEventName, "Fondo Alexa apagado");
 
-        if (_effectGate.CurrentCount > 0)
+        if (!_alertExecutionCoordinator.IsRunning)
         {
             await ApplyBackgroundStateAsync();
         }

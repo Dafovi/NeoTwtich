@@ -49,7 +49,7 @@ public partial class MainWindow
     private Services.Dashboard.DashboardSummaryService _dashboardSummary => _services.DashboardSummary;
     private Services.Alerts.RuleSimulationService _ruleSimulation => _services.RuleSimulation;
     private Services.Alerts.AlertQueueService _alertQueue => _services.AlertQueue;
-    private Services.Alerts.AlertExecutionTracker _alertExecutionTracker => _services.AlertExecutionTracker;
+    private Services.Alerts.AlertExecutionCoordinator _alertExecutionCoordinator => _services.AlertExecutionCoordinator;
     private Services.Ui.IDialogService _dialog => _services.Dialog;
     private Services.Ui.IFilePickerService _filePicker => _services.FilePicker;
     private Services.Ui.IExternalLauncherService _externalLauncher => _services.ExternalLauncher;

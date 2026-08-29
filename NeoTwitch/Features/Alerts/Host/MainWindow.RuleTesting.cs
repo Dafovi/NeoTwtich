@@ -20,7 +20,7 @@ public partial class MainWindow
     {
         try
         {
-            if (_currentEffectCts is not null)
+            if (_alertExecutionCoordinator.IsRunning)
             {
                 await StopCurrentEffectAsync();
                 UpdateRuleTestButtonState();
@@ -94,7 +94,7 @@ public partial class MainWindow
             return;
         }
 
-        var isRunning = _currentEffectCts is not null;
+        var isRunning = _alertExecutionCoordinator.IsRunning;
         RuleTestButton.Style = isRunning
             ? TryFindResource("DangerButton") as Style
             : TryFindResource("PrimaryButton") as Style;

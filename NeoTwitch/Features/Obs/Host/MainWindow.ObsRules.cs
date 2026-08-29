@@ -13,18 +13,13 @@ namespace NeoTwitch;
 
 public partial class MainWindow
 {
-    private async Task<IReadOnlyList<ObsMediaHideRequest>> SendRuleObsMediaAsync(EventRule rule, CancellationToken cancellationToken)
+    private async Task<IReadOnlyList<ObsMediaHideRequest>> SendRuleObsMediaAsync(AlertExecutionRuleSnapshot rule, CancellationToken cancellationToken)
     {
         List<ObsMediaHideRequest> requests = [];
 
         var imageRequest = await SendRuleObsMediaAsync(
             rule,
-            ObsMediaKind.Image,
-            rule.SendObsImage,
-            rule.ObsImageSourceMode,
-            rule.ObsImageAssetId,
-            rule.ObsImageGroupId,
-            rule.ObsImageDurationMs,
+            rule.Obs.Image,
             NeoTwitchProduct.Obs.AlertImageSourceName,
             cancellationToken);
         if (imageRequest is not null)
@@ -34,12 +29,7 @@ public partial class MainWindow
 
         var videoRequest = await SendRuleObsMediaAsync(
             rule,
-            ObsMediaKind.Video,
-            rule.SendObsVideo,
-            rule.ObsVideoSourceMode,
-            rule.ObsVideoAssetId,
-            rule.ObsVideoGroupId,
-            rule.ObsMediaDurationMs,
+            rule.Obs.Video,
             NeoTwitchProduct.Obs.AlertVideoSourceName,
             cancellationToken);
         if (videoRequest is not null)
@@ -51,27 +41,22 @@ public partial class MainWindow
     }
 
     private async Task<ObsMediaHideRequest?> SendRuleObsMediaAsync(
-        EventRule rule,
-        ObsMediaKind mediaKind,
-        bool sendMedia,
-        MediaSourceMode sourceMode,
-        string assetId,
-        string groupId,
-        int durationMs,
+        AlertExecutionRuleSnapshot rule,
+        AlertObsMediaActionSnapshot media,
         string sourceName,
         CancellationToken cancellationToken)
     {
-        var asset = ObsRulePlanService.ShouldSendMedia(_config.Obs.IsConfigured, sendMedia)
-            ? ResolveRuleObsMediaAsset(mediaKind, sendMedia, sourceMode, assetId, groupId)
+        var asset = ObsRulePlanService.ShouldSendMedia(_config.Obs.IsConfigured, media.Enabled)
+            ? ResolveRuleObsMediaAsset(media.Kind, media.Enabled, media.SourceMode, media.AssetId, media.GroupId)
             : null;
         var plan = ObsRulePlanService.BuildMediaExecutionPlan(
             rule,
             _config,
             _obsService.CurrentScene,
             asset,
-            sendMedia,
-            mediaKind,
-            durationMs,
+            media.Enabled,
+            media.Kind,
+            media.DurationMs,
             sourceName,
             sourceName);
 
@@ -96,14 +81,14 @@ public partial class MainWindow
                 plan.SceneName,
                 plan.SourceName,
                 plan.Asset!.FilePath,
-                mediaKind,
+                media.Kind,
                 _config.Obs,
                 plan.VolumePercent,
                 cancellationToken);
 
             ApplyObsResult(result);
-            WriteObsOverlayState(plan.Asset, mediaKind, plan.Duration);
-            await MarkObsMediaAssetUsedAsync(mediaKind, plan.Asset);
+            WriteObsOverlayState(plan.Asset, media.Kind, plan.Duration);
+            await MarkObsMediaAssetUsedAsync(media.Kind, plan.Asset);
             AddLog(_text.Format(UiTextKeys.ObsRuleMediaShownLog, plan.Asset.DisplayName, plan.SceneName), ActivityLogKind.Obs);
 
             return ObsRulePlanService.BuildMediaHideRequest(
@@ -119,21 +104,21 @@ public partial class MainWindow
         catch (Exception ex)
         {
             _obsConnectionError = ex.Message;
-            CrashReporter.Log(ex, $"No se pudo mostrar medio OBS para la regla '{rule.Name}'.");
+            CrashReporter.Log(ex, $"No se pudo mostrar medio OBS para la regla '{rule.RuleName}'.");
             AddLog($"OBS: {ex.Message}", ActivityLogKind.Important);
             UpdateObsStatusText();
             throw;
         }
     }
 
-    private bool HandleObsMediaPlanStatus(EventRule rule, ObsRuleMediaExecutionPlan plan)
+    private bool HandleObsMediaPlanStatus(AlertExecutionRuleSnapshot rule, ObsRuleMediaExecutionPlan plan)
     {
         switch (plan.Status)
         {
             case ObsRuleMediaPlanStatus.Disabled:
                 return false;
             case ObsRuleMediaPlanStatus.MissingAsset:
-                AddLog(_text.Format(UiTextKeys.ObsRuleMissingMediaLog, rule.Name), ActivityLogKind.Important);
+                AddLog(_text.Format(UiTextKeys.ObsRuleMissingMediaLog, rule.RuleName), ActivityLogKind.Important);
                 return false;
             case ObsRuleMediaPlanStatus.MissingScene:
                 AddLog(_text.Get(UiTextKeys.ObsRuleMissingSceneLog), ActivityLogKind.Important);

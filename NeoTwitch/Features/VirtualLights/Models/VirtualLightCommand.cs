@@ -15,17 +15,25 @@ public sealed record VirtualLightCommand(
 {
     public static VirtualLightCommand FromRule(EventRule rule, int? durationOverrideMs = null)
     {
+        return FromSnapshot(AlertExecutionSnapshotFactory.Create(rule), durationOverrideMs);
+    }
+
+    public static VirtualLightCommand FromSnapshot(
+        AlertExecutionRuleSnapshot rule,
+        int? durationOverrideMs = null)
+    {
+        var lights = rule.VirtualLights;
         return new VirtualLightCommand(
-            rule.VirtualLightsPattern,
-            LightCommand.NormalizeColor(rule.VirtualLightsPrimaryColor),
-            LightCommand.NormalizeColor(rule.VirtualLightsSecondaryColor),
-            LightCommand.NormalizeColor(rule.VirtualLightsTertiaryColor),
-            Math.Clamp(rule.VirtualLightsBrightness, ApplicationLimits.MinBrightness, ApplicationLimits.MaxBrightness),
-            Math.Clamp(durationOverrideMs ?? rule.VirtualLightsDurationMs, ApplicationLimits.MinAlertDurationMs, ApplicationLimits.MaxAlertDurationMs),
-            Math.Clamp(rule.VirtualLightsCycleMs, ApplicationLimits.MinCycleMs, ApplicationLimits.MaxCycleMs),
-            Math.Clamp(rule.VirtualLightsStepMs, ApplicationLimits.MinStepMs, ApplicationLimits.MaxStepMs),
-            Math.Clamp(rule.VirtualLightsObsOpacity, 0, 100),
-            Math.Clamp(rule.VirtualLightsScreenPixelSize, 4, 80),
-            Math.Clamp(rule.VirtualLightsScreenSaturation, 0, 200));
+            lights.Pattern,
+            LightCommand.NormalizeColor(lights.PrimaryColor),
+            LightCommand.NormalizeColor(lights.SecondaryColor),
+            LightCommand.NormalizeColor(lights.TertiaryColor),
+            Math.Clamp(lights.Brightness, ApplicationLimits.MinBrightness, ApplicationLimits.MaxBrightness),
+            Math.Clamp(durationOverrideMs ?? lights.DurationMs, ApplicationLimits.MinAlertDurationMs, ApplicationLimits.MaxAlertDurationMs),
+            Math.Clamp(lights.CycleMs, ApplicationLimits.MinCycleMs, ApplicationLimits.MaxCycleMs),
+            Math.Clamp(lights.StepMs, ApplicationLimits.MinStepMs, ApplicationLimits.MaxStepMs),
+            Math.Clamp(lights.ObsOpacity, 0, 100),
+            Math.Clamp(lights.ScreenPixelSize, 4, 80),
+            Math.Clamp(lights.ScreenSaturation, 0, 200));
     }
 }

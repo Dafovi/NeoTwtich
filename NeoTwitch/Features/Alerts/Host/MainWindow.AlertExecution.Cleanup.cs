@@ -8,47 +8,47 @@ namespace NeoTwitch;
 public partial class MainWindow
 {
     private async Task CleanupRuleExecutionAsync(
-        CancellationTokenSource effectCts,
-        QueuedAlertSlot? queueSlot,
-        bool shouldRestoreBackground,
-        bool wasCancelled,
-        ObsSceneRestoreRequest? obsRestore,
-        IReadOnlyCollection<ObsMediaHideRequest> obsMediaHides,
-        IReadOnlyCollection<Task> obsMediaHideTasks)
+        MainWindowAlertExecutionState state,
+        bool wasCancelled)
     {
         try
         {
-            ClearCurrentPlayback(effectCts);
+            await ObserveHostTasksAsync(state.StartedTasks);
+            ClearCurrentPlayback();
             await ClearVirtualLightsEffectAsync();
-            await RestoreBackgroundAfterRuleAsync(shouldRestoreBackground, wasCancelled);
-            await CleanupRuleObsMediaAsync(wasCancelled, obsMediaHides, obsMediaHideTasks);
+            await RestoreBackgroundAfterRuleAsync(state.ShouldRestoreBackground, wasCancelled);
+            await CleanupRuleObsMediaAsync(wasCancelled, state.ObsMediaHides, state.ObsMediaHideTasks);
 
             if (!_currentObsCleanedByStop)
             {
-                await RestoreRuleObsSceneAsync(obsRestore, wasCancelled);
+                await RestoreRuleObsSceneAsync(state.ObsRestore, wasCancelled);
             }
 
-            ClearCurrentObsRuleState(obsRestore, obsMediaHides);
+            ClearCurrentObsRuleState(state.ObsRestore, state.ObsMediaHides);
         }
         finally
         {
-            ClearCurrentPlayback(effectCts);
-            ClearCurrentObsRuleState(obsRestore, obsMediaHides);
-            effectCts.Dispose();
-            _alertQueue.MarkFinished(queueSlot);
-            _effectGate.Release();
+            ClearCurrentPlayback();
+            ClearCurrentObsRuleState(state.ObsRestore, state.ObsMediaHides);
         }
     }
 
-    private void ClearCurrentPlayback(CancellationTokenSource effectCts)
+    private void ClearCurrentPlayback()
     {
         _currentPlayback = null;
-        if (ReferenceEquals(_currentEffectCts, effectCts))
-        {
-            _currentEffectCts = null;
-        }
-
         UpdateRuleTestButtonState();
+    }
+
+    private static async Task ObserveHostTasksAsync(IEnumerable<Task> tasks)
+    {
+        try
+        {
+            await Task.WhenAll(tasks);
+        }
+        catch
+        {
+            // Each operation is already recorded by the alert execution scope.
+        }
     }
 
     private async Task RestoreBackgroundAfterRuleAsync(bool shouldRestoreBackground, bool wasCancelled)

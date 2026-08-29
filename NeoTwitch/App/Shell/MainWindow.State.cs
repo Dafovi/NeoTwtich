@@ -17,7 +17,6 @@ public partial class MainWindow
     private static readonly TimeSpan AlertStreamStatusRefreshInterval = TimeSpan.FromSeconds(5);
     private readonly Random _previewRandom = new();
     private readonly Random _audioRandom = new();
-    private readonly SemaphoreSlim _effectGate = new(1, 1);
     private readonly SemaphoreSlim _streamStatusRefreshGate = new(1, 1);
     private IReadOnlyList<SerialPortInfo> _availablePorts = [];
     private readonly IReadOnlyList<UiOption<TwitchEventKind>> _eventOptions;
@@ -65,8 +64,6 @@ public partial class MainWindow
     private string _videoGroupChoicesSignature = "";
     private CancellationTokenSource? _backgroundApplyDebounce;
     private CancellationTokenSource? _twitchSubscriptionRefreshDebounce;
-    private CancellationTokenSource? _currentEffectCts;
-    private Services.Alerts.AlertExecutionScope? _currentAlertExecution;
     private string _eventSubscriptionSignature = "";
     private bool _hasShownTrayNotice;
     private int _ruleLedPreviewStep;

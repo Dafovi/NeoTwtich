@@ -9,6 +9,9 @@ public static class NeoTwitchProduct
     public const string LegacyAppDataFolderName = "LucesCanjeTwitch";
     public const string AppExecutableName = "NeoTwitch.exe";
     public const string InstallerExecutableName = "NeoTwitch.Installer.exe";
+    public const string InstallMarkerFileName = "neo-twitch-install.json";
+    public const string ProductIdentifier = "com.dafovi.neotwitch";
+    public const int InstallMarkerSchemaVersion = 1;
     public const string StartupValueName = DisplayName;
     public const string SingleInstanceMutexName = "NeoTwitch.SingleInstance";
     public const string ShortcutExtension = ".lnk";

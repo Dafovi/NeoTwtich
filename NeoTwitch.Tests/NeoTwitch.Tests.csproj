@@ -9,6 +9,7 @@
 
   <ItemGroup>
     <ProjectReference Include="..\NeoTwitch\NeoTwitch.csproj" />
+    <ProjectReference Include="..\NeoTwitch.Installer\NeoTwitch.Installer.csproj" />
   </ItemGroup>
 
 </Project>

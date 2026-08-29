@@ -25,6 +25,8 @@ internal sealed class InstallerService
         CancellationToken cancellationToken)
     {
         progress.Report(new InstallProgress(3, "Preparando instalación"));
+        ValidateInstallTarget(options);
+
         var tempRoot = Path.Combine(Path.GetTempPath(), $"{NeoTwitchProduct.GitHubInstallerUserAgent}_{Guid.NewGuid():N}");
         Directory.CreateDirectory(tempRoot);
 
@@ -50,8 +52,7 @@ internal sealed class InstallerService
             }
 
             progress.Report(new InstallProgress(50, "Copiando archivos"));
-            Directory.CreateDirectory(options.InstallPath);
-            InstallPackage(packagePath, options.InstallPath, tempRoot);
+            InstallPackage(packagePath, options, tempRoot);
             CopyInstallerToTarget(options.InstallPath);
 
             progress.Report(new InstallProgress(74, "Creando accesos directos"));
@@ -128,22 +129,22 @@ internal sealed class InstallerService
         }
     }
 
-    private static void InstallPackage(string packagePath, string installPath, string tempRoot)
+    private static void InstallPackage(string packagePath, InstallerOptions options, string tempRoot)
     {
         if (packagePath.EndsWith(".zip", StringComparison.OrdinalIgnoreCase))
         {
             var extractPath = Path.Combine(tempRoot, "extract");
             ZipFile.ExtractToDirectory(packagePath, extractPath, overwriteFiles: true);
             var sourceRoot = ResolvePackageRoot(extractPath);
-            CleanInstallPath(installPath);
-            CopyDirectory(sourceRoot, installPath);
+            PrepareInstallPath(options);
+            CopyDirectory(sourceRoot, options.InstallPath);
             return;
         }
 
         if (packagePath.EndsWith(".exe", StringComparison.OrdinalIgnoreCase))
         {
-            CleanInstallPath(installPath);
-            File.Copy(packagePath, Path.Combine(installPath, NeoTwitchProduct.AppExecutableName), overwrite: true);
+            PrepareInstallPath(options);
+            File.Copy(packagePath, Path.Combine(options.InstallPath, NeoTwitchProduct.AppExecutableName), overwrite: true);
             return;
         }
 
@@ -164,13 +165,48 @@ internal sealed class InstallerService
         return nested ?? throw new InvalidOperationException($"El paquete no contiene {NeoTwitchProduct.AppExecutableName}.");
     }
 
+    private static void PrepareInstallPath(InstallerOptions options)
+    {
+        var classification = ValidateInstallTarget(options);
+        if (classification.Kind == InstallTargetKind.ExistingNeoTwitchInstallation)
+        {
+            CleanInstallPath(classification.NormalizedPath);
+            return;
+        }
+
+        Directory.CreateDirectory(classification.NormalizedPath);
+    }
+
+    internal static InstallTargetClassification ValidateInstallTarget(InstallerOptions options)
+    {
+        var classification = InstallTargetClassifier.Classify(options.InstallPath);
+        if (classification.Kind is InstallTargetKind.UnsafeTarget or InstallTargetKind.InvalidTarget)
+        {
+            throw new InvalidOperationException(
+                $"No se puede instalar en '{options.InstallPath}'. {classification.Reason} "
+                + "Elige una carpeta nueva o vacía, o la carpeta de una instalación válida de Neo Twitch.");
+        }
+
+        if (options.IsUpdate && classification.Kind != InstallTargetKind.ExistingNeoTwitchInstallation)
+        {
+            throw new InvalidOperationException(
+                $"No se puede actualizar '{options.InstallPath}' porque no es una instalación verificada de Neo Twitch. "
+                + "Inicia una instalación nueva sin --update o selecciona la carpeta de instalación existente.");
+        }
+
+        options.InstallPath = classification.NormalizedPath;
+        return classification;
+    }
+
     private static void CleanInstallPath(string installPath)
     {
         Directory.CreateDirectory(installPath);
 
         foreach (var file in Directory.EnumerateFiles(installPath))
         {
-            if (Path.GetFileName(file).StartsWith(Path.GetFileNameWithoutExtension(NeoTwitchProduct.InstallerExecutableName), StringComparison.OrdinalIgnoreCase))
+            var fileName = Path.GetFileName(file);
+            if (fileName.StartsWith(Path.GetFileNameWithoutExtension(NeoTwitchProduct.InstallerExecutableName), StringComparison.OrdinalIgnoreCase)
+                || fileName.Equals(NeoTwitchProduct.InstallMarkerFileName, StringComparison.OrdinalIgnoreCase))
             {
                 continue;
             }
@@ -195,6 +231,11 @@ internal sealed class InstallerService
         foreach (var file in Directory.EnumerateFiles(source, "*", SearchOption.AllDirectories))
         {
             var relativePath = Path.GetRelativePath(source, file);
+            if (relativePath.Equals(NeoTwitchProduct.InstallMarkerFileName, StringComparison.OrdinalIgnoreCase))
+            {
+                continue;
+            }
+
             var targetPath = Path.Combine(target, relativePath);
             Directory.CreateDirectory(Path.GetDirectoryName(targetPath)!);
             File.Copy(file, targetPath, overwrite: true);
@@ -281,15 +322,18 @@ internal sealed class InstallerService
 
     private static void WriteInstallManifest(string installPath, string version, DateTimeOffset installedAt)
     {
-        var manifestPath = Path.Combine(installPath, "neo-twitch-install.json");
+        var manifestPath = Path.Combine(installPath, NeoTwitchProduct.InstallMarkerFileName);
+        var temporaryManifestPath = $"{manifestPath}.{Guid.NewGuid():N}.tmp";
         var content = $$"""
         {
+          "productId": "{{NeoTwitchProduct.ProductIdentifier}}",
+          "schemaVersion": {{NeoTwitchProduct.InstallMarkerSchemaVersion}},
           "version": "{{version}}",
-          "installedAt": "{{installedAt:O}}",
-          "installPath": "{{EscapeJson(installPath)}}"
+          "installedAt": "{{installedAt:O}}"
         }
         """;
-        File.WriteAllText(manifestPath, content);
+        File.WriteAllText(temporaryManifestPath, content);
+        File.Move(temporaryManifestPath, manifestPath, overwrite: true);
     }
 
     private static string NormalizeVersion(string version)
@@ -297,8 +341,6 @@ internal sealed class InstallerService
         var text = version.Trim();
         return text.StartsWith('v') || text.StartsWith('V') ? text[1..] : text;
     }
-
-    private static string EscapeJson(string value) => value.Replace("\\", "\\\\").Replace("\"", "\\\"");
 
     private static void TryDeleteDirectory(string path)
     {

@@ -484,6 +484,14 @@ El instalador ignora assets que contienen `Installer` para no instalarse a si mi
 
 Cuando la app encuentra una version nueva, busca un instalador local. Si existe, lo copia a una ruta temporal y lo lanza con `--update` para evitar bloquear el archivo instalado.
 
+### Seguridad de la carpeta de instalación
+
+Una instalación nueva solo puede usar una carpeta inexistente o vacía. Antes de copiar archivos, el instalador rechaza raíces de unidades, carpetas raíz del sistema o del perfil del usuario, raíces de repositorios y vínculos/puntos de reanálisis.
+
+Una carpeta no vacía solo se puede limpiar si es una instalación verificada de Neo Twitch: debe contener `NeoTwitch.exe` y el marcador `neo-twitch-install.json` con el identificador de producto `com.dafovi.neotwitch` y el esquema admitido. Los manifiestos legados creados por versiones anteriores se validan mediante su versión, fecha y ruta exacta para permitir su actualización; al finalizar correctamente se reemplazan por el marcador actual.
+
+Si el usuario escribe `--target` o selecciona una carpeta no vacía que no cumple esa verificación, la instalación se detiene antes de descargar, borrar o copiar archivos y muestra que debe elegir una carpeta nueva/vacía o la instalación existente. El modo `--update` exige siempre una instalación verificada.
+
 ## 18. Builds
 
 Comandos:

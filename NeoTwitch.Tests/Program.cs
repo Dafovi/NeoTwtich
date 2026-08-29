@@ -13,6 +13,7 @@ using NeoTwitch.Services.Status;
 using NeoTwitch.Services.Text;
 using NeoTwitch.Services.Ui;
 using NeoTwitch.Shared;
+using NeoTwitch.Installer;
 using NeoTwitch.ViewModels.Activity;
 using NeoTwitch.ViewModels.Alexa;
 using NeoTwitch.ViewModels.Alerts;
@@ -126,6 +127,16 @@ var tests = new (string Name, Action Body)[]
     ("ObsViewModel executes configured actions", ObsViewModelTests.ExecutesConfiguredActions),
     ("DiagnosticReportService builds report without network", DiagnosticReportServiceTests.BuildsReportWithoutNetwork),
     ("DiagnosticReportService reports missing audio", DiagnosticReportServiceTests.ReportsMissingAudio),
+    ("Installer target classifies nonexistent directory", InstallerTargetSafetyTests.ClassifiesNonexistentDirectory),
+    ("Installer target classifies empty directory", InstallerTargetSafetyTests.ClassifiesEmptyDirectory),
+    ("Installer target classifies verified installation", InstallerTargetSafetyTests.ClassifiesVerifiedInstallation),
+    ("Installer target rejects unrelated nonempty directory", InstallerTargetSafetyTests.RejectsUnrelatedNonemptyDirectory),
+    ("Installer target rejects drive root", InstallerTargetSafetyTests.RejectsDriveRoot),
+    ("Installer target rejects protected user root", InstallerTargetSafetyTests.RejectsProtectedUserRoot),
+    ("Installer target rejects forged marker", InstallerTargetSafetyTests.RejectsForgedMarker),
+    ("Installer target accepts valid marker", InstallerTargetSafetyTests.AcceptsValidMarker),
+    ("Installer update classifies --target installation", InstallerTargetSafetyTests.ClassifiesUpdateTargetFromArguments),
+    ("Installer fresh install classifies custom --target", InstallerTargetSafetyTests.ClassifiesFreshCustomTargetFromArguments),
     ("AppUpdateService launches copied installer update", AppUpdateServiceTests.LaunchesCopiedInstallerUpdate),
     ("VersionCheckService parses latest release response", VersionCheckServiceTests.ParsesLatestReleaseResponse),
     ("VersionComparisonService compares normalized tags", VersionComparisonTests.ComparesNormalizedTags),
@@ -3283,6 +3294,172 @@ static class DiagnosticReportServiceTests
             IsUpdateAvailable: false)),
             Text,
             new FixedTimeProvider(new DateTimeOffset(2026, 6, 1, 12, 0, 0, TimeSpan.Zero)));
+    }
+}
+
+static class InstallerTargetSafetyTests
+{
+    public static void ClassifiesNonexistentDirectory()
+    {
+        using var scope = InstallerTestDirectory.Create(createDirectory: false);
+
+        var result = InstallTargetClassifier.Classify(scope.Path);
+
+        TestAssert.Equal(InstallTargetKind.NewInstallTarget, result.Kind);
+    }
+
+    public static void ClassifiesEmptyDirectory()
+    {
+        using var scope = InstallerTestDirectory.Create();
+
+        var result = InstallTargetClassifier.Classify(scope.Path);
+
+        TestAssert.Equal(InstallTargetKind.NewInstallTarget, result.Kind);
+    }
+
+    public static void ClassifiesVerifiedInstallation()
+    {
+        using var scope = InstallerTestDirectory.Create();
+        WriteValidInstallation(scope.Path);
+
+        var result = InstallTargetClassifier.Classify(scope.Path);
+
+        TestAssert.Equal(InstallTargetKind.ExistingNeoTwitchInstallation, result.Kind);
+    }
+
+    public static void RejectsUnrelatedNonemptyDirectory()
+    {
+        using var scope = InstallerTestDirectory.Create();
+        File.WriteAllText(Path.Combine(scope.Path, "unrelated.txt"), "keep me");
+
+        var result = InstallTargetClassifier.Classify(scope.Path);
+
+        TestAssert.Equal(InstallTargetKind.UnsafeTarget, result.Kind);
+        TestAssert.True(File.Exists(Path.Combine(scope.Path, "unrelated.txt")));
+    }
+
+    public static void RejectsDriveRoot()
+    {
+        using var scope = InstallerTestDirectory.Create();
+        var root = Path.GetPathRoot(scope.Path)!;
+
+        var result = InstallTargetClassifier.Classify(root);
+
+        TestAssert.Equal(InstallTargetKind.UnsafeTarget, result.Kind);
+    }
+
+    public static void RejectsProtectedUserRoot()
+    {
+        using var scope = InstallerTestDirectory.Create();
+
+        var result = InstallTargetClassifier.Classify(scope.Path, [scope.Path]);
+
+        TestAssert.Equal(InstallTargetKind.UnsafeTarget, result.Kind);
+    }
+
+    public static void RejectsForgedMarker()
+    {
+        using var scope = InstallerTestDirectory.Create();
+        File.WriteAllText(Path.Combine(scope.Path, NeoTwitchProduct.AppExecutableName), "test executable");
+        File.WriteAllText(
+            Path.Combine(scope.Path, NeoTwitchProduct.InstallMarkerFileName),
+            """
+            {
+              "productId": "not-neo-twitch",
+              "schemaVersion": 1,
+              "version": "9.9.9"
+            }
+            """);
+
+        var result = InstallTargetClassifier.Classify(scope.Path);
+
+        TestAssert.Equal(InstallTargetKind.UnsafeTarget, result.Kind);
+    }
+
+    public static void AcceptsValidMarker()
+    {
+        using var scope = InstallerTestDirectory.Create();
+        WriteValidInstallation(scope.Path);
+
+        var result = InstallTargetClassifier.Classify(scope.Path);
+
+        TestAssert.Equal(InstallTargetKind.ExistingNeoTwitchInstallation, result.Kind);
+    }
+
+    public static void ClassifiesUpdateTargetFromArguments()
+    {
+        using var scope = InstallerTestDirectory.Create();
+        WriteValidInstallation(scope.Path);
+        var options = InstallerOptions.FromArgs(["--update", "--target", scope.Path]);
+
+        var result = InstallerService.ValidateInstallTarget(options);
+
+        TestAssert.True(options.IsUpdate);
+        TestAssert.Equal(scope.Path, options.InstallPath);
+        TestAssert.Equal(InstallTargetKind.ExistingNeoTwitchInstallation, result.Kind);
+    }
+
+    public static void ClassifiesFreshCustomTargetFromArguments()
+    {
+        using var scope = InstallerTestDirectory.Create(createDirectory: false);
+        var options = InstallerOptions.FromArgs(["--target", scope.Path]);
+
+        var result = InstallerService.ValidateInstallTarget(options);
+
+        TestAssert.False(options.IsUpdate);
+        TestAssert.Equal(scope.Path, options.InstallPath);
+        TestAssert.Equal(InstallTargetKind.NewInstallTarget, result.Kind);
+    }
+
+    private static void WriteValidInstallation(string path)
+    {
+        File.WriteAllText(Path.Combine(path, NeoTwitchProduct.AppExecutableName), "test executable");
+        File.WriteAllText(
+            Path.Combine(path, NeoTwitchProduct.InstallMarkerFileName),
+            $$"""
+            {
+              "productId": "{{NeoTwitchProduct.ProductIdentifier}}",
+              "schemaVersion": {{NeoTwitchProduct.InstallMarkerSchemaVersion}},
+              "version": "1.2.3"
+            }
+            """);
+    }
+
+    private sealed class InstallerTestDirectory : IDisposable
+    {
+        private InstallerTestDirectory(string path)
+        {
+            Path = path;
+        }
+
+        public string Path { get; }
+
+        public static InstallerTestDirectory Create(bool createDirectory = true)
+        {
+            var testRoot = System.IO.Path.Combine(
+                System.IO.Path.GetTempPath(),
+                "NeoTwitchInstallerSafetyTests",
+                Guid.NewGuid().ToString("N"));
+            if (createDirectory)
+            {
+                Directory.CreateDirectory(testRoot);
+            }
+
+            return new InstallerTestDirectory(testRoot);
+        }
+
+        public void Dispose()
+        {
+            var expectedParent = System.IO.Path.Combine(System.IO.Path.GetTempPath(), "NeoTwitchInstallerSafetyTests");
+            var fullPath = System.IO.Path.GetFullPath(Path);
+            if (Directory.Exists(fullPath)
+                && fullPath.StartsWith(
+                    System.IO.Path.GetFullPath(expectedParent) + System.IO.Path.DirectorySeparatorChar,
+                    StringComparison.OrdinalIgnoreCase))
+            {
+                Directory.Delete(fullPath, recursive: true);
+            }
+        }
     }
 }
 

@@ -10,10 +10,13 @@ namespace NeoTwitch;
 
 public partial class MainWindow
 {
-    private async void EventSubClient_EventReceived(TwitchEvent twitchEvent)
+    private async Task EventSubClient_EventReceivedAsync(
+        TwitchEvent twitchEvent,
+        CancellationToken cancellationToken)
     {
         try
         {
+            cancellationToken.ThrowIfCancellationRequested();
             RegisterDashboardTwitchEvent(twitchEvent);
             var matchingRules = ResolveMatchingRules(twitchEvent);
             if (matchingRules.Length == 0)

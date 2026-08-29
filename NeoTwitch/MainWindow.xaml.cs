@@ -40,7 +40,8 @@ public partial class MainWindow : Window
         DataContext = _shellViewModel;
 
         _eventSubClient = new TwitchEventSubClient(_authService, () => _config, SaveConfig, AddLog, _text);
-        _eventSubClient.EventReceived += EventSubClient_EventReceived;
+        _eventSubClient.EventReceivedAsync += EventSubClient_EventReceivedAsync;
+        _eventSubClient.HealthChanged += EventSubClient_HealthChanged;
 
         InitializeRuntimeUi();
         CreateTrayIcon();

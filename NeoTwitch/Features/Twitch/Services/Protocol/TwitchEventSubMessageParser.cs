@@ -16,6 +16,11 @@ public sealed class TwitchEventSubMessageParser
 
     public string ReadSessionId(string message)
     {
+        return ReadSessionInfo(message).SessionId;
+    }
+
+    public EventSubSessionInfo ReadSessionInfo(string message)
+    {
         using var doc = JsonDocument.Parse(message);
         var root = doc.RootElement;
         var messageType = root.GetProperty(Protocol.Json.Metadata).GetProperty(Protocol.Json.MessageType).GetString();
@@ -25,11 +30,19 @@ public sealed class TwitchEventSubMessageParser
             throw new InvalidOperationException(_text.Format(UiTextKeys.TwitchEventSubExpectedWelcomeFailure, Protocol.MessageTypes.Welcome, messageType ?? string.Empty));
         }
 
-        return root
+        var session = root
             .GetProperty(Protocol.Json.Payload)
-            .GetProperty(Protocol.Json.Session)
+            .GetProperty(Protocol.Json.Session);
+        var sessionId = session
             .GetProperty(Protocol.Json.Id)
             .GetString() ?? throw new InvalidOperationException(_text.Get(UiTextKeys.TwitchEventSubMissingSessionId));
+        var keepaliveTimeoutSeconds = session.TryGetProperty(Protocol.Json.KeepaliveTimeoutSeconds, out var timeout)
+            && timeout.TryGetInt32(out var parsedTimeout)
+            && parsedTimeout > 0
+                ? parsedTimeout
+                : 30;
+
+        return new EventSubSessionInfo(sessionId, TimeSpan.FromSeconds(keepaliveTimeoutSeconds));
     }
 
     public TwitchEvent? ParseEvent(JsonElement payload)
@@ -163,3 +176,5 @@ public sealed class TwitchEventSubMessageParser
             : null;
     }
 }
+
+public sealed record EventSubSessionInfo(string SessionId, TimeSpan KeepaliveTimeout);

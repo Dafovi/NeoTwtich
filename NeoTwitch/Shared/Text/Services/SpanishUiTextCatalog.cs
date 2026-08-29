@@ -242,6 +242,8 @@ public static class SpanishUiTextCatalog
             [UiTextKeys.TwitchAuthRefreshFailure] = "No pude refrescar Twitch: {0}",
             [UiTextKeys.TwitchAuthEmptyRefreshResponse] = "Twitch envio un refresh vacio.",
             [UiTextKeys.TwitchAuthTokenRefreshedLog] = "Token de Twitch actualizado.",
+            [UiTextKeys.TwitchAuthTokenRefreshStartedLog] = "Twitch: iniciando actualización del token OAuth.",
+            [UiTextKeys.TwitchAuthStaleRefreshDiscardedLog] = "Twitch: se descartó un refresh antiguo porque ya existe un token más reciente.",
             [UiTextKeys.TwitchAuthReadChannelFailure] = "No pude leer el canal de Twitch: {0}",
             [UiTextKeys.TwitchAuthMissingUserData] = "Twitch no envio datos del usuario.",
             [UiTextKeys.TwitchAuthReadStreamFailure] = "No pude leer el directo de Twitch: {0}",

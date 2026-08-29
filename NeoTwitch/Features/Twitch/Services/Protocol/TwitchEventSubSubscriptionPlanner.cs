@@ -66,4 +66,8 @@ public static class TwitchEventSubSubscriptionPlanner
     }
 }
 
-public sealed record EventSubDefinition(string Type, string Version, Dictionary<string, string> Condition);
+public sealed record EventSubDefinition(
+    string Type,
+    string Version,
+    Dictionary<string, string> Condition,
+    bool IsRequired = true);

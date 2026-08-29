@@ -285,6 +285,16 @@ Los eventos se convierten a modelos internos `TwitchEvent` y luego se comparan c
 
 Si el canal esta offline, las alertas se suprimen y se notifica en bandeja.
 
+### Fiabilidad de EventSub
+
+- Cada notificación se acepta por `metadata.message_id` antes de ejecutar efectos. La caché de deduplicación es compartida entre reconexiones, thread-safe, conserva como máximo 4096 IDs durante 10 minutos y expulsa primero el ID aceptado más antiguo. Un duplicado se registra y se ignora sin tratarlo como error.
+- `TwitchEvent` conserva el ID de mensaje, el ID de sesión y el tipo EventSub para diagnóstico. El despacho hacia alertas es asincrónico y esperado por el bucle receptor; una notificación aceptada tiene semántica de máximo una ejecución durante la ventana, incluso si el manejador falla parcialmente.
+- El `session_welcome` aporta el `keepalive_timeout_seconds`. Cualquier mensaje WebSocket válido —incluidos keepalive y notification— actualiza la frescura. Si no llega ninguno durante ese tiempo más 10 segundos, el socket pasa a `Stale`, se aborta y el único bucle propietario reconecta contra el endpoint base.
+- La salud distingue `Disconnected`, `Connecting`, `Connected`, `Degraded`, `Reconnecting`, `Stale` y `Faulted`. Solo `Connected` significa socket activo y todas las suscripciones requeridas saludables.
+- Todas las suscripciones derivadas de reglas activas son requeridas. El registrador devuelve un intento estructurado por tipo con éxito, código HTTP y diagnóstico. Un fallo requerido deja la sesión conectada pero `Degraded`; no se reintenta indefinidamente dentro de la misma sesión. Los tipos opcionales están soportados por el modelo y no degradan la salud, aunque actualmente el planificador no crea ninguno.
+- Un `session_reconnect` usa la URL indicada por Twitch y no vuelve a crear suscripciones porque Twitch migra la sesión. Un cierre normal, timeout o fallo transitorio vuelve al endpoint base y crea suscripciones una vez. El cierre solicitado por la aplicación no reconecta.
+- El refresh OAuth es single-flight por `TwitchAuthService`: los llamantes concurrentes esperan la misma operación. Cancelar un llamante cancela solo su espera, no el refresh compartido. El resultado se aplica únicamente si el token que originó la solicitud sigue siendo el actual, evitando sobrescribir credenciales más nuevas.
+
 ## 10. Alertas
 
 Carpetas:

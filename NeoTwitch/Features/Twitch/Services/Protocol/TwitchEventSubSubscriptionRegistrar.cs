@@ -26,14 +26,18 @@ public sealed class TwitchEventSubSubscriptionRegistrar : IDisposable
         _ownsHttp = httpClient is null;
     }
 
-    public async Task CreateSubscriptionsAsync(string sessionId, AppConfig config, CancellationToken cancellationToken)
+    public async Task<EventSubSubscriptionSummary> CreateSubscriptionsAsync(
+        string sessionId,
+        AppConfig config,
+        CancellationToken cancellationToken)
     {
         var definitions = TwitchEventSubSubscriptionPlanner.BuildDefinitions(config);
+        var attempts = new List<EventSubSubscriptionAttempt>(definitions.Count);
 
         if (definitions.Count == 0)
         {
             _log(_text.Get(UiTextKeys.TwitchEventSubNoActiveRulesLog));
-            return;
+            return EventSubSubscriptionSummary.FromAttempts(attempts);
         }
 
         foreach (var definition in definitions)
@@ -55,19 +59,64 @@ public sealed class TwitchEventSubSubscriptionRegistrar : IDisposable
             request.Headers.Add("Client-Id", config.TwitchClientId);
             request.Content = new StringContent(JsonSerializer.Serialize(body), Encoding.UTF8, Protocol.ContentTypeJson);
 
-            using var response = await _http.SendAsync(request, cancellationToken);
-            var responseText = await response.Content.ReadAsStringAsync(cancellationToken);
+            try
+            {
+                using var response = await _http.SendAsync(request, cancellationToken);
+                var responseText = await response.Content.ReadAsStringAsync(cancellationToken);
+                var diagnostic = LimitDiagnostic(responseText);
 
-            if (response.IsSuccessStatusCode)
-            {
-                _log(_text.Format(UiTextKeys.TwitchEventSubSubscriptionReadyLog, definition.Type));
+                if (response.IsSuccessStatusCode)
+                {
+                    attempts.Add(new EventSubSubscriptionAttempt(
+                        definition.Type,
+                        definition.IsRequired,
+                        true,
+                        (int)response.StatusCode,
+                        diagnostic));
+                    _log(_text.Format(UiTextKeys.TwitchEventSubSubscriptionReadyLog, definition.Type));
+                }
+                else
+                {
+                    attempts.Add(new EventSubSubscriptionAttempt(
+                        definition.Type,
+                        definition.IsRequired,
+                        false,
+                        (int)response.StatusCode,
+                        diagnostic));
+                    _log(_text.Format(UiTextKeys.TwitchEventSubSubscriptionCreateFailureLog, definition.Type, diagnostic));
+                }
             }
-            else
+            catch (TaskCanceledException ex) when (!cancellationToken.IsCancellationRequested)
             {
-                _log(_text.Format(UiTextKeys.TwitchEventSubSubscriptionCreateFailureLog, definition.Type, responseText));
+                attempts.Add(new EventSubSubscriptionAttempt(
+                    definition.Type,
+                    definition.IsRequired,
+                    false,
+                    null,
+                    ex.Message));
+                _log(_text.Format(UiTextKeys.TwitchEventSubSubscriptionCreateFailureLog, definition.Type, ex.Message));
+            }
+            catch (OperationCanceledException)
+            {
+                throw;
+            }
+            catch (HttpRequestException ex)
+            {
+                attempts.Add(new EventSubSubscriptionAttempt(
+                    definition.Type,
+                    definition.IsRequired,
+                    false,
+                    null,
+                    ex.Message));
+                _log(_text.Format(UiTextKeys.TwitchEventSubSubscriptionCreateFailureLog, definition.Type, ex.Message));
             }
         }
+
+        return EventSubSubscriptionSummary.FromAttempts(attempts);
     }
+
+    private static string LimitDiagnostic(string value) =>
+        value.Length <= 500 ? value : $"{value[..500]}...";
 
     public void Dispose()
     {
@@ -75,5 +124,38 @@ public sealed class TwitchEventSubSubscriptionRegistrar : IDisposable
         {
             _http.Dispose();
         }
+    }
+}
+
+public sealed record EventSubSubscriptionAttempt(
+    string Type,
+    bool IsRequired,
+    bool Succeeded,
+    int? HttpStatusCode,
+    string Diagnostic);
+
+public sealed record EventSubSubscriptionSummary(
+    IReadOnlyList<EventSubSubscriptionAttempt> Attempts,
+    IReadOnlyList<string> FailedRequiredTypes,
+    IReadOnlyList<string> FailedOptionalTypes)
+{
+    public bool AllRequiredSucceeded => FailedRequiredTypes.Count == 0;
+
+    public static EventSubSubscriptionSummary FromAttempts(
+        IEnumerable<EventSubSubscriptionAttempt> attempts)
+    {
+        var materialized = attempts.ToArray();
+        return new EventSubSubscriptionSummary(
+            materialized,
+            materialized
+                .Where(attempt => attempt.IsRequired && !attempt.Succeeded)
+                .Select(attempt => attempt.Type)
+                .Distinct(StringComparer.Ordinal)
+                .ToArray(),
+            materialized
+                .Where(attempt => !attempt.IsRequired && !attempt.Succeeded)
+                .Select(attempt => attempt.Type)
+                .Distinct(StringComparer.Ordinal)
+                .ToArray());
     }
 }

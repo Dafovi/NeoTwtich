@@ -8,6 +8,22 @@ namespace NeoTwitch;
 
 public partial class MainWindow
 {
+    private void EventSubClient_HealthChanged(EventSubConnectionHealthSnapshot health)
+    {
+        if (!Dispatcher.CheckAccess())
+        {
+            _ = Dispatcher.InvokeAsync(() => EventSubClient_HealthChanged(health));
+            return;
+        }
+
+        _twitchConnectionError = health.State is EventSubConnectionHealth.Degraded
+            or EventSubConnectionHealth.Stale
+            or EventSubConnectionHealth.Faulted
+                ? health.Reason
+                : "";
+        UpdateStatusText();
+    }
+
     private async void ToggleTwitchConnection()
     {
         if (_isTwitchAuthorizing || _isTwitchConnecting)

@@ -26,14 +26,14 @@ public partial class MainWindow
                 _isTwitchAuthorizing,
                 _isTwitchConnecting,
                 !string.IsNullOrWhiteSpace(_twitchConnectionError),
-                _eventSubClient.IsRunning,
+                _eventSubClient.IsHealthy,
                 _config.Token.HasToken,
                 labels),
             twitchStatus: DashboardStatusTextService.BuildTwitchStatusText(
                 _isTwitchAuthorizing,
                 _isTwitchConnecting,
                 _streamStatus,
-                _eventSubClient.IsRunning,
+                _eventSubClient.IsHealthy,
                 labels));
         UpdateTwitchLiveIndicator();
         UpdateChannelAvatar();

@@ -18,6 +18,9 @@ public sealed class TwitchAuthService
     private readonly JsonSerializerOptions _jsonOptions = new(JsonSerializerDefaults.Web);
     private readonly IUiTextService _text;
     private readonly TimeProvider _timeProvider;
+    private readonly object _refreshSync = new();
+    private Task? _activeRefresh;
+    private AppConfig? _activeRefreshConfig;
 
     public TwitchAuthService(
         IUiTextService text,
@@ -117,16 +120,48 @@ public sealed class TwitchAuthService
             return;
         }
 
-        if (string.IsNullOrWhiteSpace(config.Token.RefreshToken))
+        while (true)
+        {
+            Task refreshTask;
+            AppConfig refreshConfig;
+            lock (_refreshSync)
+            {
+                if (_activeRefresh is null || _activeRefresh.IsCompleted)
+                {
+                    _activeRefreshConfig = config;
+                    _activeRefresh = RefreshTokenCoreAsync(config, log);
+                }
+
+                refreshTask = _activeRefresh;
+                refreshConfig = _activeRefreshConfig!;
+            }
+
+            // Caller cancellation stops only this wait; it does not cancel the shared HTTP refresh
+            // that other callers depend on.
+            await refreshTask.WaitAsync(cancellationToken);
+
+            if (ReferenceEquals(refreshConfig, config)
+                || !TwitchTokenRefreshPolicy.NeedsRefresh(config.Token, _timeProvider.GetUtcNow()))
+            {
+                return;
+            }
+        }
+    }
+
+    private async Task RefreshTokenCoreAsync(AppConfig config, Action<string> log)
+    {
+        var tokenBeingRefreshed = config.Token;
+        if (string.IsNullOrWhiteSpace(tokenBeingRefreshed.RefreshToken))
         {
             throw new InvalidOperationException(_text.Get(UiTextKeys.TwitchAuthLoginRequired));
         }
 
+        log(_text.Get(UiTextKeys.TwitchAuthTokenRefreshStartedLog));
         var fields = new Dictionary<string, string>
         {
             [Protocol.FormFields.ClientId] = config.TwitchClientId,
             [Protocol.FormFields.GrantType] = Protocol.GrantTypes.RefreshToken,
-            [Protocol.FormFields.RefreshToken] = config.Token.RefreshToken
+            [Protocol.FormFields.RefreshToken] = tokenBeingRefreshed.RefreshToken
         };
 
         if (!string.IsNullOrWhiteSpace(config.TwitchClientSecret))
@@ -135,9 +170,8 @@ public sealed class TwitchAuthService
         }
 
         using var content = new FormUrlEncodedContent(fields);
-
-        using var response = await _http.PostAsync(Protocol.TokenUrl, content, cancellationToken);
-        var json = await response.Content.ReadAsStringAsync(cancellationToken);
+        using var response = await _http.PostAsync(Protocol.TokenUrl, content, CancellationToken.None);
+        var json = await response.Content.ReadAsStringAsync(CancellationToken.None);
 
         if (!response.IsSuccessStatusCode)
         {
@@ -146,8 +180,15 @@ public sealed class TwitchAuthService
 
         var token = JsonSerializer.Deserialize<TokenResponse>(json, _jsonOptions)
             ?? throw new InvalidOperationException(_text.Get(UiTextKeys.TwitchAuthEmptyRefreshResponse));
+        var refreshedToken = ToTokenInfo(token);
 
-        config.Token = ToTokenInfo(token);
+        if (!ReferenceEquals(config.Token, tokenBeingRefreshed))
+        {
+            log(_text.Get(UiTextKeys.TwitchAuthStaleRefreshDiscardedLog));
+            return;
+        }
+
+        config.Token = refreshedToken;
         log(_text.Get(UiTextKeys.TwitchAuthTokenRefreshedLog));
     }
 

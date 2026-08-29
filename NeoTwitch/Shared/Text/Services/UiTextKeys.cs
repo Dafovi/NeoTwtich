@@ -242,6 +242,8 @@ public static class UiTextKeys
     public const string TwitchAuthRefreshFailure = "twitch.auth.refresh_failure";
     public const string TwitchAuthEmptyRefreshResponse = "twitch.auth.empty_refresh_response";
     public const string TwitchAuthTokenRefreshedLog = "twitch.auth.token_refreshed_log";
+    public const string TwitchAuthTokenRefreshStartedLog = "twitch.auth.token_refresh_started_log";
+    public const string TwitchAuthStaleRefreshDiscardedLog = "twitch.auth.stale_refresh_discarded_log";
     public const string TwitchAuthReadChannelFailure = "twitch.auth.read_channel_failure";
     public const string TwitchAuthMissingUserData = "twitch.auth.missing_user_data";
     public const string TwitchAuthReadStreamFailure = "twitch.auth.read_stream_failure";

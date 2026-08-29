@@ -10,4 +10,7 @@ public sealed class TwitchEvent
     public int? Bits { get; init; }
     public string? Message { get; init; }
     public string? RawType { get; init; }
+    public string EventSubMessageId { get; set; } = "";
+    public string EventSubSessionId { get; set; } = "";
+    public string EventSubMessageType { get; set; } = "";
 }

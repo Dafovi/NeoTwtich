@@ -12,10 +12,12 @@ public static class TwitchEventSubProtocol
     {
         public const string Metadata = "metadata";
         public const string MessageType = "message_type";
+        public const string MessageId = "message_id";
         public const string Payload = "payload";
         public const string Session = "session";
         public const string ReconnectUrl = "reconnect_url";
         public const string Id = "id";
+        public const string KeepaliveTimeoutSeconds = "keepalive_timeout_seconds";
         public const string Subscription = "subscription";
         public const string Type = "type";
         public const string Event = "event";

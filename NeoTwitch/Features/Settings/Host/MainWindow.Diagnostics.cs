@@ -70,7 +70,7 @@ public partial class MainWindow
             _config,
             _settingsStore.SettingsPath,
             _settingsStore.BackupDirectory,
-            _eventSubClient.IsRunning,
+            _eventSubClient.IsHealthy,
             _streamStatus,
             _lightController.HasOpenPort,
             _lightController.CurrentPort,

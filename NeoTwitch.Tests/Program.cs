@@ -63,6 +63,26 @@ var tests = new (string Name, Action Body)[]
     ("TwitchEventSubSubscriptionRegistrar sends subscription payload", TwitchEventSubSubscriptionRegistrarTests.SendsSubscriptionPayload),
     ("TwitchEventSubMessageParser parses welcome and events", TwitchEventSubMessageParserTests.ParsesWelcomeAndEvents),
     ("TwitchAuthService refreshes token with injected HTTP", TwitchAuthServiceTests.RefreshesTokenWithInjectedHttp),
+    ("EventSub dedup accepts first message", TwitchReliabilityTests.DedupAcceptsFirstMessage),
+    ("EventSub dedup ignores duplicate message ID", TwitchReliabilityTests.DedupIgnoresDuplicateMessageId),
+    ("EventSub dedup accepts identical payload with different IDs", TwitchReliabilityTests.DedupAcceptsDifferentIds),
+    ("EventSub dedup accepts expired ID", TwitchReliabilityTests.DedupAcceptsExpiredId),
+    ("EventSub dedup capacity remains bounded", TwitchReliabilityTests.DedupCapacityRemainsBounded),
+    ("EventSub keepalive keeps connection fresh", TwitchReliabilityTests.KeepaliveKeepsConnectionFresh),
+    ("EventSub notification counts as activity", TwitchReliabilityTests.NotificationCountsAsActivity),
+    ("EventSub missing keepalive becomes stale", TwitchReliabilityTests.MissingKeepaliveBecomesStale),
+    ("EventSub stale detection schedules one reconnect", TwitchReliabilityTests.StaleSchedulesOneReconnect),
+    ("EventSub shutdown does not reconnect", TwitchReliabilityTests.ShutdownDoesNotReconnect),
+    ("Twitch auth concurrent callers use one refresh", TwitchReliabilityTests.ConcurrentCallersUseOneRefresh),
+    ("Twitch auth waiters observe refreshed token", TwitchReliabilityTests.WaitersObserveRefreshedToken),
+    ("Twitch auth refresh failure propagates", TwitchReliabilityTests.RefreshFailurePropagates),
+    ("Twitch auth stale result does not overwrite newer token", TwitchReliabilityTests.StaleRefreshDoesNotOverwriteNewerToken),
+    ("EventSub required subscriptions succeed healthy", TwitchReliabilityTests.RequiredSubscriptionsSucceedHealthy),
+    ("EventSub required subscription failure degrades", TwitchReliabilityTests.RequiredSubscriptionFailureDegrades),
+    ("EventSub reports exact failed subscription types", TwitchReliabilityTests.ReportsExactFailedSubscriptionTypes),
+    ("EventSub optional subscription failure stays healthy", TwitchReliabilityTests.OptionalFailureStaysHealthy),
+    ("EventSub server reconnect preserves subscriptions", TwitchReliabilityTests.ServerReconnectPreservesSubscriptions),
+    ("EventSub successful recovery returns healthy", TwitchReliabilityTests.SuccessfulRecoveryReturnsHealthy),
     ("TwitchChatService sends chat API payload", TwitchChatServiceTests.SendsChatApiPayload),
     ("AlertDurationService resolves maximum positive duration", AlertDurationTests.ResolvesMaximumPositiveDuration),
     ("AlertDurationService clamps synchronized durations", AlertDurationTests.ClampsSynchronizedDurations),
@@ -1310,6 +1330,352 @@ static class TwitchAuthServiceTests
             {
                 Content = new StringContent(
                     """{"access_token":"new-token","refresh_token":"new-refresh","expires_in":120,"scope":["channel:read:redemptions"]}""")
+            };
+        }
+    }
+
+    private sealed class NullExternalLauncher : IExternalLauncherService
+    {
+        public void Open(string target)
+        {
+        }
+
+        public void Launch(string fileName, string arguments = "", string? workingDirectory = null)
+        {
+        }
+    }
+}
+
+static class TwitchReliabilityTests
+{
+    private static readonly DateTimeOffset TestNow = new(2026, 8, 29, 12, 0, 0, TimeSpan.Zero);
+
+    public static void DedupAcceptsFirstMessage()
+    {
+        var dedup = CreateDeduplicator(out _);
+        var executions = 0;
+
+        if (dedup.TryAccept("message-1"))
+        {
+            executions++;
+        }
+
+        TestAssert.Equal(1, executions);
+    }
+
+    public static void DedupIgnoresDuplicateMessageId()
+    {
+        var dedup = CreateDeduplicator(out _);
+        var executions = 0;
+        if (dedup.TryAccept("message-1")) executions++;
+        if (dedup.TryAccept("message-1")) executions++;
+
+        TestAssert.Equal(1, executions);
+    }
+
+    public static void DedupAcceptsDifferentIds()
+    {
+        var dedup = CreateDeduplicator(out _);
+        var identicalPayloadExecutions = 0;
+        if (dedup.TryAccept("message-1")) identicalPayloadExecutions++;
+        if (dedup.TryAccept("message-2")) identicalPayloadExecutions++;
+
+        TestAssert.Equal(2, identicalPayloadExecutions);
+    }
+
+    public static void DedupAcceptsExpiredId()
+    {
+        var dedup = CreateDeduplicator(out var time);
+        TestAssert.True(dedup.TryAccept("message-1"));
+
+        time.Advance(TimeSpan.FromMinutes(10));
+
+        TestAssert.True(dedup.TryAccept("message-1"));
+    }
+
+    public static void DedupCapacityRemainsBounded()
+    {
+        var time = new FixedTimeProvider(TestNow);
+        var dedup = new EventSubNotificationDeduplicator(time, TimeSpan.FromHours(1), capacity: 3);
+        TestAssert.True(dedup.TryAccept("message-1"));
+        TestAssert.True(dedup.TryAccept("message-2"));
+        TestAssert.True(dedup.TryAccept("message-3"));
+        TestAssert.True(dedup.TryAccept("message-4"));
+
+        TestAssert.Equal(3, dedup.Count);
+        TestAssert.True(dedup.TryAccept("message-1"));
+        TestAssert.Equal(3, dedup.Count);
+    }
+
+    public static void KeepaliveKeepsConnectionFresh()
+    {
+        var time = new FixedTimeProvider(TestNow);
+        var freshness = new EventSubConnectionFreshness(time, TimeSpan.FromSeconds(30), TimeSpan.FromSeconds(10));
+
+        time.Advance(TimeSpan.FromSeconds(25));
+        freshness.MarkMessageReceived();
+        time.Advance(TimeSpan.FromSeconds(25));
+
+        TestAssert.False(freshness.TryDetectStale());
+    }
+
+    public static void NotificationCountsAsActivity()
+    {
+        var time = new FixedTimeProvider(TestNow);
+        var freshness = new EventSubConnectionFreshness(time, TimeSpan.FromSeconds(30), TimeSpan.FromSeconds(10));
+
+        time.Advance(TimeSpan.FromSeconds(35));
+        freshness.MarkMessageReceived();
+        time.Advance(TimeSpan.FromSeconds(6));
+
+        TestAssert.False(freshness.TryDetectStale());
+        TestAssert.Equal(TimeSpan.FromSeconds(6), freshness.CurrentAge);
+    }
+
+    public static void MissingKeepaliveBecomesStale()
+    {
+        var time = new FixedTimeProvider(TestNow);
+        var freshness = new EventSubConnectionFreshness(time, TimeSpan.FromSeconds(30), TimeSpan.FromSeconds(10));
+
+        time.Advance(TimeSpan.FromSeconds(40));
+
+        TestAssert.True(freshness.TryDetectStale());
+    }
+
+    public static void StaleSchedulesOneReconnect()
+    {
+        var time = new FixedTimeProvider(TestNow);
+        var freshness = new EventSubConnectionFreshness(time, TimeSpan.FromSeconds(30), TimeSpan.FromSeconds(10));
+        time.Advance(TimeSpan.FromSeconds(41));
+
+        var firstDetection = freshness.TryDetectStale();
+        var secondDetection = freshness.TryDetectStale();
+        var decision = EventSubReconnectPolicy.Decide(EventSubReconnectCause.Stale);
+
+        TestAssert.True(firstDetection);
+        TestAssert.False(secondDetection);
+        TestAssert.True(decision.ShouldReconnect);
+        TestAssert.True(decision.CreateSubscriptions);
+    }
+
+    public static void ShutdownDoesNotReconnect()
+    {
+        var decision = EventSubReconnectPolicy.Decide(EventSubReconnectCause.Shutdown);
+
+        TestAssert.False(decision.ShouldReconnect);
+    }
+
+    public static void ConcurrentCallersUseOneRefresh()
+    {
+        var fixture = CreateRefreshFixture();
+        var tasks = Enumerable.Range(0, 8)
+            .Select(_ => fixture.Service.EnsureValidTokenAsync(fixture.Config, _ => { }, CancellationToken.None))
+            .ToArray();
+        fixture.Handler.Started.Task.GetAwaiter().GetResult();
+
+        fixture.Handler.Release.TrySetResult();
+        Task.WhenAll(tasks).GetAwaiter().GetResult();
+
+        TestAssert.Equal(1, fixture.Handler.RequestCount);
+        fixture.Http.Dispose();
+    }
+
+    public static void WaitersObserveRefreshedToken()
+    {
+        var fixture = CreateRefreshFixture();
+        var tasks = Enumerable.Range(0, 6)
+            .Select(async _ =>
+            {
+                await fixture.Service.EnsureValidTokenAsync(fixture.Config, _ => { }, CancellationToken.None);
+                return fixture.Config.Token.AccessToken;
+            })
+            .ToArray();
+        fixture.Handler.Started.Task.GetAwaiter().GetResult();
+
+        fixture.Handler.Release.TrySetResult();
+        var observedTokens = Task.WhenAll(tasks).GetAwaiter().GetResult();
+
+        TestAssert.True(observedTokens.All(token => token == "single-flight-token"));
+        fixture.Http.Dispose();
+    }
+
+    public static void RefreshFailurePropagates()
+    {
+        var fixture = CreateRefreshFixture(success: false);
+        var tasks = Enumerable.Range(0, 4)
+            .Select(_ => fixture.Service.EnsureValidTokenAsync(fixture.Config, _ => { }, CancellationToken.None))
+            .ToArray();
+        fixture.Handler.Started.Task.GetAwaiter().GetResult();
+        fixture.Handler.Release.TrySetResult();
+
+        var failures = 0;
+        foreach (var task in tasks)
+        {
+            try
+            {
+                task.GetAwaiter().GetResult();
+            }
+            catch (InvalidOperationException)
+            {
+                failures++;
+            }
+        }
+
+        TestAssert.Equal(4, failures);
+        TestAssert.Equal(1, fixture.Handler.RequestCount);
+        fixture.Http.Dispose();
+    }
+
+    public static void StaleRefreshDoesNotOverwriteNewerToken()
+    {
+        var fixture = CreateRefreshFixture();
+        var refresh = fixture.Service.EnsureValidTokenAsync(fixture.Config, _ => { }, CancellationToken.None);
+        fixture.Handler.Started.Task.GetAwaiter().GetResult();
+        var newerToken = new TwitchTokenInfo
+        {
+            AccessToken = "newer-token",
+            RefreshToken = "newer-refresh",
+            ExpiresAt = TestNow.AddHours(2)
+        };
+        fixture.Config.Token = newerToken;
+
+        fixture.Handler.Release.TrySetResult();
+        refresh.GetAwaiter().GetResult();
+
+        TestAssert.Same(newerToken, fixture.Config.Token);
+        TestAssert.Equal("newer-token", fixture.Config.Token.AccessToken);
+        fixture.Http.Dispose();
+    }
+
+    public static void RequiredSubscriptionsSucceedHealthy()
+    {
+        var summary = EventSubSubscriptionSummary.FromAttempts(
+        [
+            new("channel.follow", true, true, 202, "ok"),
+            new("channel.cheer", true, true, 202, "ok")
+        ]);
+
+        TestAssert.True(summary.AllRequiredSucceeded);
+        TestAssert.Equal(EventSubConnectionHealth.Connected, EventSubConnectionHealthResolver.FromSubscriptions(summary));
+    }
+
+    public static void RequiredSubscriptionFailureDegrades()
+    {
+        var summary = EventSubSubscriptionSummary.FromAttempts(
+        [
+            new("channel.follow", true, false, 403, "forbidden")
+        ]);
+
+        TestAssert.False(summary.AllRequiredSucceeded);
+        TestAssert.Equal(EventSubConnectionHealth.Degraded, EventSubConnectionHealthResolver.FromSubscriptions(summary));
+    }
+
+    public static void ReportsExactFailedSubscriptionTypes()
+    {
+        var summary = EventSubSubscriptionSummary.FromAttempts(
+        [
+            new("channel.follow", true, false, 403, "forbidden"),
+            new("channel.cheer", true, true, 202, "ok"),
+            new("channel.raid", true, false, 429, "rate limited")
+        ]);
+
+        TestAssert.Equal(2, summary.FailedRequiredTypes.Count);
+        TestAssert.Equal("channel.follow", summary.FailedRequiredTypes[0]);
+        TestAssert.Equal("channel.raid", summary.FailedRequiredTypes[1]);
+    }
+
+    public static void OptionalFailureStaysHealthy()
+    {
+        var summary = EventSubSubscriptionSummary.FromAttempts(
+        [
+            new("optional.test", false, false, 503, "unavailable")
+        ]);
+
+        TestAssert.True(summary.AllRequiredSucceeded);
+        TestAssert.Equal(1, summary.FailedOptionalTypes.Count);
+        TestAssert.Equal(EventSubConnectionHealth.Connected, EventSubConnectionHealthResolver.FromSubscriptions(summary));
+    }
+
+    public static void ServerReconnectPreservesSubscriptions()
+    {
+        var decision = EventSubReconnectPolicy.Decide(EventSubReconnectCause.ServerRequested);
+
+        TestAssert.True(decision.ShouldReconnect);
+        TestAssert.False(decision.CreateSubscriptions);
+        TestAssert.Equal(TimeSpan.Zero, decision.Delay);
+    }
+
+    public static void SuccessfulRecoveryReturnsHealthy()
+    {
+        var failed = EventSubSubscriptionSummary.FromAttempts(
+        [
+            new("channel.follow", true, false, 500, "failed")
+        ]);
+        var recovered = EventSubSubscriptionSummary.FromAttempts(
+        [
+            new("channel.follow", true, true, 202, "ok")
+        ]);
+
+        TestAssert.Equal(EventSubConnectionHealth.Degraded, EventSubConnectionHealthResolver.FromSubscriptions(failed));
+        TestAssert.Equal(EventSubConnectionHealth.Connected, EventSubConnectionHealthResolver.FromSubscriptions(recovered));
+    }
+
+    private static EventSubNotificationDeduplicator CreateDeduplicator(out FixedTimeProvider time)
+    {
+        time = new FixedTimeProvider(TestNow);
+        return new EventSubNotificationDeduplicator(time, TimeSpan.FromMinutes(10), capacity: 16);
+    }
+
+    private static RefreshFixture CreateRefreshFixture(bool success = true)
+    {
+        var time = new FixedTimeProvider(TestNow);
+        var handler = new ControlledRefreshHandler(success);
+        var http = new HttpClient(handler);
+        var service = new TwitchAuthService(
+            UiTextService.CreateDefault(),
+            new NullExternalLauncher(),
+            time,
+            http);
+        var config = TestConfig.CreateDefault();
+        config.TwitchClientId = "client-id";
+        config.Token = new TwitchTokenInfo
+        {
+            AccessToken = "expiring-token",
+            RefreshToken = "refresh-token",
+            ExpiresAt = TestNow.AddMinutes(1)
+        };
+        return new RefreshFixture(service, config, handler, http);
+    }
+
+    private sealed record RefreshFixture(
+        TwitchAuthService Service,
+        AppConfig Config,
+        ControlledRefreshHandler Handler,
+        HttpClient Http);
+
+    private sealed class ControlledRefreshHandler(bool success) : HttpMessageHandler
+    {
+        private int _requestCount;
+
+        public int RequestCount => Volatile.Read(ref _requestCount);
+
+        public TaskCompletionSource Started { get; } = new(TaskCreationOptions.RunContinuationsAsynchronously);
+
+        public TaskCompletionSource Release { get; } = new(TaskCreationOptions.RunContinuationsAsynchronously);
+
+        protected override async Task<HttpResponseMessage> SendAsync(
+            HttpRequestMessage request,
+            CancellationToken cancellationToken)
+        {
+            Interlocked.Increment(ref _requestCount);
+            Started.TrySetResult();
+            await Release.Task.WaitAsync(cancellationToken);
+            return new HttpResponseMessage(
+                success ? System.Net.HttpStatusCode.OK : System.Net.HttpStatusCode.Unauthorized)
+            {
+                Content = new StringContent(success
+                    ? """{"access_token":"single-flight-token","refresh_token":"single-flight-refresh","expires_in":3600,"scope":[]}"""
+                    : """{"message":"invalid refresh"}""")
             };
         }
     }

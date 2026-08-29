@@ -3,6 +3,8 @@ using NeoTwitch.Services;
 using NeoTwitch.Services.Activity;
 using NeoTwitch.Services.Alerts;
 using NeoTwitch.Services.Configuration;
+using NeoTwitch.Services.Configuration.Migrations;
+using NeoTwitch.Services.Configuration.Security;
 using NeoTwitch.Services.Dashboard;
 using NeoTwitch.Services.Diagnostics;
 using NeoTwitch.Services.Library;
@@ -42,6 +44,31 @@ var tests = new (string Name, Action Body)[]
     ("AppConfig default services keep optional integrations disabled", AppConfigTests.DefaultServicesKeepOptionalIntegrationsDisabled),
     ("AppConfigNormalizer trims and clamps loaded settings", AppConfigNormalizerTests.TrimsAndClampsLoadedSettings),
     ("AppConfigNormalizer migrates legacy rule audio paths", AppConfigNormalizerTests.MigratesLegacyRuleAudioPaths),
+    ("SettingsStore concurrent saves remain valid", ConfigurationIntegrityTests.ConcurrentSavesRemainValid),
+    ("SettingsStore concurrent saves use unique staging files", ConfigurationIntegrityTests.ConcurrentSavesUseUniqueStagingFiles),
+    ("SettingsStore loads valid primary", ConfigurationIntegrityTests.ValidPrimaryLoadsNormally),
+    ("SettingsStore recovers corrupt primary from backup", ConfigurationIntegrityTests.CorruptPrimaryRecoversFromBackup),
+    ("SettingsStore preserves corrupt primary and backup", ConfigurationIntegrityTests.CorruptPrimaryAndBackupRemainRecoverable),
+    ("SettingsStore ignores interrupted staging file", ConfigurationIntegrityTests.InterruptedStagingDoesNotReplacePrimary),
+    ("SettingsStore validation failure preserves primary", ConfigurationIntegrityTests.ValidationFailurePreservesPrimary),
+    ("Configuration legacy fixture migrates to schema one", ConfigurationIntegrityTests.LegacyFixtureMigratesToCurrentSchema),
+    ("Configuration current schema reload is idempotent", ConfigurationIntegrityTests.CurrentSchemaReloadIsIdempotent),
+    ("Configuration future schema is rejected", ConfigurationIntegrityTests.FutureSchemaIsRejected),
+    ("Configuration migration preserves user settings", ConfigurationIntegrityTests.MigrationPreservesUserSettings),
+    ("Configuration missing IDs are generated", ConfigurationIntegrityTests.MissingIdsAreGenerated),
+    ("Configuration duplicate rule IDs are repaired", ConfigurationIntegrityTests.DuplicateRuleIdsAreRepaired),
+    ("Configuration duplicate asset IDs are repaired", ConfigurationIntegrityTests.DuplicateAssetIdsAreRepaired),
+    ("Configuration valid unique IDs remain stable", ConfigurationIntegrityTests.ValidUniqueIdsRemainStable),
+    ("Configuration invalid references are repaired", ConfigurationIntegrityTests.UnambiguousReferencesAreRepaired),
+    ("Configuration ambiguous references are reported", ConfigurationIntegrityTests.AmbiguousReferencesAreReported),
+    ("SettingsStore saved secrets are protected", ConfigurationIntegrityTests.SavedSecretsAreNotPlaintext),
+    ("SettingsStore migrates legacy plaintext secrets", ConfigurationIntegrityTests.LegacyPlaintextSecretsMigrate),
+    ("SettingsStore failed secret migration preserves source", ConfigurationIntegrityTests.FailedSecretMigrationPreservesRecoverability),
+    ("SettingsStore backup secrets are protected", ConfigurationIntegrityTests.BackupDoesNotContainPlaintext),
+    ("SettingsStore export excludes secrets", ConfigurationIntegrityTests.ExportDoesNotContainSecrets),
+    ("Protected secret rejects invalid context", ConfigurationIntegrityTests.ProtectedSecretRejectsInvalidContext),
+    ("Corrupt protected secret requires reauthentication", ConfigurationIntegrityTests.CorruptProtectedSecretRequiresReauthentication),
+    ("Windows DPAPI protects current-user secret", ConfigurationIntegrityTests.WindowsDpapiRoundTrip),
     ("GlobalSettingsFormService applies normalized values", GlobalSettingsFormTests.AppliesNormalizedValues),
     ("EventRuleFilterService filters status and category", EventRuleFilterTests.FiltersStatusAndCategory),
     ("EventRuleFilterService searches editable text", EventRuleFilterTests.SearchesEditableText),
@@ -439,21 +466,21 @@ static class AppConfigNormalizerTests
 
     public static void MigratesLegacyRuleAudioPaths()
     {
-        var config = new AppConfig
-        {
-            Rules =
-            [
-                new EventRule
-                {
-                    Name = "Legacy audio",
-                    EventKind = TwitchEventKind.Follow,
-                    PlayAudio = true,
-                    AudioPath = @"C:\stream\follow.mp3"
-                }
-            ]
-        };
-
-        var normalized = AppConfigNormalizer.Normalize(config, Text, () => "migrated-audio-id");
+        const string fixture = """
+            {
+              "rules": [{
+                "id": "legacy-rule",
+                "name": "Legacy audio",
+                "eventKind": "Follow",
+                "playAudio": true,
+                "audioPath": "C:\\stream\\follow.mp3"
+              }]
+            }
+            """;
+        var options = new JsonSerializerOptions(JsonSerializerDefaults.Web);
+        options.Converters.Add(new System.Text.Json.Serialization.JsonStringEnumConverter());
+        var migrated = AppConfigMigrationService.DeserializeAndMigrate(fixture, options, () => "migrated-audio-id");
+        var normalized = AppConfigNormalizer.Normalize(migrated.Config, Text, () => "normalized-id");
 
         TestAssert.Equal(1, normalized.AudioLibrary.Count);
         TestAssert.Equal("migrated-audio-id", normalized.AudioLibrary[0].Id);
@@ -461,6 +488,542 @@ static class AppConfigNormalizerTests
         TestAssert.Equal(@"C:\stream\follow.mp3", normalized.AudioLibrary[0].FilePath);
         TestAssert.Equal(AudioSourceMode.Single, normalized.Rules[0].AudioSourceMode);
         TestAssert.Equal(normalized.AudioLibrary[0].Id, normalized.Rules[0].AudioAssetId);
+    }
+}
+
+static class ConfigurationIntegrityTests
+{
+    private static readonly IUiTextService Text = UiTextService.CreateDefault();
+    private static readonly DateTimeOffset Now = new(2026, 8, 29, 12, 0, 0, TimeSpan.Zero);
+
+    public static void ConcurrentSavesRemainValid()
+    {
+        using var fixture = new SettingsFixture();
+        using var store = fixture.CreateStore(new FakeSecretProtector("user"));
+        var tasks = Enumerable.Range(0, 16)
+            .Select(index =>
+            {
+                var config = TestConfig.CreateDefault();
+                config.TwitchClientId = $"client-{index}";
+                return store.SaveAsync(config);
+            })
+            .ToArray();
+
+        Task.WhenAll(tasks).GetAwaiter().GetResult();
+        var json = File.ReadAllText(fixture.Paths.SettingsPath);
+        using var document = JsonDocument.Parse(json);
+        TestAssert.Equal(1, document.RootElement.GetProperty("schemaVersion").GetInt32());
+        TestAssert.Contains("client-15", json);
+    }
+
+    public static void ConcurrentSavesUseUniqueStagingFiles()
+    {
+        using var fixture = new SettingsFixture();
+        var stagingIds = new System.Collections.Concurrent.ConcurrentBag<string>();
+        var nextId = 0;
+        string CreateStageId()
+        {
+            var id = $"stage-{Interlocked.Increment(ref nextId)}";
+            stagingIds.Add(id);
+            return id;
+        }
+
+        using var store = fixture.CreateStore(new FakeSecretProtector("user"), CreateStageId);
+        var tasks = Enumerable.Range(0, 8)
+            .Select(index =>
+            {
+                var config = TestConfig.CreateDefault();
+                config.SerialPort = $"COM{index + 1}";
+                return store.SaveAsync(config);
+            })
+            .ToArray();
+        Task.WhenAll(tasks).GetAwaiter().GetResult();
+
+        TestAssert.Equal(stagingIds.Count, stagingIds.Distinct(StringComparer.Ordinal).Count());
+        TestAssert.Equal(0, Directory.GetFiles(fixture.Root, "*.staging.*", SearchOption.AllDirectories).Length);
+    }
+
+    public static void ValidPrimaryLoadsNormally()
+    {
+        using var fixture = new SettingsFixture();
+        using var store = fixture.CreateStore(new FakeSecretProtector("user"));
+        var config = TestConfig.CreateDefault();
+        config.TwitchClientId = "primary-client";
+        store.Save(config);
+
+        var loaded = store.Load();
+
+        TestAssert.Equal("primary-client", loaded.TwitchClientId);
+        TestAssert.Equal<string?>(null, store.LastLoadError);
+    }
+
+    public static void CorruptPrimaryRecoversFromBackup()
+    {
+        using var fixture = new SettingsFixture();
+        using var store = fixture.CreateStore(new FakeSecretProtector("user"));
+        var backup = TestConfig.CreateDefault();
+        backup.TwitchClientId = "backup-client";
+        store.CreateProtectedBackup(backup, store.LatestBackupPath);
+        Directory.CreateDirectory(Path.GetDirectoryName(fixture.Paths.SettingsPath)!);
+        File.WriteAllText(fixture.Paths.SettingsPath, "{ corrupt");
+
+        var loaded = store.Load();
+
+        TestAssert.Equal("backup-client", loaded.TwitchClientId);
+        TestAssert.Contains("recuperó", store.LastLoadError);
+        using var recoveredPrimary = JsonDocument.Parse(File.ReadAllText(fixture.Paths.SettingsPath));
+        TestAssert.Equal("backup-client", recoveredPrimary.RootElement.GetProperty("twitchClientId").GetString());
+    }
+
+    public static void InterruptedStagingDoesNotReplacePrimary()
+    {
+        using var fixture = new SettingsFixture();
+        using var store = fixture.CreateStore(new FakeSecretProtector("user"));
+        var config = TestConfig.CreateDefault();
+        config.TwitchClientId = "valid-primary";
+        store.Save(config);
+        File.WriteAllText(Path.Combine(fixture.Root, ".settings.json.staging.interrupted"), "{ incomplete");
+
+        var loaded = store.Load();
+
+        TestAssert.Equal("valid-primary", loaded.TwitchClientId);
+    }
+
+    public static void CorruptPrimaryAndBackupRemainRecoverable()
+    {
+        using var fixture = new SettingsFixture();
+        Directory.CreateDirectory(fixture.Root);
+        const string corruptPrimary = "{ corrupt-primary";
+        const string corruptBackup = "{ corrupt-backup";
+        File.WriteAllText(fixture.Paths.SettingsPath, corruptPrimary);
+        File.WriteAllText(Path.Combine(fixture.Root, "settings.backup.json"), corruptBackup);
+        using var store = fixture.CreateStore(new FakeSecretProtector("user"));
+
+        _ = store.Load();
+        var saveBlocked = false;
+        try
+        {
+            store.Save(TestConfig.CreateDefault());
+        }
+        catch (InvalidOperationException)
+        {
+            saveBlocked = true;
+        }
+
+        TestAssert.True(saveBlocked);
+        TestAssert.Equal(corruptPrimary, File.ReadAllText(fixture.Paths.SettingsPath));
+        TestAssert.Equal(corruptBackup, File.ReadAllText(store.LatestBackupPath));
+    }
+
+    public static void ValidationFailurePreservesPrimary()
+    {
+        using var fixture = new SettingsFixture();
+        using (var goodStore = fixture.CreateStore(new FakeSecretProtector("user")))
+        {
+            var original = TestConfig.CreateDefault();
+            original.TwitchClientId = "old-config";
+            original.TwitchClientSecret = "old-secret";
+            goodStore.Save(original);
+        }
+
+        var originalJson = File.ReadAllText(fixture.Paths.SettingsPath);
+        using var brokenStore = fixture.CreateStore(new FakeSecretProtector("user") { CorruptOnProtect = true });
+        var replacement = TestConfig.CreateDefault();
+        replacement.TwitchClientId = "new-config";
+        replacement.TwitchClientSecret = "new-secret";
+        var failed = false;
+        try
+        {
+            brokenStore.Save(replacement);
+        }
+        catch (InvalidOperationException)
+        {
+            failed = true;
+        }
+
+        TestAssert.True(failed);
+        TestAssert.Equal(originalJson, File.ReadAllText(fixture.Paths.SettingsPath));
+    }
+
+    public static void LegacyFixtureMigratesToCurrentSchema()
+    {
+        const string legacy = """{"twitchClientId":"legacy-client","rules":[],"ledStrips":[]}""";
+        var migrated = AppConfigMigrationService.DeserializeAndMigrate(legacy, JsonOptions());
+
+        TestAssert.True(migrated.WasMigrated);
+        TestAssert.Equal(0, migrated.SourceSchemaVersion);
+        TestAssert.Equal(AppConfig.CurrentSchemaVersion, migrated.Config.SchemaVersion);
+    }
+
+    public static void CurrentSchemaReloadIsIdempotent()
+    {
+        const string current = """{"schemaVersion":1,"twitchClientId":"current-client","rules":[],"ledStrips":[]}""";
+        var first = AppConfigMigrationService.DeserializeAndMigrate(current, JsonOptions());
+        var serialized = JsonSerializer.Serialize(first.Config, JsonOptions());
+        var second = AppConfigMigrationService.DeserializeAndMigrate(serialized, JsonOptions());
+
+        TestAssert.False(first.WasMigrated);
+        TestAssert.False(second.WasMigrated);
+        TestAssert.Equal("current-client", second.Config.TwitchClientId);
+    }
+
+    public static void FutureSchemaIsRejected()
+    {
+        using var fixture = new SettingsFixture();
+        Directory.CreateDirectory(fixture.Root);
+        const string future = """{"schemaVersion":99,"twitchClientId":"future"}""";
+        File.WriteAllText(fixture.Paths.SettingsPath, future);
+        using var store = fixture.CreateStore(new FakeSecretProtector("user"));
+
+        var loaded = store.Load();
+
+        TestAssert.Contains("esquema 99", store.LastLoadError);
+        TestAssert.Equal(future, File.ReadAllText(fixture.Paths.SettingsPath));
+        TestAssert.False(loaded.TwitchClientId == "future");
+        var saveBlocked = false;
+        try
+        {
+            store.Save(TestConfig.CreateDefault());
+        }
+        catch (InvalidOperationException)
+        {
+            saveBlocked = true;
+        }
+
+        TestAssert.True(saveBlocked);
+        TestAssert.Equal(future, File.ReadAllText(fixture.Paths.SettingsPath));
+    }
+
+    public static void MigrationPreservesUserSettings()
+    {
+        const string legacy = """
+            {
+              "twitchClientId": "my-client",
+              "serialPort": "COM17",
+              "alertVolumePercent": 37,
+              "rules": [{"id":"rule-stable","name":"Mi alerta","eventKind":"Follow"}],
+              "ledStrips": []
+            }
+            """;
+        var migrated = AppConfigMigrationService.DeserializeAndMigrate(legacy, JsonOptions());
+        var normalized = AppConfigNormalizer.Normalize(migrated.Config, Text);
+
+        TestAssert.Equal("my-client", normalized.TwitchClientId);
+        TestAssert.Equal("COM17", normalized.SerialPort);
+        TestAssert.Equal(37, normalized.AlertVolumePercent);
+        TestAssert.Equal("rule-stable", normalized.Rules[0].Id);
+        TestAssert.Equal("Mi alerta", normalized.Rules[0].Name);
+    }
+
+    public static void MissingIdsAreGenerated()
+    {
+        var config = new AppConfig { Rules = [new EventRule { Id = "", Name = "Missing" }], LedStrips = [] };
+        var normalized = AppConfigNormalizer.Normalize(config, Text, () => "generated-rule");
+
+        TestAssert.Equal("generated-rule", normalized.Rules[0].Id);
+    }
+
+    public static void DuplicateRuleIdsAreRepaired()
+    {
+        var config = new AppConfig
+        {
+            Rules = [new EventRule { Id = "same" }, new EventRule { Id = "same" }],
+            LedStrips = []
+        };
+        var result = AppConfigNormalizer.NormalizeWithReport(config, Text, () => "new-rule");
+
+        TestAssert.Equal("same", result.Config.Rules[0].Id);
+        TestAssert.Equal("new-rule", result.Config.Rules[1].Id);
+    }
+
+    public static void DuplicateAssetIdsAreRepaired()
+    {
+        var config = new AppConfig
+        {
+            AudioLibrary = [new AudioAssetConfig { Id = "asset" }, new AudioAssetConfig { Id = "asset" }],
+            LedStrips = []
+        };
+        var result = AppConfigNormalizer.NormalizeWithReport(config, Text, () => "new-asset");
+
+        TestAssert.Equal("asset", result.Config.AudioLibrary[0].Id);
+        TestAssert.Equal("new-asset", result.Config.AudioLibrary[1].Id);
+    }
+
+    public static void ValidUniqueIdsRemainStable()
+    {
+        var config = new AppConfig
+        {
+            Rules = [new EventRule { Id = "rule-one" }],
+            AudioGroups = [new AudioGroupConfig { Id = "group-one" }],
+            AudioLibrary = [new AudioAssetConfig { Id = "asset-one", GroupId = "group-one" }],
+            LedStrips = [new LedStripConfig { Id = "strip-one" }]
+        };
+        var normalized = AppConfigNormalizer.Normalize(config, Text, () => "unused-id");
+
+        TestAssert.Equal("rule-one", normalized.Rules[0].Id);
+        TestAssert.Equal("group-one", normalized.AudioGroups[0].Id);
+        TestAssert.Equal("asset-one", normalized.AudioLibrary[0].Id);
+        TestAssert.Equal("strip-one", normalized.LedStrips[0].Id);
+    }
+
+    public static void UnambiguousReferencesAreRepaired()
+    {
+        var config = new AppConfig
+        {
+            AudioLibrary = [new AudioAssetConfig { Id = "asset", GroupId = "missing-group" }],
+            LedStrips = []
+        };
+        var result = AppConfigNormalizer.NormalizeWithReport(config, Text, () => "unused-id");
+
+        TestAssert.Equal("", result.Config.AudioLibrary[0].GroupId);
+        TestAssert.Equal(1, result.IntegrityReport.RepairedReferences.Count);
+    }
+
+    public static void AmbiguousReferencesAreReported()
+    {
+        var config = new AppConfig
+        {
+            AudioLibrary = [new AudioAssetConfig { Id = "duplicate" }, new AudioAssetConfig { Id = "duplicate" }],
+            Rules = [new EventRule { Id = "rule", AudioAssetId = "duplicate" }],
+            LedStrips = []
+        };
+        var result = AppConfigNormalizer.NormalizeWithReport(config, Text, () => "replacement");
+
+        TestAssert.Equal("", result.Config.Rules[0].AudioAssetId);
+        TestAssert.Equal(1, result.IntegrityReport.AmbiguousReferences.Count);
+        TestAssert.Contains("duplicate", result.IntegrityReport.AmbiguousReferences[0]);
+    }
+
+    public static void SavedSecretsAreNotPlaintext()
+    {
+        using var fixture = new SettingsFixture();
+        using var store = fixture.CreateStore(new FakeSecretProtector("user"));
+        var config = ConfigWithSecrets("saved");
+        store.Save(config);
+        var json = File.ReadAllText(fixture.Paths.SettingsPath);
+
+        AssertNoPlaintextSecrets(json, "saved");
+        TestAssert.Contains("protectedSecrets", json);
+    }
+
+    public static void LegacyPlaintextSecretsMigrate()
+    {
+        using var fixture = new SettingsFixture();
+        Directory.CreateDirectory(fixture.Root);
+        const string legacy = """
+            {
+              "twitchClientSecret":"legacy-client-secret",
+              "token":{"accessToken":"legacy-access","refreshToken":"legacy-refresh","scopes":[]},
+              "alexa":{"authToken":"legacy-alexa"},
+              "obs":{"password":"legacy-obs"},
+              "rules":[],"ledStrips":[]
+            }
+            """;
+        File.WriteAllText(fixture.Paths.SettingsPath, legacy);
+        using var store = fixture.CreateStore(new FakeSecretProtector("user"));
+
+        var loaded = store.Load();
+        var persisted = File.ReadAllText(fixture.Paths.SettingsPath);
+
+        TestAssert.Equal("legacy-access", loaded.Token.AccessToken);
+        TestAssert.Equal("legacy-obs", loaded.Obs.Password);
+        AssertNoPlaintextSecrets(persisted, "legacy");
+        TestAssert.Contains("protectedSecrets", persisted);
+    }
+
+    public static void FailedSecretMigrationPreservesRecoverability()
+    {
+        using var fixture = new SettingsFixture();
+        Directory.CreateDirectory(fixture.Root);
+        const string legacy = """{"twitchClientSecret":"recoverable-secret","rules":[],"ledStrips":[]}""";
+        File.WriteAllText(fixture.Paths.SettingsPath, legacy);
+        using var store = fixture.CreateStore(new FakeSecretProtector("user") { ThrowOnProtect = true });
+
+        var loaded = store.Load();
+
+        TestAssert.Equal("recoverable-secret", loaded.TwitchClientSecret);
+        TestAssert.Equal(legacy, File.ReadAllText(fixture.Paths.SettingsPath));
+        TestAssert.Contains("conservó", store.LastLoadError);
+    }
+
+    public static void BackupDoesNotContainPlaintext()
+    {
+        using var fixture = new SettingsFixture();
+        using var store = fixture.CreateStore(new FakeSecretProtector("user"));
+        store.Save(ConfigWithSecrets("first"));
+        store.Save(ConfigWithSecrets("second"));
+
+        var backup = File.ReadAllText(store.LatestBackupPath);
+        AssertNoPlaintextSecrets(backup, "first");
+        AssertNoPlaintextSecrets(backup, "second");
+        TestAssert.Contains("protectedSecrets", backup);
+    }
+
+    public static void ExportDoesNotContainSecrets()
+    {
+        using var fixture = new SettingsFixture();
+        using var store = fixture.CreateStore(new FakeSecretProtector("user"));
+        var exportPath = Path.Combine(fixture.Root, "portable-export.json");
+        store.Export(ConfigWithSecrets("export"), exportPath);
+        var json = File.ReadAllText(exportPath);
+
+        AssertNoPlaintextSecrets(json, "export");
+        TestAssert.False(json.Contains("fake:user", StringComparison.Ordinal));
+    }
+
+    public static void ProtectedSecretRejectsInvalidContext()
+    {
+        using var fixture = new SettingsFixture();
+        using (var firstUser = fixture.CreateStore(new FakeSecretProtector("user-a")))
+        {
+            firstUser.Save(ConfigWithSecrets("context"));
+        }
+
+        using var secondUser = fixture.CreateStore(new FakeSecretProtector("user-b"));
+        var loaded = secondUser.Load();
+
+        TestAssert.Equal("", loaded.Token.AccessToken);
+        TestAssert.True(secondUser.LastSecretFailures.Count > 0);
+    }
+
+    public static void CorruptProtectedSecretRequiresReauthentication()
+    {
+        using var fixture = new SettingsFixture();
+        Directory.CreateDirectory(fixture.Root);
+        const string corrupt = """
+            {
+              "schemaVersion":1,
+              "protectedSecrets":{"twitchAccessToken":"not-a-protected-value"},
+              "rules":[],"ledStrips":[]
+            }
+            """;
+        File.WriteAllText(fixture.Paths.SettingsPath, corrupt);
+        using var store = fixture.CreateStore(new FakeSecretProtector("user"));
+
+        var loaded = store.Load();
+
+        TestAssert.Equal("", loaded.Token.AccessToken);
+        TestAssert.Equal(1, store.LastSecretFailures.Count);
+        TestAssert.Contains("autenticarlas", store.LastLoadError);
+        var saveBlocked = false;
+        try
+        {
+            store.Save(loaded);
+        }
+        catch (InvalidOperationException)
+        {
+            saveBlocked = true;
+        }
+
+        TestAssert.True(saveBlocked);
+        TestAssert.Equal(corrupt, File.ReadAllText(fixture.Paths.SettingsPath));
+    }
+
+    public static void WindowsDpapiRoundTrip()
+    {
+        if (!OperatingSystem.IsWindows())
+        {
+            return;
+        }
+
+        var protector = new WindowsDpapiConfigurationSecretProtector();
+        const string secret = "dpapi-integration-fake-secret";
+        var protectedValue = protector.Protect("integration-test", secret);
+
+        TestAssert.False(protectedValue.Contains(secret, StringComparison.Ordinal));
+        TestAssert.Equal(secret, protector.Unprotect("integration-test", protectedValue));
+    }
+
+    private static JsonSerializerOptions JsonOptions()
+    {
+        var options = new JsonSerializerOptions(JsonSerializerDefaults.Web);
+        options.Converters.Add(new System.Text.Json.Serialization.JsonStringEnumConverter());
+        return options;
+    }
+
+    private static AppConfig ConfigWithSecrets(string prefix)
+    {
+        var config = TestConfig.CreateDefault();
+        config.TwitchClientSecret = $"{prefix}-client-secret";
+        config.Token.AccessToken = $"{prefix}-access-token";
+        config.Token.RefreshToken = $"{prefix}-refresh-token";
+        config.Alexa.AuthToken = $"{prefix}-alexa-token";
+        config.Obs.Password = $"{prefix}-obs-password";
+        return config;
+    }
+
+    private static void AssertNoPlaintextSecrets(string json, string prefix)
+    {
+        foreach (var suffix in new[] { "client-secret", "access-token", "refresh-token", "alexa-token", "obs-password" })
+        {
+            TestAssert.False(json.Contains($"{prefix}-{suffix}", StringComparison.Ordinal));
+        }
+    }
+
+    private sealed class SettingsFixture : IDisposable
+    {
+        public SettingsFixture()
+        {
+            Root = Path.Combine(Path.GetTempPath(), "NeoTwitchConfigTests", Guid.NewGuid().ToString("N"));
+            Paths = new SettingsStorePaths(
+                Path.Combine(Root, "settings.json"),
+                Path.Combine(Root, "backups"),
+                Path.Combine(Root, "legacy-settings.json"));
+        }
+
+        public string Root { get; }
+        public SettingsStorePaths Paths { get; }
+
+        public SettingsStore CreateStore(IConfigurationSecretProtector protector, Func<string>? stagingIdFactory = null) =>
+            new(Text, new FixedTimeProvider(Now), protector, Paths, stagingIdFactory);
+
+        public void Dispose()
+        {
+            var fullRoot = Path.GetFullPath(Root);
+            var expectedParent = Path.GetFullPath(Path.Combine(Path.GetTempPath(), "NeoTwitchConfigTests"));
+            if (fullRoot.StartsWith(expectedParent + Path.DirectorySeparatorChar, StringComparison.OrdinalIgnoreCase)
+                && Directory.Exists(fullRoot))
+            {
+                Directory.Delete(fullRoot, recursive: true);
+            }
+        }
+    }
+
+    private sealed class FakeSecretProtector(string context) : IConfigurationSecretProtector
+    {
+        public bool ThrowOnProtect { get; init; }
+        public bool CorruptOnProtect { get; init; }
+
+        public string Protect(string purpose, string plaintext)
+        {
+            if (string.IsNullOrEmpty(plaintext))
+            {
+                return "";
+            }
+
+            if (ThrowOnProtect)
+            {
+                throw new InvalidOperationException("Simulated protection failure.");
+            }
+
+            if (CorruptOnProtect)
+            {
+                return "corrupt";
+            }
+
+            return $"fake:{context}:{purpose}:{Convert.ToBase64String(Encoding.UTF8.GetBytes(plaintext))}";
+        }
+
+        public string Unprotect(string purpose, string protectedValue)
+        {
+            var prefix = $"fake:{context}:{purpose}:";
+            if (!protectedValue.StartsWith(prefix, StringComparison.Ordinal))
+            {
+                throw new CryptographicException("Invalid simulated protection context.");
+            }
+
+            return Encoding.UTF8.GetString(Convert.FromBase64String(protectedValue[prefix.Length..]));
+        }
     }
 }
 

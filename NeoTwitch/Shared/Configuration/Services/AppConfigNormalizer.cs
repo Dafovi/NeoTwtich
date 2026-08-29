@@ -10,7 +10,17 @@ public static class AppConfigNormalizer
 {
     public static AppConfig Normalize(AppConfig config, IUiTextService text, Func<string>? idFactory = null)
     {
+        return NormalizeWithReport(config, text, idFactory).Config;
+    }
+
+    public static AppConfigNormalizationResult NormalizeWithReport(
+        AppConfig config,
+        IUiTextService text,
+        Func<string>? idFactory = null)
+    {
         var createId = idFactory ?? (() => Guid.NewGuid().ToString("N"));
+        config.SchemaVersion = AppConfig.CurrentSchemaVersion;
+        config.ProtectedSecrets ??= new ProtectedConfigurationSecrets();
         config.TwitchClientId ??= "";
         config.TwitchClientSecret ??= "";
         config.Token ??= new TwitchTokenInfo();
@@ -58,7 +68,6 @@ public static class AppConfigNormalizer
         config.MaxQueuedDifferentRuleAlerts = Math.Clamp(config.MaxQueuedDifferentRuleAlerts, 0, ApplicationLimits.MaxQueuedAlerts);
         config.DifferentRuleQueueCooldownMs = Math.Clamp(config.DifferentRuleQueueCooldownMs, 0, ApplicationLimits.MaxAlertDurationMs);
         config.Rules = NormalizeRules(config.Rules, text.Get(UiTextKeys.ConfigurationFallbackRuleName), createId);
-        MigrateRuleAudioLibrary(config, createId);
         var defaults = DefaultAppConfigFactory.Create(text);
         config.LedStrips = NormalizeStrips(config.LedStrips, defaults.LedStrips, text.Get(UiTextKeys.ConfigurationFallbackLedStripName), createId);
         config.BackgroundTargetPins ??= "";
@@ -72,7 +81,8 @@ public static class AppConfigNormalizer
         config.BackgroundCycleMs = Math.Clamp(config.BackgroundCycleMs, ApplicationLimits.MinCycleMs, ApplicationLimits.MaxCycleMs);
         config.BackgroundStepMs = Math.Clamp(config.BackgroundStepMs, ApplicationLimits.MinStepMs, ApplicationLimits.MaxStepMs);
 
-        return config;
+        var integrityReport = AppConfigIdIntegrityService.Repair(config, createId);
+        return new AppConfigNormalizationResult(config, integrityReport);
     }
 
     private static string NormalizeBackgroundAlexaEventName(string? value, string fallback)
@@ -116,7 +126,6 @@ public static class AppConfigNormalizer
             rule.ChatMessageTemplate ??= "";
             rule.AlexaEventName ??= "";
             rule.TargetPins ??= "";
-            MigrateLegacyObsMedia(rule);
             if (rule.UseVirtualLights && !rule.VirtualLightsToObs && !rule.VirtualLightsToScreen)
             {
                 rule.VirtualLightsToObs = true;
@@ -155,7 +164,7 @@ public static class AppConfigNormalizer
         return rules;
     }
 
-    private static void MigrateLegacyObsMedia(EventRule rule)
+    internal static void MigrateLegacyObsMedia(EventRule rule)
     {
         rule.ObsMediaAssetId ??= "";
         rule.ObsMediaGroupId ??= "";
@@ -208,7 +217,7 @@ public static class AppConfigNormalizer
         rule.ObsMediaGroupId = "";
     }
 
-    private static void MigrateRuleAudioLibrary(AppConfig config, Func<string> idFactory)
+    internal static void MigrateRuleAudioLibrary(AppConfig config, Func<string> idFactory)
     {
         foreach (var rule in config.Rules)
         {

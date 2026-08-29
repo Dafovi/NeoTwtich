@@ -20,6 +20,20 @@ public partial class MainWindow
             AddLog(_text.Format(UiTextKeys.StartupPreviousSettingsReadFailureLog, _settingsStore.LastLoadError));
         }
 
+        if (_settingsStore.LastIntegrityWarnings.Count > 0)
+        {
+            AddLog(
+                $"Configuración: {_settingsStore.LastIntegrityWarnings.Count} referencia(s) ambigua(s) se desactivaron de forma segura.",
+                ActivityLogKind.Important);
+        }
+
+        if (_settingsStore.LastSecretFailures.Count > 0)
+        {
+            AddLog(
+                $"Configuración: {_settingsStore.LastSecretFailures.Count} credencial(es) protegida(s) requieren autenticación de nuevo.",
+                ActivityLogKind.Important);
+        }
+
         ApplyStartWithWindowsRegistration();
         _ = CheckForUpdatesAsync();
 

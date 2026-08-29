@@ -4,6 +4,10 @@ namespace NeoTwitch.Models;
 
 public sealed class AppConfig
 {
+    public const int CurrentSchemaVersion = 1;
+
+    public int SchemaVersion { get; set; } = CurrentSchemaVersion;
+    public ProtectedConfigurationSecrets ProtectedSecrets { get; set; } = new();
     public string TwitchClientId { get; set; } = "";
     public string TwitchClientSecret { get; set; } = "";
     public TwitchTokenInfo Token { get; set; } = new();
@@ -48,4 +52,13 @@ public sealed class AppConfig
     public int BackgroundBrightness { get; set; } = 40;
     public int BackgroundCycleMs { get; set; } = 120;
     public int BackgroundStepMs { get; set; } = 400;
+}
+
+public sealed class ProtectedConfigurationSecrets
+{
+    public string TwitchClientSecret { get; set; } = "";
+    public string TwitchAccessToken { get; set; } = "";
+    public string TwitchRefreshToken { get; set; } = "";
+    public string AlexaAuthToken { get; set; } = "";
+    public string ObsPassword { get; set; } = "";
 }

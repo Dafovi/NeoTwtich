@@ -1,4 +1,3 @@
-using System.IO;
 using System.Net.WebSockets;
 using System.Text;
 using System.Text.Json;
@@ -98,24 +97,25 @@ public sealed partial class ObsWebSocketService
     private async Task<JsonDocument> ReceiveJsonAsync(CancellationToken cancellationToken)
     {
         EnsureConnected();
+        return await ObsWebSocketFrameReader.ReceiveJsonAsync(
+            (buffer, token) => _socket!.ReceiveAsync(buffer, token),
+            AbortOversizedTransport,
+            _text.Get(UiTextKeys.ObsSocketClosed),
+            cancellationToken);
+    }
 
-        using var stream = new MemoryStream();
-        var buffer = new byte[8192];
-        WebSocketReceiveResult result;
-        do
+    private void AbortOversizedTransport()
+    {
+        var socket = _socket;
+        _socket = null;
+        if (socket is null)
         {
-            result = await _socket!.ReceiveAsync(buffer, cancellationToken);
-            if (result.MessageType == WebSocketMessageType.Close)
-            {
-                throw new InvalidOperationException(_text.Get(UiTextKeys.ObsSocketClosed));
-            }
-
-            stream.Write(buffer, 0, result.Count);
+            return;
         }
-        while (!result.EndOfMessage);
 
-        stream.Position = 0;
-        return await JsonDocument.ParseAsync(stream, cancellationToken: cancellationToken);
+        socket.Abort();
+        socket.Dispose();
+        ClearSnapshot();
     }
 
     private void EnsureConnected()

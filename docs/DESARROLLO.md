@@ -336,6 +336,16 @@ Las acciones pueden incluir:
 
 La duracion de la alerta usa la duracion mas larga entre medios y efectos configurados.
 
+### Ciclo de ejecución y cancelación
+
+Cada ejecución real crea un `AlertExecutionContext` distinto de la definición `EventRule` y del mensaje EventSub que la originó. Conserva un `ExecutionId` único, regla, ID EventSub opcional, slot de cola, origen, hora de cola/inicio y el token de cancelación. Los estados son `Starting`, `Running`, `Cancelling` y exactamente uno de `Completed`, `Cancelled` o `Failed`.
+
+Chat, Alexa, conexión/operaciones OBS, comandos de luces, luces virtuales y esperas reciben o respetan el token de la ejecución. Chat y Alexa se inician en paralelo con las salidas locales pero sus tareas quedan rastreadas y esperadas; sus excepciones no quedan fire-and-forget. Al detener una alerta se marca `Cancelling`, se cancela el token y no comienza ninguna acción todavía pendiente. Las operaciones de limpieza que deben deshacer un efecto ya aplicado —apagar luces, ocultar medios y restaurar escena/fondo— usan un token independiente porque deben intentarse incluso después de cancelar la ejecución.
+
+Una acción externa que falla se registra y, para Chat, Alexa y OBS, la alerta continúa con las demás salidas como hacía antes; el resultado terminal queda `Failed`. Una excepción no recuperable del coordinador cancela tareas todavía activas, ejecuta limpieza y también termina en `Failed`. Una acción externa completada es irreversible: cancelar más tarde no puede retirar un mensaje aceptado por Twitch ni un evento Alexa ya recibido.
+
+`AlertExecutionTracker` conserva solo las 50 ejecuciones más recientes y hasta 32 diagnósticos de acción por ejecución. Cada acción incluye el mismo `ExecutionId`, estado, inicio y duración obtenidos mediante `TimeProvider`. Las razones se normalizan y limitan a 256 caracteres; el trace no guarda cuerpos HTTP, tokens, contraseñas ni payloads de autenticación. Los logs visibles usan únicamente la forma corta del ID, mientras los diagnósticos internos conservan el ID completo.
+
 ## 11. Arduino
 
 Carpetas:
@@ -409,6 +419,8 @@ NeoTwitch/Features/Obs/
 Servicios principales:
 
 - `ObsWebSocketService`: conexion y requests al WebSocket de OBS.
+
+Cada mensaje WebSocket OBS se limita a 1,048,576 bytes (1 MiB). El contador se comprueba antes de escribir cada fragmento en memoria, por lo que un mensaje fragmentado se rechaza en cuanto supera el límite. La conexión se aborta y dispone inmediatamente, se limpia el snapshot OBS y se devuelve un error de protocolo acotado. Un mensaje de exactamente 1 MiB se acepta si contiene JSON válido.
 - `ObsOverlayService`: URL/estado para fuente de navegador.
 - Protocolos en `Services/Protocol`.
 

@@ -25,7 +25,7 @@ public partial class MainWindow
         }
     }
 
-    private async Task ConnectArduinoAsync()
+    private async Task ConnectArduinoAsync(CancellationToken cancellationToken = default)
     {
         if (!_config.ArduinoEnabled)
         {
@@ -45,8 +45,8 @@ public partial class MainWindow
 
         try
         {
-            await _lightController.ConfigureAsync(_config.SerialPort, _config.BaudRate, AddLog, CancellationToken.None);
-            await ConfirmArduinoConnectionAsync();
+            await _lightController.ConfigureAsync(_config.SerialPort, _config.BaudRate, AddLog, cancellationToken);
+            await ConfirmArduinoConnectionAsync(cancellationToken);
         }
         finally
         {
@@ -55,7 +55,7 @@ public partial class MainWindow
         }
     }
 
-    private async Task ConfirmArduinoConnectionAsync()
+    private async Task ConfirmArduinoConnectionAsync(CancellationToken cancellationToken = default)
     {
         if (!_config.ArduinoEnabled || !_lightController.HasOpenPort)
         {
@@ -68,17 +68,19 @@ public partial class MainWindow
             return;
         }
 
-        await _lightController.StopAsync(targets, AddLog, CancellationToken.None);
+        await _lightController.StopAsync(targets, AddLog, cancellationToken);
     }
 
-    private async Task StopLightsAsync(IReadOnlyList<LightStripTarget> targets)
+    private async Task StopLightsAsync(
+        IReadOnlyList<LightStripTarget> targets,
+        CancellationToken cancellationToken = default)
     {
         if (!_config.ArduinoEnabled || !_lightController.HasOpenPort)
         {
             return;
         }
 
-        await _lightController.StopAsync(targets, AddLog, CancellationToken.None);
+        await _lightController.StopAsync(targets, AddLog, cancellationToken);
         UpdateStatusText();
     }
 }

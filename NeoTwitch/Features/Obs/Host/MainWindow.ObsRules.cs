@@ -84,7 +84,7 @@ public partial class MainWindow
         {
             if (!_obsService.IsConnected)
             {
-                await ConnectObsAsync();
+                await ConnectObsAsync(cancellationToken);
             }
 
             if (!_obsService.IsConnected)
@@ -103,7 +103,7 @@ public partial class MainWindow
 
             ApplyObsResult(result);
             WriteObsOverlayState(plan.Asset, mediaKind, plan.Duration);
-            MarkObsMediaAssetUsed(mediaKind, plan.Asset);
+            await MarkObsMediaAssetUsedAsync(mediaKind, plan.Asset);
             AddLog(_text.Format(UiTextKeys.ObsRuleMediaShownLog, plan.Asset.DisplayName, plan.SceneName), ActivityLogKind.Obs);
 
             return ObsRulePlanService.BuildMediaHideRequest(
@@ -122,7 +122,7 @@ public partial class MainWindow
             CrashReporter.Log(ex, $"No se pudo mostrar medio OBS para la regla '{rule.Name}'.");
             AddLog($"OBS: {ex.Message}", ActivityLogKind.Important);
             UpdateObsStatusText();
-            return null;
+            throw;
         }
     }
 
@@ -168,14 +168,19 @@ public partial class MainWindow
             _previewRandom);
     }
 
-    private void MarkObsMediaAssetUsed(ObsMediaKind kind, MediaAssetConfig asset)
+    private async Task MarkObsMediaAssetUsedAsync(ObsMediaKind kind, MediaAssetConfig asset)
     {
         if (!Dispatcher.CheckAccess())
         {
-            _ = Dispatcher.InvokeAsync(() => MarkObsMediaAssetUsed(kind, asset));
+            await Dispatcher.InvokeAsync(() => MarkObsMediaAssetUsed(kind, asset));
             return;
         }
 
+        MarkObsMediaAssetUsed(kind, asset);
+    }
+
+    private void MarkObsMediaAssetUsed(ObsMediaKind kind, MediaAssetConfig asset)
+    {
         LibraryAssetUsageService.MarkMediaUsed(asset, _timeProvider);
         SaveConfig();
         RefreshMediaLibraryView(kind == ObsMediaKind.Image ? MediaLibraryKind.Image : MediaLibraryKind.Video);
@@ -191,7 +196,7 @@ public partial class MainWindow
                 await Task.Delay(remaining, cancellationToken);
             }
 
-            await HideRuleObsMediaAsync(request, CancellationToken.None);
+            await HideRuleObsMediaAsync(request, cancellationToken);
         }
         catch (OperationCanceledException)
         {
@@ -208,7 +213,7 @@ public partial class MainWindow
 
         if (!_obsService.IsConnected)
         {
-            await ConnectObsAsync();
+            await ConnectObsAsync(cancellationToken);
         }
 
         if (!_obsService.IsConnected)

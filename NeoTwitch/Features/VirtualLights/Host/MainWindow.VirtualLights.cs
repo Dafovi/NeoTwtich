@@ -28,6 +28,10 @@ public partial class MainWindow
                 _virtualLightsOverlayService.WriteState(command, duration);
                 await ShowVirtualLightsBrowserSourceAsync(command, duration, cancellationToken);
             }
+            catch (OperationCanceledException) when (cancellationToken.IsCancellationRequested)
+            {
+                throw;
+            }
             catch (Exception ex)
             {
                 AddLog($"Luces virtuales OBS: {ex.Message}", ActivityLogKind.Important);
@@ -41,6 +45,10 @@ public partial class MainWindow
             {
                 var screen = _virtualScreenService.ResolveScreen(rule.VirtualLightsScreenId);
                 await _virtualLightsScreenOverlayService.ShowAsync(command, screen);
+            }
+            catch (OperationCanceledException) when (cancellationToken.IsCancellationRequested)
+            {
+                throw;
             }
             catch (Exception ex)
             {
@@ -65,7 +73,7 @@ public partial class MainWindow
 
         if (!_obsService.IsConnected)
         {
-            await ConnectObsAsync();
+            await ConnectObsAsync(cancellationToken);
         }
 
         if (!_obsService.IsConnected)
@@ -87,6 +95,10 @@ public partial class MainWindow
             var canvas = await _obsService.GetCanvasSizeAsync(cancellationToken);
             width = canvas.Width;
             height = canvas.Height;
+        }
+        catch (OperationCanceledException) when (cancellationToken.IsCancellationRequested)
+        {
+            throw;
         }
         catch (Exception ex)
         {

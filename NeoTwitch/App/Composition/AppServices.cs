@@ -32,6 +32,7 @@ public sealed class AppServices
         DashboardSummaryService dashboardSummary,
         RuleSimulationService ruleSimulation,
         AlertQueueService alertQueue,
+        AlertExecutionTracker alertExecutionTracker,
         IDialogService dialog,
         IFilePickerService filePicker,
         IExternalLauncherService externalLauncher,
@@ -58,6 +59,7 @@ public sealed class AppServices
         DashboardSummary = dashboardSummary;
         RuleSimulation = ruleSimulation;
         AlertQueue = alertQueue;
+        AlertExecutionTracker = alertExecutionTracker;
         Dialog = dialog;
         FilePicker = filePicker;
         ExternalLauncher = externalLauncher;
@@ -106,6 +108,8 @@ public sealed class AppServices
 
     public AlertQueueService AlertQueue { get; }
 
+    public AlertExecutionTracker AlertExecutionTracker { get; }
+
     public IDialogService Dialog { get; }
 
     public IFilePickerService FilePicker { get; }
@@ -143,6 +147,7 @@ public sealed class AppServices
             new DashboardSummaryService(),
             new RuleSimulationService(text),
             new AlertQueueService(timeProvider),
+            new AlertExecutionTracker(timeProvider),
             new DialogService(),
             new FilePickerService(),
             externalLauncher,

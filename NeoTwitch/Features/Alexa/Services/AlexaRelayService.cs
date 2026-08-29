@@ -117,10 +117,10 @@ public sealed class AlexaRelayService
         request.Content = new StringContent(json, Encoding.UTF8, "application/json");
 
         using var response = await _http.SendAsync(request, cancellationToken);
-        var responseText = await response.Content.ReadAsStringAsync(cancellationToken);
         if (!response.IsSuccessStatusCode)
         {
-            throw new InvalidOperationException(_text.Format(UiTextKeys.AlexaRelayResponseFailure, (int)response.StatusCode, responseText));
+            throw new InvalidOperationException(
+                _text.Format(UiTextKeys.AlexaRelayResponseFailure, (int)response.StatusCode, "detalle remoto omitido"));
         }
     }
 

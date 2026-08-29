@@ -66,6 +66,7 @@ public partial class MainWindow
     private CancellationTokenSource? _backgroundApplyDebounce;
     private CancellationTokenSource? _twitchSubscriptionRefreshDebounce;
     private CancellationTokenSource? _currentEffectCts;
+    private Services.Alerts.AlertExecutionScope? _currentAlertExecution;
     private string _eventSubscriptionSignature = "";
     private bool _hasShownTrayNotice;
     private int _ruleLedPreviewStep;

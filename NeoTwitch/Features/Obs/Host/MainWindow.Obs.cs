@@ -108,7 +108,7 @@ public partial class MainWindow
         }
     }
 
-    private async Task ConnectObsAsync()
+    private async Task ConnectObsAsync(CancellationToken cancellationToken = default)
     {
         if (!_config.Obs.Enabled)
         {
@@ -123,7 +123,7 @@ public partial class MainWindow
 
         try
         {
-            var result = await _obsService.ConnectAsync(_config.Obs, CancellationToken.None);
+            var result = await _obsService.ConnectAsync(_config.Obs, cancellationToken);
             ApplyObsResult(result);
             AddLog(
                 _text.Format(

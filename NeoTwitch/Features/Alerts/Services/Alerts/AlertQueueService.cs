@@ -79,7 +79,7 @@ public sealed class AlertQueueService
                 return null;
             }
 
-            var slot = new QueuedAlertSlot(_idFactory(), rule.Id, rule.Name, twitchEvent.Kind);
+            var slot = new QueuedAlertSlot(_idFactory(), rule.Id, rule.Name, twitchEvent.Kind, now);
             _pendingSlots.Add(slot);
             reason = "";
             return slot;

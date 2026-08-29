@@ -19,7 +19,7 @@ public partial class MainWindow
         {
             if (!_obsService.IsConnected)
             {
-                await ConnectObsAsync();
+                await ConnectObsAsync(cancellationToken);
             }
 
             if (!_obsService.IsConnected)
@@ -54,7 +54,7 @@ public partial class MainWindow
             CrashReporter.Log(ex, $"No se pudo enviar escena OBS para la regla '{rule.Name}'.");
             AddLog($"OBS: {ex.Message}", ActivityLogKind.Important);
             UpdateObsStatusText();
-            return null;
+            throw;
         }
     }
 

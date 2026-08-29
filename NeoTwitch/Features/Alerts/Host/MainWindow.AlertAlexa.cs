@@ -6,7 +6,10 @@ namespace NeoTwitch;
 
 public partial class MainWindow
 {
-    private async Task SendRuleAlexaEventAsync(EventRule rule, TwitchEvent twitchEvent)
+    private async Task SendRuleAlexaEventAsync(
+        EventRule rule,
+        TwitchEvent twitchEvent,
+        CancellationToken cancellationToken)
     {
         if (!rule.SendAlexaEvent || !_config.Alexa.IsConfigured)
         {
@@ -15,15 +18,15 @@ public partial class MainWindow
 
         try
         {
-            await _alexaRelayService.SendRuleEventAsync(_config, rule, twitchEvent, CancellationToken.None);
+            cancellationToken.ThrowIfCancellationRequested();
+            await _alexaRelayService.SendRuleEventAsync(_config, rule, twitchEvent, cancellationToken);
             _alexaRelayConnected = true;
             AddLog($"Alexa: evento enviado para '{rule.Name}'.", ActivityLogKind.Alexa);
         }
-        catch (Exception ex)
+        catch
         {
             _alexaRelayConnected = false;
-            CrashReporter.Log(ex, $"No se pudo enviar evento Alexa para la regla '{rule.Name}'.");
-            AddLog($"Alexa: {ex.Message}", ActivityLogKind.Important);
+            throw;
         }
         finally
         {

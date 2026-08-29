@@ -6,7 +6,10 @@ namespace NeoTwitch;
 
 public partial class MainWindow
 {
-    private async Task SendRuleChatMessageAsync(EventRule rule, TwitchEvent twitchEvent)
+    private async Task SendRuleChatMessageAsync(
+        EventRule rule,
+        TwitchEvent twitchEvent,
+        CancellationToken cancellationToken)
     {
         if (!rule.SendChatMessage)
         {
@@ -19,17 +22,10 @@ public partial class MainWindow
             return;
         }
 
-        try
-        {
-            await _authService.EnsureValidTokenAsync(_config, AddLog, CancellationToken.None);
-            SaveConfig();
-            await _chatService.SendMessageAsync(_config, message, CancellationToken.None);
-            AddLog($"Chat enviado: {message}", ActivityLogKind.Twitch);
-        }
-        catch (Exception ex)
-        {
-            CrashReporter.Log(ex, $"No se pudo enviar mensaje de chat para la regla '{rule.Name}'.");
-            AddLog($"Chat: {ex.Message}");
-        }
+        cancellationToken.ThrowIfCancellationRequested();
+        await _authService.EnsureValidTokenAsync(_config, AddLog, cancellationToken);
+        SaveConfig();
+        await _chatService.SendMessageAsync(_config, message, cancellationToken);
+        AddLog($"Chat enviado: {message}", ActivityLogKind.Twitch);
     }
 }

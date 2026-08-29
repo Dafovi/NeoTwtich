@@ -8,6 +8,13 @@ public partial class MainWindow
 {
     private async Task StopCurrentEffectAsync()
     {
+        var execution = _currentAlertExecution;
+        execution?.RequestCancellation("User requested stop");
+        if (execution is not null)
+        {
+            AddLog($"Alerta [{execution.Context.ShortExecutionId}]: cancelacion solicitada.", ActivityLogKind.Important);
+        }
+
         _currentEffectCts?.Cancel();
         _currentPlayback?.Stop();
         await StopLightsAsync(LightCommand.ResolveTargets(_config, ""));

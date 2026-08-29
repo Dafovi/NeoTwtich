@@ -46,11 +46,11 @@ public sealed class TwitchChatService : IDisposable
             TwitchEventSubProtocol.ContentTypeJson);
 
         using var response = await _http.SendAsync(request, cancellationToken);
-        var responseText = await response.Content.ReadAsStringAsync(cancellationToken);
 
         if (!response.IsSuccessStatusCode)
         {
-            throw new InvalidOperationException(_text.Format(UiTextKeys.TwitchChatSendFailure, responseText));
+            throw new InvalidOperationException(
+                _text.Format(UiTextKeys.TwitchChatSendFailure, $"HTTP {(int)response.StatusCode}"));
         }
     }
 

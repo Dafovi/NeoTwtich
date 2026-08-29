@@ -20,6 +20,17 @@ public partial class MainWindow
         _alertQueue.MarkStarted(queueSlot);
         var effectCts = new CancellationTokenSource();
         _currentEffectCts = effectCts;
+        var execution = _alertExecutionTracker.Begin(
+            rule.Id,
+            rule.Name,
+            twitchEvent.EventSubMessageId,
+            queueSlot?.Id ?? "",
+            twitchEvent.Kind.ToString(),
+            queueSlot?.QueuedAt ?? _timeProvider.GetUtcNow(),
+            effectCts.Token);
+        _currentAlertExecution = execution;
+        execution.MarkRunning();
+        AddLog($"Alerta [{execution.Context.ShortExecutionId}]: inicia regla '{rule.Name}'.", ActivityLogKind.Event);
         UpdateRuleTestButtonState();
         var wasCancelled = false;
         var shouldRestoreBackground = false;
@@ -29,23 +40,49 @@ public partial class MainWindow
         _currentObsRestore = null;
         _currentObsMediaHides.Clear();
         _currentObsCleanedByStop = false;
+        List<Task> externalActionTasks = [];
+        List<Task> startedActionTasks = [];
 
         try
         {
             if (sendChatMessage)
             {
-                _ = SendRuleChatMessageAsync(rule, twitchEvent);
+                var chatTask = RunObservedAlertActionAsync(
+                    execution,
+                    "TwitchChat",
+                    token => SendRuleChatMessageAsync(rule, twitchEvent, token),
+                    "Twitch chat request failed");
+                externalActionTasks.Add(chatTask);
+                startedActionTasks.Add(chatTask);
             }
 
             if (sendAlexaEvent)
             {
-                _ = SendRuleAlexaEventAsync(rule, twitchEvent);
+                var alexaTask = RunObservedAlertActionAsync(
+                    execution,
+                    "Alexa",
+                    token => SendRuleAlexaEventAsync(rule, twitchEvent, token),
+                    "Alexa request failed");
+                externalActionTasks.Add(alexaTask);
+                startedActionTasks.Add(alexaTask);
             }
 
             // OBS can be reconnecting or unavailable. Start its work now, but never make
             // the serial command wait for it: local alerts must remain responsive.
-            var obsSceneTask = SendRuleObsSceneAsync(rule, effectCts.Token);
-            var obsMediaTask = SendRuleObsMediaAsync(rule, effectCts.Token);
+            var obsSceneTask = RunObservedAlertActionAsync(
+                execution,
+                "OBS.Scene",
+                token => SendRuleObsSceneAsync(rule, token),
+                "OBS scene action failed",
+                fallback: (ObsSceneRestoreRequest?)null);
+            var obsMediaTask = RunObservedAlertActionAsync(
+                execution,
+                "OBS.Media",
+                token => SendRuleObsMediaAsync(rule, token),
+                "OBS media action failed",
+                fallback: (IReadOnlyList<ObsMediaHideRequest>)[]);
+            startedActionTasks.Add(obsSceneTask);
+            startedActionTasks.Add(obsMediaTask);
 
             AudioPlayback? playback = null;
             AudioAssetConfig? playbackAsset = null;
@@ -55,7 +92,10 @@ public partial class MainWindow
                 {
                     playbackAsset = ResolveRuleAudioAsset(rule);
                     var audioPath = playbackAsset?.FilePath ?? rule.AudioPath;
-                    playback = await _audioPlayer.PrepareAsync(audioPath, _config.AlertVolumePercent, AddLog);
+                    playback = await execution.RunActionAsync(
+                        "Audio.Prepare",
+                        _ => _audioPlayer.PrepareAsync(audioPath, _config.AlertVolumePercent, AddLog),
+                        "Audio preparation failed");
                     _currentPlayback = playback;
                     if (playbackAsset is not null)
                     {
@@ -86,22 +126,28 @@ public partial class MainWindow
             {
                 if (plan.ShouldReconnectArduino)
                 {
-                    await ConnectArduinoAsync();
+                    await ConnectArduinoAsync(effectCts.Token);
                 }
 
                 shouldRestoreBackground = plan.ShouldRestoreBackground;
-                await StopLightsAsync(plan.AllLightTargets);
-                await Task.Delay(LightStopSettleMs);
+                await StopLightsAsync(plan.AllLightTargets, effectCts.Token);
+                await Task.Delay(LightStopSettleMs, effectCts.Token);
 
                 var ruleCommand = plan.LightCommand;
                 if (ruleCommand is not null)
                 {
-                    var sent = await _lightController.SendAsync(ruleCommand, AddLog, CancellationToken.None);
+                    var sent = await execution.RunActionAsync(
+                        "Lights.Start",
+                        token => _lightController.SendAsync(ruleCommand, AddLog, token),
+                        "Light command failed");
                     if (!sent && !effectCts.IsCancellationRequested)
                     {
                         AddLog("Arduino: reconectando para reenviar la alerta.", ActivityLogKind.Important);
-                        await ConnectArduinoAsync();
-                        sent = await _lightController.SendAsync(ruleCommand, AddLog, CancellationToken.None);
+                        await ConnectArduinoAsync(effectCts.Token);
+                        sent = await execution.RunActionAsync(
+                            "Lights.Retry",
+                            token => _lightController.SendAsync(ruleCommand, AddLog, token),
+                            "Light retry failed");
                     }
 
                     UpdateStatusText();
@@ -125,40 +171,131 @@ public partial class MainWindow
                 obsMediaHideTasks.Add(HideRuleObsMediaAfterDelayAsync(obsMediaHide, effectCts.Token));
             }
 
-            virtualLightsDuration = await StartRuleVirtualLightsAsync(
-                rule,
-                plan.SynchronizedDurationMs,
-                effectCts.Token);
+            virtualLightsDuration = await execution.RunActionAsync(
+                "VirtualLights.Start",
+                token => StartRuleVirtualLightsAsync(rule, plan.SynchronizedDurationMs, token),
+                "Virtual lights action failed");
+
+            await Task.WhenAll(externalActionTasks);
+            effectCts.Token.ThrowIfCancellationRequested();
 
             var command = plan.LightCommand;
-            await AlertEffectWaitService.WaitAsync(playback, command, obsMediaHides, effectCts.Token, virtualLightsDuration);
+            await execution.RunActionAsync(
+                "Effects.Wait",
+                token => AlertEffectWaitService.WaitAsync(playback, command, obsMediaHides, token, virtualLightsDuration),
+                "Effect wait failed");
 
             if (command is not null)
             {
-                await StopLightsAsync(plan.RuleLightTargets);
+                await StopLightsAsync(plan.RuleLightTargets, effectCts.Token);
                 AddLog($"Luces: {DisplayNameService.For(rule.Pattern, _text)} por {command.DurationMs} ms para {DisplayNameService.For(twitchEvent.Kind, _text)}.");
             }
         }
         catch (OperationCanceledException)
         {
             wasCancelled = true;
-            AddLog("Prueba detenida.");
+            execution.RequestCancellation("User or host cancellation requested");
+            AddLog($"Alerta [{execution.Context.ShortExecutionId}]: cancelada.", ActivityLogKind.Important);
         }
         catch (Exception ex)
         {
-            CrashReporter.Log(ex, $"Error ejecutando la regla '{rule.Name}'.");
-            AddLog($"Regla '{rule.Name}': {ex.Message}");
+            execution.Fail($"Execution failed ({ex.GetType().Name})");
+            effectCts.Cancel();
+            CrashReporter.Log(ex, $"Error en alerta {execution.Context.ExecutionId} para la regla '{rule.Name}'.");
+            AddLog($"Alerta [{execution.Context.ShortExecutionId}]: fallo la regla '{rule.Name}'.", ActivityLogKind.Important);
         }
         finally
         {
-            await CleanupRuleExecutionAsync(
-                effectCts,
-                queueSlot,
-                shouldRestoreBackground,
-                wasCancelled,
-                obsRestore,
-                obsMediaHides,
-                obsMediaHideTasks);
+            try
+            {
+                await Task.WhenAll(startedActionTasks);
+            }
+            catch (OperationCanceledException) when (effectCts.IsCancellationRequested)
+            {
+                // Cancellation is recorded per action and on the execution trace.
+            }
+            catch (Exception ex)
+            {
+                execution.Fail($"Tracked action failed ({ex.GetType().Name})");
+            }
+
+            try
+            {
+                await CleanupRuleExecutionAsync(
+                    effectCts,
+                    queueSlot,
+                    shouldRestoreBackground,
+                    wasCancelled,
+                    obsRestore,
+                    obsMediaHides,
+                    obsMediaHideTasks);
+            }
+            catch (Exception ex)
+            {
+                execution.Fail($"Cleanup failed ({ex.GetType().Name})");
+                CrashReporter.Log(ex, $"Fallo de limpieza en alerta {execution.Context.ExecutionId}.");
+                AddLog($"Alerta [{execution.Context.ShortExecutionId}]: fallo la limpieza.", ActivityLogKind.Important);
+            }
+            finally
+            {
+                execution.Finish(wasCancelled ? "Execution cancelled" : "Execution finished");
+                if (ReferenceEquals(_currentAlertExecution, execution))
+                {
+                    _currentAlertExecution = null;
+                }
+
+                AddLog(
+                    $"Alerta [{execution.Context.ShortExecutionId}]: termina en estado {execution.Trace.State}.",
+                    execution.Trace.State == AlertExecutionState.Completed
+                        ? ActivityLogKind.Event
+                        : ActivityLogKind.Important);
+            }
+        }
+    }
+
+    private async Task RunObservedAlertActionAsync(
+        AlertExecutionScope execution,
+        string actionType,
+        Func<CancellationToken, Task> action,
+        string failureReason)
+    {
+        try
+        {
+            await execution.RunActionAsync(actionType, action, failureReason);
+        }
+        catch (OperationCanceledException) when (execution.Context.CancellationToken.IsCancellationRequested)
+        {
+            AddLog($"Alerta [{execution.Context.ShortExecutionId}] {actionType}: cancelada.", ActivityLogKind.Important);
+            throw;
+        }
+        catch (Exception ex)
+        {
+            CrashReporter.Log(ex, $"Alerta {execution.Context.ExecutionId}: fallo la accion {actionType}.");
+            AddLog($"Alerta [{execution.Context.ShortExecutionId}] {actionType}: fallo.", ActivityLogKind.Important);
+        }
+    }
+
+    private async Task<T> RunObservedAlertActionAsync<T>(
+        AlertExecutionScope execution,
+        string actionType,
+        Func<CancellationToken, Task<T>> action,
+        string failureReason,
+        T fallback)
+    {
+        try
+        {
+            return await execution.RunActionAsync(actionType, action, failureReason);
+        }
+        catch (OperationCanceledException) when (execution.Context.CancellationToken.IsCancellationRequested)
+        {
+            AddLog($"Alerta [{execution.Context.ShortExecutionId}] {actionType}: cancelada.", ActivityLogKind.Important);
+            throw;
+        }
+        catch (Exception ex)
+        {
+            CrashReporter.Log(ex, $"Alerta {execution.Context.ExecutionId}: fallo la accion {actionType}.");
+            AddLog($"Alerta [{execution.Context.ShortExecutionId}] {actionType}: fallo.", ActivityLogKind.Important);
+            return fallback;
         }
     }
 

@@ -16,20 +16,28 @@ public partial class MainWindow
         IReadOnlyCollection<ObsMediaHideRequest> obsMediaHides,
         IReadOnlyCollection<Task> obsMediaHideTasks)
     {
-        ClearCurrentPlayback(effectCts);
-        await ClearVirtualLightsEffectAsync();
-        await RestoreBackgroundAfterRuleAsync(shouldRestoreBackground, wasCancelled);
-        await CleanupRuleObsMediaAsync(wasCancelled, obsMediaHides, obsMediaHideTasks);
-
-        if (!_currentObsCleanedByStop)
+        try
         {
-            await RestoreRuleObsSceneAsync(obsRestore, wasCancelled);
-        }
+            ClearCurrentPlayback(effectCts);
+            await ClearVirtualLightsEffectAsync();
+            await RestoreBackgroundAfterRuleAsync(shouldRestoreBackground, wasCancelled);
+            await CleanupRuleObsMediaAsync(wasCancelled, obsMediaHides, obsMediaHideTasks);
 
-        ClearCurrentObsRuleState(obsRestore, obsMediaHides);
-        effectCts.Dispose();
-        _alertQueue.MarkFinished(queueSlot);
-        _effectGate.Release();
+            if (!_currentObsCleanedByStop)
+            {
+                await RestoreRuleObsSceneAsync(obsRestore, wasCancelled);
+            }
+
+            ClearCurrentObsRuleState(obsRestore, obsMediaHides);
+        }
+        finally
+        {
+            ClearCurrentPlayback(effectCts);
+            ClearCurrentObsRuleState(obsRestore, obsMediaHides);
+            effectCts.Dispose();
+            _alertQueue.MarkFinished(queueSlot);
+            _effectGate.Release();
+        }
     }
 
     private void ClearCurrentPlayback(CancellationTokenSource effectCts)

@@ -5,9 +5,7 @@ param(
 
     [string]$Runtime = "",
 
-    [switch]$Clean,
-
-    [switch]$SkipSmokeTest
+    [switch]$Clean
 )
 
 $ErrorActionPreference = "Stop"
@@ -34,55 +32,59 @@ function Invoke-DotNet {
 }
 
 function Resolve-BuiltAppExecutable {
+    param([string]$Configuration)
+
     $projectDirectory = Split-Path -Parent $AppProject
-    $configuredPath = Join-Path $projectDirectory "bin\$DebugConfiguration\net10.0-windows\$($BuildConfig.appExecutable)"
+    $configuredPath = Join-Path $projectDirectory "bin\$Configuration\net10.0-windows\$($BuildConfig.appExecutable)"
     if (Test-Path -LiteralPath $configuredPath) {
         return (Resolve-Path -LiteralPath $configuredPath).Path
     }
 
-    $buildOutput = Join-Path $projectDirectory "bin\$DebugConfiguration"
+    $buildOutput = Join-Path $projectDirectory "bin\$Configuration"
     $candidate = Get-ChildItem -LiteralPath $buildOutput -Recurse -Filter $BuildConfig.appExecutable -ErrorAction SilentlyContinue |
         Sort-Object LastWriteTime -Descending |
         Select-Object -First 1
 
     if ($null -eq $candidate) {
-        throw "No encontre el ejecutable de debug para la prueba de arranque."
+        throw "No encontre el ejecutable de $Configuration para la prueba de arranque."
     }
 
     return $candidate.FullName
 }
 
 function Invoke-AppSmokeTest {
-    if ($SkipSmokeTest -or $env:NEOTWITCH_SKIP_SMOKE_TEST -eq "1") {
-        Write-Host "Smoke test omitido." -ForegroundColor Yellow
-        return
-    }
+    param([string]$Configuration)
 
     $processName = [System.IO.Path]::GetFileNameWithoutExtension($BuildConfig.appExecutable)
     $existingProcess = Get-Process -Name $processName -ErrorAction SilentlyContinue
     if ($existingProcess) {
-        Write-Warning "Smoke test omitido porque Neo Twitch ya esta abierto."
-        return
+        throw "No se puede verificar el arranque mientras Neo Twitch ya esta abierto. Cierra la app y vuelve a ejecutar la verificacion."
     }
 
-    $exe = Resolve-BuiltAppExecutable
-    $crashLog = Join-Path $env:APPDATA "NeoTwitch\crash.log"
-    $previousCrashWrite = if (Test-Path -LiteralPath $crashLog) {
-        (Get-Item -LiteralPath $crashLog).LastWriteTimeUtc
-    } else {
-        $null
-    }
+    $exe = Resolve-BuiltAppExecutable $Configuration
+    $smokeProfile = Join-Path $ArtifactRoot "smoke-profile"
+    New-Item -ItemType Directory -Path $smokeProfile -Force | Out-Null
+    $crashLog = Join-Path $smokeProfile "NeoTwitch\crash.log"
 
     Write-Host "Smoke test: $exe" -ForegroundColor Cyan
-    $process = Start-Process -FilePath $exe -ArgumentList @("--debug", "--no-autoconnect", "--no-start-hidden") -PassThru
+    $previousAppData = $env:APPDATA
+    $previousLocalAppData = $env:LOCALAPPDATA
+    try {
+        $env:APPDATA = $smokeProfile
+        $env:LOCALAPPDATA = $smokeProfile
+        $process = Start-Process -FilePath $exe -ArgumentList @("--debug", "--safe-mode", "--no-autoconnect", "--no-start-hidden") -PassThru
+    }
+    finally {
+        $env:APPDATA = $previousAppData
+        $env:LOCALAPPDATA = $previousLocalAppData
+    }
 
     try {
         Start-Sleep -Seconds 5
 
         $crashChanged = $false
         if (Test-Path -LiteralPath $crashLog) {
-            $currentCrashWrite = (Get-Item -LiteralPath $crashLog).LastWriteTimeUtc
-            $crashChanged = $null -eq $previousCrashWrite -or $currentCrashWrite -gt $previousCrashWrite
+            $crashChanged = $true
         }
 
         if ($crashChanged) {
@@ -105,6 +107,26 @@ function Invoke-AppSmokeTest {
     }
 
     Write-Host "Smoke test listo: la app inicio sin crash de arranque." -ForegroundColor Green
+}
+
+function Invoke-TestSuite {
+    param(
+        [string]$Configuration,
+        [switch]$NoBuild,
+        [switch]$NoRestore
+    )
+
+    $parameters = @{ Configuration = $Configuration }
+    if ($NoBuild) { $parameters.NoBuild = $true }
+    if ($NoRestore) { $parameters.NoRestore = $true }
+    & (Join-Path $PSScriptRoot "test.ps1") @parameters
+}
+
+function Invoke-Verification {
+    Invoke-DotNet @("restore", $Solution, "--locked-mode")
+    Invoke-DotNet @("build", $Solution, "-c", $ReleaseConfiguration, "--no-restore")
+    Invoke-TestSuite -Configuration $ReleaseConfiguration -NoBuild -NoRestore
+    Invoke-AppSmokeTest $ReleaseConfiguration
 }
 
 function Publish-Portable {
@@ -183,12 +205,10 @@ switch ($Mode) {
         Invoke-DotNet @("build", $InstallerProject, "-c", $ReleaseConfiguration)
     }
     "Test" {
-        Invoke-DotNet @("run", "--project", $TestProject, "-c", $DebugConfiguration)
+        Invoke-TestSuite -Configuration $DebugConfiguration
     }
     "Verify" {
-        Invoke-DotNet @("run", "--project", $TestProject, "-c", $DebugConfiguration)
-        Invoke-DotNet @("build", $Solution, "-c", $DebugConfiguration)
-        Invoke-AppSmokeTest
+        Invoke-Verification
     }
     "Portable" {
         Publish-Portable $ArtifactRoot
@@ -200,7 +220,7 @@ switch ($Mode) {
         Publish-Installer $ArtifactRoot
     }
     "FullRelease" {
-        Invoke-DotNet @("run", "--project", $TestProject, "-c", $ReleaseConfiguration)
+        Invoke-Verification
         Publish-Portable $ArtifactRoot
         Publish-SelfContained $ArtifactRoot
         Publish-Installer $ArtifactRoot

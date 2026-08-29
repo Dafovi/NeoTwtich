@@ -5,6 +5,7 @@
   "appProject": "NeoTwitch/NeoTwitch.csproj",
   "installerProject": "NeoTwitch.Installer/NeoTwitch.Installer.csproj",
   "testProject": "NeoTwitch.Tests/NeoTwitch.Tests.csproj",
+  "minimumDiscoveredTests": 200,
   "defaultRuntime": "win-x64",
   "debugConfiguration": "Debug",
   "releaseConfiguration": "Release",

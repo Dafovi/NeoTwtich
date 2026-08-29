@@ -515,6 +515,8 @@ Si el usuario escribe `--target` o selecciona una carpeta no vacía que no cumpl
 
 ## 18. Builds
 
+Instala el SDK indicado por `global.json`. El repositorio fija `10.0.400` y usa `latestPatch`: permite parches de seguridad dentro de la feature band 10.0.4xx, pero evita saltos silenciosos a otra feature band o version principal.
+
 Comandos:
 
 ```powershell
@@ -566,7 +568,11 @@ El instalador descarga primero el manifiesto y la firma, valida la firma con la 
 
 La primera migración desde una versión cuyo instalador todavía no aplica estas reglas requiere que el usuario obtenga por un canal confiable el nuevo instalador que ya contiene la clave pública. El código antiguo no puede protegerse retroactivamente.
 
-`Verify` debe ser el comando de confianza antes de subir cambios grandes, porque compila y ejecuta tests.
+`Verify` es el comando canonico antes de subir cambios grandes. Restaura, compila toda la solucion en Release, ejecuta la suite mediante `dotnet test`, valida el resultado TRX y hace un smoke test aislado de la app. Si Neo Twitch ya esta abierto, falla con un diagnostico en vez de omitir silenciosamente el smoke test.
+
+`FullRelease` ejecuta primero exactamente esa verificacion. Solo publica artifacts si build, tests, conteo minimo y smoke test aprobaron; `release.ps1` agrega despues la firma. El smoke test demuestra que el ejecutable Release permanece activo cinco segundos y no crea `crash.log` en un perfil temporal aislado. No sustituye automatizacion completa de UI ni pruebas con Twitch, OBS o Arduino reales.
+
+GitHub Actions ejecuta `Verify` en `windows-latest`, usando el SDK de `global.json`, y conserva el TRX de Release como artifact. Tambien ejecuta `git diff --check`.
 
 ## 19. Tests
 
@@ -576,17 +582,25 @@ Proyecto:
 NeoTwitch.Tests/
 ```
 
-Comando:
+El proyecto usa MSTest con versiones resueltas en `NeoTwitch.Tests/packages.lock.json`. Cada uno de los casos heredados se descubre con su nombre de comportamiento; los tests nuevos pueden usar clases y metodos MSTest normales. `Verify` restaura en modo bloqueado para detectar cualquier cambio de dependencias no versionado.
+
+Flujo directo reproducible:
 
 ```powershell
-dotnet test .\NeoTwitch.Tests\NeoTwitch.Tests.csproj
+dotnet restore .\NeoTwitch.slnx
+dotnet build .\NeoTwitch.slnx -c Release --no-restore
+dotnet test .\NeoTwitch.slnx -c Release --no-build --no-restore
 ```
 
-O por script:
+Flujo con proteccion contra cero tests:
 
 ```powershell
 .\scripts\build.ps1 -Mode Test
+.\scripts\test.ps1 -Configuration Release
+.\scripts\build.ps1 -Mode Verify
 ```
+
+`scripts/test.ps1` inspecciona el TRX, exige que todos los tests descubiertos se ejecuten y compara el total con `minimumDiscoveredTests` de `build.config.json`. Por eso una ejecucion con cero tests no puede producir una validacion verde.
 
 ## 20. Donde Cambiar Cosas
 

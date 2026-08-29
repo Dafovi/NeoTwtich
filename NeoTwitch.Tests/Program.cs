@@ -31,9 +31,25 @@ using NeoTwitch.ViewModels.Settings;
 using NeoTwitch.ViewModels.Shell;
 using NeoTwitch.ViewModels.Status;
 using NeoTwitch.ViewModels.Ui;
+using Microsoft.VisualStudio.TestTools.UnitTesting;
+using System.Reflection;
 
-var tests = new (string Name, Action Body)[]
+[TestClass]
+public sealed class ExistingTestCatalog
 {
+public static IEnumerable<object[]> Cases => Tests.Select(test => new object[] { test.Name });
+
+[TestMethod]
+[DynamicData(nameof(Cases), DynamicDataDisplayName = nameof(GetDisplayName))]
+public void ExistingCasePasses(string name)
+{
+    TestsByName[name]();
+}
+
+public static string GetDisplayName(MethodInfo methodInfo, object[] data) => (string)data[0];
+
+private static readonly (string Name, Action Body)[] Tests =
+[
     ("ConfigurationItemFactory creates inactive action defaults", ConfigurationFactoryTests.CreateRuleUsesSafeDefaults),
     ("ConfigurationItemFactory suggests first available pin", ConfigurationFactoryTests.CreateLedStripSuggestsFirstAvailablePin),
     ("ConfigurationItemFactory duplicates led strip values", ConfigurationFactoryTests.DuplicateLedStripCopiesValues),
@@ -257,40 +273,11 @@ var tests = new (string Name, Action Body)[]
     ("RuleTestValidationService reports non blocking issues", RuleTestValidationTests.ReportsNonBlockingIssues),
     ("RuleSimulationService normalizes chat command matching", RuleSimulationTests.MatchesChatCommandWithNormalization),
     ("RuleSimulationService builds representative test events", RuleSimulationTests.BuildsRepresentativeEvents)
-};
+];
 
-var failures = 0;
-
-foreach (var test in tests)
-{
-    try
-    {
-        test.Body();
-        Console.ForegroundColor = ConsoleColor.Green;
-        Console.WriteLine($"PASS {test.Name}");
-    }
-    catch (Exception ex)
-    {
-        failures++;
-        Console.ForegroundColor = ConsoleColor.Red;
-        Console.WriteLine($"FAIL {test.Name}");
-        Console.ResetColor();
-        Console.WriteLine(ex.Message);
-    }
-    finally
-    {
-        Console.ResetColor();
-    }
+private static readonly IReadOnlyDictionary<string, Action> TestsByName = Tests
+    .ToDictionary(test => test.Name, test => test.Body, StringComparer.Ordinal);
 }
-
-if (failures > 0)
-{
-    Console.Error.WriteLine($"{failures} test(s) fallaron.");
-    return 1;
-}
-
-Console.WriteLine($"{tests.Length} test(s) pasaron.");
-return 0;
 
 static class AppConfigTests
 {

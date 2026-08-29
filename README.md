@@ -93,13 +93,20 @@ Los archivos exportados pueden incluir tokens, URLs y secretos privados. Tratalo
 
 ## Desarrollo
 
-La version central se define en `Directory.Build.props` y la configuracion de builds en `build.config.json`.
+La version central se define en `Directory.Build.props` y la configuracion de builds en `build.config.json`. El SDK requerido se fija en `global.json` (`10.0.400`, con avance solo al ultimo parche de la misma feature band).
 
-Comandos principales:
+Validacion local canonica:
 
 ```powershell
-.\scripts\build.ps1 -Mode Debug
+dotnet restore .\NeoTwitch.slnx
+dotnet build .\NeoTwitch.slnx -c Release --no-restore
+dotnet test .\NeoTwitch.slnx -c Release --no-build --no-restore
 .\scripts\build.ps1 -Mode Verify
+```
+
+`Verify` valida el TRX y exige un minimo significativo de tests descubiertos; despues ejecuta el smoke test aislado de arranque. Para preparar artifacts:
+
+```powershell
 .\scripts\build.ps1 -Mode FullRelease -Clean
 .\scripts\release.ps1 -Version 2.2.4 -SigningKeyPath "D:\secure\neo-twitch-release-private.pem" -Clean
 ```

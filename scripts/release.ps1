@@ -17,6 +17,8 @@ if (-not (Test-Path -LiteralPath $publicKeyPath)) {
     throw "Falta $publicKeyPath. Configura y versiona solamente la clave publica antes de preparar un release."
 }
 
+& (Join-Path $PSScriptRoot "validate-release-trust.ps1")
+
 if (-not (Test-Path -LiteralPath $SigningKeyPath)) {
     throw "No existe la clave privada indicada: $SigningKeyPath"
 }

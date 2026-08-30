@@ -51,8 +51,8 @@ internal sealed class ReleaseIntegrityVerifier
         _publicKeyPem = publicKeyPem;
     }
 
-    public static ReleaseIntegrityVerifier CreateProduction() =>
-        new(ReleaseTrustStore.LoadPublicKeyPem());
+    public static ReleaseIntegrityVerifier CreateProduction()
+        => new(ReleaseTrustStore.LoadPublicKeyPem());
 
     public TrustedReleaseManifest VerifyManifest(
         byte[]? manifestBytes,
@@ -265,6 +265,26 @@ internal sealed class ReleaseIntegrityVerifier
         [property: JsonPropertyName("file")] string? File,
         [property: JsonPropertyName("sha256")] string? Sha256,
         [property: JsonPropertyName("size")] long? Size);
+}
+
+public static class ReleaseTrustValidation
+{
+    public static void ValidateProduction()
+    {
+        _ = ReleaseIntegrityVerifier.CreateProduction();
+        var publicKeyPem = ReleaseTrustStore.LoadPublicKeyPem();
+        if (string.IsNullOrWhiteSpace(publicKeyPem))
+        {
+            throw new InvalidOperationException("El instalador no contiene la clave pública de producción.");
+        }
+
+        using var verifier = ECDsa.Create();
+        verifier.ImportFromPem(publicKeyPem);
+        if (verifier.KeySize != 256)
+        {
+            throw new CryptographicException("La clave pública incrustada no usa ECDSA P-256.");
+        }
+    }
 }
 
 internal static class ReleaseTrustStore

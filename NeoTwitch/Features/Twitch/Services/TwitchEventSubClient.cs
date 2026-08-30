@@ -1,6 +1,5 @@
 using System.Net.WebSockets;
 using System.IO;
-using System.Text;
 using System.Text.Json;
 using NeoTwitch.Models;
 using NeoTwitch.Services.Text;
@@ -20,6 +19,7 @@ public sealed class TwitchEventSubClient : IDisposable, IAsyncDisposable
     private readonly bool _ownsSubscriptionRegistrar;
     private readonly TimeProvider _timeProvider;
     private readonly EventSubNotificationDeduplicator _deduplicator;
+    private readonly Func<IEventSubWebSocket> _socketFactory;
     private readonly object _lifecycleSync = new();
     private readonly object _healthSync = new();
     private CancellationTokenSource? _cts;
@@ -41,6 +41,20 @@ public sealed class TwitchEventSubClient : IDisposable, IAsyncDisposable
         TwitchEventSubSubscriptionRegistrar? subscriptionRegistrar = null,
         TimeProvider? timeProvider = null,
         EventSubNotificationDeduplicator? deduplicator = null)
+        : this(authService, getConfig, saveConfig, log, text, subscriptionRegistrar, timeProvider, deduplicator, () => new EventSubWebSocket())
+    {
+    }
+
+    internal TwitchEventSubClient(
+        TwitchAuthService authService,
+        Func<AppConfig> getConfig,
+        Action saveConfig,
+        Action<string> log,
+        IUiTextService text,
+        TwitchEventSubSubscriptionRegistrar? subscriptionRegistrar,
+        TimeProvider? timeProvider,
+        EventSubNotificationDeduplicator? deduplicator,
+        Func<IEventSubWebSocket> socketFactory)
     {
         _authService = authService;
         _getConfig = getConfig;
@@ -52,6 +66,7 @@ public sealed class TwitchEventSubClient : IDisposable, IAsyncDisposable
         _ownsSubscriptionRegistrar = subscriptionRegistrar is null;
         _timeProvider = timeProvider ?? TimeProvider.System;
         _deduplicator = deduplicator ?? new EventSubNotificationDeduplicator(_timeProvider);
+        _socketFactory = socketFactory;
     }
 
     public event Func<TwitchEvent, CancellationToken, Task>? EventReceivedAsync;
@@ -158,6 +173,7 @@ public sealed class TwitchEventSubClient : IDisposable, IAsyncDisposable
 
         while (!cancellationToken.IsCancellationRequested)
         {
+            IEventSubWebSocket? activeSocket = null;
             try
             {
                 SetHealth(
@@ -168,7 +184,8 @@ public sealed class TwitchEventSubClient : IDisposable, IAsyncDisposable
                 await _authService.EnsureValidTokenAsync(config, _log, cancellationToken);
                 _saveConfig();
 
-                using var socket = new ClientWebSocket();
+                IEventSubWebSocket socket = _socketFactory();
+                activeSocket = socket;
                 _log(_text.Get(UiTextKeys.TwitchEventSubConnectingLog));
                 await socket.ConnectAsync(new Uri(url), cancellationToken);
 
@@ -192,21 +209,38 @@ public sealed class TwitchEventSubClient : IDisposable, IAsyncDisposable
                 }
 
                 ApplySubscriptionHealth(sessionId, freshness.LastMessageAt, subscriptionSummary);
-                var outcome = await ReadMessagesAsync(socket, sessionId, freshness, cancellationToken);
-                if (outcome.Cause == EventSubReconnectCause.ServerRequested)
+                while (!cancellationToken.IsCancellationRequested)
                 {
+                    var outcome = await ReadMessagesAsync(socket, sessionId, freshness, cancellationToken);
+                    if (outcome.Cause != EventSubReconnectCause.ServerRequested)
+                    {
+                        break;
+                    }
+
                     url = outcome.ReconnectUrl
                         ?? throw new InvalidOperationException("Twitch solicitó reconexión sin reconnect_url.");
-                    var decision = EventSubReconnectPolicy.Decide(outcome.Cause);
-                    createSubscriptions = decision.CreateSubscriptions;
-                    reconnecting = true;
-                    SetHealth(
-                        EventSubConnectionHealth.Reconnecting,
-                        sessionId,
-                        freshness.LastMessageAt,
-                        subscriptionSummary.FailedRequiredTypes,
-                        "Twitch solicitó migrar la sesión");
-                    continue;
+                    SetHealth(EventSubConnectionHealth.Reconnecting, sessionId, freshness.LastMessageAt,
+                        subscriptionSummary.FailedRequiredTypes, "Twitch solicitó migrar la sesión");
+
+                    var migration = await MigrateSessionAsync(socket, sessionId, freshness, url, cancellationToken);
+                    if (!migration.Succeeded)
+                    {
+                        var oldOutcome = await migration.OldReader!;
+                        if (oldOutcome.Cause == EventSubReconnectCause.ServerRequested)
+                        {
+                            url = oldOutcome.ReconnectUrl ?? url;
+                            continue;
+                        }
+
+                        break;
+                    }
+
+                    socket = migration.Socket!;
+                    activeSocket = socket;
+                    sessionId = migration.SessionId!;
+                    freshness = migration.Freshness!;
+                    ApplySubscriptionHealth(sessionId, freshness.LastMessageAt, subscriptionSummary);
+                    await CloseAndDisposeAsync(migration.OldSocket!);
                 }
 
                 var closeDecision = EventSubReconnectPolicy.Decide(EventSubReconnectCause.NormalClose);
@@ -254,6 +288,13 @@ public sealed class TwitchEventSubClient : IDisposable, IAsyncDisposable
                         : $"Reintento tras error transitorio: {ex.Message}");
                 await Task.Delay(decision.Delay, _timeProvider, cancellationToken);
             }
+            finally
+            {
+                if (activeSocket is not null)
+                {
+                    await CloseAndDisposeAsync(activeSocket);
+                }
+            }
         }
 
         SetHealth(EventSubConnectionHealth.Disconnected, reason: "Cierre solicitado por la aplicación");
@@ -278,7 +319,7 @@ public sealed class TwitchEventSubClient : IDisposable, IAsyncDisposable
     }
 
     private async Task<EventSubReceiveOutcome> ReadMessagesAsync(
-        ClientWebSocket socket,
+        IEventSubWebSocket socket,
         string sessionId,
         EventSubConnectionFreshness freshness,
         CancellationToken cancellationToken)
@@ -358,7 +399,7 @@ public sealed class TwitchEventSubClient : IDisposable, IAsyncDisposable
     }
 
     private async Task<string?> ReceiveTextWithWatchdogAsync(
-        ClientWebSocket socket,
+        IEventSubWebSocket socket,
         string sessionId,
         EventSubConnectionFreshness freshness,
         CancellationToken cancellationToken)
@@ -404,7 +445,7 @@ public sealed class TwitchEventSubClient : IDisposable, IAsyncDisposable
         catch (OperationCanceledException)
         {
         }
-        catch (WebSocketException)
+        catch (Exception ex) when (ex is WebSocketException or ObjectDisposedException or InvalidOperationException)
         {
         }
 
@@ -413,7 +454,7 @@ public sealed class TwitchEventSubClient : IDisposable, IAsyncDisposable
     }
 
     private static async Task<string?> ReceiveWelcomeAsync(
-        ClientWebSocket socket,
+        IEventSubWebSocket socket,
         CancellationToken cancellationToken)
     {
         using var timeoutCts = CancellationTokenSource.CreateLinkedTokenSource(cancellationToken);
@@ -544,10 +585,81 @@ public sealed class TwitchEventSubClient : IDisposable, IAsyncDisposable
         }
     }
 
-    private static async Task<string?> ReceiveTextAsync(ClientWebSocket socket, CancellationToken cancellationToken)
+    internal async Task<EventSubMigrationResult> MigrateSessionAsync(
+        IEventSubWebSocket oldSocket,
+        string oldSessionId,
+        EventSubConnectionFreshness oldFreshness,
+        string reconnectUrl,
+        CancellationToken cancellationToken)
+    {
+        var overlapCts = CancellationTokenSource.CreateLinkedTokenSource(cancellationToken);
+        var oldReader = ReadMessagesAsync(oldSocket, oldSessionId, oldFreshness, overlapCts.Token);
+        var newSocket = _socketFactory();
+        try
+        {
+            await newSocket.ConnectAsync(new Uri(reconnectUrl), cancellationToken);
+            var welcome = await ReceiveWelcomeAsync(newSocket, cancellationToken)
+                ?? throw new InvalidOperationException(_text.Get(UiTextKeys.TwitchEventSubClosedBeforeWelcome));
+            var session = _messageParser.ReadSessionInfo(welcome);
+            var freshness = new EventSubConnectionFreshness(_timeProvider, session.KeepaliveTimeout);
+            freshness.MarkMessageReceived();
+
+            overlapCts.Cancel();
+            await ObserveCanceledOverlapAsync(oldReader);
+            overlapCts.Dispose();
+            return EventSubMigrationResult.Success(newSocket, oldSocket, session.SessionId, freshness);
+        }
+        catch (OperationCanceledException) when (cancellationToken.IsCancellationRequested)
+        {
+            overlapCts.Cancel();
+            await ObserveCanceledOverlapAsync(oldReader);
+            overlapCts.Dispose();
+            await newSocket.DisposeAsync();
+            throw;
+        }
+        catch (Exception ex)
+        {
+            await newSocket.DisposeAsync();
+            _log($"EventSub: la migración no pudo establecer la nueva sesión; se conserva la anterior ({ex.Message}).");
+            _ = oldReader.ContinueWith(_ => overlapCts.Dispose(), CancellationToken.None,
+                TaskContinuationOptions.ExecuteSynchronously, TaskScheduler.Default);
+            return EventSubMigrationResult.Failure(oldReader);
+        }
+    }
+
+    private static async Task ObserveCanceledOverlapAsync(Task<EventSubReceiveOutcome> oldReader)
+    {
+        try
+        {
+            await oldReader;
+        }
+        catch (OperationCanceledException)
+        {
+        }
+    }
+
+    private static async Task CloseAndDisposeAsync(IEventSubWebSocket socket)
+    {
+        try
+        {
+            if (socket.State == WebSocketState.Open)
+            {
+                await socket.CloseAsync(WebSocketCloseStatus.NormalClosure, "EventSub session migrated", CancellationToken.None);
+            }
+        }
+        catch (WebSocketException)
+        {
+        }
+        finally
+        {
+            await socket.DisposeAsync();
+        }
+    }
+
+    private static async Task<string?> ReceiveTextAsync(IEventSubWebSocket socket, CancellationToken cancellationToken)
     {
         var buffer = new byte[8192];
-        using var stream = new MemoryStream();
+        var message = new EventSubMessageAccumulator();
         WebSocketReceiveResult result;
 
         do
@@ -559,12 +671,36 @@ public sealed class TwitchEventSubClient : IDisposable, IAsyncDisposable
                 return null;
             }
 
-            stream.Write(buffer, 0, result.Count);
+            try
+            {
+                message.Append(buffer.AsSpan(0, result.Count));
+            }
+            catch (EventSubMessageTooLargeException)
+            {
+                socket.Abort();
+                throw;
+            }
         }
         while (!result.EndOfMessage);
 
-        return Encoding.UTF8.GetString(stream.ToArray());
+        return message.GetText();
     }
+}
+
+internal sealed record EventSubMigrationResult(
+    bool Succeeded,
+    IEventSubWebSocket? Socket,
+    string? SessionId,
+    EventSubConnectionFreshness? Freshness,
+    IEventSubWebSocket? OldSocket,
+    Task<EventSubReceiveOutcome>? OldReader)
+{
+    public static EventSubMigrationResult Success(IEventSubWebSocket socket, IEventSubWebSocket oldSocket,
+        string sessionId, EventSubConnectionFreshness freshness) =>
+        new(true, socket, sessionId, freshness, oldSocket, null);
+
+    public static EventSubMigrationResult Failure(Task<EventSubReceiveOutcome> oldReader) =>
+        new(false, null, null, null, null, oldReader);
 }
 
 internal sealed record EventSubReceiveOutcome(EventSubReconnectCause Cause, string? ReconnectUrl);

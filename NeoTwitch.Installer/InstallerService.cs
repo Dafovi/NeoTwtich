@@ -1,7 +1,5 @@
-using System.Diagnostics;
 using System.IO;
 using System.IO.Compression;
-using System.Text.Json.Nodes;
 using Microsoft.Win32;
 using NeoTwitch.Shared;
 
@@ -12,11 +10,22 @@ internal sealed class InstallerService
     private const string WindowsRunKeyPath = @"Software\Microsoft\Windows\CurrentVersion\Run";
     private readonly IReleaseClient _releaseClient;
     private readonly TimeProvider _timeProvider;
+    private readonly InstallerProcessWaiter _processWaiter;
+    private readonly Action<bool, string> _applyStartWithWindows;
+    private readonly Action<string> _copyInstallerToTarget;
 
-    public InstallerService(IReleaseClient? releaseClient = null, TimeProvider? timeProvider = null)
+    public InstallerService(
+        IReleaseClient? releaseClient = null,
+        TimeProvider? timeProvider = null,
+        InstallerProcessWaiter? processWaiter = null,
+        Action<bool, string>? applyStartWithWindows = null,
+        Action<string>? copyInstallerToTarget = null)
     {
         _releaseClient = releaseClient ?? new GitHubReleaseClient();
         _timeProvider = timeProvider ?? TimeProvider.System;
+        _processWaiter = processWaiter ?? new InstallerProcessWaiter();
+        _applyStartWithWindows = applyStartWithWindows ?? ApplyStartWithWindows;
+        _copyInstallerToTarget = copyInstallerToTarget ?? CopyInstallerToTarget;
     }
 
     public async Task<InstallResult> InstallAsync(
@@ -29,11 +38,10 @@ internal sealed class InstallerService
 
         var tempRoot = Path.Combine(Path.GetTempPath(), $"{NeoTwitchProduct.GitHubInstallerUserAgent}_{Guid.NewGuid():N}");
         Directory.CreateDirectory(tempRoot);
+        string? stagingPath = null;
 
         try
         {
-            await WaitForNeoTwitchToExitAsync(progress, cancellationToken);
-
             var packagePath = options.PackagePath;
             string version;
             var releaseNotes = "";
@@ -70,9 +78,16 @@ internal sealed class InstallerService
                     : NormalizeVersion(options.RequestedVersion);
             }
 
-            progress.Report(new InstallProgress(50, "Copiando archivos"));
-            InstallPackage(packagePath, options, tempRoot);
-            CopyInstallerToTarget(options.InstallPath);
+            progress.Report(new InstallProgress(42, "Preparando archivos verificados"));
+            stagingPath = StagePackage(packagePath, options.InstallPath, tempRoot, version, _timeProvider.GetLocalNow());
+            _copyInstallerToTarget(stagingPath);
+
+            await _processWaiter.WaitForExitAsync(progress, cancellationToken);
+            var finalTarget = ValidateInstallTarget(options);
+
+            progress.Report(new InstallProgress(50, "Activando instalación preparada"));
+            using var transaction = InstallSwapTransaction.Activate(stagingPath, options.InstallPath, finalTarget.Kind);
+            stagingPath = null;
 
             progress.Report(new InstallProgress(74, "Creando accesos directos"));
             var appExePath = Path.Combine(options.InstallPath, NeoTwitchProduct.AppExecutableName);
@@ -99,75 +114,64 @@ internal sealed class InstallerService
             }
 
             progress.Report(new InstallProgress(86, "Configurando inicio con Windows"));
-            ApplyStartWithWindows(options.StartWithWindows, appExePath);
-            WriteAppStartWithWindowsSetting(options.StartWithWindows);
-            WriteInstallManifest(options.InstallPath, version, _timeProvider.GetLocalNow());
+            _applyStartWithWindows(options.StartWithWindows, appExePath);
+            transaction.Commit();
 
             progress.Report(new InstallProgress(100, options.IsUpdate ? "Actualización completada" : "Instalación completada"));
             return new InstallResult(appExePath, version, releaseNotes);
         }
         finally
         {
+            if (stagingPath is not null)
+            {
+                TryDeleteDirectory(stagingPath);
+            }
+
             TryDeleteDirectory(tempRoot);
         }
     }
 
-    private static async Task WaitForNeoTwitchToExitAsync(
-        IProgress<InstallProgress> progress,
-        CancellationToken cancellationToken)
+    private static string StagePackage(
+        string packagePath,
+        string installPath,
+        string tempRoot,
+        string version,
+        DateTimeOffset installedAt)
     {
-        var currentProcessId = Environment.ProcessId;
-        for (var attempt = 0; attempt < 40; attempt++)
-        {
-            var running = Process.GetProcessesByName(Path.GetFileNameWithoutExtension(NeoTwitchProduct.AppExecutableName))
-                .Where(process =>
-                {
-                    try
-                    {
-                        return process.Id != currentProcessId && !process.HasExited;
-                    }
-                    catch
-                    {
-                        return false;
-                    }
-                })
-                .ToArray();
+        var target = Path.GetFullPath(installPath).TrimEnd(Path.DirectorySeparatorChar);
+        var parent = Path.GetDirectoryName(target)
+            ?? throw new InvalidOperationException("La carpeta de instalación no tiene un directorio padre válido.");
+        Directory.CreateDirectory(parent);
+        var stagingPath = Path.Combine(parent, $".{Path.GetFileName(target)}.staging.{Guid.NewGuid():N}");
 
-            foreach (var process in running)
+        try
+        {
+            if (packagePath.EndsWith(".zip", StringComparison.OrdinalIgnoreCase))
             {
-                process.Dispose();
+                var extractPath = Path.Combine(tempRoot, "extract");
+                ZipFile.ExtractToDirectory(packagePath, extractPath, overwriteFiles: true);
+                var sourceRoot = ResolvePackageRoot(extractPath);
+                CopyDirectory(sourceRoot, stagingPath);
+            }
+            else if (packagePath.EndsWith(".exe", StringComparison.OrdinalIgnoreCase))
+            {
+                Directory.CreateDirectory(stagingPath);
+                File.Copy(packagePath, Path.Combine(stagingPath, NeoTwitchProduct.AppExecutableName), overwrite: true);
+            }
+            else
+            {
+                throw new InvalidOperationException("El paquete descargado no es .exe ni .zip.");
             }
 
-            if (running.Length == 0)
-            {
-                return;
-            }
-
-            progress.Report(new InstallProgress(8, "Esperando a que Neo Twitch se cierre"));
-            await Task.Delay(500, cancellationToken);
+            WriteInstallManifest(stagingPath, version, installedAt);
+            ValidateStagingPath(stagingPath);
+            return stagingPath;
         }
-    }
-
-    private static void InstallPackage(string packagePath, InstallerOptions options, string tempRoot)
-    {
-        if (packagePath.EndsWith(".zip", StringComparison.OrdinalIgnoreCase))
+        catch
         {
-            var extractPath = Path.Combine(tempRoot, "extract");
-            ZipFile.ExtractToDirectory(packagePath, extractPath, overwriteFiles: true);
-            var sourceRoot = ResolvePackageRoot(extractPath);
-            PrepareInstallPath(options);
-            CopyDirectory(sourceRoot, options.InstallPath);
-            return;
+            TryDeleteDirectory(stagingPath);
+            throw;
         }
-
-        if (packagePath.EndsWith(".exe", StringComparison.OrdinalIgnoreCase))
-        {
-            PrepareInstallPath(options);
-            File.Copy(packagePath, Path.Combine(options.InstallPath, NeoTwitchProduct.AppExecutableName), overwrite: true);
-            return;
-        }
-
-        throw new InvalidOperationException("El paquete descargado no es .exe ni .zip.");
     }
 
     private static string ResolvePackageRoot(string extractPath)
@@ -182,18 +186,6 @@ internal sealed class InstallerService
             .FirstOrDefault(directory => File.Exists(Path.Combine(directory, NeoTwitchProduct.AppExecutableName)));
 
         return nested ?? throw new InvalidOperationException($"El paquete no contiene {NeoTwitchProduct.AppExecutableName}.");
-    }
-
-    private static void PrepareInstallPath(InstallerOptions options)
-    {
-        var classification = ValidateInstallTarget(options);
-        if (classification.Kind == InstallTargetKind.ExistingNeoTwitchInstallation)
-        {
-            CleanInstallPath(classification.NormalizedPath);
-            return;
-        }
-
-        Directory.CreateDirectory(classification.NormalizedPath);
     }
 
     internal static InstallTargetClassification ValidateInstallTarget(InstallerOptions options)
@@ -217,25 +209,18 @@ internal sealed class InstallerService
         return classification;
     }
 
-    private static void CleanInstallPath(string installPath)
+    private static void ValidateStagingPath(string stagingPath)
     {
-        Directory.CreateDirectory(installPath);
-
-        foreach (var file in Directory.EnumerateFiles(installPath))
+        var info = new DirectoryInfo(stagingPath);
+        if (!info.Exists || info.Attributes.HasFlag(FileAttributes.ReparsePoint))
         {
-            var fileName = Path.GetFileName(file);
-            if (fileName.StartsWith(Path.GetFileNameWithoutExtension(NeoTwitchProduct.InstallerExecutableName), StringComparison.OrdinalIgnoreCase)
-                || fileName.Equals(NeoTwitchProduct.InstallMarkerFileName, StringComparison.OrdinalIgnoreCase))
-            {
-                continue;
-            }
-
-            File.Delete(file);
+            throw new InvalidOperationException("La carpeta preparada no es un directorio local seguro.");
         }
 
-        foreach (var directory in Directory.EnumerateDirectories(installPath))
+        if (!File.Exists(Path.Combine(stagingPath, NeoTwitchProduct.AppExecutableName))
+            || !File.Exists(Path.Combine(stagingPath, NeoTwitchProduct.InstallMarkerFileName)))
         {
-            Directory.Delete(directory, recursive: true);
+            throw new InvalidOperationException("La instalación preparada no contiene ejecutable y marcador válidos.");
         }
     }
 
@@ -307,38 +292,6 @@ internal sealed class InstallerService
         }
     }
 
-    private static void WriteAppStartWithWindowsSetting(bool enabled)
-    {
-        var settingsDirectory = Path.Combine(
-            Environment.GetFolderPath(Environment.SpecialFolder.ApplicationData),
-            NeoTwitchProduct.AppDataFolderName);
-        Directory.CreateDirectory(settingsDirectory);
-
-        var settingsPath = Path.Combine(settingsDirectory, "settings.json");
-        JsonObject root;
-        if (File.Exists(settingsPath))
-        {
-            try
-            {
-                root = JsonNode.Parse(File.ReadAllText(settingsPath))?.AsObject() ?? [];
-            }
-            catch
-            {
-                root = [];
-            }
-        }
-        else
-        {
-            root = [];
-        }
-
-        root["startWithWindows"] = enabled;
-        File.WriteAllText(settingsPath, root.ToJsonString(new System.Text.Json.JsonSerializerOptions
-        {
-            WriteIndented = true
-        }));
-    }
-
     private static void WriteInstallManifest(string installPath, string version, DateTimeOffset installedAt)
     {
         var manifestPath = Path.Combine(installPath, NeoTwitchProduct.InstallMarkerFileName);
@@ -367,7 +320,7 @@ internal sealed class InstallerService
         {
             if (Directory.Exists(path))
             {
-                Directory.Delete(path, recursive: true);
+                InstallSwapTransaction.SafeDeleteGeneratedDirectory(path);
             }
         }
         catch

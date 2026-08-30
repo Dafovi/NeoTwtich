@@ -15,6 +15,7 @@
   </PropertyGroup>
 
   <ItemGroup>
+    <InternalsVisibleTo Include="NeoTwitch.Tests" />
     <Resource Include="Assets\AppIcon.ico" />
     <Resource Include="Assets\AppIcon.png" />
     <Resource Include="Assets\ServiceAlexa.png" />

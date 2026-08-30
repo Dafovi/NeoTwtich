@@ -172,6 +172,7 @@ function Publish-SelfContained {
 function Publish-Installer {
     param([string]$ArtifactRoot)
 
+    & (Join-Path $PSScriptRoot "validate-release-trust.ps1")
     $output = Join-Path $ArtifactRoot $BuildConfig.installerWorkDirectory
     Invoke-DotNet @(
         "publish", $InstallerProject,
@@ -181,14 +182,26 @@ function Publish-Installer {
         "-p:PublishSingleFile=true",
         "-p:IncludeNativeLibrariesForSelfExtract=true",
         "-p:EnableCompressionInSingleFile=true",
+        "-p:RequireProductionReleaseTrustRoot=true",
         "-o", $output
     )
+
+    $installerAssembly = Get-ChildItem -LiteralPath (Split-Path -Parent $InstallerProject) -Recurse -Filter "NeoTwitch.Installer.dll" |
+        Where-Object { $_.FullName -notmatch "\\ref\\" } |
+        Sort-Object LastWriteTime -Descending |
+        Select-Object -First 1
+    if ($null -eq $installerAssembly) { throw "No se encontro el ensamblado publicado del instalador." }
+    & (Join-Path $PSScriptRoot "validate-release-trust.ps1") -InstallerAssemblyPath $installerAssembly.FullName
 
     Copy-Item -LiteralPath (Join-Path $output $BuildConfig.installerExecutable) -Destination (Join-Path $ArtifactRoot $BuildConfig.installerExecutable) -Force
 }
 
 $Version = Get-NeoTwitchVersion $BuildConfig
 $ArtifactRoot = Get-NeoTwitchArtifactRoot $BuildConfig $Version
+
+if ($Mode -in @("Installer", "FullRelease")) {
+    & (Join-Path $PSScriptRoot "validate-release-trust.ps1")
+}
 
 if ($Clean -and (Test-Path -LiteralPath $ArtifactRoot)) {
     Remove-Item -LiteralPath $ArtifactRoot -Recurse -Force

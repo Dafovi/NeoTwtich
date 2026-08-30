@@ -20,6 +20,12 @@
     <EmbeddedResource Include="ReleaseIntegrityPublicKey.pem" Condition="Exists('ReleaseIntegrityPublicKey.pem')" />
   </ItemGroup>
 
+  <Target Name="RequireProductionReleaseTrustRoot" BeforeTargets="CoreCompile"
+          Condition="'$(RequireProductionReleaseTrustRoot)' == 'true'">
+    <Error Condition="!Exists('ReleaseIntegrityPublicKey.pem')"
+           Text="Production release requires NeoTwitch.Installer/ReleaseIntegrityPublicKey.pem." />
+  </Target>
+
   <ItemGroup>
     <Resource Include="..\NeoTwitch\Assets\AppIcon.ico" Link="Assets\AppIcon.ico" />
     <Resource Include="..\NeoTwitch\Assets\AppIcon.png" Link="Assets\AppIcon.png" />

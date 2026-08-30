@@ -8,7 +8,7 @@ using Protocol = NeoTwitch.Services.TwitchEventSubProtocol;
 
 namespace NeoTwitch.Services;
 
-public sealed class TwitchEventSubClient : IDisposable
+public sealed class TwitchEventSubClient : IDisposable, IAsyncDisposable
 {
     private readonly TwitchAuthService _authService;
     private readonly Func<AppConfig> _getConfig;
@@ -24,6 +24,7 @@ public sealed class TwitchEventSubClient : IDisposable
     private readonly object _healthSync = new();
     private CancellationTokenSource? _cts;
     private Task? _runner;
+    private int _disposed;
     private EventSubConnectionHealthSnapshot _health = new(
         EventSubConnectionHealth.Disconnected,
         "",
@@ -135,6 +136,11 @@ public sealed class TwitchEventSubClient : IDisposable
 
     public void Dispose()
     {
+        if (Interlocked.Exchange(ref _disposed, 1) != 0)
+        {
+            return;
+        }
+
         _cts?.Cancel();
         _cts?.Dispose();
         if (_ownsSubscriptionRegistrar)
@@ -426,6 +432,20 @@ public sealed class TwitchEventSubClient : IDisposable
         foreach (var handler in handlers.GetInvocationList().Cast<Func<TwitchEvent, CancellationToken, Task>>())
         {
             await handler(twitchEvent, cancellationToken);
+        }
+    }
+
+    public async ValueTask DisposeAsync()
+    {
+        if (Interlocked.Exchange(ref _disposed, 1) != 0)
+        {
+            return;
+        }
+
+        await StopAsync();
+        if (_ownsSubscriptionRegistrar)
+        {
+            _subscriptionRegistrar.Dispose();
         }
     }
 

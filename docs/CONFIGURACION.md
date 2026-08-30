@@ -366,6 +366,14 @@ Backups:
 %AppData%\NeoTwitch\backups
 ```
 
+Log de errores:
+
+```text
+%AppData%\NeoTwitch\crash.log
+```
+
+El archivo activo rota antes de superar 1 MiB y conserva hasta cuatro históricos (`crash.1.log` a `crash.4.log`), eliminando primero el más antiguo.
+
 Overlay OBS:
 
 ```text

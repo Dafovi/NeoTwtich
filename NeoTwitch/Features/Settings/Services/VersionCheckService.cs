@@ -7,10 +7,12 @@ using NeoTwitch.Shared;
 
 namespace NeoTwitch.Services;
 
-public sealed class VersionCheckService
+public sealed class VersionCheckService : IDisposable
 {
     private readonly IUiTextService _text;
     private readonly HttpClient _http;
+    private readonly bool _ownsHttpClient;
+    private int _disposed;
 
     public VersionCheckService(IUiTextService text, HttpClient? httpClient = null)
     {
@@ -19,7 +21,16 @@ public sealed class VersionCheckService
         {
             Timeout = TimeSpan.FromSeconds(8)
         };
+        _ownsHttpClient = httpClient is null;
         _http.DefaultRequestHeaders.UserAgent.Add(new ProductInfoHeaderValue(NeoTwitchProduct.GitHubAppUserAgent, NeoTwitchProduct.CurrentVersionText));
+    }
+
+    public void Dispose()
+    {
+        if (Interlocked.Exchange(ref _disposed, 1) == 0 && _ownsHttpClient)
+        {
+            _http.Dispose();
+        }
     }
 
     public async Task<VersionCheckResult> CheckLatestAsync(CancellationToken cancellationToken)

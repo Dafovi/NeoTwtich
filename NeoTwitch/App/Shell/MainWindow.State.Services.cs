@@ -16,7 +16,7 @@ namespace NeoTwitch;
 
 public partial class MainWindow
 {
-    private readonly AppServices _services = AppServices.CreateDefault();
+    private readonly AppServices _services;
     private readonly AppStartupOptions _startupOptions;
     private readonly TwitchEventSubClient _eventSubClient;
     private ShellViewModel _shellViewModel = null!;

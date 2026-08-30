@@ -19,9 +19,10 @@ public partial class App : System.Windows.Application
     private bool _ownsMutex;
     private bool _exceptionLoggingRegistered;
 
-    protected override void OnStartup(StartupEventArgs e)
+    protected override async void OnStartup(StartupEventArgs e)
     {
         RegisterExceptionLogging();
+        AppServices? services = null;
 
         try
         {
@@ -40,11 +41,17 @@ public partial class App : System.Windows.Application
 
             base.OnStartup(e);
             var startupOptions = AppStartupOptions.Parse(e.Args);
-            var window = new MainWindow(startupOptions);
+            services = AppServices.CreateDefault();
+            var window = new MainWindow(startupOptions, services);
             window.Show();
         }
         catch (Exception ex)
         {
+            if (services is not null)
+            {
+                await services.DisposeAsync();
+            }
+
             var logPath = CrashReporter.Log(ex, Text.Get(UiTextKeys.AppStartupFailureLog));
             ShowFatalError(logPath, ex.Message);
             Shutdown(1);

@@ -25,8 +25,10 @@ Shared/                Codigo compartido entre app e instalador
 `Directory.Build.props` contiene la version central:
 
 ```xml
-<Version>2.2.4</Version>
+<Version>&lt;version&gt;</Version>
 ```
+
+`<version>` representa el valor vigente del repositorio; consulta el archivo en vez de copiar un número desde esta guía.
 
 `build.config.json` contiene rutas, nombres de artifacts, runtime y proyectos usados por los scripts.
 
@@ -573,7 +575,7 @@ Comandos:
 Release firmado:
 
 ```powershell
-.\scripts\release.ps1 -Version 2.2.4 -SigningKeyPath "D:\secure\neo-twitch-release-private.pem" -Clean
+.\scripts\release.ps1 -Version <version> -SigningKeyPath "D:\secure\neo-twitch-release-private.pem" -Clean
 ```
 
 Artifacts:
@@ -627,9 +629,9 @@ El proyecto usa MSTest con versiones resueltas en `NeoTwitch.Tests/packages.lock
 Flujo directo reproducible:
 
 ```powershell
-dotnet restore .\NeoTwitch.slnx
+dotnet restore .\NeoTwitch.slnx --locked-mode
 dotnet build .\NeoTwitch.slnx -c Release --no-restore
-dotnet test .\NeoTwitch.slnx -c Release --no-build --no-restore
+dotnet test .\NeoTwitch.Tests\NeoTwitch.Tests.csproj -c Release --no-build --no-restore
 ```
 
 Flujo con proteccion contra cero tests:
@@ -642,7 +644,15 @@ Flujo con proteccion contra cero tests:
 
 `scripts/test.ps1` inspecciona el TRX, exige que todos los tests descubiertos se ejecuten y compara el total con `minimumDiscoveredTests` de `build.config.json`. Por eso una ejecucion con cero tests no puede producir una validacion verde.
 
-## 20. Donde Cambiar Cosas
+## 20. Retención de diagnósticos y cierre
+
+El log principal de fallos está en `%AppData%\NeoTwitch\crash.log`. Antes de una escritura que superaría 1 MiB, se rota el archivo activo. Se conservan como máximo cuatro archivos históricos, `crash.1.log` (más reciente) a `crash.4.log` (más antiguo); al alcanzar el límite se elimina primero `crash.4.log`. La rotación solo opera sobre esos nombres dentro del mismo directorio. Si no puede rotar, conserva el archivo activo e intenta escribir; si tampoco puede escribir, `CrashReporter` prueba sus ubicaciones de respaldo sin provocar otro fallo de la aplicación. Los errores HTTP de autenticación, Chat y Alexa omiten el cuerpo remoto antes de llegar a logs o trazas.
+
+`AppServices` es el propietario de los recursos de larga duración. El cierre es idempotente y sigue este orden: detener y disponer EventSub; cancelar y esperar hasta cinco segundos la alerta activa; cerrar audio y el overlay de pantalla; desconectar/disponer OBS y Arduino; disponer Chat, autenticación Twitch, Alexa y actualización; por último disponer `SettingsStore`. El guardado final ocurre antes de iniciar esa secuencia. Los iconos, menús y temporizadores puramente WPF siguen siendo propiedad de `MainWindow` y se liberan allí.
+
+Los fallos al liberar un recurso quedan registrados y no impiden intentar los recursos posteriores. La construcción de la ventana recibe el propietario desde el composition root; si el arranque de la ventana falla, `App` espera su disposición asíncrona antes de terminar.
+
+## 21. Donde Cambiar Cosas
 
 Para cambiar texto:
 
@@ -687,7 +697,7 @@ build.config.json
 scripts/
 ```
 
-## 21. Buenas Practicas del Proyecto
+## 22. Buenas Practicas del Proyecto
 
 - Si una funcionalidad pertenece a un dominio, ubicala en `Features/{Dominio}`.
 - Si se comparte entre dominios, muevela a `Shared`.
@@ -699,7 +709,7 @@ scripts/
 - Usa `build.config.json` para nombres/rutas de release.
 - Antes de release, ejecuta `.\scripts\build.ps1 -Mode FullRelease -Clean`.
 
-## 22. Documentacion Externa Util
+## 23. Documentacion Externa Util
 
 - Twitch EventSub WebSockets: https://dev.twitch.tv/docs/eventsub/handling-websocket-events/
 - Twitch EventSub subscription types: https://dev.twitch.tv/docs/eventsub/eventsub-subscription-types/

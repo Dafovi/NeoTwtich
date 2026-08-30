@@ -14,9 +14,10 @@ using WpfPoint = System.Windows.Point;
 
 namespace NeoTwitch.Services;
 
-public sealed class VirtualLightsScreenOverlayService
+public sealed class VirtualLightsScreenOverlayService : IAsyncDisposable
 {
     private VirtualLightsOverlayWindow? _window;
+    private int _disposed;
 
     public async Task ShowAsync(VirtualLightCommand command, VirtualScreenInfo screen)
     {
@@ -37,6 +38,21 @@ public sealed class VirtualLightsScreenOverlayService
         {
             _window?.Stop();
             _window?.Hide();
+        });
+    }
+
+    public async ValueTask DisposeAsync()
+    {
+        if (Interlocked.Exchange(ref _disposed, 1) != 0 || _window is null)
+        {
+            return;
+        }
+
+        await WpfApplication.Current.Dispatcher.InvokeAsync(() =>
+        {
+            _window.Stop();
+            _window.Close();
+            _window = null;
         });
     }
 }

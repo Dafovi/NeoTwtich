@@ -1,5 +1,6 @@
 using System.ComponentModel;
 using System.Windows;
+using NeoTwitch.Services;
 using NeoTwitch.Services.Shell;
 using NeoTwitch.Services.Text;
 using NeoTwitch.Shared;
@@ -46,14 +47,7 @@ public partial class MainWindow
         SaveCurrentStripFromFields();
         SaveBackgroundFromFields();
         SaveConfig();
-        _backgroundApplyDebounce?.Cancel();
-        _backgroundApplyDebounce?.Dispose();
-        _twitchSubscriptionRefreshDebounce?.Cancel();
-        _twitchSubscriptionRefreshDebounce?.Dispose();
-        _arduinoMonitorTimer.Stop();
-        await _eventSubClient.StopAsync();
-        _chatService.Dispose();
-        _lightController.Dispose();
+        await ShutdownApplicationServicesAsync();
         DisposeTrayIcon();
         Close();
     }
@@ -86,11 +80,45 @@ public partial class MainWindow
             _isExiting = true;
         }
 
-        await _eventSubClient.StopAsync();
-        _arduinoMonitorTimer.Stop();
-        _chatService.Dispose();
-        _lightController.Dispose();
+        if (!_shutdownCompleted)
+        {
+            e.Cancel = true;
+            await ShutdownApplicationServicesAsync();
+            DisposeTrayIcon();
+            Close();
+            return;
+        }
+
         DisposeTrayIcon();
+    }
+
+    private Task ShutdownApplicationServicesAsync()
+    {
+        return _shutdownTask ??= ShutdownApplicationServicesCoreAsync();
+    }
+
+    private async Task ShutdownApplicationServicesCoreAsync()
+    {
+        _backgroundApplyDebounce?.Cancel();
+        _backgroundApplyDebounce?.Dispose();
+        _backgroundApplyDebounce = null;
+        _twitchSubscriptionRefreshDebounce?.Cancel();
+        _twitchSubscriptionRefreshDebounce?.Dispose();
+        _twitchSubscriptionRefreshDebounce = null;
+        _mediaPreviewCts?.Cancel();
+        _mediaPreviewCts?.Dispose();
+        _mediaPreviewCts = null;
+        _arduinoMonitorTimer.Stop();
+        _ruleLedPreviewTimer.Stop();
+        _backgroundLedPreviewTimer.Stop();
+
+        await _services.DisposeAsync();
+        foreach (var failure in _services.DisposalFailures)
+        {
+            CrashReporter.Log(failure.Exception, $"No se pudo liberar el recurso '{failure.ResourceName}'.");
+        }
+
+        _shutdownCompleted = true;
     }
 
     private void ShowTrayBackgroundNotice()
@@ -112,6 +140,7 @@ public partial class MainWindow
 
     private void DisposeTrayIcon()
     {
+        _notifyIcon?.ContextMenuStrip?.Dispose();
         _notifyIcon?.Dispose();
         _notifyIcon = null;
         _trayIcon?.Dispose();

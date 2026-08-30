@@ -13,6 +13,7 @@ public sealed partial class ObsWebSocketService : IAsyncDisposable
     private static readonly TimeSpan RequestTimeout = TimeSpan.FromSeconds(6);
 
     private readonly SemaphoreSlim _gate = new(1, 1);
+    private int _disposed;
     private readonly IUiTextService _text;
     private readonly ObsWebSocketMessageFactory _messageFactory;
     private ClientWebSocket? _socket;
@@ -314,8 +315,13 @@ public sealed partial class ObsWebSocketService : IAsyncDisposable
 
     public async ValueTask DisposeAsync()
     {
-        _gate.Dispose();
+        if (Interlocked.Exchange(ref _disposed, 1) != 0)
+        {
+            return;
+        }
+
         await DisposeSocketAsync();
+        _gate.Dispose();
     }
 
     private async Task<string> GetVersionAsync(CancellationToken cancellationToken)

@@ -98,9 +98,9 @@ La version central se define en `Directory.Build.props` y la configuracion de bu
 Validacion local canonica:
 
 ```powershell
-dotnet restore .\NeoTwitch.slnx
+dotnet restore .\NeoTwitch.slnx --locked-mode
 dotnet build .\NeoTwitch.slnx -c Release --no-restore
-dotnet test .\NeoTwitch.slnx -c Release --no-build --no-restore
+dotnet test .\NeoTwitch.Tests\NeoTwitch.Tests.csproj -c Release --no-build --no-restore
 .\scripts\build.ps1 -Mode Verify
 ```
 
@@ -108,7 +108,7 @@ dotnet test .\NeoTwitch.slnx -c Release --no-build --no-restore
 
 ```powershell
 .\scripts\build.ps1 -Mode FullRelease -Clean
-.\scripts\release.ps1 -Version 2.2.4 -SigningKeyPath "D:\secure\neo-twitch-release-private.pem" -Clean
+.\scripts\release.ps1 -Version <version> -SigningKeyPath "D:\secure\neo-twitch-release-private.pem" -Clean
 ```
 
 Mas detalles en [docs/DESARROLLO.md](docs/DESARROLLO.md).

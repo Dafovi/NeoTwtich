@@ -18,6 +18,7 @@ public sealed class SerialLightController : IDisposable
     private readonly TimeProvider _timeProvider;
     private int _baudRate = 115200;
     private bool? _ackSupported;
+    private int _disposed;
 
     public SerialLightController(IUiTextService text, TimeProvider timeProvider)
     {
@@ -145,6 +146,11 @@ public sealed class SerialLightController : IDisposable
 
     public void Dispose()
     {
+        if (Interlocked.Exchange(ref _disposed, 1) != 0)
+        {
+            return;
+        }
+
         _handle?.Dispose();
         _handle = null;
         _port = "";

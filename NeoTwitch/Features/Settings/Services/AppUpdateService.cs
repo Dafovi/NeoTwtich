@@ -5,7 +5,7 @@ using NeoTwitch.Shared;
 
 namespace NeoTwitch.Services;
 
-public sealed class AppUpdateService
+public sealed class AppUpdateService : IDisposable
 {
     private readonly IExternalLauncherService _externalLauncher;
     private readonly VersionCheckService _versionCheckService;
@@ -13,15 +13,36 @@ public sealed class AppUpdateService
     private readonly string _updaterDirectory;
     private readonly Action<string> _createDirectory;
     private readonly Action<string, string, bool> _copyFile;
+    private readonly bool _ownsVersionCheckService;
+    private int _disposed;
 
     public AppUpdateService(IUiTextService text, IExternalLauncherService externalLauncher)
-        : this(externalLauncher, new VersionCheckService(text))
+        : this(externalLauncher, new VersionCheckService(text), ownsVersionCheckService: true)
     {
     }
 
     public AppUpdateService(
         IExternalLauncherService externalLauncher,
         VersionCheckService versionCheckService,
+        Func<string>? idFactory = null,
+        string? updaterDirectory = null,
+        Action<string>? createDirectory = null,
+        Action<string, string, bool>? copyFile = null)
+        : this(
+            externalLauncher,
+            versionCheckService,
+            ownsVersionCheckService: false,
+            idFactory,
+            updaterDirectory,
+            createDirectory,
+            copyFile)
+    {
+    }
+
+    private AppUpdateService(
+        IExternalLauncherService externalLauncher,
+        VersionCheckService versionCheckService,
+        bool ownsVersionCheckService,
         Func<string>? idFactory = null,
         string? updaterDirectory = null,
         Action<string>? createDirectory = null,
@@ -35,6 +56,7 @@ public sealed class AppUpdateService
             : updaterDirectory;
         _createDirectory = createDirectory ?? (path => Directory.CreateDirectory(path));
         _copyFile = copyFile ?? File.Copy;
+        _ownsVersionCheckService = ownsVersionCheckService;
     }
 
     public Task<VersionCheckResult> CheckLatestAsync(CancellationToken cancellationToken)
@@ -82,5 +104,13 @@ public sealed class AppUpdateService
             $"{Path.GetFileNameWithoutExtension(NeoTwitchProduct.InstallerExecutableName)}.{_idFactory()}.exe");
         _copyFile(installerPath, launcherPath, true);
         return launcherPath;
+    }
+
+    public void Dispose()
+    {
+        if (Interlocked.Exchange(ref _disposed, 1) == 0 && _ownsVersionCheckService)
+        {
+            _versionCheckService.Dispose();
+        }
     }
 }

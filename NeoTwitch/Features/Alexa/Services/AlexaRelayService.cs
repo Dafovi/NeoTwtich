@@ -7,11 +7,13 @@ using NeoTwitch.Services.Text;
 
 namespace NeoTwitch.Services;
 
-public sealed class AlexaRelayService
+public sealed class AlexaRelayService : IDisposable
 {
     private readonly IUiTextService _text;
     private readonly HttpClient _http;
     private readonly TimeProvider _timeProvider;
+    private readonly bool _ownsHttpClient;
+    private int _disposed;
 
     private readonly JsonSerializerOptions _jsonOptions = new(JsonSerializerDefaults.Web)
     {
@@ -26,6 +28,7 @@ public sealed class AlexaRelayService
         {
             Timeout = TimeSpan.FromSeconds(10)
         };
+        _ownsHttpClient = httpClient is null;
     }
 
     public async Task SendRuleEventAsync(AppConfig config, EventRule rule, TwitchEvent twitchEvent, CancellationToken cancellationToken)
@@ -149,6 +152,14 @@ public sealed class AlexaRelayService
         return string.IsNullOrWhiteSpace(rule.RuleName)
             ? DisplayNameService.For(twitchEvent.Kind, _text)
             : rule.RuleName.Trim();
+    }
+
+    public void Dispose()
+    {
+        if (Interlocked.Exchange(ref _disposed, 1) == 0 && _ownsHttpClient)
+        {
+            _http.Dispose();
+        }
     }
 
     private sealed record AlexaRelayPayload(

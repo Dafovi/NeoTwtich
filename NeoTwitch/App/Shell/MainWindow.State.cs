@@ -32,6 +32,8 @@ public partial class MainWindow
     private bool _loadingRule;
     private bool _loadingStrip;
     private bool _isExiting;
+    private bool _shutdownCompleted;
+    private Task? _shutdownTask;
     private bool _showClientId;
     private bool _showClientSecret;
     private bool _showAlexaRelayUrl;

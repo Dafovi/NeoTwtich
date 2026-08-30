@@ -10,7 +10,7 @@ namespace NeoTwitch.Tests;
 public sealed class CriticalBoundaryTests
 {
     [TestMethod]
-    public void DefaultCompositionCreatesAndDisposesRequiredRuntimeServices()
+    public async Task DefaultCompositionCreatesAndDisposesRequiredRuntimeServices()
     {
         var services = AppServices.CreateDefault();
         try
@@ -27,10 +27,8 @@ public sealed class CriticalBoundaryTests
         }
         finally
         {
-            services.SettingsStore.Dispose();
-            services.ChatService.Dispose();
-            services.LightController.Dispose();
-            services.ObsService.DisposeAsync().AsTask().GetAwaiter().GetResult();
+            await services.DisposeAsync();
+            Assert.AreEqual(0, services.DisposalFailures.Count);
         }
     }
 

@@ -9,7 +9,7 @@ using Protocol = NeoTwitch.Services.TwitchAuthProtocol;
 
 namespace NeoTwitch.Services;
 
-public sealed class TwitchAuthService
+public sealed class TwitchAuthService : IDisposable
 {
     public static readonly string[] RequiredScopes = Protocol.RequiredScopes;
 
@@ -18,6 +18,8 @@ public sealed class TwitchAuthService
     private readonly JsonSerializerOptions _jsonOptions = new(JsonSerializerDefaults.Web);
     private readonly IUiTextService _text;
     private readonly TimeProvider _timeProvider;
+    private readonly bool _ownsHttpClient;
+    private int _disposed;
     private readonly object _refreshSync = new();
     private Task? _activeRefresh;
     private AppConfig? _activeRefreshConfig;
@@ -32,6 +34,7 @@ public sealed class TwitchAuthService
         _externalLauncher = externalLauncher;
         _timeProvider = timeProvider;
         _http = httpClient ?? new HttpClient();
+        _ownsHttpClient = httpClient is null;
     }
 
     public async Task<DeviceCodeSession> BeginDeviceFlowAsync(string clientId, CancellationToken cancellationToken)
@@ -47,7 +50,9 @@ public sealed class TwitchAuthService
 
         if (!response.IsSuccessStatusCode)
         {
-            throw new InvalidOperationException(_text.Format(UiTextKeys.TwitchAuthLoginStartFailure, json));
+            throw new InvalidOperationException(_text.Format(
+                UiTextKeys.TwitchAuthLoginStartFailure,
+                DescribeRemoteFailure(response, TryReadError(json))));
         }
 
         var result = JsonSerializer.Deserialize<DeviceCodeResponse>(json, _jsonOptions)
@@ -107,7 +112,9 @@ public sealed class TwitchAuthService
                 continue;
             }
 
-            throw new InvalidOperationException(_text.Format(UiTextKeys.TwitchAuthLoginRejected, json));
+            throw new InvalidOperationException(_text.Format(
+                UiTextKeys.TwitchAuthLoginRejected,
+                DescribeRemoteFailure(response, oauthError)));
         }
 
         throw new TimeoutException(_text.Get(UiTextKeys.TwitchAuthDeviceCodeExpired));
@@ -175,7 +182,9 @@ public sealed class TwitchAuthService
 
         if (!response.IsSuccessStatusCode)
         {
-            throw new InvalidOperationException(_text.Format(UiTextKeys.TwitchAuthRefreshFailure, json));
+            throw new InvalidOperationException(_text.Format(
+                UiTextKeys.TwitchAuthRefreshFailure,
+                DescribeRemoteFailure(response, TryReadError(json))));
         }
 
         var token = JsonSerializer.Deserialize<TokenResponse>(json, _jsonOptions)
@@ -214,7 +223,9 @@ public sealed class TwitchAuthService
 
         if (!response.IsSuccessStatusCode)
         {
-            throw new InvalidOperationException(_text.Format(UiTextKeys.TwitchAuthReadChannelFailure, json));
+            throw new InvalidOperationException(_text.Format(
+                UiTextKeys.TwitchAuthReadChannelFailure,
+                DescribeRemoteFailure(response, TryReadError(json))));
         }
 
         using var doc = JsonDocument.Parse(json);
@@ -251,7 +262,9 @@ public sealed class TwitchAuthService
 
         if (!response.IsSuccessStatusCode)
         {
-            throw new InvalidOperationException(_text.Format(UiTextKeys.TwitchAuthReadStreamFailure, json));
+            throw new InvalidOperationException(_text.Format(
+                UiTextKeys.TwitchAuthReadStreamFailure,
+                DescribeRemoteFailure(response, TryReadError(json))));
         }
 
         using var doc = JsonDocument.Parse(json);
@@ -289,6 +302,25 @@ public sealed class TwitchAuthService
         catch
         {
             return null;
+        }
+    }
+
+    private static string DescribeRemoteFailure(HttpResponseMessage response, string? error)
+    {
+        var safeError = new string((error ?? "")
+            .Where(character => char.IsLetterOrDigit(character) || character is '_' or '-' or '.')
+            .Take(64)
+            .ToArray());
+        return string.IsNullOrWhiteSpace(safeError)
+            ? $"HTTP {(int)response.StatusCode}; detalle remoto omitido"
+            : $"HTTP {(int)response.StatusCode}; error {safeError}; detalle remoto omitido";
+    }
+
+    public void Dispose()
+    {
+        if (Interlocked.Exchange(ref _disposed, 1) == 0 && _ownsHttpClient)
+        {
+            _http.Dispose();
         }
     }
 

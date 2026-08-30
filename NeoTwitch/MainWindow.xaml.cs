@@ -10,12 +10,18 @@ namespace NeoTwitch;
 public partial class MainWindow : Window, IAlertExecutionCapabilities
 {
     public MainWindow()
-        : this(AppStartupOptions.Default)
+        : this(AppStartupOptions.Default, AppServices.CreateDefault())
     {
     }
 
     public MainWindow(AppStartupOptions startupOptions)
+        : this(startupOptions, AppServices.CreateDefault())
     {
+    }
+
+    internal MainWindow(AppStartupOptions startupOptions, AppServices services)
+    {
+        _services = services;
         _startupOptions = startupOptions;
         _eventOptions = UiOptionCatalog.CreateEventOptions(_text);
         _ruleCategoryOptions = UiOptionCatalog.CreateRuleCategoryOptions(_text);
@@ -41,6 +47,10 @@ public partial class MainWindow : Window, IAlertExecutionCapabilities
         DataContext = _shellViewModel;
 
         _eventSubClient = new TwitchEventSubClient(_authService, () => _config, SaveConfig, AddLog, _text);
+        _services.RegisterRuntimeResource(
+            "Twitch EventSub",
+            ApplicationShutdownOrder.EventIngress,
+            DisposeEventSubAsync);
         _eventSubClient.EventReceivedAsync += EventSubClient_EventReceivedAsync;
         _eventSubClient.HealthChanged += EventSubClient_HealthChanged;
 
@@ -48,6 +58,22 @@ public partial class MainWindow : Window, IAlertExecutionCapabilities
         CreateTrayIcon();
         LoadConfigIntoUi();
         _arduinoMonitorTimer.Start();
+    }
+
+    private async ValueTask DisposeEventSubAsync()
+    {
+        try
+        {
+            await _eventSubClient.StopAsync().WaitAsync(TimeSpan.FromSeconds(5));
+        }
+        catch (TimeoutException)
+        {
+            CrashReporter.LogMessage("EventSub no terminó dentro de los 5 segundos de cierre; se forzó la liberación local.");
+        }
+        finally
+        {
+            _eventSubClient.Dispose();
+        }
     }
 
 }

@@ -6,10 +6,11 @@ using NeoTwitch.Services.Text;
 
 namespace NeoTwitch.Services;
 
-public sealed class AudioPlayerService
+public sealed class AudioPlayerService : IAsyncDisposable
 {
     private readonly List<MediaPlayer> _players = [];
     private readonly IUiTextService _text;
+    private int _disposed;
 
     public AudioPlayerService(IUiTextService text)
     {
@@ -134,6 +135,34 @@ public sealed class AudioPlayerService
             log(_text.Get(UiTextKeys.AudioLoadTimeoutLog));
             return null;
         }
+    }
+
+    public async ValueTask DisposeAsync()
+    {
+        if (Interlocked.Exchange(ref _disposed, 1) != 0 || _players.Count == 0)
+        {
+            return;
+        }
+
+        var application = System.Windows.Application.Current;
+        if (application?.Dispatcher is null)
+        {
+            ClosePlayers();
+            return;
+        }
+
+        await application.Dispatcher.InvokeAsync(ClosePlayers);
+    }
+
+    private void ClosePlayers()
+    {
+        foreach (var player in _players.ToArray())
+        {
+            player.Stop();
+            player.Close();
+        }
+
+        _players.Clear();
     }
 }
 

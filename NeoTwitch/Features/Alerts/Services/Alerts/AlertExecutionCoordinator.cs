@@ -43,7 +43,7 @@ public interface IAlertExecutionCapabilities
         bool wasCancelled);
 }
 
-public sealed class AlertExecutionCoordinator
+public sealed class AlertExecutionCoordinator : IDisposable
 {
     private readonly object _sync = new();
     private readonly SemaphoreSlim _executionGate = new(1, 1);
@@ -51,6 +51,8 @@ public sealed class AlertExecutionCoordinator
     private readonly AlertQueueService _queue;
     private CancellationTokenSource? _currentCancellation;
     private AlertExecutionScope? _currentExecution;
+    private TaskCompletionSource? _currentCompletion;
+    private int _disposed;
 
     public AlertExecutionCoordinator(AlertExecutionTracker tracker, AlertQueueService queue)
     {
@@ -91,11 +93,13 @@ public sealed class AlertExecutionCoordinator
         var state = capabilities.CreateState();
         var startedTasks = new List<Task>();
         var wasCancelled = false;
+        var completion = new TaskCompletionSource(TaskCreationOptions.RunContinuationsAsynchronously);
 
         lock (_sync)
         {
             _currentCancellation = executionCancellation;
             _currentExecution = execution;
+            _currentCompletion = completion;
         }
 
         execution.MarkRunning();
@@ -156,11 +160,13 @@ public sealed class AlertExecutionCoordinator
                 {
                     _currentExecution = null;
                     _currentCancellation = null;
+                    _currentCompletion = null;
                 }
             }
 
             _queue.MarkFinished(request.QueueSlot);
             _executionGate.Release();
+            completion.TrySetResult();
         }
 
         var trace = execution.Trace;
@@ -179,6 +185,39 @@ public sealed class AlertExecutionCoordinator
             _currentExecution.RequestCancellation(reason);
             _currentCancellation.Cancel();
             return true;
+        }
+    }
+
+    public async Task<bool> StopAsync(TimeSpan timeout)
+    {
+        Task? completion;
+        lock (_sync)
+        {
+            completion = _currentCompletion?.Task;
+        }
+
+        if (completion is null)
+        {
+            return true;
+        }
+
+        CancelCurrent("Application shutdown");
+        try
+        {
+            await completion.WaitAsync(timeout);
+            return true;
+        }
+        catch (TimeoutException)
+        {
+            return false;
+        }
+    }
+
+    public void Dispose()
+    {
+        if (Interlocked.Exchange(ref _disposed, 1) == 0)
+        {
+            _executionGate.Dispose();
         }
     }
 

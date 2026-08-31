@@ -187,7 +187,7 @@ function Publish-Installer {
     )
 
     $installerAssembly = Get-ChildItem -LiteralPath (Split-Path -Parent $InstallerProject) -Recurse -Filter "NeoTwitch.Installer.dll" |
-        Where-Object { $_.FullName -notmatch "\\ref\\" } |
+        Where-Object { $_.FullName -notmatch "\\(ref|refint)\\" } |
         Sort-Object LastWriteTime -Descending |
         Select-Object -First 1
     if ($null -eq $installerAssembly) { throw "No se encontro el ensamblado publicado del instalador." }

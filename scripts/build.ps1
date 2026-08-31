@@ -91,8 +91,13 @@ function Invoke-AppSmokeTest {
             throw "La app escribio un nuevo crash.log durante el arranque: $crashLog"
         }
 
+        $process.Refresh()
         if ($process.HasExited) {
             throw "La app se cerro durante el smoke test con codigo $($process.ExitCode)."
+        }
+
+        if ($process.MainWindowHandle -eq [IntPtr]::Zero) {
+            throw "La app siguio en ejecucion, pero no creo una ventana principal visible durante el smoke test."
         }
     }
     finally {

@@ -62,6 +62,7 @@ private static readonly (string Name, Action Body)[] Tests =
     ("AppConfigNormalizer migrates legacy rule audio paths", AppConfigNormalizerTests.MigratesLegacyRuleAudioPaths),
     ("SettingsStore concurrent saves remain valid", ConfigurationIntegrityTests.ConcurrentSavesRemainValid),
     ("SettingsStore concurrent saves use unique staging files", ConfigurationIntegrityTests.ConcurrentSavesUseUniqueStagingFiles),
+    ("SettingsStore migrates safely on a UI synchronization context", ConfigurationIntegrityTests.LegacyMigrationDoesNotBlockUiSynchronizationContext),
     ("SettingsStore loads valid primary", ConfigurationIntegrityTests.ValidPrimaryLoadsNormally),
     ("SettingsStore recovers corrupt primary from backup", ConfigurationIntegrityTests.CorruptPrimaryRecoversFromBackup),
     ("SettingsStore preserves corrupt primary and backup", ConfigurationIntegrityTests.CorruptPrimaryAndBackupRemainRecoverable),
@@ -528,6 +529,41 @@ static class ConfigurationIntegrityTests
 
         TestAssert.Equal(stagingIds.Count, stagingIds.Distinct(StringComparer.Ordinal).Count());
         TestAssert.Equal(0, Directory.GetFiles(fixture.Root, "*.staging.*", SearchOption.AllDirectories).Length);
+    }
+
+    public static void LegacyMigrationDoesNotBlockUiSynchronizationContext()
+    {
+        using var fixture = new SettingsFixture();
+        Directory.CreateDirectory(fixture.Root);
+        File.WriteAllText(
+            fixture.Paths.SettingsPath,
+            """{"twitchClientSecret":"legacy-secret","rules":[],"ledStrips":[]}""");
+        using var store = fixture.CreateStore(new FakeSecretProtector("user"));
+
+        var completion = Task.Factory.StartNew(
+            () =>
+            {
+                SynchronizationContext.SetSynchronizationContext(new NonPumpingSynchronizationContext());
+                try
+                {
+                    var loaded = store.Load();
+                    TestAssert.Equal("legacy-secret", loaded.TwitchClientSecret);
+                }
+                finally
+                {
+                    SynchronizationContext.SetSynchronizationContext(null);
+                }
+            },
+            CancellationToken.None,
+            TaskCreationOptions.LongRunning,
+            TaskScheduler.Default);
+
+        if (!completion.Wait(TimeSpan.FromSeconds(5)))
+        {
+            throw new InvalidOperationException("La migración bloqueó el hilo de interfaz simulado.");
+        }
+
+        completion.GetAwaiter().GetResult();
     }
 
     public static void ValidPrimaryLoadsNormally()
@@ -1010,6 +1046,13 @@ static class ConfigurationIntegrityTests
             }
 
             return Encoding.UTF8.GetString(Convert.FromBase64String(protectedValue[prefix.Length..]));
+        }
+    }
+
+    private sealed class NonPumpingSynchronizationContext : SynchronizationContext
+    {
+        public override void Post(SendOrPostCallback d, object? state)
+        {
         }
     }
 }

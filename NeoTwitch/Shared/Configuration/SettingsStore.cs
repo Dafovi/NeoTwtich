@@ -139,7 +139,7 @@ public sealed class SettingsStore : IDisposable
         return DefaultAppConfigFactory.Create(_text);
     }
 
-    public void Save(AppConfig config) => SaveAsync(config).GetAwaiter().GetResult();
+    public void Save(AppConfig config) => RunSynchronously(() => SaveAsync(config));
 
     public async Task SaveAsync(AppConfig config, CancellationToken cancellationToken = default)
     {
@@ -159,7 +159,7 @@ public sealed class SettingsStore : IDisposable
     }
 
     public void Export(AppConfig config, string destinationPath) =>
-        ExportAsync(config, destinationPath).GetAwaiter().GetResult();
+        RunSynchronously(() => ExportAsync(config, destinationPath));
 
     public async Task ExportAsync(AppConfig config, string destinationPath, CancellationToken cancellationToken = default)
     {
@@ -168,7 +168,7 @@ public sealed class SettingsStore : IDisposable
     }
 
     public void CreateProtectedBackup(AppConfig config, string destinationPath) =>
-        CreateProtectedBackupAsync(config, destinationPath).GetAwaiter().GetResult();
+        RunSynchronously(() => CreateProtectedBackupAsync(config, destinationPath));
 
     public async Task CreateProtectedBackupAsync(AppConfig config, string destinationPath, CancellationToken cancellationToken = default)
     {
@@ -201,6 +201,9 @@ public sealed class SettingsStore : IDisposable
     }
 
     public void Dispose() => _writeGate.Dispose();
+
+    private static void RunSynchronously(Func<Task> operation) =>
+        Task.Run(operation).GetAwaiter().GetResult();
 
     private void EnsureFailedSecretsHaveReplacements(AppConfig config)
     {

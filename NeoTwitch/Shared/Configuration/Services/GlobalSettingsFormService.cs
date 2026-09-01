@@ -1,4 +1,5 @@
 using NeoTwitch.Models;
+using NeoTwitch.Shared;
 using static NeoTwitch.Services.InputValueParser;
 
 namespace NeoTwitch.Services.Configuration;
@@ -41,8 +42,8 @@ public static class GlobalSettingsFormService
 {
     public static void Apply(AppConfig config, GlobalSettingsFormValues values)
     {
-        config.TwitchClientId = values.TwitchClientId.Trim();
-        config.TwitchClientSecret = values.TwitchClientSecret.Trim();
+        config.TwitchClientId = NeoTwitchProduct.TwitchClientId;
+        config.TwitchClientSecret = "";
         config.SerialPort = ParsePort(values.SerialPort);
         config.BaudRate = ParseInt(values.BaudRate, 115200, 300, 921600);
         config.ArduinoEnabled = values.ArduinoEnabled;

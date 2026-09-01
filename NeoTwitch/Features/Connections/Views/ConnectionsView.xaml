@@ -138,7 +138,7 @@
                                                    FontSize="18"
                                                    Style="{StaticResource TitleText}"
                                                    FontWeight="SemiBold" />
-                                        <TextBlock Text="Autoriza tu cuenta y configura las credenciales de Twitch."
+                                        <TextBlock Text="Autoriza tu cuenta de Twitch desde el navegador."
                                                    Style="{StaticResource MutedText}"
                                                    Margin="0,4,0,0" />
                                     </StackPanel>
@@ -160,7 +160,8 @@
                                 </Grid>
 
                                 <Grid Grid.Row="1"
-                                      Margin="0,18,0,8">
+                                      Margin="0,18,0,8"
+                                      Visibility="Collapsed">
                                     <Grid.ColumnDefinitions>
                                         <ColumnDefinition Width="*" />
                                         <ColumnDefinition Width="16" />
@@ -227,8 +228,9 @@
 
                                 <WrapPanel Grid.Row="2"
                                            HorizontalAlignment="Right"
-                                           Margin="0,8,0,0">
+                                           Margin="0,18,0,0">
                                     <Button Content="Abrir Twitch Console"
+                                            Visibility="Collapsed"
                                             Command="{Binding OpenTwitchConsoleCommand}" />
                                     <Button x:Name="TwitchButton"
                                             Style="{StaticResource PrimaryButton}"

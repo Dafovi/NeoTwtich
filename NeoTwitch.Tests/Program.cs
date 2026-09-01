@@ -500,7 +500,7 @@ static class ConfigurationIntegrityTests
         Task.WhenAll(tasks).GetAwaiter().GetResult();
         var json = File.ReadAllText(fixture.Paths.SettingsPath);
         using var document = JsonDocument.Parse(json);
-        TestAssert.Equal(1, document.RootElement.GetProperty("schemaVersion").GetInt32());
+        TestAssert.Equal(AppConfig.CurrentSchemaVersion, document.RootElement.GetProperty("schemaVersion").GetInt32());
         TestAssert.Contains("client-15", json);
     }
 
@@ -547,7 +547,8 @@ static class ConfigurationIntegrityTests
                 try
                 {
                     var loaded = store.Load();
-                    TestAssert.Equal("legacy-secret", loaded.TwitchClientSecret);
+                    TestAssert.Equal(NeoTwitchProduct.TwitchClientId, loaded.TwitchClientId);
+                    TestAssert.Equal("", loaded.TwitchClientSecret);
                 }
                 finally
                 {
@@ -680,14 +681,14 @@ static class ConfigurationIntegrityTests
 
     public static void CurrentSchemaReloadIsIdempotent()
     {
-        const string current = """{"schemaVersion":1,"twitchClientId":"current-client","rules":[],"ledStrips":[]}""";
+        const string current = """{"schemaVersion":2,"twitchClientId":"frgvnwbwiktsfkt3rs8qwh5c0suo0c","rules":[],"ledStrips":[]}""";
         var first = AppConfigMigrationService.DeserializeAndMigrate(current, JsonOptions());
         var serialized = JsonSerializer.Serialize(first.Config, JsonOptions());
         var second = AppConfigMigrationService.DeserializeAndMigrate(serialized, JsonOptions());
 
         TestAssert.False(first.WasMigrated);
         TestAssert.False(second.WasMigrated);
-        TestAssert.Equal("current-client", second.Config.TwitchClientId);
+        TestAssert.Equal(NeoTwitchProduct.TwitchClientId, second.Config.TwitchClientId);
     }
 
     public static void FutureSchemaIsRejected()
@@ -731,7 +732,8 @@ static class ConfigurationIntegrityTests
         var migrated = AppConfigMigrationService.DeserializeAndMigrate(legacy, JsonOptions());
         var normalized = AppConfigNormalizer.Normalize(migrated.Config, Text);
 
-        TestAssert.Equal("my-client", normalized.TwitchClientId);
+        TestAssert.Equal(NeoTwitchProduct.TwitchClientId, normalized.TwitchClientId);
+        TestAssert.False(normalized.Token.HasToken);
         TestAssert.Equal("COM17", normalized.SerialPort);
         TestAssert.Equal(37, normalized.AlertVolumePercent);
         TestAssert.Equal("rule-stable", normalized.Rules[0].Id);
@@ -864,9 +866,8 @@ static class ConfigurationIntegrityTests
 
         var loaded = store.Load();
 
-        TestAssert.Equal("recoverable-secret", loaded.TwitchClientSecret);
-        TestAssert.Equal(legacy, File.ReadAllText(fixture.Paths.SettingsPath));
-        TestAssert.Contains("conservó", store.LastLoadError);
+        TestAssert.Equal("", loaded.TwitchClientSecret);
+        TestAssert.False(string.Equals(legacy, File.ReadAllText(fixture.Paths.SettingsPath), StringComparison.Ordinal));
     }
 
     public static void BackupDoesNotContainPlaintext()
@@ -1099,7 +1100,7 @@ static class GlobalSettingsFormTests
                 ObsOverlayX: "-1",
                 ObsOverlayY: "99999"));
 
-        TestAssert.Equal("client", config.TwitchClientId);
+        TestAssert.Equal(NeoTwitchProduct.TwitchClientId, config.TwitchClientId);
         TestAssert.Equal("COM7", config.SerialPort);
         TestAssert.Equal(ApplicationLimits.MaxBaudRate, config.BaudRate);
         TestAssert.True(config.ArduinoEnabled);

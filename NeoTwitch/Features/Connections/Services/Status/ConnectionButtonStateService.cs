@@ -65,7 +65,8 @@ public static class ConnectionButtonStateService
                 ? labels.ObsDisconnect
                 : labels.ObsConnect;
 
-        return new ConnectionButtonState(enabled && !busy, content, "Plug");
+        // Connecting is the opt-in action: a first click enables the local OBS integration.
+        return new ConnectionButtonState(!busy, content, "Plug");
     }
 
     public static ConnectionButtonState ResolveObsTest(

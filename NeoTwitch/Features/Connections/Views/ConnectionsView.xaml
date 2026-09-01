@@ -138,7 +138,7 @@
                                                    FontSize="18"
                                                    Style="{StaticResource TitleText}"
                                                    FontWeight="SemiBold" />
-                                        <TextBlock Text="Autoriza tu cuenta y configura las credenciales de Twitch."
+                                        <TextBlock Text="Autoriza tu cuenta de Twitch desde el navegador."
                                                    Style="{StaticResource MutedText}"
                                                    Margin="0,4,0,0" />
                                     </StackPanel>
@@ -160,7 +160,8 @@
                                 </Grid>
 
                                 <Grid Grid.Row="1"
-                                      Margin="0,18,0,8">
+                                      Margin="0,18,0,8"
+                                      Visibility="Collapsed">
                                     <Grid.ColumnDefinitions>
                                         <ColumnDefinition Width="*" />
                                         <ColumnDefinition Width="16" />
@@ -227,8 +228,9 @@
 
                                 <WrapPanel Grid.Row="2"
                                            HorizontalAlignment="Right"
-                                           Margin="0,8,0,0">
+                                           Margin="0,18,0,0">
                                     <Button Content="Abrir Twitch Console"
+                                            Visibility="Collapsed"
                                             Command="{Binding OpenTwitchConsoleCommand}" />
                                     <Button x:Name="TwitchButton"
                                             Style="{StaticResource PrimaryButton}"
@@ -559,7 +561,8 @@
                                           IsChecked="{Binding ObsEnabled, Mode=TwoWay, UpdateSourceTrigger=PropertyChanged}"
                                           Checked="ObsSettingsChanged"
                                           Unchecked="ObsSettingsChanged"
-                                          Margin="0,18,0,8" />
+                                          Margin="0,18,0,8"
+                                          Visibility="Collapsed" />
 
                                 <Grid Grid.Row="2"
                                       Margin="0,0,0,8">
@@ -570,7 +573,7 @@
                                         <ColumnDefinition Width="16" />
                                         <ColumnDefinition Width="*" />
                                     </Grid.ColumnDefinitions>
-                                    <StackPanel>
+                                    <StackPanel Visibility="Collapsed">
                                         <TextBlock Text="Host / URL"
                                                    Style="{StaticResource MutedText}" />
                                         <TextBox x:Name="ObsHostBox"
@@ -578,7 +581,7 @@
                                                  TextChanged="ObsSettingsChanged"
                                                  ToolTip="Normalmente 127.0.0.1 si OBS esta en este mismo PC." />
                                     </StackPanel>
-                                    <StackPanel Grid.Column="2">
+                                    <StackPanel Grid.Column="2" Visibility="Collapsed">
                                         <TextBlock Text="Puerto"
                                                    Style="{StaticResource MutedText}" />
                                         <TextBox x:Name="ObsPortBox"
@@ -586,8 +589,9 @@
                                                  TextChanged="ObsSettingsChanged"
                                                  ToolTip="OBS WebSocket usa 4455 por defecto." />
                                     </StackPanel>
-                                    <StackPanel Grid.Column="4">
-                                        <TextBlock Text="Contraseña opcional"
+                                    <StackPanel Grid.Column="4"
+                                                Grid.ColumnSpan="5">
+                                        <TextBlock Text="Contraseña de OBS"
                                                    Style="{StaticResource MutedText}" />
                                         <Grid Margin="0,4,0,0">
                                             <TextBox x:Name="ObsPasswordBox"
@@ -595,7 +599,7 @@
                                                      Padding="10,6,76,6"
                                                      Text="{Binding ObsPassword, Mode=TwoWay, UpdateSourceTrigger=PropertyChanged}"
                                                      TextChanged="ObsSettingsChanged"
-                                                     ToolTip="Contraseña configurada en OBS WebSocket." />
+                                                     ToolTip="Solo es necesaria si OBS tiene activada la autenticación WebSocket." />
                                             <TextBlock x:Name="ObsPasswordMaskText"
                                                        Margin="1,1,72,1"
                                                        Padding="9,6"

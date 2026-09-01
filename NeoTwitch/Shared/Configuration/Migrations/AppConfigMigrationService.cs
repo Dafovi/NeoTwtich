@@ -1,6 +1,7 @@
 using System.Text.Json;
 using NeoTwitch.Models;
 using NeoTwitch.Services.Configuration;
+using NeoTwitch.Shared;
 
 namespace NeoTwitch.Services.Configuration.Migrations;
 
@@ -53,6 +54,7 @@ public static class AppConfigMigrationService
             version = version switch
             {
                 0 => MigrateLegacyToSchema1(config, idFactory ?? (() => Guid.NewGuid().ToString("N"))),
+                1 => MigrateSchema1ToSchema2(config),
                 _ => throw new InvalidOperationException($"No existe una migración desde el esquema {version}.")
             };
         }
@@ -101,5 +103,23 @@ public static class AppConfigMigrationService
         config.SchemaVersion = 1;
         config.ProtectedSecrets ??= new ProtectedConfigurationSecrets();
         return 1;
+    }
+
+    private static int MigrateSchema1ToSchema2(AppConfig config)
+    {
+        // OAuth tokens belong to the client application that issued them. Switch old local app registrations
+        // to Neo Twitch's public desktop client and require a single clean authorization.
+        if (!string.Equals(config.TwitchClientId, NeoTwitchProduct.TwitchClientId, StringComparison.Ordinal))
+        {
+            config.Token = new TwitchTokenInfo();
+            config.Channel = new TwitchChannelInfo();
+        }
+
+        config.TwitchClientId = NeoTwitchProduct.TwitchClientId;
+        config.TwitchClientSecret = "";
+        config.ProtectedSecrets ??= new ProtectedConfigurationSecrets();
+        config.ProtectedSecrets.TwitchClientSecret = "";
+        config.SchemaVersion = 2;
+        return 2;
     }
 }

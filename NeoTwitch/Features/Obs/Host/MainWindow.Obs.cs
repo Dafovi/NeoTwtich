@@ -1,5 +1,6 @@
 using System.Windows;
 using NeoTwitch.Shared;
+using NeoTwitch.Services.Obs;
 using NeoTwitch.ViewModels.Activity;
 using static NeoTwitch.Services.Text.UiTextFormatter;
 
@@ -48,6 +49,13 @@ public partial class MainWindow
 
         try
         {
+            // OBS WebSocket is local on 127.0.0.1:4455 by default. Treat the connect command as
+            // the user's explicit opt-in instead of requiring an extra enable checkbox first.
+            if (!_connectionsViewModel.ObsEnabled)
+            {
+                _connectionsViewModel.ObsEnabled = true;
+            }
+
             SaveGlobalSettingsFromFields();
             SaveConfig();
 
@@ -61,7 +69,7 @@ public partial class MainWindow
                 return;
             }
 
-            await ConnectObsAsync();
+            await ConnectObsAsync(startObsIfNeeded: true);
         }
         catch (Exception ex)
         {
@@ -85,7 +93,7 @@ public partial class MainWindow
             SaveConfig();
             if (!_obsService.IsConnected)
             {
-                await ConnectObsAsync();
+                await ConnectObsAsync(startObsIfNeeded: true);
                 return;
             }
 
@@ -108,13 +116,13 @@ public partial class MainWindow
         }
     }
 
-    private async Task ConnectObsAsync(CancellationToken cancellationToken = default)
+    private async Task ConnectObsAsync(
+        CancellationToken cancellationToken = default,
+        bool startObsIfNeeded = false)
     {
-        if (!_config.Obs.Enabled)
+        if (startObsIfNeeded && ObsApplicationLaunchService.TryStartIfNotRunning())
         {
-            AddLog(_text.Get(Services.Text.UiTextKeys.ObsDisabledLog), ActivityLogKind.Obs);
-            UpdateObsStatusText();
-            return;
+            await Task.Delay(TimeSpan.FromSeconds(2), cancellationToken);
         }
 
         _isObsConnecting = true;

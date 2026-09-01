@@ -11,6 +11,8 @@ public static class NeoTwitchProduct
     public const string InstallerExecutableName = "NeoTwitch.Installer.exe";
     public const string InstallMarkerFileName = "neo-twitch-install.json";
     public const string ProductIdentifier = "com.dafovi.neotwitch";
+    // Public OAuth identity for the distributed desktop application. Public clients do not use a client secret.
+    public const string TwitchClientId = "frgvnwbwiktsfkt3rs8qwh5c0suo0c";
     public const int InstallMarkerSchemaVersion = 1;
     public const string ReleaseIntegrityManifestFileName = "neo-twitch-release.json";
     public const string ReleaseIntegritySignatureFileName = "neo-twitch-release.json.sig";

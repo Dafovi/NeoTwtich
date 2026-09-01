@@ -66,9 +66,9 @@ El README principal queda como resumen. Para configurar o modificar el proyecto,
 Segun lo que quieras usar:
 
 - Windows.
-- Twitch Developer Console para crear una app y obtener el Client ID.
+- Una cuenta de Twitch para autorizar Neo Twitch desde el navegador.
 - Arduino IDE con la libreria `Adafruit NeoPixel`, si usaras tiras fisicas.
-- OBS Studio con WebSocket activado, si usaras escenas, imagenes, videos o luces virtuales por OBS.
+- OBS Studio si usaras escenas, imagenes, videos o luces virtuales por OBS. Neo Twitch usa la conexión local predeterminada; solo necesitaras su contraseña si activaste la autenticación de WebSocket en OBS.
 - Una integracion Alexa propia, si usaras rutinas Alexa desde Neo Twitch.
 
 El sketch de Arduino esta en:

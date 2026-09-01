@@ -235,11 +235,11 @@ La app tambien migra desde la carpeta legacy:
 
 ### Integridad, recuperación y credenciales
 
-- El esquema persistido actual es `schemaVersion: 1`; no depende de la versión de la aplicación. Un archivo sin versión se interpreta como esquema 0 y pasa por la migración explícita `0 -> 1` antes de normalizar valores. Volver a cargar el esquema 1 es idempotente y una versión futura no soportada se conserva sin sobrescribirla.
+- El esquema persistido actual es `schemaVersion: 2`; no depende de la versión de la aplicación. Un archivo sin versión pasa por las migraciones explícitas `0 -> 1 -> 2` antes de normalizar valores. La migración `1 -> 2` adopta el Client ID público incorporado de Neo Twitch, elimina el Client Secret legacy y limpia tokens emitidos para una aplicación anterior; esos tokens no son reutilizables con otro Client ID. Volver a cargar el esquema 2 es idempotente y una versión futura no soportada se conserva sin sobrescribirla.
 - Cada solicitud de guardado captura una instantánea profunda antes de entrar en una cola de escritor único. Usa un staging único en el mismo directorio, escritura con flush a disco, relectura/validación y `File.Replace`/`File.Move` atómico. Una solicitud más antigua nunca sobrescribe otra ya confirmada con una secuencia posterior.
 - Antes del reemplazo se conserva `settings.backup.json` y, una vez por sesión, un backup fechado. Los backups contienen las credenciales protegidas, nunca texto plano. Un primario corrupto recupera el último backup válido; si ambos están dañados se usan valores por defecto, se bloquean guardados automáticos y no se borran ni sobrescriben los archivos. Los `.staging.*` interrumpidos no participan en la recuperación.
 - IDs de reglas, grupos, assets y tiras LED son no vacíos y únicos dentro de su propio dominio. Se conserva la primera aparición válida; duplicados reciben IDs nuevos. Referencias inexistentes se limpian. Si un ID duplicado hace ambigua una referencia, se desactiva y se informa en el arranque en vez de adivinar un destino.
-- `TwitchClientSecret`, access/refresh tokens de Twitch, token de Alexa y contraseña de OBS se escriben como blobs DPAPI ligados al usuario actual de Windows. Los valores de ejecución siguen en memoria, pero sus campos JSON de texto plano quedan vacíos. Una credencial dañada o creada por otro usuario se omite sin impedir cargar el resto; los guardados quedan bloqueados hasta reemplazar las credenciales fallidas o confirmar una importación válida, evitando borrar el blob recuperable por accidente.
+- Los access/refresh tokens de Twitch, el token de Alexa y la contraseña de OBS se escriben como blobs DPAPI ligados al usuario actual de Windows. El Client ID de Twitch es público y viene compilado en la aplicación; no existe Client Secret de Twitch en la configuración distribuida. Los valores de ejecución siguen en memoria, pero sus campos JSON de texto plano quedan vacíos. Una credencial dañada o creada por otro usuario se omite sin impedir cargar el resto; los guardados quedan bloqueados hasta reemplazar las credenciales fallidas o confirmar una importación válida, evitando borrar el blob recuperable por accidente.
 - Al cargar un archivo legacy con secretos en texto plano, la app primero crea y valida el estado protegido de forma atómica; solo después reemplaza o elimina la copia legacy. Si DPAPI falla, el original recuperable se conserva.
 - La exportación normal es portable y excluye tanto secretos en texto plano como blobs protegidos; al importarla se requiere reautenticar integraciones. Los backups manuales y automáticos sí conservan blobs DPAPI, útiles únicamente para el mismo usuario de Windows.
 - DPAPI reduce la exposición por copia casual de disco o archivos. No protege frente a software malicioso que ya se ejecute con la cuenta de Windows del usuario.
@@ -289,8 +289,8 @@ NeoTwitch/Features/Twitch/
 
 Servicios principales:
 
-- OAuth Device Code Flow para autorizar.
-- Refresh token si hay credenciales suficientes.
+- OAuth Device Code Flow para autorizar con el Client ID público de Neo Twitch.
+- Refresh token sin Client Secret, propio de un cliente público de escritorio.
 - EventSub WebSocket para eventos.
 - Consulta de stream live/offline con Helix.
 
@@ -450,6 +450,7 @@ NeoTwitch/Features/Obs/
 Servicios principales:
 
 - `ObsWebSocketService`: conexion y requests al WebSocket de OBS.
+- `ObsApplicationLaunchService`: inicia OBS desde sus rutas habituales solo cuando el usuario pulsa `Conectar OBS` y no detecta un proceso ya abierto. El arranque automático de Neo Twitch no abre OBS por sí mismo.
 
 Cada mensaje WebSocket OBS se limita a 1,048,576 bytes (1 MiB). El contador se comprueba antes de escribir cada fragmento en memoria, por lo que un mensaje fragmentado se rechaza en cuanto supera el límite. La conexión se aborta y dispone inmediatamente, se limpia el snapshot OBS y se devuelve un error de protocolo acotado. Un mensaje de exactamente 1 MiB se acepta si contiene JSON válido.
 - `ObsOverlayService`: URL/estado para fuente de navegador.

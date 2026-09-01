@@ -1,14 +1,15 @@
 using System.Collections.ObjectModel;
+using NeoTwitch.Shared;
 
 namespace NeoTwitch.Models;
 
 public sealed class AppConfig
 {
-    public const int CurrentSchemaVersion = 1;
+    public const int CurrentSchemaVersion = 2;
 
     public int SchemaVersion { get; set; } = CurrentSchemaVersion;
     public ProtectedConfigurationSecrets ProtectedSecrets { get; set; } = new();
-    public string TwitchClientId { get; set; } = "";
+    public string TwitchClientId { get; set; } = NeoTwitchProduct.TwitchClientId;
     public string TwitchClientSecret { get; set; } = "";
     public TwitchTokenInfo Token { get; set; } = new();
     public TwitchChannelInfo Channel { get; set; } = new();

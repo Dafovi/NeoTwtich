@@ -35,34 +35,16 @@ Si una pestaña depende de un servicio desactivado, puede ocultarse o mostrarse 
 
 ## 3. Twitch
 
-Neo Twitch usa OAuth Device Code Flow y EventSub WebSocket. Esto evita publicar un servidor HTTPS para una app local.
-
-### Crear Client ID
-
-1. Entra a [Twitch Developer Console](https://dev.twitch.tv/console/apps).
-2. Inicia sesion con la cuenta que va a administrar la app.
-3. Si Twitch lo pide, verifica correo y activa 2FA.
-4. Abre `Applications`.
-5. Haz clic en `Register Your Application`.
-6. En `Name`, escribe un nombre unico, por ejemplo `Neo Twitch - NombreDelCanal`.
-7. En `OAuth Redirect URLs`, agrega:
-
-```text
-http://localhost:3000
-```
-
-8. En `Category`, elige la opcion mas cercana a integracion/app.
-9. Crea la app.
-10. Entra a `Manage` y copia el `Client ID`.
-11. Opcional: copia el `Client Secret`.
+Neo Twitch usa OAuth Device Code Flow y EventSub WebSocket. La aplicación ya incluye su Client ID público oficial, por lo que no tienes que crear una aplicación en Twitch Developer Console ni manejar credenciales técnicas.
 
 ### Conectar Twitch
 
 1. Abre `Conexiones`.
-2. En `Twitch`, pega el nombre del canal y el Client ID.
-3. Si quieres refresco automatico mas estable, pega tambien el Client Secret.
-4. Presiona `Conectar Twitch`.
-5. Autoriza en el navegador con el codigo que muestre la app.
+2. Presiona `Conectar Twitch`.
+3. Autoriza Neo Twitch en el navegador con el código que muestra la app.
+4. Espera a que la aplicación confirme el canal conectado.
+
+No copies Client ID, Client Secret ni URL de redirección. Si actualizaste desde una versión antigua, deberás autorizar una vez más porque el token anterior pertenecía a tu antigua aplicación local de Twitch.
 
 Neo Twitch usa estos permisos:
 
@@ -81,28 +63,15 @@ Si el canal aparece como no directo, Neo Twitch no dispara luces, audio ni OBS p
 
 OBS se conecta por `obs-websocket`. En OBS recientes viene incluido.
 
-### Activar WebSocket en OBS
-
-1. Abre OBS Studio.
-2. Ve a `Herramientas` -> `Ajustes del servidor WebSocket`.
-3. Activa el servidor.
-4. Deja el puerto `4455`, salvo que uses otro.
-5. Si activas contraseña, copiala.
-
 ### Conectar en Neo Twitch
 
 1. Abre `Conexiones`.
-2. Activa OBS.
-3. Usa:
+2. Presiona `Conectar OBS`. Si OBS está cerrado, Neo Twitch intenta abrirlo automáticamente.
+3. Si OBS tiene la autenticación de WebSocket activada, pega la contraseña que OBS muestra en `Herramientas` -> `Ajustes del servidor WebSocket`.
+4. Vuelve a presionar `Conectar OBS`.
+5. En la pestaña `OBS`, actualiza escenas si hace falta.
 
-```text
-Host: 127.0.0.1
-Puerto: 4455
-```
-
-4. Pega la contraseña si OBS la pide.
-5. Presiona `Conectar OBS`.
-6. En la pestaña `OBS`, actualiza escenas si hace falta.
+Neo Twitch usa automáticamente la conexión local estándar `127.0.0.1:4455`. No necesitas activar una integración adicional ni cambiar host o puerto para una instalación normal de OBS. La contraseña es el único dato que OBS no permite descubrir de forma segura; Neo Twitch la guarda protegida para los siguientes arranques.
 
 ### Fuentes y Medios
 

@@ -13,20 +13,20 @@ public partial class MainWindow
             return;
         }
 
-        var configuredPort = ParsePort(_config.SerialPort);
-        if (string.IsNullOrWhiteSpace(configuredPort))
-        {
-            if (_config.AutoConnectArduino && !_isArduinoConnecting)
-            {
-                await TryReconnectArduinoFromAvailablePortAsync("Arduino: buscando puerto para reconexion automatica.");
-            }
-
-            return;
-        }
-
         _arduinoMonitorBusy = true;
         try
         {
+            var configuredPort = ParsePort(_config.SerialPort);
+            if (string.IsNullOrWhiteSpace(configuredPort))
+            {
+                if (_config.AutoConnectArduino && !_isArduinoConnecting)
+                {
+                    await TryReconnectArduinoFromAvailablePortAsync("Arduino: buscando puerto para reconexion automatica.");
+                }
+
+                return;
+            }
+
             var availablePorts = SerialLightController.GetAvailablePorts();
             var portPresent = availablePorts.Any(port => string.Equals(port, configuredPort, StringComparison.OrdinalIgnoreCase));
 
@@ -60,21 +60,19 @@ public partial class MainWindow
                 return;
             }
 
-            var now = _timeProvider.GetUtcNow();
-            if (now - _lastArduinoReconnectAttempt < TimeSpan.FromSeconds(8))
+            if (!IsArduinoReconnectDue())
             {
                 return;
             }
 
-            _lastArduinoReconnectAttempt = now;
             AddLog($"Arduino: intentando reconectar automaticamente en {_config.SerialPort}.");
             await ConnectArduinoAsync();
+            ResetArduinoReconnectBackoff();
             await ApplyBackgroundAsync();
         }
         catch (Exception ex)
         {
-            CrashReporter.Log(ex, "No se pudo monitorear el puerto de Arduino.");
-            AddLog($"Arduino monitor: {ex.Message}", ActivityLogKind.Important);
+            ScheduleArduinoReconnectBackoff(ex);
             UpdateStatusText();
         }
         finally
@@ -85,23 +83,41 @@ public partial class MainWindow
 
     private async Task TryReconnectArduinoFromAvailablePortAsync(string logMessage)
     {
-        var now = _timeProvider.GetUtcNow();
-        if (now - _lastArduinoReconnectAttempt < TimeSpan.FromSeconds(8))
+        if (!IsArduinoReconnectDue())
         {
             return;
         }
 
-        _lastArduinoReconnectAttempt = now;
         AddLog(logMessage, ActivityLogKind.Important);
         if (!TryPrepareArduinoAutoConnectPort(out var selectedPort))
         {
             AddLog(_text.Get(Services.Text.UiTextKeys.StartupArduinoAutoConnectMissingPortLog), ActivityLogKind.Important);
+            ScheduleArduinoReconnectBackoff();
             UpdateStatusText();
             return;
         }
 
         AddLog($"Arduino: intentando reconectar automaticamente en {selectedPort}.");
         await ConnectArduinoAsync();
+        ResetArduinoReconnectBackoff();
         await ApplyBackgroundAsync();
+    }
+
+    private bool IsArduinoReconnectDue() => _timeProvider.GetUtcNow() >= _nextArduinoReconnectAttempt;
+
+    private void ResetArduinoReconnectBackoff()
+    {
+        _arduinoReconnectFailures = 0;
+        _nextArduinoReconnectAttempt = DateTimeOffset.MinValue;
+    }
+
+    private void ScheduleArduinoReconnectBackoff(Exception? exception = null)
+    {
+        _arduinoReconnectFailures++;
+        var delay = ArduinoReconnectBackoffPolicy.DelayAfterFailure(_arduinoReconnectFailures);
+        _nextArduinoReconnectAttempt = _timeProvider.GetUtcNow().Add(delay);
+
+        var detail = exception is null ? "No se encontro un puerto disponible." : exception.Message;
+        AddLog($"Arduino: {detail} Reintentare en {Math.Ceiling(delay.TotalSeconds)} segundos.", ActivityLogKind.Important);
     }
 }

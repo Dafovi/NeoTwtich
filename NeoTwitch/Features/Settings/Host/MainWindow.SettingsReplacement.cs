@@ -1,4 +1,5 @@
 using NeoTwitch.ViewModels.Activity;
+using NeoTwitch.Services.Text;
 
 namespace NeoTwitch;
 
@@ -25,6 +26,10 @@ public partial class MainWindow
         _config = _settingsStore.Import(path);
         LoadConfigIntoUi();
         AddLog(logMessage, ActivityLogKind.Important);
-        _dialog.ShowInformation(title, successMessage);
+        var missingMediaCount = GetMissingMediaAssetCount();
+        var message = missingMediaCount > 0
+            ? $"{successMessage}\n\n{_text.Format(UiTextKeys.SettingsMediaRelinkHint, missingMediaCount)}"
+            : successMessage;
+        _dialog.ShowInformation(title, message);
     }
 }

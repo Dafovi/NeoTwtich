@@ -76,7 +76,9 @@ public sealed class SerialLightController : IDisposable
             }
 
             CloseCurrentPort(log);
-            _handle = OpenAndConfigure(normalizedPort, _baudRate);
+            _handle = await Task.Run(
+                () => OpenAndConfigure(normalizedPort, _baudRate),
+                cancellationToken);
             _port = normalizedPort;
             _ackSupported = null;
             openedNewPort = true;
@@ -110,38 +112,45 @@ public sealed class SerialLightController : IDisposable
 
         try
         {
-            if (!HasOpenPort || _handle is null)
-            {
-                log(_text.Get(UiTextKeys.SerialNoArduinoLog));
-                return false;
-            }
-
-            var commandName = SerialLightProtocol.ResolveCommandName(line);
-            if (commandName is not null && _ackSupported != false)
-            {
-                ClearReadBuffer(_handle);
-            }
-
-            var bytes = Encoding.ASCII.GetBytes(line);
-            if (!WindowsSerialPortApi.TryWrite(_handle, bytes, out var written, out var error) || written != bytes.Length)
-            {
-                log(_text.Format(UiTextKeys.SerialWriteFailureLog, _port, new Win32Exception(error).Message));
-                CloseCurrentPort(log);
-                return false;
-            }
-
-            log(_text.Format(UiTextKeys.SerialCommandLog, _port, line.Trim()));
-            if (commandName is not null && _ackSupported != false)
-            {
-                WaitForAck(commandName, log, cancellationToken);
-            }
-
-            return true;
+            return await Task.Run(
+                () => SendLineCore(line, log, cancellationToken),
+                cancellationToken);
         }
         finally
         {
             _gate.Release();
         }
+    }
+
+    private bool SendLineCore(string line, Action<string> log, CancellationToken cancellationToken)
+    {
+        if (!HasOpenPort || _handle is null)
+        {
+            log(_text.Get(UiTextKeys.SerialNoArduinoLog));
+            return false;
+        }
+
+        var commandName = SerialLightProtocol.ResolveCommandName(line);
+        if (commandName is not null && _ackSupported != false)
+        {
+            ClearReadBuffer(_handle);
+        }
+
+        var bytes = Encoding.ASCII.GetBytes(line);
+        if (!WindowsSerialPortApi.TryWrite(_handle, bytes, out var written, out var error) || written != bytes.Length)
+        {
+            log(_text.Format(UiTextKeys.SerialWriteFailureLog, _port, new Win32Exception(error).Message));
+            CloseCurrentPort(log);
+            return false;
+        }
+
+        log(_text.Format(UiTextKeys.SerialCommandLog, _port, line.Trim()));
+        if (commandName is not null && _ackSupported != false)
+        {
+            WaitForAck(commandName, log, cancellationToken);
+        }
+
+        return true;
     }
 
     public void Dispose()

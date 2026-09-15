@@ -31,6 +31,7 @@ public sealed class SettingsViewModel : ObservableObject
     private Action _createBackup = Noop;
     private Action _restoreBackup = Noop;
     private Action _runDiagnostics = Noop;
+    private Action _relinkMediaFiles = Noop;
     private Action _save = Noop;
     private Action<object?> _selectCloseBehavior = Noop;
 
@@ -41,6 +42,7 @@ public sealed class SettingsViewModel : ObservableObject
         CreateBackupCommand = new RelayCommand(() => _createBackup());
         RestoreBackupCommand = new RelayCommand(() => _restoreBackup());
         RunDiagnosticsCommand = new RelayCommand(() => _runDiagnostics());
+        RelinkMediaFilesCommand = new RelayCommand(() => _relinkMediaFiles());
         SaveCommand = new RelayCommand(() => _save());
         SelectCloseBehaviorCommand = new RelayCommand(parameter => _selectCloseBehavior(parameter));
     }
@@ -54,6 +56,8 @@ public sealed class SettingsViewModel : ObservableObject
     public RelayCommand RestoreBackupCommand { get; }
 
     public RelayCommand RunDiagnosticsCommand { get; }
+
+    public RelayCommand RelinkMediaFilesCommand { get; }
 
     public RelayCommand SaveCommand { get; }
 
@@ -188,7 +192,8 @@ public sealed class SettingsViewModel : ObservableObject
         Action createBackup,
         Action restoreBackup,
         Action runDiagnostics,
-        Action save)
+        Action save,
+        Action relinkMediaFiles)
     {
         _importSettings = importSettings;
         _exportSettings = exportSettings;
@@ -196,6 +201,7 @@ public sealed class SettingsViewModel : ObservableObject
         _restoreBackup = restoreBackup;
         _runDiagnostics = runDiagnostics;
         _save = save;
+        _relinkMediaFiles = relinkMediaFiles;
     }
 
     public void ConfigureEditorActions(Action<object?> selectCloseBehavior)

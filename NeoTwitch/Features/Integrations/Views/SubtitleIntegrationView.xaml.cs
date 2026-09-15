@@ -33,7 +33,7 @@ public partial class SubtitleIntegrationView : NeoTwitchView
     internal void InitializeConfiguration(SubtitleIntegrationConfig cfg)
     {
         _installation = new SayonariInstallation(CaptionMode);
-        Section.Header = CaptionMode ? "Live Captions · Voz a subtítulos" : "Chat Translator · Traducción del chat";
+        SectionTitle.Text = CaptionMode ? "Live Captions · Voz a subtítulos" : "Chat Translator · Traducción del chat";
         Description.Text = CaptionMode ? "Subtítulos de tu micrófono en OBS con jimakuChan. Se activa de forma independiente del traductor del chat."
             : "Traduce mensajes de Twitch con twitchTransFreeNext y muéstralos en OBS. Se activa de forma independiente del micrófono.";
         Requirements.Text = CaptionMode ? "Necesita Google Chrome. Al activar se abre una ventana para permitir e iniciar el micrófono. El reconocimiento envía audio al servicio de voz de Google; la traducción usa modelos locales de Chrome."
@@ -42,8 +42,8 @@ public partial class SubtitleIntegrationView : NeoTwitchView
         TranslateBox.Visibility = CaptionMode ? Visibility.Visible : Visibility.Collapsed;
         ChatOptions.Visibility = CaptionMode ? Visibility.Collapsed : Visibility.Visible;
         SourceBox.ItemsSource = new[] { new LanguageChoice("es-CO", "Español (Colombia)"), new("es-ES", "Español (España)"), new("es-MX", "Español (México)"),
-            new("en-US", "English"), new("pt-BR", "Português"), new("fr-FR", "Français"), new("de-DE", "Deutsch"), new("ja", "日本語"), new("ko", "한국어") };
-        TargetBox.ItemsSource = new[] { new LanguageChoice("en", "English"), new("es", "Español"), new("pt", "Português"), new("fr", "Français"), new("de", "Deutsch"), new("ja", "日本語"), new("ko", "한국어") };
+            new("en-US", "English"), new("pt-BR", "Português"), new("fr-FR", "Français"), new("de-DE", "Deutsch"), new("ru-RU", "Ruso (Русский)"), new("ja", "日本語"), new("ko", "한국어") };
+        TargetBox.ItemsSource = new[] { new LanguageChoice("en", "English"), new("es", "Español"), new("pt", "Português"), new("fr", "Français"), new("de", "Deutsch"), new("ru", "Ruso (Русский)"), new("ja", "日本語"), new("ko", "한국어") };
         SourceBox.SelectedValue = cfg.SourceLanguage;
         TargetBox.SelectedValue = cfg.TargetLanguage;
         TranslateBox.IsChecked = cfg.Translate;

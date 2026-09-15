@@ -417,6 +417,11 @@ public static class UiTextKeys
     public const string SettingsImportSuccessPrompt = "settings.import_success_prompt";
     public const string SettingsImportFailureCrash = "settings.import_failure_crash";
     public const string SettingsImportFailureLog = "settings.import_failure_log";
+    public const string SettingsMediaRelinkTitle = "settings.media_relink_title";
+    public const string SettingsMediaRelinkPickFolder = "settings.media_relink_pick_folder";
+    public const string SettingsMediaRelinkNoMissing = "settings.media_relink_no_missing";
+    public const string SettingsMediaRelinkResult = "settings.media_relink_result";
+    public const string SettingsMediaRelinkHint = "settings.media_relink_hint";
     public const string SettingsStoreLoadFailureCrash = "settings_store.load_failure_crash";
     public const string SettingsStoreInvalidConfigFailure = "settings_store.invalid_config_failure";
     public const string SettingsStorePruneBackupFailureCrash = "settings_store.prune_backup_failure_crash";

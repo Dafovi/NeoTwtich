@@ -89,7 +89,8 @@ public partial class MainWindow
                 CreateBackup,
                 RestoreBackup,
                 RunDiagnostics,
-                SaveSettingsFromUi);
+                SaveSettingsFromUi,
+                RelinkMissingMediaFiles);
             _settingsViewModel.ConfigureEditorActions(SelectCloseBehavior);
             _audioLibraryViewModel.ConfigureActions(BrowseNewAudio, SaveNewAudio, AddAudioGroup, ViewAudioGroup, DeleteAudioGroup, PreviewAudio, DeleteAudio);
             _audioLibraryViewModel.ConfigureVolume(UpdateAlertVolume);

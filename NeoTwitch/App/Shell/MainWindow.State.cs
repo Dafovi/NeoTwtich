@@ -54,7 +54,8 @@ public partial class MainWindow
     private bool _lastArduinoPortPresent = true;
     private bool? _lastAppliedStartWithWindows;
     private Rect _restoreWindowBounds = Rect.Empty;
-    private DateTimeOffset _lastArduinoReconnectAttempt = DateTimeOffset.MinValue;
+    private DateTimeOffset _nextArduinoReconnectAttempt = DateTimeOffset.MinValue;
+    private int _arduinoReconnectFailures;
     private string _twitchConnectionError = "";
     private string _obsConnectionError = "";
     private bool _refreshingAudioLibrary;

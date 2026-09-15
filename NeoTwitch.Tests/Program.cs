@@ -153,6 +153,7 @@ private static readonly (string Name, Action Body)[] Tests =
     ("SerialPortNameService cleans friendly port names", SerialPortNameTests.CleansFriendlyPortNames),
     ("SerialLightProtocol resolves commands", SerialLightProtocolTests.ResolvesCommands),
     ("SerialLightProtocol detects responses", SerialLightProtocolTests.DetectsResponses),
+    ("Arduino reconnect backoff grows and caps", ArduinoReconnectBackoffTests.GrowsAndCaps),
     ("LedPreviewService calculates responsive dot counts", LedPreviewTests.CalculatesResponsiveDotCounts),
     ("LedPreviewService builds solid frames with brightness floor", LedPreviewTests.BuildsSolidFramesWithBrightnessFloor),
     ("LedPreviewService builds rainbow frames", LedPreviewTests.BuildsRainbowFrames),
@@ -168,6 +169,7 @@ private static readonly (string Name, Action Body)[] Tests =
     ("LibraryGroupService clears group references", LibraryGroupServiceTests.ClearsGroupReferences),
     ("LibraryGroupRowFactoryService builds audio and media groups", LibraryGroupRowFactoryTests.BuildsAudioAndMediaGroups),
     ("LibrarySummaryService formats counts and last usage", LibrarySummaryTests.FormatsCountsAndLastUsage),
+    ("LibraryPathRelinkService relinks unique media filenames", LibraryPathRelinkServiceTests.RelinksUniqueFilenames),
     ("LibraryScreenViewModel updates rows and summary", LibraryScreenViewModelTests.UpdatesRowsAndSummary),
     ("SettingsViewModel executes configured actions", SettingsViewModelTests.ExecutesConfiguredActions),
     ("MediaLibraryKindCatalog maps media metadata", MediaLibraryKindCatalogTests.MapsMediaMetadata),
@@ -3784,7 +3786,8 @@ static class SettingsViewModelTests
             () => actions.Add("backup"),
             () => actions.Add("restore"),
             () => actions.Add("diagnostics"),
-            () => actions.Add("save"));
+            () => actions.Add("save"),
+            () => actions.Add("relink"));
         viewModel.ConfigureEditorActions(parameter => actions.Add($"close:{parameter}"));
 
         viewModel.ImportSettingsCommand.Execute(null);
@@ -3793,9 +3796,10 @@ static class SettingsViewModelTests
         viewModel.RestoreBackupCommand.Execute(null);
         viewModel.RunDiagnosticsCommand.Execute(null);
         viewModel.SaveCommand.Execute(null);
+        viewModel.RelinkMediaFilesCommand.Execute(null);
         viewModel.SelectCloseBehaviorCommand.Execute("Tray");
 
-        TestAssert.Equal("import,export,backup,restore,diagnostics,save,close:Tray", string.Join(",", actions));
+        TestAssert.Equal("import,export,backup,restore,diagnostics,save,relink,close:Tray", string.Join(",", actions));
 
         viewModel.UpdateMetadata("settings.json", "backups", "V2.2.3");
         viewModel.UpdateBackupPathText("backup manual");
@@ -6320,6 +6324,18 @@ static class ShellViewModelTests
         TestAssert.Equal("300 LEDs", shell.ArduinoStatusText);
         TestAssert.Equal("Alexa lista", shell.AlexaConnectionText);
         TestAssert.Equal("Fondo activo", shell.AlexaSidebarStatusText);
+    }
+}
+
+static class ArduinoReconnectBackoffTests
+{
+    public static void GrowsAndCaps()
+    {
+        TestAssert.Equal(TimeSpan.Zero, ArduinoReconnectBackoffPolicy.DelayAfterFailure(0));
+        TestAssert.Equal(TimeSpan.FromSeconds(8), ArduinoReconnectBackoffPolicy.DelayAfterFailure(1));
+        TestAssert.Equal(TimeSpan.FromSeconds(16), ArduinoReconnectBackoffPolicy.DelayAfterFailure(2));
+        TestAssert.Equal(TimeSpan.FromSeconds(32), ArduinoReconnectBackoffPolicy.DelayAfterFailure(3));
+        TestAssert.Equal(TimeSpan.FromMinutes(1), ArduinoReconnectBackoffPolicy.DelayAfterFailure(10));
     }
 }
 

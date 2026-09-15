@@ -197,6 +197,9 @@
                                             Command="{Binding ImportSettingsCommand}" />
                                     <Button Content="Exportar configuracion"
                                             Command="{Binding ExportSettingsCommand}" />
+                                    <Button Content="Reenlazar archivos multimedia"
+                                            ToolTip="Busca audio, imagenes y videos que faltan despues de importar una configuracion"
+                                            Command="{Binding RelinkMediaFilesCommand}" />
                                 </StackPanel>
                             </Border>
 

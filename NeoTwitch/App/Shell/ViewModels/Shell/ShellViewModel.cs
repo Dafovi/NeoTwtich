@@ -23,6 +23,7 @@ public sealed class ShellViewModel : ObservableObject
     public const int ImagesTabIndex = 8;
     public const int ActivityTabIndex = 9;
     public const int SettingsTabIndex = 10;
+    public const int IntegrationsTabIndex = 11;
 
     private readonly Func<int, bool> _navigate;
     private int _selectedTabIndex;
@@ -64,7 +65,8 @@ public sealed class ShellViewModel : ObservableObject
             new(VideosTabIndex, "videos", text.Get(UiTextKeys.NavVideos), "Assets/Icons/nav_videos.png", text.Get(UiTextKeys.NavVideos)),
             new(ImagesTabIndex, "images", text.Get(UiTextKeys.NavImages), "Assets/Icons/nav_images.png", text.Get(UiTextKeys.NavImages)),
             new(ActivityTabIndex, "activity", text.Get(UiTextKeys.NavActivity), "Assets/Icons/nav_activity.png", text.Get(UiTextKeys.NavActivity)),
-            new(SettingsTabIndex, "settings", text.Get(UiTextKeys.NavConfiguration), "Assets/Icons/nav_settings.png", text.Get(UiTextKeys.NavConfiguration))
+            new(SettingsTabIndex, "settings", text.Get(UiTextKeys.NavConfiguration), "Assets/Icons/nav_settings.png", text.Get(UiTextKeys.NavConfiguration)),
+            new(IntegrationsTabIndex, "integrations", "Integraciones", "Assets/Icons/nav_connections.png", "Integraciones")
         ];
 
         VersionText = $"V{NeoTwitchProduct.CurrentVersionText}";

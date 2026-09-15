@@ -11,6 +11,7 @@ public partial class MainWindow
 {
     private void ConfigureNavigationIcons()
     {
+        NavIntegrationsButton.Content = ButtonIconContentService.CreateNavigationItem("Assets/Icons/nav_connections.png", "Integraciones");
         NavSettingsButton.Content = ButtonIconContentService.CreateNavigationItem("Assets/Icons/nav_panel.png", _text.Get(UiTextKeys.NavPanel));
         NavConnectionsButton.Content = ButtonIconContentService.CreateNavigationItem("Assets/Icons/nav_connections.png", _text.Get(UiTextKeys.NavConnections));
         NavRulesButton.Content = ButtonIconContentService.CreateNavigationItem("Assets/Icons/nav_rules.png", _text.Get(UiTextKeys.NavAlerts));

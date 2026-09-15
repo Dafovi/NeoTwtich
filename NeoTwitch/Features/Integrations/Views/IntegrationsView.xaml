@@ -1,0 +1,52 @@
+<views:NeoTwitchView x:Class="NeoTwitch.Views.IntegrationsView"
+    xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+    xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+    xmlns:views="clr-namespace:NeoTwitch.Views" Loaded="View_Loaded">
+    <ScrollViewer VerticalScrollBarVisibility="Auto">
+        <StackPanel Margin="24">
+            <TextBlock Text="Integraciones" FontSize="28" FontWeight="SemiBold" Style="{StaticResource TitleText}" />
+            <TextBlock Text="Aplicaciones opcionales para tu stream, con sus creadores siempre presentes."
+                       Style="{StaticResource MutedText}" TextWrapping="Wrap" Margin="0,6,0,20" />
+            <Border Style="{StaticResource Card}">
+                <StackPanel>
+                    <TextBlock Text="MeowMeowCatCam" FontSize="22" FontWeight="SemiBold" />
+                    <TextBlock Text="Creado por catherpiee" Margin="0,4,0,10" />
+                    <TextBlock Text="Memes de gatos que reaccionan a tus manos y expresiones. Muestra el gato, la cámara o ambos en OBS."
+                               TextWrapping="Wrap" />
+                    <Button Content="Ver proyecto y creador ↗" HorizontalAlignment="Left" Click="Project_Click" Margin="0,10,0,16" />
+                    <TextBlock Text="Al instalar, Neo Twitch descarga la aplicación original y un Python privado con sus dependencias. No necesitas instalar Python por tu cuenta. Requiere internet y Windows x64."
+                               Style="{StaticResource MutedText}" TextWrapping="Wrap" />
+                    <TextBlock Text="El proyecto y sus recursos pertenecen a sus respectivos autores. Descarga directa desde GitHub; no se incluyen en Neo Twitch."
+                               Style="{StaticResource MutedText}" TextWrapping="Wrap" Margin="0,8,0,16" />
+                    <WrapPanel x:Name="SetupActions">
+                        <Button x:Name="InstallButton" Content="Instalar" Click="Install_Click" />
+                        <Button x:Name="UninstallButton" Content="Desinstalar" Click="Uninstall_Click" Margin="8,0,0,0" />
+                    </WrapPanel>
+                    <Separator Margin="0,18" />
+                    <StackPanel x:Name="OptionsPanel">
+                        <TextBlock Text="Escena de OBS" FontWeight="SemiBold" />
+                        <DockPanel Margin="0,6,0,12">
+                            <Button Content="Actualizar escenas" DockPanel.Dock="Right" Click="Refresh_Click" Margin="8,0,0,0" />
+                            <ComboBox x:Name="SceneBox" MinWidth="220" />
+                        </DockPanel>
+                        <TextBlock Text="Mostrar en OBS" FontWeight="SemiBold" />
+                        <ComboBox x:Name="OutputBox" SelectedIndex="0" Margin="0,6,0,12">
+                            <ComboBoxItem Content="Gato y cámara" />
+                            <ComboBoxItem Content="Solo gato" />
+                            <ComboBoxItem Content="Solo cámara" />
+                        </ComboBox>
+                        <TextBlock Text="Usa la cámara predeterminada. Si otra aplicación la bloquea, desactiva allí la cámara antes de iniciar. Mantén abiertas las ventanas Camera y Meme durante la captura."
+                                   TextWrapping="Wrap" Style="{StaticResource MutedText}" Margin="0,0,0,12" />
+                    </StackPanel>
+                    <WrapPanel>
+                        <Button x:Name="StartButton" Content="Activar en OBS" Click="Start_Click" />
+                        <Button x:Name="StopButton" Content="Detener" Click="Stop_Click" Margin="8,0,0,0" />
+                        <Button x:Name="CancelButton" Content="Cancelar" Click="Cancel_Click" Margin="8,0,0,0" Visibility="Collapsed" />
+                    </WrapPanel>
+                    <ProgressBar x:Name="ProgressBar" Height="5" IsIndeterminate="True" Visibility="Collapsed" Margin="0,16,0,0" />
+                    <TextBlock x:Name="StatusText" TextWrapping="Wrap" Margin="0,12,0,0" AutomationProperties.LiveSetting="Polite" />
+                </StackPanel>
+            </Border>
+        </StackPanel>
+    </ScrollViewer>
+</views:NeoTwitchView>

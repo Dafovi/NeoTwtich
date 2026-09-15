@@ -15,6 +15,8 @@ public sealed class AppConfig
     public TwitchChannelInfo Channel { get; set; } = new();
     public AlexaIntegrationConfig Alexa { get; set; } = new();
     public ObsIntegrationConfig Obs { get; set; } = new();
+    public string CatCamScene { get; set; } = "";
+    public int CatCamOutput { get; set; }
     public ObservableCollection<EventRule> Rules { get; set; } = [];
     public string SerialPort { get; set; } = "";
     public ObservableCollection<LedStripConfig> LedStrips { get; set; } = [];

@@ -20,7 +20,7 @@ public partial class MainWindow
             ? ThemePalette.Dark
             : ThemePalette.Light;
 
-        foreach (var button in new[] { NavSettingsButton, NavConnectionsButton, NavRulesButton, NavStripsButton, NavAlexaButton, NavAudioButton, NavImagesButton, NavVideosButton, NavObsButton, NavPreferencesButton, NavActivityButton })
+        foreach (var button in new[] { NavSettingsButton, NavConnectionsButton, NavRulesButton, NavStripsButton, NavAlexaButton, NavAudioButton, NavImagesButton, NavVideosButton, NavObsButton, NavPreferencesButton, NavActivityButton, NavIntegrationsButton })
         {
             ApplyNavigationButtonTheme(button, palette);
         }

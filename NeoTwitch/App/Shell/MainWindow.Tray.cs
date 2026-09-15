@@ -112,6 +112,8 @@ public partial class MainWindow
         _ruleLedPreviewTimer.Stop();
         _backgroundLedPreviewTimer.Stop();
 
+        try { await IntegrationsView.ShutdownAsync(); }
+        catch (Exception ex) { CrashReporter.Log(ex, "No se pudo ocultar la integración en OBS al salir."); }
         await _services.DisposeAsync();
         foreach (var failure in _services.DisposalFailures)
         {

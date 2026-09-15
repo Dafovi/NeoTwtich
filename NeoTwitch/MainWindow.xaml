@@ -131,8 +131,13 @@
                 Grid.Column="0"
                 Background="{DynamicResource ThemeSidebarBrush}"
                 Padding="10">
-            <DockPanel LastChildFill="False">
-                <StackPanel DockPanel.Dock="Top"
+            <Grid>
+                <Grid.RowDefinitions>
+                    <RowDefinition Height="*" />
+                    <RowDefinition Height="Auto" />
+                </Grid.RowDefinitions>
+                <ScrollViewer Grid.Row="0" VerticalScrollBarVisibility="Auto" HorizontalScrollBarVisibility="Disabled">
+                <StackPanel
                             HorizontalAlignment="Stretch"
                             Margin="0,8,0,0">
                     <Rectangle Height="1"
@@ -194,9 +199,12 @@
                             Style="{StaticResource NavButton}"
                             ToolTip="Configuracion"
                             Click="NavButton_Click" />
+                    <Button x:Name="NavIntegrationsButton" Tag="11" Content="Integraciones"
+                            Style="{StaticResource NavButton}" ToolTip="Integraciones" Click="NavButton_Click" />
                 </StackPanel>
+                </ScrollViewer>
 
-                <StackPanel DockPanel.Dock="Bottom"
+                <StackPanel Grid.Row="1"
                             HorizontalAlignment="Stretch">
                     <Rectangle Height="1"
                                Fill="#331A0B2E"
@@ -249,7 +257,7 @@
                                HorizontalAlignment="Left"
                                Margin="4,0,0,0" />
                 </StackPanel>
-            </DockPanel>
+            </Grid>
         </Border>
 
         <Grid Grid.Row="1"
@@ -308,6 +316,9 @@
 
             <TabItem x:Name="SettingsTab" Header="Configuracion">
                 <views:SettingsView x:Name="SettingsView" />
+            </TabItem>
+            <TabItem x:Name="IntegrationsTab" Header="Integraciones">
+                <views:IntegrationsView x:Name="IntegrationsView" />
             </TabItem>
             </TabControl>
 

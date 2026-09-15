@@ -60,6 +60,7 @@ El README principal queda como resumen. Para configurar o modificar el proyecto,
 - [Guia tecnica](docs/DESARROLLO.md): arquitectura del repo, carpetas, builds, versionado, debug, protocolo Arduino y servicios principales.
 - [Guia completa de Alexa](docs/ALEXA_SETUP.md): paso a paso para crear la Skill, Lambda, Account Linking y rutinas.
 - [Atribuciones de iconos](docs/ATRIBUCIONES_ICONOS.md): creditos de iconografia y assets.
+- [Integraciones opcionales](docs/INTEGRACIONES.md): instalación de MeowMeowCatCam, crédito a catherpiee y captura en OBS.
 
 ## Requisitos
 

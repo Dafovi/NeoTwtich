@@ -47,6 +47,8 @@
                     <TextBlock x:Name="StatusText" TextWrapping="Wrap" Margin="0,12,0,0" AutomationProperties.LiveSetting="Polite" />
                 </StackPanel>
             </Border>
+            <views:SubtitleIntegrationView x:Name="LiveCaptionsView" CaptionMode="True" />
+            <views:SubtitleIntegrationView x:Name="ChatTranslatorView" CaptionMode="False" />
         </StackPanel>
     </ScrollViewer>
 </views:NeoTwitchView>

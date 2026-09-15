@@ -1,0 +1,22 @@
+<!doctype html><html lang="es"><meta charset="utf-8"><title>Neo Twitch · Live Captions</title>
+<style>body{background:#111827;color:#f3f4f6;font:17px system-ui;padding:28px;max-width:720px;margin:auto}button{padding:12px 18px;margin:8px;border:0;border-radius:8px;background:#14b8a6;color:#062924;font-weight:700}#preview{margin-top:24px;white-space:pre-wrap}a{color:#5eead4}</style>
+<h1>Live Captions</h1><p>Motor jimakuChan por <a href="https://github.com/sayonari/jimakuChan" target="_blank" rel="noreferrer">sayonari y saatan</a>. Integración de Neo Twitch.</p>
+<p>Permite el micrófono de Chrome. El reconocimiento usa el servicio de voz de Google; la traducción usa modelos locales de Chrome. Mantén esta ventana abierta mientras utilizas los subtítulos.</p>
+<button id="start">Iniciar micrófono</button><button id="stop">Pausar</button><p id="status">Cargando…</p><div id="preview"></div>
+<script src="recognizer.js"></script><script src="chrome_translator.js"></script><script src="translator.js"></script>
+<script>
+let cfg,rec,translator,original='',translation='',status='Esperando permiso del micrófono',listening=false,seq=0,failures=0,closed=false;
+const statusEl=document.getElementById('status');
+async function push(kind='status'){if(closed)return;try{const r=await fetch('push',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({kind,original,translation,status,listening})});if(!r.ok)throw Error();failures=0}catch{if(++failures>=3){closed=true;rec?.stop();statusEl.textContent='Neo Twitch detuvo la integración. Puedes cerrar esta ventana.'}}}
+function show(){statusEl.textContent=status;document.getElementById('preview').textContent=original+'\n'+translation;push('text')}
+async function initialize(){cfg=await(await fetch('config')).json();translator=new JimakuTranslator();await translator.checkChrome();
+rec=new JimakuRecognizer({lang:cfg.sourceLanguage,mode:'continuous',shortPause:750});
+rec.addEventListener('state',e=>{listening=e.detail.listening;status=listening?'Escuchando micrófono':'Micrófono pausado o esperando permiso';statusEl.textContent=status;push()});
+rec.addEventListener('error',e=>{status='Micrófono: '+(e.detail.error||e.detail.message);statusEl.textContent=status;push()});
+rec.addEventListener('interim',e=>{seq++;original=e.detail.text;translation='';show()});
+rec.addEventListener('final',async e=>{const id=++seq;original=e.detail.text;translation='';show();if(cfg.translate){const result=await translator.translateOne(e.detail.text,cfg.sourceLanguage,cfg.targetLanguage);if(id!==seq||closed)return;if(result.ok)translation=result.text;else status='No se pudo traducir. Revisa el modelo de idioma de Chrome.';show()}});
+statusEl.textContent=status;setInterval(()=>push(),1500)}
+document.getElementById('start').onclick=async()=>{try{if(!rec)await initialize();if(cfg.translate){status='Preparando traducción…';statusEl.textContent=status;await translator.preloadChrome(cfg.sourceLanguage,cfg.targetLanguage)}await rec.start()}catch(e){status='No se pudo iniciar: '+e.message;statusEl.textContent=status;push()}};
+document.getElementById('stop').onclick=()=>{seq++;rec?.stop();original='';translation='';show()};
+window.addEventListener('beforeunload',()=>rec?.stop());initialize().catch(e=>statusEl.textContent='Error al cargar: '+e.message);
+</script></html>

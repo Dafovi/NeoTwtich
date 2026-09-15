@@ -61,6 +61,7 @@ El README principal queda como resumen. Para configurar o modificar el proyecto,
 - [Guia completa de Alexa](docs/ALEXA_SETUP.md): paso a paso para crear la Skill, Lambda, Account Linking y rutinas.
 - [Atribuciones de iconos](docs/ATRIBUCIONES_ICONOS.md): creditos de iconografia y assets.
 - [Integraciones opcionales](docs/INTEGRACIONES.md): instalación de MeowMeowCatCam, crédito a catherpiee y captura en OBS.
+- [Subtítulos y traducción](docs/SUBTITULOS.md): Live Captions y Chat Translator independientes, basados en los proyectos de sayonari.
 
 ## Requisitos
 

@@ -148,7 +148,7 @@ public sealed class CatCamInstallation
         return info;
     }
 
-    private static async Task RunAsync(string executable, string directory, CancellationToken token, params string[] args)
+    internal static async Task RunAsync(string executable, string directory, CancellationToken token, params string[] args)
     {
         using var process = Process.Start(StartInfo(executable, directory, args)) ?? throw new IOException("No se pudo iniciar Python.");
         var stdout = process.StandardOutput.ReadToEndAsync();

@@ -17,6 +17,8 @@ public partial class MainWindow
         try
         {
             cancellationToken.ThrowIfCancellationRequested();
+            if (twitchEvent.Kind == TwitchEventKind.ChatCommand)
+                IntegrationsView.ReceiveChat(twitchEvent);
             RegisterDashboardTwitchEvent(twitchEvent);
             var matchingRules = ResolveMatchingRules(twitchEvent);
             if (matchingRules.Length == 0)

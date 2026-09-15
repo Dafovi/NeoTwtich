@@ -1,0 +1,51 @@
+<views:NeoTwitchView x:Class="NeoTwitch.Views.SubtitleIntegrationView"
+ xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation" xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+ xmlns:views="clr-namespace:NeoTwitch.Views" Loaded="View_Loaded">
+ <Expander x:Name="Section" Header="Subtítulos" Margin="0,18,0,0">
+  <Border Style="{StaticResource Card}">
+   <StackPanel>
+    <TextBlock x:Name="Description" TextWrapping="Wrap" />
+    <TextBlock Text="Por sayonari (Ryota Nishimura) y saatan · licencia MIT" Style="{StaticResource MutedText}" Margin="0,8" />
+    <Button Content="Ver proyecto y creador ↗" HorizontalAlignment="Left" Click="Project_Click" />
+    <TextBlock x:Name="Requirements" TextWrapping="Wrap" Style="{StaticResource MutedText}" Margin="0,12" />
+    <WrapPanel x:Name="SetupPanel">
+     <Button x:Name="InstallButton" Content="Instalar" Click="Install_Click" />
+     <Button x:Name="UninstallButton" Content="Desinstalar" Click="Uninstall_Click" Margin="8,0" />
+    </WrapPanel>
+    <StackPanel x:Name="OptionsPanel" Margin="0,16,0,0">
+     <TextBlock Text="Escena de OBS" FontWeight="SemiBold" />
+     <DockPanel Margin="0,6,0,12">
+      <Button Content="Actualizar escenas" DockPanel.Dock="Right" Click="Refresh_Click" Margin="8,0,0,0" />
+      <ComboBox x:Name="SceneBox" MinWidth="220" />
+     </DockPanel>
+     <Grid>
+      <Grid.ColumnDefinitions><ColumnDefinition Width="*"/><ColumnDefinition Width="16"/><ColumnDefinition Width="*"/></Grid.ColumnDefinitions>
+      <StackPanel><TextBlock x:Name="SourceLabel" Text="Idioma hablado"/><ComboBox x:Name="SourceBox" DisplayMemberPath="Label" SelectedValuePath="Code" Margin="0,6,0,12"/></StackPanel>
+      <StackPanel Grid.Column="2"><TextBlock Text="Idioma de traducción"/><ComboBox x:Name="TargetBox" DisplayMemberPath="Label" SelectedValuePath="Code" Margin="0,6,0,12"/></StackPanel>
+     </Grid>
+     <CheckBox x:Name="TranslateBox" Content="Traducir los subtítulos" Margin="0,0,0,10" />
+     <CheckBox x:Name="OriginalBox" Content="Mostrar también el texto original en OBS" Margin="0,0,0,12" />
+     <CheckBox x:Name="TopBox" Content="Colocar en la parte superior de la escena" Margin="0,0,0,12" />
+     <WrapPanel>
+      <StackPanel Width="135" Margin="0,0,12,0"><TextBlock Text="Tamaño de letra"/><TextBox x:Name="FontBox" Margin="0,6,0,12"/></StackPanel>
+      <StackPanel Width="135" Margin="0,0,12,0"><TextBlock Text="Color (#RRGGBB)"/><TextBox x:Name="ColorBox" Margin="0,6,0,12"/></StackPanel>
+      <StackPanel Width="150"><TextBlock Text="Duración (segundos)"/><TextBox x:Name="DurationBox" Margin="0,6,0,12"/></StackPanel>
+     </WrapPanel>
+     <StackPanel x:Name="ChatOptions">
+      <TextBlock Text="Usuarios ignorados (separados por comas)"/><TextBox x:Name="IgnoreBox" Margin="0,6,0,12"/>
+      <CheckBox x:Name="PublishBox" Content="Publicar también las traducciones en mi chat de Twitch" Margin="0,0,0,8"/>
+      <TextBlock Text="Si lo activas, se enviarán mensajes desde la cuenta conectada a Neo Twitch. Los comandos y las traducciones del propio bot se ignoran para evitar bucles." TextWrapping="Wrap" Style="{StaticResource MutedText}" Margin="0,0,0,12" />
+     </StackPanel>
+    </StackPanel>
+    <WrapPanel>
+     <Button x:Name="StartButton" Content="Activar en OBS" Click="Start_Click"/>
+     <Button x:Name="StopButton" Content="Detener" Click="Stop_Click" Margin="8,0"/>
+     <Button x:Name="TestButton" Content="Probar apariencia" Click="Test_Click" Margin="0,0,8,0"/>
+     <Button x:Name="CancelButton" Content="Cancelar" Click="Cancel_Click" Visibility="Collapsed"/>
+    </WrapPanel>
+    <ProgressBar x:Name="Progress" Height="5" IsIndeterminate="True" Visibility="Collapsed" Margin="0,12,0,0"/>
+    <TextBlock x:Name="StatusText" TextWrapping="Wrap" Margin="0,12,0,0" AutomationProperties.LiveSetting="Polite" />
+   </StackPanel>
+  </Border>
+ </Expander>
+</views:NeoTwitchView>

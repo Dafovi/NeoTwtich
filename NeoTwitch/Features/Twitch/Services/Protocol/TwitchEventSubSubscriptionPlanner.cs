@@ -8,15 +8,18 @@ public static class TwitchEventSubSubscriptionPlanner
     public static IReadOnlyList<EventSubDefinition> BuildDefinitions(AppConfig config)
     {
         var broadcasterId = config.Channel.UserId;
-        return config.Rules
-            .Where(rule => rule.IsEnabled)
-            .Select(rule => rule.EventKind)
-            .Where(kind => kind != TwitchEventKind.Test)
-            .Distinct()
+        return BuildKinds(config)
             .SelectMany(kind => BuildDefinitionsForKind(kind, broadcasterId))
             .DistinctBy(definition => definition.Type)
             .ToArray();
     }
+
+    public static IEnumerable<TwitchEventKind> BuildKinds(AppConfig config) => config.Rules
+            .Where(rule => rule.IsEnabled)
+            .Select(rule => rule.EventKind)
+            .Where(kind => kind != TwitchEventKind.Test)
+            .Concat(config.ChatTranslator?.Running == true ? [TwitchEventKind.ChatCommand] : Array.Empty<TwitchEventKind>())
+            .Distinct();
 
     public static IEnumerable<EventSubDefinition> BuildDefinitionsForKind(
         TwitchEventKind kind,

@@ -1,0 +1,10 @@
+<!doctype html><html lang="es"><meta charset="utf-8"><title>Neo Twitch · Subtítulos</title>
+<style>html,body{margin:0;background:transparent;overflow:hidden}#wrap{position:fixed;bottom:5%;left:5%;width:90%;text-align:center;font-family:Arial,sans-serif;color:white;font-weight:700;text-shadow:2px 2px 3px #000,-2px -2px 3px #000;white-space:pre-wrap;overflow-wrap:anywhere}#translation{margin-top:8px}</style>
+<div id="wrap"><div id="original"></div><div id="translation"></div></div>
+<script>
+let cfg; const wrap=document.getElementById('wrap'), original=document.getElementById('original'), translated=document.getElementById('translation');
+async function poll(){try{if(!cfg){cfg=await(await fetch('config')).json();wrap.style.fontSize=cfg.fontSize+'px';wrap.style.color=cfg.color;if(cfg.placeAtTop){wrap.style.top='5%';wrap.style.bottom='auto'}}
+const s=await(await fetch('state')).json();const alive=Date.now()-s.updatedAt<cfg.durationSeconds*1000;
+original.textContent=alive&&cfg.showOriginal?s.original:'';translated.textContent=alive?s.translation:'';
+}catch{original.textContent='';translated.textContent=''}finally{setTimeout(poll,250)}}poll();
+</script></html>

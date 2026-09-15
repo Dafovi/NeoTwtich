@@ -137,6 +137,13 @@ public partial class IntegrationsView : NeoTwitchView
         _shuttingDown = true;
         _operation?.Cancel();
         await _pending;
-        await StopAsync();
+        try { await StopAsync(); }
+        finally
+        {
+            try { await LiveCaptionsView.ShutdownAsync(); }
+            finally { await ChatTranslatorView.ShutdownAsync(); }
+        }
     }
+
+    public void ReceiveChat(NeoTwitch.Models.TwitchEvent evt) => ChatTranslatorView.ReceiveChat(evt);
 }

@@ -17,6 +17,8 @@ public sealed class AppConfig
     public ObsIntegrationConfig Obs { get; set; } = new();
     public string CatCamScene { get; set; } = "";
     public int CatCamOutput { get; set; }
+    public SubtitleIntegrationConfig LiveCaptions { get; set; } = new();
+    public SubtitleIntegrationConfig ChatTranslator { get; set; } = new() { PlaceAtTop = true };
     public ObservableCollection<EventRule> Rules { get; set; } = [];
     public string SerialPort { get; set; } = "";
     public ObservableCollection<LedStripConfig> LedStrips { get; set; } = [];

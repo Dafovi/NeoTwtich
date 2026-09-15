@@ -9,11 +9,7 @@ public partial class MainWindow
 {
     private string BuildEventSubscriptionSignature()
     {
-        var activeKinds = _config.Rules
-            .Where(rule => rule.IsEnabled)
-            .Select(rule => rule.EventKind)
-            .Where(kind => kind != TwitchEventKind.Test)
-            .Distinct()
+        var activeKinds = TwitchEventSubSubscriptionPlanner.BuildKinds(_config)
             .OrderBy(kind => kind)
             .Select(kind => kind.ToString());
 

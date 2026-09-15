@@ -1,5 +1,7 @@
 # Integraciones opcionales
 
+Además de MeowMeowCatCam, están disponibles **Live Captions** y **Chat Translator**, con activación y configuración independientes. Consulta la [guía de subtítulos y traducción](SUBTITULOS.md).
+
 ## MeowMeowCatCam
 
 Proyecto original: **[catherpiee/meowmeowcatcam](https://github.com/catherpiee/meowmeowcatcam)**, creado por **catherpiee**. Neo Twitch implementa el instalador y el control de OBS; el detector, los modelos y los memes se descargan directamente del repositorio original al pulsar **Instalar**. No se incorporan al código ni a los paquetes de Neo Twitch.

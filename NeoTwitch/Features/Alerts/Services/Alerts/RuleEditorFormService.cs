@@ -1,6 +1,7 @@
 using NeoTwitch.Models;
 using NeoTwitch.Services.Lights;
 using NeoTwitch.Services.Text;
+using NeoTwitch.Services.Streaming;
 using static NeoTwitch.Services.InputValueParser;
 
 namespace NeoTwitch.Services.Alerts;
@@ -16,6 +17,7 @@ public static class RuleEditorFormService
         rule.IsEnabled = values.IsEnabled;
         rule.Name = RuleEditorValueService.ResolveRuleName(values.RuleNameText, rule.Name, values.EventKind, text);
         rule.EventKind = values.EventKind;
+        rule.SourcePlatforms = RulePlatformSelectionService.Normalize(values.SourcePlatforms);
         rule.CustomRewardTitle = values.CustomRewardTitle.Trim();
         rule.ChatCommand = values.ChatCommand.Trim();
         rule.MinimumBits = ParseInt(values.MinimumBitsText, 1, 1, 1_000_000);
@@ -136,4 +138,7 @@ public sealed record RuleEditorFormValues(
     double Brightness,
     double DurationMs,
     double CycleMs,
-    double StepMs);
+    double StepMs)
+{
+    public IReadOnlyCollection<StreamingPlatform> SourcePlatforms { get; init; } = [StreamingPlatform.Twitch];
+}

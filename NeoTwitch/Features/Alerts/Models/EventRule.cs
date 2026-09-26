@@ -1,4 +1,5 @@
 using System.ComponentModel;
+using System.Collections.ObjectModel;
 using System.Runtime.CompilerServices;
 
 namespace NeoTwitch.Models;
@@ -70,6 +71,9 @@ public sealed class EventRule : INotifyPropertyChanged
     private bool _obsActionAvailable = true;
 
     public string Id { get; set; } = Guid.NewGuid().ToString("N");
+
+    public ObservableCollection<StreamingPlatform> SourcePlatforms { get; set; } =
+        new([StreamingPlatform.Twitch]);
 
     public string Name
     {

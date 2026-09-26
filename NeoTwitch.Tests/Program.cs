@@ -104,6 +104,7 @@ private static readonly (string Name, Action Body)[] Tests =
     ("EventRuleMatcherService resolves normal event matches", EventRuleMatcherTests.ResolvesNormalEventMatches),
     ("EventRuleMatcherService keeps highest bits threshold", EventRuleMatcherTests.KeepsHighestBitsThreshold),
     ("EventRuleMatcherService matches chat command tokens", EventRuleMatcherTests.MatchesChatCommandTokens),
+    ("EventRuleMatcherService scopes stream events to selected platforms", StreamRuleMatcherTests.ScopesEventsToSelectedPlatforms),
     ("TwitchEventSubSubscriptionPlanner builds unique definitions", TwitchEventSubSubscriptionPlannerTests.BuildsUniqueDefinitions),
     ("TwitchEventSubSubscriptionRegistrar sends subscription payload", TwitchEventSubSubscriptionRegistrarTests.SendsSubscriptionPayload),
     ("TwitchEventSubMessageParser parses welcome and events", TwitchEventSubMessageParserTests.ParsesWelcomeAndEvents),

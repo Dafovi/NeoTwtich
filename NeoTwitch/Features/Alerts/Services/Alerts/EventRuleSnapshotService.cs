@@ -1,4 +1,5 @@
 using NeoTwitch.Models;
+using NeoTwitch.Services.Streaming;
 using NeoTwitch.Services.Text;
 
 namespace NeoTwitch.Services.Alerts;
@@ -31,6 +32,7 @@ public static class EventRuleSnapshotService
         target.Name = source.Name;
         target.IsEnabled = source.IsEnabled;
         target.EventKind = source.EventKind;
+        target.SourcePlatforms = RulePlatformSelectionService.Normalize(source.SourcePlatforms);
         target.CustomRewardTitle = source.CustomRewardTitle;
         target.ChatCommand = source.ChatCommand;
         target.MinimumBits = source.MinimumBits;
@@ -98,6 +100,7 @@ public static class EventRuleSnapshotService
         return left.Name == right.Name
             && left.IsEnabled == right.IsEnabled
             && left.EventKind == right.EventKind
+            && left.SourcePlatforms.SequenceEqual(right.SourcePlatforms)
             && left.CustomRewardTitle == right.CustomRewardTitle
             && left.ChatCommand == right.ChatCommand
             && left.MinimumBits == right.MinimumBits

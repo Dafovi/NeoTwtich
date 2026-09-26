@@ -120,6 +120,7 @@ public static class AppConfigNormalizer
             rule.Name = string.IsNullOrWhiteSpace(rule.Name)
                 ? fallbackName
                 : rule.Name.Trim();
+            rule.SourcePlatforms = RulePlatformSelectionService.Normalize(rule.SourcePlatforms);
 
             rule.CustomRewardTitle ??= "";
             rule.ChatCommand ??= "";

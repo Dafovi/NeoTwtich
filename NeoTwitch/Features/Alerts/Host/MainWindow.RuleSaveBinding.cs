@@ -80,7 +80,10 @@ public partial class MainWindow
                 editor.Brightness,
                 editor.DurationMs,
                 editor.CycleMs,
-                editor.StepMs),
+                editor.StepMs)
+            {
+                SourcePlatforms = rule.SourcePlatforms
+            },
             _config.AudioLibrary,
             _text);
 

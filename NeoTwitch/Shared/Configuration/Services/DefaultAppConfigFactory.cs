@@ -10,6 +10,15 @@ public static class DefaultAppConfigFactory
     {
         return new AppConfig
         {
+            StreamingPlatforms =
+            [
+                new StreamingPlatformConnectionConfig
+                {
+                    Platform = StreamingPlatform.Twitch,
+                    IsEnabled = true,
+                    AutoConnect = true
+                }
+            ],
             LedStrips =
             [
                 new LedStripConfig

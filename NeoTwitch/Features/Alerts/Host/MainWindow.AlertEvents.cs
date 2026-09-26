@@ -2,6 +2,7 @@ using NeoTwitch.Models;
 using NeoTwitch.Services;
 using NeoTwitch.Services.Alerts;
 using NeoTwitch.Services.Shell;
+using NeoTwitch.Services.Streaming;
 using NeoTwitch.Services.Text;
 using NeoTwitch.ViewModels.Activity;
 using Forms = System.Windows.Forms;
@@ -10,7 +11,19 @@ namespace NeoTwitch;
 
 public partial class MainWindow
 {
-    private async Task EventSubClient_EventReceivedAsync(
+    private Task PlatformEventRouter_EventReceivedAsync(
+        StreamEvent streamEvent,
+        CancellationToken cancellationToken)
+    {
+        if (streamEvent.Platform != StreamingPlatform.Twitch)
+        {
+            return Task.CompletedTask;
+        }
+
+        return ProcessTwitchEventAsync(TwitchStreamEventAdapter.ToTwitch(streamEvent), cancellationToken);
+    }
+
+    private async Task ProcessTwitchEventAsync(
         TwitchEvent twitchEvent,
         CancellationToken cancellationToken)
     {

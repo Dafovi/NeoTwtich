@@ -3,6 +3,7 @@ using NeoTwitch.Models;
 using NeoTwitch.Services;
 using NeoTwitch.Services.Alerts;
 using NeoTwitch.Services.Ui;
+using NeoTwitch.Services.Streaming;
 using NeoTwitch.ViewModels.Shell;
 
 namespace NeoTwitch;
@@ -47,11 +48,13 @@ public partial class MainWindow : Window, IAlertExecutionCapabilities
         DataContext = _shellViewModel;
 
         _eventSubClient = new TwitchEventSubClient(_authService, () => _config, SaveConfig, AddLog, _text);
+        _twitchPlatformProvider = new TwitchStreamingPlatformProvider(_eventSubClient);
         _services.RegisterRuntimeResource(
             "Twitch EventSub",
             ApplicationShutdownOrder.EventIngress,
             DisposeEventSubAsync);
-        _eventSubClient.EventReceivedAsync += EventSubClient_EventReceivedAsync;
+        _twitchPlatformProvider.EventReceivedAsync += PlatformEventRouter_PublishAsync;
+        _platformEventRouter.EventReceivedAsync += PlatformEventRouter_EventReceivedAsync;
         _eventSubClient.HealthChanged += EventSubClient_HealthChanged;
 
         InitializeRuntimeUi();
@@ -64,7 +67,7 @@ public partial class MainWindow : Window, IAlertExecutionCapabilities
     {
         try
         {
-            await _eventSubClient.StopAsync().WaitAsync(TimeSpan.FromSeconds(5));
+            await _twitchPlatformProvider.StopAsync().WaitAsync(TimeSpan.FromSeconds(5));
         }
         catch (TimeoutException)
         {
@@ -72,8 +75,12 @@ public partial class MainWindow : Window, IAlertExecutionCapabilities
         }
         finally
         {
+            await _twitchPlatformProvider.DisposeAsync();
             _eventSubClient.Dispose();
         }
     }
+
+    private Task PlatformEventRouter_PublishAsync(StreamEvent streamEvent, CancellationToken cancellationToken) =>
+        _platformEventRouter.PublishAsync(streamEvent, cancellationToken);
 
 }

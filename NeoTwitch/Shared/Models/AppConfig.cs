@@ -5,7 +5,7 @@ namespace NeoTwitch.Models;
 
 public sealed class AppConfig
 {
-    public const int CurrentSchemaVersion = 2;
+    public const int CurrentSchemaVersion = 3;
 
     public int SchemaVersion { get; set; } = CurrentSchemaVersion;
     public ProtectedConfigurationSecrets ProtectedSecrets { get; set; } = new();
@@ -13,6 +13,15 @@ public sealed class AppConfig
     public string TwitchClientSecret { get; set; } = "";
     public TwitchTokenInfo Token { get; set; } = new();
     public TwitchChannelInfo Channel { get; set; } = new();
+    public ObservableCollection<StreamingPlatformConnectionConfig> StreamingPlatforms { get; set; } =
+    [
+        new()
+        {
+            Platform = StreamingPlatform.Twitch,
+            IsEnabled = true,
+            AutoConnect = true
+        }
+    ];
     public AlexaIntegrationConfig Alexa { get; set; } = new();
     public ObsIntegrationConfig Obs { get; set; } = new();
     public string CatCamScene { get; set; } = "";

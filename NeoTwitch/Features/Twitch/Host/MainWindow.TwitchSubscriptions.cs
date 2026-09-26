@@ -68,8 +68,8 @@ public partial class MainWindow
         }
 
         AddLog(_text.Get(UiTextKeys.TwitchSubscriptionsRefreshingLog), ActivityLogKind.Twitch);
-        await _eventSubClient.StopAsync();
-        await _eventSubClient.StartAsync();
+        await _twitchPlatformProvider.StopAsync();
+        await _twitchPlatformProvider.StartAsync(CancellationToken.None);
         _eventSubscriptionSignature = signature;
         _twitchConnectionError = "";
         AddLog(_text.Get(UiTextKeys.TwitchSubscriptionsRefreshedLog), ActivityLogKind.Twitch);

@@ -2,6 +2,7 @@ using NeoTwitch.Models;
 using NeoTwitch.Services;
 using NeoTwitch.Services.Diagnostics;
 using NeoTwitch.Services.Text;
+using NeoTwitch.Services.Streaming;
 using NeoTwitch.ViewModels.Activity;
 using NeoTwitch.ViewModels.Alexa;
 using NeoTwitch.ViewModels.Alerts;
@@ -19,6 +20,8 @@ public partial class MainWindow
     private readonly AppServices _services;
     private readonly AppStartupOptions _startupOptions;
     private readonly TwitchEventSubClient _eventSubClient;
+    private readonly IStreamingPlatformProvider _twitchPlatformProvider;
+    private readonly PlatformEventRouter _platformEventRouter = new();
     private ShellViewModel _shellViewModel = null!;
     private AlertsViewModel _alertsViewModel = null!;
     private AlexaViewModel _alexaViewModel = null!;

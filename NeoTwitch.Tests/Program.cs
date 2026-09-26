@@ -70,6 +70,7 @@ private static readonly (string Name, Action Body)[] Tests =
     ("SettingsStore validation failure preserves primary", ConfigurationIntegrityTests.ValidationFailurePreservesPrimary),
     ("Configuration legacy fixture migrates to schema one", ConfigurationIntegrityTests.LegacyFixtureMigratesToCurrentSchema),
     ("Configuration current schema reload is idempotent", ConfigurationIntegrityTests.CurrentSchemaReloadIsIdempotent),
+    ("Configuration schema two creates Twitch platform connection", ConfigurationIntegrityTests.SchemaTwoCreatesTwitchPlatformConnection),
     ("Configuration future schema is rejected", ConfigurationIntegrityTests.FutureSchemaIsRejected),
     ("Configuration migration preserves user settings", ConfigurationIntegrityTests.MigrationPreservesUserSettings),
     ("Configuration missing IDs are generated", ConfigurationIntegrityTests.MissingIdsAreGenerated),
@@ -106,6 +107,8 @@ private static readonly (string Name, Action Body)[] Tests =
     ("TwitchEventSubSubscriptionPlanner builds unique definitions", TwitchEventSubSubscriptionPlannerTests.BuildsUniqueDefinitions),
     ("TwitchEventSubSubscriptionRegistrar sends subscription payload", TwitchEventSubSubscriptionRegistrarTests.SendsSubscriptionPayload),
     ("TwitchEventSubMessageParser parses welcome and events", TwitchEventSubMessageParserTests.ParsesWelcomeAndEvents),
+    ("Stream event adapter preserves Twitch event data", StreamingPlatformTests.TwitchAdapterPreservesEventData),
+    ("Platform event router scopes duplicate IDs by platform", StreamingPlatformTests.RouterScopesDuplicateIdsByPlatform),
     ("TwitchAuthService refreshes token with injected HTTP", TwitchAuthServiceTests.RefreshesTokenWithInjectedHttp),
     ("TwitchAuthService refreshes a rejected current token", TwitchAuthServiceTests.RefreshesRejectedCurrentToken),
     ("EventSub dedup accepts first message", TwitchReliabilityTests.DedupAcceptsFirstMessage),
@@ -684,7 +687,7 @@ static class ConfigurationIntegrityTests
 
     public static void CurrentSchemaReloadIsIdempotent()
     {
-        const string current = """{"schemaVersion":2,"twitchClientId":"frgvnwbwiktsfkt3rs8qwh5c0suo0c","rules":[],"ledStrips":[]}""";
+        const string current = """{"schemaVersion":3,"twitchClientId":"frgvnwbwiktsfkt3rs8qwh5c0suo0c","rules":[],"ledStrips":[]}""";
         var first = AppConfigMigrationService.DeserializeAndMigrate(current, JsonOptions());
         var serialized = JsonSerializer.Serialize(first.Config, JsonOptions());
         var second = AppConfigMigrationService.DeserializeAndMigrate(serialized, JsonOptions());
@@ -692,6 +695,19 @@ static class ConfigurationIntegrityTests
         TestAssert.False(first.WasMigrated);
         TestAssert.False(second.WasMigrated);
         TestAssert.Equal(NeoTwitchProduct.TwitchClientId, second.Config.TwitchClientId);
+    }
+
+    public static void SchemaTwoCreatesTwitchPlatformConnection()
+    {
+        const string schemaTwo = """{"schemaVersion":2,"autoConnectTwitch":false,"rules":[],"ledStrips":[]}""";
+
+        var migrated = AppConfigMigrationService.DeserializeAndMigrate(schemaTwo, JsonOptions());
+
+        TestAssert.True(migrated.WasMigrated);
+        TestAssert.Equal(3, migrated.Config.SchemaVersion);
+        TestAssert.Equal(1, migrated.Config.StreamingPlatforms.Count);
+        TestAssert.Equal(StreamingPlatform.Twitch, migrated.Config.StreamingPlatforms[0].Platform);
+        TestAssert.False(migrated.Config.StreamingPlatforms[0].AutoConnect);
     }
 
     public static void FutureSchemaIsRejected()

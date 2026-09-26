@@ -1,6 +1,7 @@
 using System.Text.Json;
 using NeoTwitch.Models;
 using NeoTwitch.Services.Configuration;
+using NeoTwitch.Services.Streaming;
 using NeoTwitch.Shared;
 
 namespace NeoTwitch.Services.Configuration.Migrations;
@@ -55,6 +56,7 @@ public static class AppConfigMigrationService
             {
                 0 => MigrateLegacyToSchema1(config, idFactory ?? (() => Guid.NewGuid().ToString("N"))),
                 1 => MigrateSchema1ToSchema2(config),
+                2 => MigrateSchema2ToSchema3(config),
                 _ => throw new InvalidOperationException($"No existe una migración desde el esquema {version}.")
             };
         }
@@ -121,5 +123,14 @@ public static class AppConfigMigrationService
         config.ProtectedSecrets.TwitchClientSecret = "";
         config.SchemaVersion = 2;
         return 2;
+    }
+
+    private static int MigrateSchema2ToSchema3(AppConfig config)
+    {
+        config.StreamingPlatforms = StreamingPlatformConfigurationService.Normalize(
+            config.StreamingPlatforms,
+            config.AutoConnectTwitch);
+        config.SchemaVersion = 3;
+        return 3;
     }
 }

@@ -38,7 +38,7 @@ public partial class MainWindow
             if (_eventSubClient.IsRunning)
             {
                 var reconnectingAfterFailure = !string.IsNullOrWhiteSpace(_twitchConnectionError);
-                await _eventSubClient.StopAsync();
+                await _twitchPlatformProvider.StopAsync();
                 _eventSubscriptionSignature = "";
                 _streamStatus = null;
                 _twitchConnectionError = "";
@@ -130,7 +130,7 @@ public partial class MainWindow
                 SaveConfig();
             }
 
-            await _eventSubClient.StartAsync();
+            await _twitchPlatformProvider.StartAsync(CancellationToken.None);
             _eventSubscriptionSignature = BuildEventSubscriptionSignature();
             await RefreshTwitchStreamStatusAsync();
             AddLog(_text.Get(UiTextKeys.TwitchListeningLog));

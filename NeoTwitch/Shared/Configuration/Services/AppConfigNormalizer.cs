@@ -3,6 +3,7 @@ using System.IO;
 using NeoTwitch.Models;
 using NeoTwitch.Services.Library;
 using NeoTwitch.Services.Text;
+using NeoTwitch.Services.Streaming;
 
 namespace NeoTwitch.Services.Configuration;
 
@@ -32,6 +33,9 @@ public static class AppConfigNormalizer
         config.Channel.Login ??= "";
         config.Channel.DisplayName ??= "";
         config.Channel.ProfileImageUrl ??= "";
+        config.StreamingPlatforms = StreamingPlatformConfigurationService.Normalize(
+            config.StreamingPlatforms,
+            config.AutoConnectTwitch);
         config.Alexa ??= new AlexaIntegrationConfig();
         config.Alexa.RelayUrl ??= "";
         config.Alexa.AuthToken ??= "";

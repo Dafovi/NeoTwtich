@@ -18,7 +18,7 @@ public partial class MainWindow
     {
         if (_eventSubClient.IsRunning)
         {
-            await _eventSubClient.StopAsync();
+            await _twitchPlatformProvider.StopAsync();
             _eventSubscriptionSignature = "";
             _streamStatus = null;
         }

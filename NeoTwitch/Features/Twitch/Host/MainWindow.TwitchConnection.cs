@@ -37,13 +37,17 @@ public partial class MainWindow
 
             if (_eventSubClient.IsRunning)
             {
+                var reconnectingAfterFailure = !string.IsNullOrWhiteSpace(_twitchConnectionError);
                 await _eventSubClient.StopAsync();
                 _eventSubscriptionSignature = "";
                 _streamStatus = null;
                 _twitchConnectionError = "";
-                AddLog(_text.Get(UiTextKeys.TwitchDisconnectedLog));
-                UpdateStatusText();
-                return;
+                if (!reconnectingAfterFailure)
+                {
+                    AddLog(_text.Get(UiTextKeys.TwitchDisconnectedLog));
+                    UpdateStatusText();
+                    return;
+                }
             }
 
             if (!_config.Token.HasToken || TwitchAuthService.GetMissingScopes(_config.Token).Count > 0)

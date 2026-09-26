@@ -107,6 +107,7 @@ private static readonly (string Name, Action Body)[] Tests =
     ("TwitchEventSubSubscriptionRegistrar sends subscription payload", TwitchEventSubSubscriptionRegistrarTests.SendsSubscriptionPayload),
     ("TwitchEventSubMessageParser parses welcome and events", TwitchEventSubMessageParserTests.ParsesWelcomeAndEvents),
     ("TwitchAuthService refreshes token with injected HTTP", TwitchAuthServiceTests.RefreshesTokenWithInjectedHttp),
+    ("TwitchAuthService refreshes a rejected current token", TwitchAuthServiceTests.RefreshesRejectedCurrentToken),
     ("EventSub dedup accepts first message", TwitchReliabilityTests.DedupAcceptsFirstMessage),
     ("EventSub dedup ignores duplicate message ID", TwitchReliabilityTests.DedupIgnoresDuplicateMessageId),
     ("EventSub dedup accepts identical payload with different IDs", TwitchReliabilityTests.DedupAcceptsDifferentIds),
@@ -1912,6 +1913,35 @@ static class TwitchAuthServiceTests
         TestAssert.True(logs.Count > 0);
     }
 
+    public static void RefreshesRejectedCurrentToken()
+    {
+        var now = new DateTimeOffset(2026, 6, 1, 12, 0, 0, TimeSpan.Zero);
+        var handler = new RejectedTokenThenRefreshHandler();
+        using var http = new HttpClient(handler);
+        using var service = new TwitchAuthService(
+            UiTextService.CreateDefault(),
+            new NullExternalLauncher(),
+            new FixedTimeProvider(now),
+            http);
+        var config = TestConfig.CreateDefault();
+        config.TwitchClientId = "client-id";
+        config.Token = new TwitchTokenInfo
+        {
+            AccessToken = "rejected-token",
+            RefreshToken = "refresh-token",
+            ExpiresAt = now.AddHours(1)
+        };
+        var logs = new List<string>();
+
+        service.EnsureValidTokenAsync(config, logs.Add, CancellationToken.None).GetAwaiter().GetResult();
+
+        TestAssert.Equal(2, handler.RequestCount);
+        TestAssert.Equal("OAuth rejected-token", handler.ValidationAuthorization);
+        TestAssert.Contains("refresh_token=refresh-token", handler.RefreshRequestBody);
+        TestAssert.Equal("replacement-token", config.Token.AccessToken);
+        TestAssert.True(logs.Any(log => log.Contains("rechazó la sesión", StringComparison.OrdinalIgnoreCase)));
+    }
+
     private sealed class RefreshTokenHttpHandler : HttpMessageHandler
     {
         public string RequestBody { get; private set; } = "";
@@ -1926,6 +1956,37 @@ static class TwitchAuthServiceTests
             {
                 Content = new StringContent(
                     """{"access_token":"new-token","refresh_token":"new-refresh","expires_in":120,"scope":["channel:read:redemptions"]}""")
+            };
+        }
+    }
+
+    private sealed class RejectedTokenThenRefreshHandler : HttpMessageHandler
+    {
+        public int RequestCount { get; private set; }
+
+        public string ValidationAuthorization { get; private set; } = "";
+
+        public string RefreshRequestBody { get; private set; } = "";
+
+        protected override async Task<HttpResponseMessage> SendAsync(HttpRequestMessage request, CancellationToken cancellationToken)
+        {
+            RequestCount++;
+            if (request.RequestUri?.ToString() == TwitchAuthProtocol.ValidateTokenUrl)
+            {
+                ValidationAuthorization = request.Headers.Authorization?.ToString() ?? "";
+                return new HttpResponseMessage(System.Net.HttpStatusCode.Unauthorized)
+                {
+                    Content = new StringContent("{\"message\":\"invalid access token\"}")
+                };
+            }
+
+            RefreshRequestBody = request.Content is null
+                ? ""
+                : await request.Content.ReadAsStringAsync(cancellationToken);
+            return new HttpResponseMessage(System.Net.HttpStatusCode.OK)
+            {
+                Content = new StringContent(
+                    """{"access_token":"replacement-token","refresh_token":"replacement-refresh","expires_in":3600,"scope":[]}""")
             };
         }
     }
@@ -6337,6 +6398,7 @@ static class ArduinoReconnectBackoffTests
         TestAssert.Equal(TimeSpan.FromSeconds(32), ArduinoReconnectBackoffPolicy.DelayAfterFailure(3));
         TestAssert.Equal(TimeSpan.FromMinutes(1), ArduinoReconnectBackoffPolicy.DelayAfterFailure(10));
     }
+
 }
 
 static class TestConfig

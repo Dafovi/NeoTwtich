@@ -244,6 +244,8 @@ public static class UiTextKeys
     public const string TwitchAuthTokenRefreshedLog = "twitch.auth.token_refreshed_log";
     public const string TwitchAuthTokenRefreshStartedLog = "twitch.auth.token_refresh_started_log";
     public const string TwitchAuthStaleRefreshDiscardedLog = "twitch.auth.stale_refresh_discarded_log";
+    public const string TwitchAuthTokenRejectedLog = "twitch.auth.token_rejected_log";
+    public const string TwitchAuthTokenValidationFailure = "twitch.auth.token_validation_failure";
     public const string TwitchAuthReadChannelFailure = "twitch.auth.read_channel_failure";
     public const string TwitchAuthMissingUserData = "twitch.auth.missing_user_data";
     public const string TwitchAuthReadStreamFailure = "twitch.auth.read_stream_failure";
@@ -422,6 +424,7 @@ public static class UiTextKeys
     public const string SettingsMediaRelinkNoMissing = "settings.media_relink_no_missing";
     public const string SettingsMediaRelinkResult = "settings.media_relink_result";
     public const string SettingsMediaRelinkHint = "settings.media_relink_hint";
+    public const string SettingsReauthenticationHint = "settings.reauthentication_hint";
     public const string SettingsStoreLoadFailureCrash = "settings_store.load_failure_crash";
     public const string SettingsStoreInvalidConfigFailure = "settings_store.invalid_config_failure";
     public const string SettingsStorePruneBackupFailureCrash = "settings_store.prune_backup_failure_crash";

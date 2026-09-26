@@ -26,10 +26,19 @@ public partial class MainWindow
         _config = _settingsStore.Import(path);
         LoadConfigIntoUi();
         AddLog(logMessage, ActivityLogKind.Important);
+        var notices = new List<string> { successMessage };
+        if (_settingsStore.LastSecretFailures.Count > 0)
+        {
+            notices.Add(_text.Get(UiTextKeys.SettingsReauthenticationHint));
+        }
+
         var missingMediaCount = GetMissingMediaAssetCount();
-        var message = missingMediaCount > 0
-            ? $"{successMessage}\n\n{_text.Format(UiTextKeys.SettingsMediaRelinkHint, missingMediaCount)}"
-            : successMessage;
+        if (missingMediaCount > 0)
+        {
+            notices.Add(_text.Format(UiTextKeys.SettingsMediaRelinkHint, missingMediaCount));
+        }
+
+        var message = string.Join("\n\n", notices);
         _dialog.ShowInformation(title, message);
     }
 }

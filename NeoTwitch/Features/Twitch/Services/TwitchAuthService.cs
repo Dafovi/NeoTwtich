@@ -124,7 +124,15 @@ public sealed class TwitchAuthService : IDisposable
     {
         if (!TwitchTokenRefreshPolicy.NeedsRefresh(config.Token, _timeProvider.GetUtcNow()))
         {
-            return;
+            if (await IsAccessTokenAcceptedAsync(config.Token.AccessToken, cancellationToken))
+            {
+                return;
+            }
+
+            // Twitch can revoke a token before its locally recorded expiry. Marking it expired
+            // sends it through the same single-flight refresh path used for ordinary expiry.
+            log(_text.Get(UiTextKeys.TwitchAuthTokenRejectedLog));
+            config.Token.ExpiresAt = DateTimeOffset.MinValue;
         }
 
         while (true)
@@ -199,6 +207,28 @@ public sealed class TwitchAuthService : IDisposable
 
         config.Token = refreshedToken;
         log(_text.Get(UiTextKeys.TwitchAuthTokenRefreshedLog));
+    }
+
+    private async Task<bool> IsAccessTokenAcceptedAsync(string accessToken, CancellationToken cancellationToken)
+    {
+        using var request = new HttpRequestMessage(HttpMethod.Get, Protocol.ValidateTokenUrl);
+        request.Headers.Authorization = new AuthenticationHeaderValue("OAuth", accessToken);
+
+        using var response = await _http.SendAsync(request, cancellationToken);
+        if (response.IsSuccessStatusCode)
+        {
+            return true;
+        }
+
+        var json = await response.Content.ReadAsStringAsync(cancellationToken);
+        if ((int)response.StatusCode == 401)
+        {
+            return false;
+        }
+
+        throw new InvalidOperationException(_text.Format(
+            UiTextKeys.TwitchAuthTokenValidationFailure,
+            DescribeRemoteFailure(response, TryReadError(json))));
     }
 
     public static IReadOnlyList<string> GetMissingScopes(TwitchTokenInfo token)

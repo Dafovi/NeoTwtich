@@ -4,6 +4,7 @@ public static class TwitchAuthProtocol
 {
     public const string DeviceCodeUrl = "https://id.twitch.tv/oauth2/device";
     public const string TokenUrl = "https://id.twitch.tv/oauth2/token";
+    public const string ValidateTokenUrl = "https://id.twitch.tv/oauth2/validate";
     public const string UsersUrl = "https://api.twitch.tv/helix/users";
     public const string StreamsUrl = "https://api.twitch.tv/helix/streams";
     public const string BearerScheme = "Bearer";

@@ -14,6 +14,7 @@ public partial class MainWindow
         _connectionsViewModel.LoadArduinoConfig(_config);
         _connectionsViewModel.LoadAlexaConfig(_config);
         _connectionsViewModel.LoadObsConnectionConfig(_config);
+        UpdateYouTubeConnectionUi();
         _obsViewModel.LoadOverlayConfig(_config, BuildObsOverlayUrl(), BuildVirtualLightsOverlayUrl());
     }
 

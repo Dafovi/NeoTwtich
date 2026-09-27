@@ -4,6 +4,7 @@ using NeoTwitch.Services.Dashboard;
 using NeoTwitch.Services.Diagnostics;
 using NeoTwitch.Services.Text;
 using NeoTwitch.Services.Ui;
+using NeoTwitch.Services.YouTube;
 using NeoTwitch.ViewModels.Activity;
 
 namespace NeoTwitch.Services;
@@ -18,6 +19,8 @@ public sealed class AppServices : IAsyncDisposable
         AudioPlayerService audioPlayer,
         SerialLightController lightController,
         TwitchAuthService authService,
+        YouTubeAuthService youTubeAuthService,
+        YouTubeLiveService youTubeLiveService,
         TwitchChatService chatService,
         AlexaRelayService alexaRelayService,
         ObsWebSocketService obsService,
@@ -48,6 +51,8 @@ public sealed class AppServices : IAsyncDisposable
         AudioPlayer = audioPlayer;
         LightController = lightController;
         AuthService = authService;
+        YouTubeAuthService = youTubeAuthService;
+        YouTubeLiveService = youTubeLiveService;
         ChatService = chatService;
         AlexaRelayService = alexaRelayService;
         ObsService = obsService;
@@ -80,6 +85,10 @@ public sealed class AppServices : IAsyncDisposable
     public SerialLightController LightController { get; }
 
     public TwitchAuthService AuthService { get; }
+
+    public YouTubeAuthService YouTubeAuthService { get; }
+
+    public YouTubeLiveService YouTubeLiveService { get; }
 
     public TwitchChatService ChatService { get; }
 
@@ -148,6 +157,8 @@ public sealed class AppServices : IAsyncDisposable
         var audioPlayer = new AudioPlayerService(text);
         var lightController = new SerialLightController(text, timeProvider);
         var authService = new TwitchAuthService(text, externalLauncher, timeProvider);
+        var youTubeAuthService = new YouTubeAuthService(externalLauncher, timeProvider);
+        var youTubeLiveService = new YouTubeLiveService();
         var chatService = new TwitchChatService(text);
         var alexaRelayService = new AlexaRelayService(text, timeProvider);
         var obsService = new ObsWebSocketService(text);
@@ -164,6 +175,8 @@ public sealed class AppServices : IAsyncDisposable
         resourceOwner.Register("Arduino", ApplicationShutdownOrder.Connections, lightController);
         resourceOwner.Register("Twitch chat", ApplicationShutdownOrder.NetworkClients, chatService);
         resourceOwner.Register("Twitch authentication", ApplicationShutdownOrder.NetworkClients, authService);
+        resourceOwner.Register("YouTube authentication", ApplicationShutdownOrder.NetworkClients, youTubeAuthService);
+        resourceOwner.Register("YouTube live", ApplicationShutdownOrder.NetworkClients, youTubeLiveService);
         resourceOwner.Register("Alexa relay", ApplicationShutdownOrder.NetworkClients, alexaRelayService);
         resourceOwner.Register("Updates", ApplicationShutdownOrder.NetworkClients, updateService);
         resourceOwner.Register("Settings", ApplicationShutdownOrder.Persistence, settingsStore);
@@ -173,6 +186,8 @@ public sealed class AppServices : IAsyncDisposable
             audioPlayer,
             lightController,
             authService,
+            youTubeAuthService,
+            youTubeLiveService,
             chatService,
             alexaRelayService,
             obsService,

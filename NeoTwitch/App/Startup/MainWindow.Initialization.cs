@@ -44,6 +44,7 @@ public partial class MainWindow
             _connectionsViewModel.ConfigureActions(
                 SaveSettingsFromUi,
                 ToggleTwitchConnection,
+                ToggleYouTubeConnection,
                 OpenTwitchConsole,
                 ToggleClientIdVisibility,
                 ToggleClientSecretVisibility,

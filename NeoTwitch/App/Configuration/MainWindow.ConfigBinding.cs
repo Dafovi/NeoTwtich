@@ -86,6 +86,8 @@ public partial class MainWindow
                 _obsViewModel.OverlayPositionMode,
                 _obsViewModel.OverlayXText,
                 _obsViewModel.OverlayYText));
+        _config.YouTubeClientId = NeoTwitchProduct.YouTubeClientId;
+        _config.YouTubeClientSecret = _connectionsViewModel.YouTubeClientSecret;
     }
 
     private void ApplyStartWithWindowsRegistration()

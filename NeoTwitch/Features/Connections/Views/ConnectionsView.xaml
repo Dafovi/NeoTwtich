@@ -105,6 +105,8 @@
                             <RowDefinition Height="Auto" />
                             <RowDefinition Height="12" />
                             <RowDefinition Height="Auto" />
+                            <RowDefinition Height="12" />
+                            <RowDefinition Height="Auto" />
                         </Grid.RowDefinitions>
 
                     <Border Grid.Row="0"
@@ -649,6 +651,75 @@
                                     </WrapPanel>
                                 </Grid>
                             </Grid>
+                    </Border>
+
+                    <Border Grid.Row="8"
+                            Style="{StaticResource Card}"
+                            Padding="18">
+                        <Grid>
+                            <Grid.RowDefinitions>
+                                <RowDefinition Height="Auto" />
+                                <RowDefinition Height="Auto" />
+                                <RowDefinition Height="Auto" />
+                            </Grid.RowDefinitions>
+                            <Grid>
+                                <Grid.ColumnDefinitions>
+                                    <ColumnDefinition Width="66" />
+                                    <ColumnDefinition Width="*" />
+                                    <ColumnDefinition Width="150" />
+                                </Grid.ColumnDefinitions>
+                                <Border Width="52"
+                                        Height="52"
+                                        CornerRadius="14"
+                                        Background="#1AFF0000"
+                                        HorizontalAlignment="Left">
+                                    <Path Data="M10,6 L10,18 L20,12 Z"
+                                          Stroke="#FF4B4B"
+                                          StrokeThickness="2"
+                                          StrokeLineJoin="Round"
+                                          Fill="Transparent"
+                                          Stretch="Uniform"
+                                          Margin="13" />
+                                </Border>
+                                <StackPanel Grid.Column="1" VerticalAlignment="Center">
+                                    <TextBlock Text="Conectar YouTube"
+                                               FontSize="18"
+                                               Style="{StaticResource TitleText}"
+                                               FontWeight="SemiBold" />
+                                    <TextBlock Text="Autoriza tu canal de YouTube desde el navegador. El secreto se guarda cifrado solo en este equipo."
+                                               Style="{StaticResource MutedText}"
+                                               Margin="0,4,0,0"
+                                               TextWrapping="Wrap" />
+                                </StackPanel>
+                                <Border Grid.Column="2"
+                                        CornerRadius="14"
+                                        Padding="11,5"
+                                        HorizontalAlignment="Right"
+                                        VerticalAlignment="Top"
+                                        Background="{Binding YouTubeBadge.BackgroundBrush}"
+                                        BorderBrush="{Binding YouTubeBadge.BorderBrush}"
+                                        BorderThickness="1">
+                                    <TextBlock Text="{Binding YouTubeBadge.Text}"
+                                               Style="{StaticResource ConnectionStateBadgeText}"
+                                               Foreground="{Binding YouTubeBadge.ForegroundBrush}" />
+                                </Border>
+                            </Grid>
+                            <StackPanel Grid.Row="1" Margin="0,16,0,0">
+                                <TextBlock Text="Secreto del cliente de escritorio"
+                                           Style="{StaticResource MutedText}" />
+                                <TextBox Text="{Binding YouTubeClientSecret, Mode=TwoWay, UpdateSourceTrigger=PropertyChanged}"
+                                         TextChanged="GlobalSettingsChanged"
+                                         ToolTip="Se guarda cifrado en la configuración local de Windows."
+                                         Margin="0,6,0,0" />
+                            </StackPanel>
+                            <Button Grid.Row="2"
+                                    Content="{Binding YouTubeButton}"
+                                    IsEnabled="{Binding YouTubeButton.IsEnabled}"
+                                    Style="{StaticResource PrimaryButton}"
+                                    HorizontalAlignment="Right"
+                                    Margin="0,18,0,0"
+                                    Command="{Binding ToggleYouTubeCommand}" />
+                        </Grid>
                     </Border>
                     </Grid>
                 </ScrollViewer>

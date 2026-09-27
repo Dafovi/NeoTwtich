@@ -4,6 +4,7 @@ using NeoTwitch.Models;
 using NeoTwitch.Services.Library;
 using NeoTwitch.Services.Text;
 using NeoTwitch.Services.Streaming;
+using NeoTwitch.Shared;
 
 namespace NeoTwitch.Services.Configuration;
 
@@ -33,6 +34,18 @@ public static class AppConfigNormalizer
         config.Channel.Login ??= "";
         config.Channel.DisplayName ??= "";
         config.Channel.ProfileImageUrl ??= "";
+        // Neo Stream distributes one public desktop OAuth client. Persisting a previous client ID
+        // would otherwise keep an installation on an obsolete web/confidential credential.
+        config.YouTubeClientId = NeoTwitchProduct.YouTubeClientId;
+        config.YouTubeClientSecret ??= "";
+        config.YouTubeToken ??= new YouTubeTokenInfo();
+        config.YouTubeToken.AccessToken ??= "";
+        config.YouTubeToken.RefreshToken ??= "";
+        config.YouTubeToken.Scopes ??= [];
+        config.YouTubeChannel ??= new YouTubeChannelInfo();
+        config.YouTubeChannel.ChannelId ??= "";
+        config.YouTubeChannel.DisplayName ??= "";
+        config.YouTubeChannel.ThumbnailUrl ??= "";
         config.StreamingPlatforms = StreamingPlatformConfigurationService.Normalize(
             config.StreamingPlatforms,
             config.AutoConnectTwitch);

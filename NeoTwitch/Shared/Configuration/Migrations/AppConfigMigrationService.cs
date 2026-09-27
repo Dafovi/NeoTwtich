@@ -57,6 +57,7 @@ public static class AppConfigMigrationService
                 0 => MigrateLegacyToSchema1(config, idFactory ?? (() => Guid.NewGuid().ToString("N"))),
                 1 => MigrateSchema1ToSchema2(config),
                 2 => MigrateSchema2ToSchema3(config),
+                3 => MigrateSchema3ToSchema4(config),
                 _ => throw new InvalidOperationException($"No existe una migración desde el esquema {version}.")
             };
         }
@@ -132,5 +133,19 @@ public static class AppConfigMigrationService
             config.AutoConnectTwitch);
         config.SchemaVersion = 3;
         return 3;
+    }
+
+    private static int MigrateSchema3ToSchema4(AppConfig config)
+    {
+        // YouTube remains opt-in after upgrade. A desktop OAuth client ID is per product and
+        // is intentionally never inferred from an existing Twitch connection.
+        config.YouTubeClientId = NeoTwitchProduct.YouTubeClientId;
+        config.YouTubeClientSecret ??= "";
+        config.YouTubeToken ??= new YouTubeTokenInfo();
+        config.YouTubeChannel ??= new YouTubeChannelInfo();
+        config.ProtectedSecrets ??= new ProtectedConfigurationSecrets();
+        StreamingPlatformConfigurationService.GetOrCreate(config.StreamingPlatforms ??= [], StreamingPlatform.YouTube);
+        config.SchemaVersion = 4;
+        return 4;
     }
 }

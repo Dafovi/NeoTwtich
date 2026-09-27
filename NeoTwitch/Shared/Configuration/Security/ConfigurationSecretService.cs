@@ -11,6 +11,9 @@ public sealed class ConfigurationSecretService
     private const string TwitchClientSecretPurpose = "twitch-client-secret";
     private const string TwitchAccessTokenPurpose = "twitch-access-token";
     private const string TwitchRefreshTokenPurpose = "twitch-refresh-token";
+    private const string YouTubeAccessTokenPurpose = "youtube-access-token";
+    private const string YouTubeRefreshTokenPurpose = "youtube-refresh-token";
+    private const string YouTubeClientSecretPurpose = "youtube-client-secret";
     private const string AlexaAuthTokenPurpose = "alexa-auth-token";
     private const string ObsPasswordPurpose = "obs-password";
 
@@ -25,6 +28,9 @@ public sealed class ConfigurationSecretService
         !string.IsNullOrEmpty(config.TwitchClientSecret)
         || !string.IsNullOrEmpty(config.Token.AccessToken)
         || !string.IsNullOrEmpty(config.Token.RefreshToken)
+        || !string.IsNullOrEmpty(config.YouTubeToken.AccessToken)
+        || !string.IsNullOrEmpty(config.YouTubeToken.RefreshToken)
+        || !string.IsNullOrEmpty(config.YouTubeClientSecret)
         || !string.IsNullOrEmpty(config.Alexa.AuthToken)
         || !string.IsNullOrEmpty(config.Obs.Password);
 
@@ -35,6 +41,9 @@ public sealed class ConfigurationSecretService
             TwitchClientSecretPurpose => !string.IsNullOrWhiteSpace(config.TwitchClientSecret),
             TwitchAccessTokenPurpose => !string.IsNullOrWhiteSpace(config.Token.AccessToken),
             TwitchRefreshTokenPurpose => !string.IsNullOrWhiteSpace(config.Token.RefreshToken),
+            YouTubeAccessTokenPurpose => !string.IsNullOrWhiteSpace(config.YouTubeToken.AccessToken),
+            YouTubeRefreshTokenPurpose => !string.IsNullOrWhiteSpace(config.YouTubeToken.RefreshToken),
+            YouTubeClientSecretPurpose => !string.IsNullOrWhiteSpace(config.YouTubeClientSecret),
             AlexaAuthTokenPurpose => !string.IsNullOrWhiteSpace(config.Alexa.AuthToken),
             ObsPasswordPurpose => !string.IsNullOrWhiteSpace(config.Obs.Password),
             _ => false
@@ -48,6 +57,9 @@ public sealed class ConfigurationSecretService
             TwitchClientSecret = _protector.Protect(TwitchClientSecretPurpose, config.TwitchClientSecret),
             TwitchAccessToken = _protector.Protect(TwitchAccessTokenPurpose, config.Token.AccessToken),
             TwitchRefreshToken = _protector.Protect(TwitchRefreshTokenPurpose, config.Token.RefreshToken),
+            YouTubeAccessToken = _protector.Protect(YouTubeAccessTokenPurpose, config.YouTubeToken.AccessToken),
+            YouTubeRefreshToken = _protector.Protect(YouTubeRefreshTokenPurpose, config.YouTubeToken.RefreshToken),
+            YouTubeClientSecret = _protector.Protect(YouTubeClientSecretPurpose, config.YouTubeClientSecret),
             AlexaAuthToken = _protector.Protect(AlexaAuthTokenPurpose, config.Alexa.AuthToken),
             ObsPassword = _protector.Protect(ObsPasswordPurpose, config.Obs.Password)
         };
@@ -78,6 +90,24 @@ public sealed class ConfigurationSecretService
             config.ProtectedSecrets.TwitchRefreshToken,
             config.Token.RefreshToken,
             value => config.Token.RefreshToken = value,
+            failures);
+        RestoreOne(
+            YouTubeAccessTokenPurpose,
+            config.ProtectedSecrets.YouTubeAccessToken,
+            config.YouTubeToken.AccessToken,
+            value => config.YouTubeToken.AccessToken = value,
+            failures);
+        RestoreOne(
+            YouTubeRefreshTokenPurpose,
+            config.ProtectedSecrets.YouTubeRefreshToken,
+            config.YouTubeToken.RefreshToken,
+            value => config.YouTubeToken.RefreshToken = value,
+            failures);
+        RestoreOne(
+            YouTubeClientSecretPurpose,
+            config.ProtectedSecrets.YouTubeClientSecret,
+            config.YouTubeClientSecret,
+            value => config.YouTubeClientSecret = value,
             failures);
         RestoreOne(
             AlexaAuthTokenPurpose,
@@ -131,6 +161,9 @@ public sealed class ConfigurationSecretService
         config.TwitchClientSecret = "";
         config.Token.AccessToken = "";
         config.Token.RefreshToken = "";
+        config.YouTubeToken.AccessToken = "";
+        config.YouTubeToken.RefreshToken = "";
+        config.YouTubeClientSecret = "";
         config.Alexa.AuthToken = "";
         config.Obs.Password = "";
     }

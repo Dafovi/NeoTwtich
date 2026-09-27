@@ -13,6 +13,8 @@ public static class NeoTwitchProduct
     public const string ProductIdentifier = "com.dafovi.neotwitch";
     // Public OAuth identity for the distributed desktop application. Public clients do not use a client secret.
     public const string TwitchClientId = "frgvnwbwiktsfkt3rs8qwh5c0suo0c";
+    // Public OAuth identity for YouTube's desktop authorization-code flow with PKCE.
+    public const string YouTubeClientId = "932301450917-h0dn8n1argv0qh7hf2m2ajn21lccb75e.apps.googleusercontent.com";
     public const int InstallMarkerSchemaVersion = 1;
     public const string ReleaseIntegrityManifestFileName = "neo-twitch-release.json";
     public const string ReleaseIntegritySignatureFileName = "neo-twitch-release.json.sig";

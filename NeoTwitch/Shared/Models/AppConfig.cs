@@ -5,7 +5,7 @@ namespace NeoTwitch.Models;
 
 public sealed class AppConfig
 {
-    public const int CurrentSchemaVersion = 3;
+    public const int CurrentSchemaVersion = 4;
 
     public int SchemaVersion { get; set; } = CurrentSchemaVersion;
     public ProtectedConfigurationSecrets ProtectedSecrets { get; set; } = new();
@@ -13,6 +13,10 @@ public sealed class AppConfig
     public string TwitchClientSecret { get; set; } = "";
     public TwitchTokenInfo Token { get; set; } = new();
     public TwitchChannelInfo Channel { get; set; } = new();
+    public string YouTubeClientId { get; set; } = NeoTwitchProduct.YouTubeClientId;
+    public string YouTubeClientSecret { get; set; } = "";
+    public YouTubeTokenInfo YouTubeToken { get; set; } = new();
+    public YouTubeChannelInfo YouTubeChannel { get; set; } = new();
     public ObservableCollection<StreamingPlatformConnectionConfig> StreamingPlatforms { get; set; } =
     [
         new()
@@ -73,6 +77,9 @@ public sealed class ProtectedConfigurationSecrets
     public string TwitchClientSecret { get; set; } = "";
     public string TwitchAccessToken { get; set; } = "";
     public string TwitchRefreshToken { get; set; } = "";
+    public string YouTubeAccessToken { get; set; } = "";
+    public string YouTubeRefreshToken { get; set; } = "";
+    public string YouTubeClientSecret { get; set; } = "";
     public string AlexaAuthToken { get; set; } = "";
     public string ObsPassword { get; set; } = "";
 }

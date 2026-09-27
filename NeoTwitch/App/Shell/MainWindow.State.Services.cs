@@ -3,6 +3,7 @@ using NeoTwitch.Services;
 using NeoTwitch.Services.Diagnostics;
 using NeoTwitch.Services.Text;
 using NeoTwitch.Services.Streaming;
+using NeoTwitch.Services.YouTube;
 using NeoTwitch.ViewModels.Activity;
 using NeoTwitch.ViewModels.Alexa;
 using NeoTwitch.ViewModels.Alerts;
@@ -35,6 +36,8 @@ public partial class MainWindow
     private AudioPlayerService _audioPlayer => _services.AudioPlayer;
     private SerialLightController _lightController => _services.LightController;
     private TwitchAuthService _authService => _services.AuthService;
+    private YouTubeAuthService _youTubeAuthService => _services.YouTubeAuthService;
+    private YouTubeLiveService _youTubeLiveService => _services.YouTubeLiveService;
     private TwitchChatService _chatService => _services.ChatService;
     private AlexaRelayService _alexaRelayService => _services.AlexaRelayService;
     private ObsWebSocketService _obsService => _services.ObsService;

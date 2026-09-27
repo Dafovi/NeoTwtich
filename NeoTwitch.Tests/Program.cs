@@ -14,6 +14,7 @@ using NeoTwitch.Services.Obs;
 using NeoTwitch.Services.Status;
 using NeoTwitch.Services.Text;
 using NeoTwitch.Services.Ui;
+using NeoTwitch.Services.YouTube;
 using NeoTwitch.Shared;
 using NeoTwitch.Installer;
 using System.Security.Cryptography;
@@ -71,6 +72,7 @@ private static readonly (string Name, Action Body)[] Tests =
     ("Configuration legacy fixture migrates to schema one", ConfigurationIntegrityTests.LegacyFixtureMigratesToCurrentSchema),
     ("Configuration current schema reload is idempotent", ConfigurationIntegrityTests.CurrentSchemaReloadIsIdempotent),
     ("Configuration schema two creates Twitch platform connection", ConfigurationIntegrityTests.SchemaTwoCreatesTwitchPlatformConnection),
+    ("Configuration schema three creates an opt-in YouTube connection", ConfigurationIntegrityTests.SchemaThreeCreatesYouTubePlatformConnection),
     ("Configuration future schema is rejected", ConfigurationIntegrityTests.FutureSchemaIsRejected),
     ("Configuration migration preserves user settings", ConfigurationIntegrityTests.MigrationPreservesUserSettings),
     ("Configuration missing IDs are generated", ConfigurationIntegrityTests.MissingIdsAreGenerated),
@@ -112,6 +114,10 @@ private static readonly (string Name, Action Body)[] Tests =
     ("Platform event router scopes duplicate IDs by platform", StreamingPlatformTests.RouterScopesDuplicateIdsByPlatform),
     ("TwitchAuthService refreshes token with injected HTTP", TwitchAuthServiceTests.RefreshesTokenWithInjectedHttp),
     ("TwitchAuthService refreshes a rejected current token", TwitchAuthServiceTests.RefreshesRejectedCurrentToken),
+    ("YouTube OAuth builds a PKCE authorization request", YouTubeIntegrationTests.BuildsPkceAuthorizationRequest),
+    ("YouTube OAuth exchanges and refreshes public-client tokens", YouTubeIntegrationTests.ExchangesAndRefreshesTokens),
+    ("YouTube OAuth loopback listener receives the local callback", YouTubeIntegrationTests.ReceivesLoopbackCallback),
+    ("YouTube live service resolves the active broadcast", YouTubeIntegrationTests.ResolvesActiveBroadcast),
     ("EventSub dedup accepts first message", TwitchReliabilityTests.DedupAcceptsFirstMessage),
     ("EventSub dedup ignores duplicate message ID", TwitchReliabilityTests.DedupIgnoresDuplicateMessageId),
     ("EventSub dedup accepts identical payload with different IDs", TwitchReliabilityTests.DedupAcceptsDifferentIds),
@@ -688,7 +694,7 @@ static class ConfigurationIntegrityTests
 
     public static void CurrentSchemaReloadIsIdempotent()
     {
-        const string current = """{"schemaVersion":3,"twitchClientId":"frgvnwbwiktsfkt3rs8qwh5c0suo0c","rules":[],"ledStrips":[]}""";
+        const string current = """{"schemaVersion":4,"twitchClientId":"frgvnwbwiktsfkt3rs8qwh5c0suo0c","rules":[],"ledStrips":[]}""";
         var first = AppConfigMigrationService.DeserializeAndMigrate(current, JsonOptions());
         var serialized = JsonSerializer.Serialize(first.Config, JsonOptions());
         var second = AppConfigMigrationService.DeserializeAndMigrate(serialized, JsonOptions());
@@ -705,10 +711,26 @@ static class ConfigurationIntegrityTests
         var migrated = AppConfigMigrationService.DeserializeAndMigrate(schemaTwo, JsonOptions());
 
         TestAssert.True(migrated.WasMigrated);
-        TestAssert.Equal(3, migrated.Config.SchemaVersion);
-        TestAssert.Equal(1, migrated.Config.StreamingPlatforms.Count);
+        TestAssert.Equal(4, migrated.Config.SchemaVersion);
+        TestAssert.Equal(2, migrated.Config.StreamingPlatforms.Count);
         TestAssert.Equal(StreamingPlatform.Twitch, migrated.Config.StreamingPlatforms[0].Platform);
         TestAssert.False(migrated.Config.StreamingPlatforms[0].AutoConnect);
+        TestAssert.Equal(StreamingPlatform.YouTube, migrated.Config.StreamingPlatforms[1].Platform);
+        TestAssert.False(migrated.Config.StreamingPlatforms[1].IsEnabled);
+    }
+
+    public static void SchemaThreeCreatesYouTubePlatformConnection()
+    {
+        const string schemaThree = """{"schemaVersion":3,"rules":[],"ledStrips":[]}""";
+
+        var migrated = AppConfigMigrationService.DeserializeAndMigrate(schemaThree, JsonOptions());
+
+        TestAssert.True(migrated.WasMigrated);
+        TestAssert.Equal(4, migrated.Config.SchemaVersion);
+        var youtube = migrated.Config.StreamingPlatforms.Single(connection => connection.Platform == StreamingPlatform.YouTube);
+        TestAssert.False(youtube.IsEnabled);
+        TestAssert.False(youtube.AutoConnect);
+        TestAssert.Equal(NeoTwitchProduct.YouTubeClientId, migrated.Config.YouTubeClientId);
     }
 
     public static void FutureSchemaIsRejected()
@@ -991,6 +1013,9 @@ static class ConfigurationIntegrityTests
         config.TwitchClientSecret = $"{prefix}-client-secret";
         config.Token.AccessToken = $"{prefix}-access-token";
         config.Token.RefreshToken = $"{prefix}-refresh-token";
+        config.YouTubeToken.AccessToken = $"{prefix}-youtube-access-token";
+        config.YouTubeToken.RefreshToken = $"{prefix}-youtube-refresh-token";
+        config.YouTubeClientSecret = $"{prefix}-youtube-client-secret";
         config.Alexa.AuthToken = $"{prefix}-alexa-token";
         config.Obs.Password = $"{prefix}-obs-password";
         return config;
@@ -998,7 +1023,7 @@ static class ConfigurationIntegrityTests
 
     private static void AssertNoPlaintextSecrets(string json, string prefix)
     {
-        foreach (var suffix in new[] { "client-secret", "access-token", "refresh-token", "alexa-token", "obs-password" })
+        foreach (var suffix in new[] { "client-secret", "access-token", "refresh-token", "youtube-access-token", "youtube-refresh-token", "youtube-client-secret", "alexa-token", "obs-password" })
         {
             TestAssert.False(json.Contains($"{prefix}-{suffix}", StringComparison.Ordinal));
         }
@@ -5431,6 +5456,7 @@ static class ConnectionsViewModelTests
         viewModel.ConfigureActions(
             () => actions.Add("save"),
             () => actions.Add("twitch"),
+            () => actions.Add("youtube"),
             () => actions.Add("open-twitch"),
             () => actions.Add("client-id"),
             () => actions.Add("client-secret"),
@@ -5447,6 +5473,7 @@ static class ConnectionsViewModelTests
 
         viewModel.SaveCommand.Execute(null);
         viewModel.ToggleTwitchCommand.Execute(null);
+        viewModel.ToggleYouTubeCommand.Execute(null);
         viewModel.OpenTwitchConsoleCommand.Execute(null);
         viewModel.ToggleClientIdVisibilityCommand.Execute(null);
         viewModel.ToggleClientSecretVisibilityCommand.Execute(null);
@@ -5462,7 +5489,7 @@ static class ConnectionsViewModelTests
         viewModel.ToggleObsPasswordVisibilityCommand.Execute(null);
 
         TestAssert.Equal(
-            "save,twitch,open-twitch,client-id,client-secret,ports,arduino,open-alexa,test-alexa,alexa-url,alexa-token,open-obs,connect-obs,test-obs,obs-password",
+            "save,twitch,youtube,open-twitch,client-id,client-secret,ports,arduino,open-alexa,test-alexa,alexa-url,alexa-token,open-obs,connect-obs,test-obs,obs-password",
             string.Join(",", actions));
     }
 }

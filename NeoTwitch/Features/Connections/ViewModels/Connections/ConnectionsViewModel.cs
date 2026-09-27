@@ -9,6 +9,7 @@ public sealed class ConnectionsViewModel : ObservableObject
 {
     private Action _save = Noop;
     private Action _toggleTwitch = Noop;
+    private Action _toggleYouTube = Noop;
     private Action _openTwitchConsole = Noop;
     private Action _toggleClientIdVisibility = Noop;
     private Action _toggleClientSecretVisibility = Noop;
@@ -23,10 +24,12 @@ public sealed class ConnectionsViewModel : ObservableObject
     private Action _testObs = Noop;
     private Action _toggleObsPasswordVisibility = Noop;
     private ConnectionBadgeViewModel _twitchBadge = ConnectionBadgeViewModel.From("Desconectado", "#F43F5E");
+    private ConnectionBadgeViewModel _youTubeBadge = ConnectionBadgeViewModel.From("Desconectado", "#F43F5E");
     private ConnectionBadgeViewModel _arduinoBadge = ConnectionBadgeViewModel.From("Desconectado", "#F43F5E");
     private ConnectionBadgeViewModel _alexaBadge = ConnectionBadgeViewModel.From("Desconectado", "#F43F5E");
     private ConnectionBadgeViewModel _obsBadge = ConnectionBadgeViewModel.From("Desconectado", "#F43F5E");
     private ConnectionButtonViewModel _twitchButton = ConnectionButtonViewModel.From("Conectar Twitch", "Plug", isEnabled: true);
+    private ConnectionButtonViewModel _youTubeButton = ConnectionButtonViewModel.From("Conectar YouTube", "Plug", isEnabled: true);
     private ConnectionButtonViewModel _arduinoButton = ConnectionButtonViewModel.From("Conectar Arduino", "Plug", isEnabled: false);
     private ConnectionButtonViewModel _alexaTestButton = ConnectionButtonViewModel.From("Probar Alexa", "Play", isEnabled: false);
     private ConnectionButtonViewModel _obsButton = ConnectionButtonViewModel.From("Conectar OBS", "Plug", isEnabled: false);
@@ -35,6 +38,7 @@ public sealed class ConnectionsViewModel : ObservableObject
     private string _obsConnectionHelpText = "";
     private string _twitchClientId = "";
     private string _twitchClientSecret = "";
+    private string _youTubeClientSecret = "";
     private bool _arduinoEnabled;
     private string _serialPort = "";
     private string _baudRateText = "115200";
@@ -51,6 +55,7 @@ public sealed class ConnectionsViewModel : ObservableObject
     {
         SaveCommand = new RelayCommand(() => _save());
         ToggleTwitchCommand = new RelayCommand(() => _toggleTwitch());
+        ToggleYouTubeCommand = new RelayCommand(() => _toggleYouTube());
         OpenTwitchConsoleCommand = new RelayCommand(() => _openTwitchConsole());
         ToggleClientIdVisibilityCommand = new RelayCommand(() => _toggleClientIdVisibility());
         ToggleClientSecretVisibilityCommand = new RelayCommand(() => _toggleClientSecretVisibility());
@@ -69,6 +74,8 @@ public sealed class ConnectionsViewModel : ObservableObject
     public RelayCommand SaveCommand { get; }
 
     public RelayCommand ToggleTwitchCommand { get; }
+
+    public RelayCommand ToggleYouTubeCommand { get; }
 
     public RelayCommand OpenTwitchConsoleCommand { get; }
 
@@ -108,6 +115,12 @@ public sealed class ConnectionsViewModel : ObservableObject
         private set => SetProperty(ref _arduinoBadge, value);
     }
 
+    public ConnectionBadgeViewModel YouTubeBadge
+    {
+        get => _youTubeBadge;
+        private set => SetProperty(ref _youTubeBadge, value);
+    }
+
     public ConnectionBadgeViewModel AlexaBadge
     {
         get => _alexaBadge;
@@ -130,6 +143,12 @@ public sealed class ConnectionsViewModel : ObservableObject
     {
         get => _arduinoButton;
         private set => SetProperty(ref _arduinoButton, value);
+    }
+
+    public ConnectionButtonViewModel YouTubeButton
+    {
+        get => _youTubeButton;
+        private set => SetProperty(ref _youTubeButton, value);
     }
 
     public ConnectionButtonViewModel AlexaTestButton
@@ -178,6 +197,12 @@ public sealed class ConnectionsViewModel : ObservableObject
     {
         get => _twitchClientSecret;
         set => SetProperty(ref _twitchClientSecret, value ?? "");
+    }
+
+    public string YouTubeClientSecret
+    {
+        get => _youTubeClientSecret;
+        set => SetProperty(ref _youTubeClientSecret, value ?? "");
     }
 
     public bool ArduinoEnabled
@@ -244,6 +269,13 @@ public sealed class ConnectionsViewModel : ObservableObject
     {
         TwitchClientId = config.TwitchClientId;
         TwitchClientSecret = config.TwitchClientSecret;
+        YouTubeClientSecret = config.YouTubeClientSecret;
+    }
+
+    public void UpdateYouTubeConnection(ConnectionStateVisual badge, ConnectionButtonState button)
+    {
+        YouTubeBadge = ConnectionBadgeViewModel.From(badge);
+        YouTubeButton = ConnectionButtonViewModel.From(button);
     }
 
     public void LoadArduinoConfig(AppConfig config)
@@ -312,6 +344,7 @@ public sealed class ConnectionsViewModel : ObservableObject
     public void ConfigureActions(
         Action save,
         Action toggleTwitch,
+        Action toggleYouTube,
         Action openTwitchConsole,
         Action toggleClientIdVisibility,
         Action toggleClientSecretVisibility,
@@ -328,6 +361,7 @@ public sealed class ConnectionsViewModel : ObservableObject
     {
         _save = save;
         _toggleTwitch = toggleTwitch;
+        _toggleYouTube = toggleYouTube;
         _openTwitchConsole = openTwitchConsole;
         _toggleClientIdVisibility = toggleClientIdVisibility;
         _toggleClientSecretVisibility = toggleClientSecretVisibility;

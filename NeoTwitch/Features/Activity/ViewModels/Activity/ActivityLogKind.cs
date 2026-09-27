@@ -4,6 +4,7 @@ public enum ActivityLogKind
 {
     Info,
     Twitch,
+    YouTube,
     Arduino,
     Alexa,
     Audio,

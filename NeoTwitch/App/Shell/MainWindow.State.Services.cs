@@ -22,6 +22,7 @@ public partial class MainWindow
     private readonly AppStartupOptions _startupOptions;
     private readonly TwitchEventSubClient _eventSubClient;
     private readonly IStreamingPlatformProvider _twitchPlatformProvider;
+    private readonly IStreamingPlatformProvider _youTubePlatformProvider;
     private readonly PlatformEventRouter _platformEventRouter = new();
     private ShellViewModel _shellViewModel = null!;
     private AlertsViewModel _alertsViewModel = null!;
@@ -38,6 +39,8 @@ public partial class MainWindow
     private TwitchAuthService _authService => _services.AuthService;
     private YouTubeAuthService _youTubeAuthService => _services.YouTubeAuthService;
     private YouTubeLiveService _youTubeLiveService => _services.YouTubeLiveService;
+    private YouTubeChannelService _youTubeChannelService => _services.YouTubeChannelService;
+    private YouTubeLiveChatService _youTubeLiveChatService => _services.YouTubeLiveChatService;
     private TwitchChatService _chatService => _services.ChatService;
     private AlexaRelayService _alexaRelayService => _services.AlexaRelayService;
     private ObsWebSocketService _obsService => _services.ObsService;

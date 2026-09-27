@@ -13,6 +13,9 @@ public partial class MainWindow
             _isTwitchConnecting,
             !string.IsNullOrWhiteSpace(_twitchConnectionError),
             _config.Token.HasToken,
+            _isYouTubeAuthorizing,
+            !string.IsNullOrWhiteSpace(_youTubeConnectionError),
+            _config.YouTubeToken.HasToken,
             _config.ArduinoEnabled,
             _isArduinoConnecting,
             _lightController.HasConfirmedAck,
@@ -34,17 +37,20 @@ public partial class MainWindow
             : UiTextKeys.ConnectionWarningIncomplete);
 
         var twitchVisual = ConnectionStateService.GetVisual(states.Twitch, reviewLabels);
+        var youTubeVisual = ConnectionStateService.GetVisual(states.YouTube, reviewLabels);
         var arduinoVisual = ConnectionStateService.GetVisual(states.Arduino, arduinoLabels);
         var alexaVisual = ConnectionStateService.GetVisual(states.Alexa, alexaLabels);
         var obsVisual = ConnectionStateService.GetVisual(states.Obs, reviewLabels);
 
         _dashboardViewModel.UpdateConnectionStates(
             twitchVisual,
+            youTubeVisual,
             arduinoVisual,
             alexaVisual,
             obsVisual);
         _connectionsViewModel.UpdateBadges(
             twitchVisual,
+            youTubeVisual,
             arduinoVisual,
             alexaVisual,
             obsVisual);

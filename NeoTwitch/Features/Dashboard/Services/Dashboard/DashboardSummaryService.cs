@@ -1,4 +1,5 @@
 using NeoTwitch.Models;
+using NeoTwitch.Services.Streaming;
 
 namespace NeoTwitch.Services.Dashboard;
 
@@ -31,18 +32,23 @@ public sealed class DashboardSummaryService
 
     public void RegisterTwitchEvent(TwitchEvent twitchEvent)
     {
-        switch (twitchEvent.Kind)
+        RegisterStreamEvent(TwitchStreamEventAdapter.FromTwitch(twitchEvent));
+    }
+
+    public void RegisterStreamEvent(StreamEvent streamEvent)
+    {
+        switch (streamEvent.Kind)
         {
-            case TwitchEventKind.Follow:
+            case StreamEventKind.Follow:
                 _followers++;
                 break;
-            case TwitchEventKind.Subscription:
+            case StreamEventKind.Subscription:
                 _subscriptions++;
                 break;
-            case TwitchEventKind.Cheer:
-                _bits += Math.Max(0, twitchEvent.Bits ?? 0);
+            case StreamEventKind.PlatformCurrency:
+                _bits += Math.Max(0, streamEvent.ContributionUnits ?? 0);
                 break;
-            case TwitchEventKind.ChatCommand:
+            case StreamEventKind.ChatCommand:
                 _chatMessages++;
                 break;
         }

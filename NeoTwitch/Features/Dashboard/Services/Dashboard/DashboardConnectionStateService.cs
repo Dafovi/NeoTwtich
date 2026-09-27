@@ -8,6 +8,9 @@ public sealed record DashboardConnectionStateInput(
     bool TwitchConnecting,
     bool TwitchHasConnectionError,
     bool TwitchHasToken,
+    bool YouTubeAuthorizing,
+    bool YouTubeHasConnectionError,
+    bool YouTubeHasToken,
     bool ArduinoEnabled,
     bool ArduinoConnecting,
     bool ArduinoHasConfirmedAck,
@@ -24,6 +27,7 @@ public sealed record DashboardConnectionStateInput(
 
 public sealed record DashboardConnectionStates(
     ConnectionVisualState Twitch,
+    ConnectionVisualState YouTube,
     ConnectionVisualState Arduino,
     ConnectionVisualState Alexa,
     ConnectionVisualState Obs);
@@ -38,6 +42,10 @@ public static class DashboardConnectionStateService
                 input.TwitchConnecting,
                 input.TwitchHasConnectionError,
                 input.TwitchHasToken),
+            ConnectionStateService.ResolveYouTube(
+                input.YouTubeAuthorizing,
+                input.YouTubeHasConnectionError,
+                input.YouTubeHasToken),
             ConnectionStateService.ResolveArduino(
                 input.ArduinoEnabled,
                 input.ArduinoConnecting,

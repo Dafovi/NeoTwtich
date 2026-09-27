@@ -49,11 +49,24 @@ public partial class MainWindow : Window, IAlertExecutionCapabilities
 
         _eventSubClient = new TwitchEventSubClient(_authService, () => _config, SaveConfig, AddLog, _text);
         _twitchPlatformProvider = new TwitchStreamingPlatformProvider(_eventSubClient);
+        _youTubePlatformProvider = new YouTubeStreamingPlatformProvider(
+            () => _config,
+            _youTubeAuthService,
+            _youTubeLiveService,
+            _youTubeLiveChatService,
+            SaveConfig,
+            AddLog,
+            _timeProvider);
         _services.RegisterRuntimeResource(
             "Twitch EventSub",
             ApplicationShutdownOrder.EventIngress,
             DisposeEventSubAsync);
+        _services.RegisterRuntimeResource(
+            "YouTube live chat",
+            ApplicationShutdownOrder.EventIngress,
+            DisposeYouTubeLiveChatAsync);
         _twitchPlatformProvider.EventReceivedAsync += PlatformEventRouter_PublishAsync;
+        _youTubePlatformProvider.EventReceivedAsync += PlatformEventRouter_PublishAsync;
         _platformEventRouter.EventReceivedAsync += PlatformEventRouter_EventReceivedAsync;
         _eventSubClient.HealthChanged += EventSubClient_HealthChanged;
 
@@ -78,6 +91,12 @@ public partial class MainWindow : Window, IAlertExecutionCapabilities
             await _twitchPlatformProvider.DisposeAsync();
             _eventSubClient.Dispose();
         }
+    }
+
+    private async ValueTask DisposeYouTubeLiveChatAsync()
+    {
+        await _youTubePlatformProvider.StopAsync().WaitAsync(TimeSpan.FromSeconds(5));
+        await _youTubePlatformProvider.DisposeAsync();
     }
 
     private Task PlatformEventRouter_PublishAsync(StreamEvent streamEvent, CancellationToken cancellationToken) =>

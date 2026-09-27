@@ -15,53 +15,58 @@ public partial class MainWindow
         StreamEvent streamEvent,
         CancellationToken cancellationToken)
     {
-        if (streamEvent.Platform != StreamingPlatform.Twitch)
+        if (streamEvent.Platform is not (StreamingPlatform.Twitch or StreamingPlatform.YouTube))
         {
             return Task.CompletedTask;
         }
 
-        return ProcessTwitchEventAsync(TwitchStreamEventAdapter.ToTwitch(streamEvent), cancellationToken);
+        return ProcessStreamEventAsync(streamEvent, cancellationToken);
     }
 
-    private async Task ProcessTwitchEventAsync(
-        TwitchEvent twitchEvent,
+    private async Task ProcessStreamEventAsync(
+        StreamEvent streamEvent,
         CancellationToken cancellationToken)
     {
         try
         {
             cancellationToken.ThrowIfCancellationRequested();
-            if (twitchEvent.Kind == TwitchEventKind.ChatCommand)
-                IntegrationsView.ReceiveChat(twitchEvent);
-            RegisterDashboardTwitchEvent(twitchEvent);
-            var matchingRules = ResolveMatchingRules(twitchEvent);
+            var alertEvent = StreamEventRuleAdapter.ToAlertEvent(streamEvent);
+            if (streamEvent.Kind == StreamEventKind.ChatCommand)
+                IntegrationsView.ReceiveChat(alertEvent);
+            RegisterDashboardStreamEvent(streamEvent);
+            var logKind = streamEvent.Platform == StreamingPlatform.YouTube
+                ? ActivityLogKind.YouTube
+                : ActivityLogKind.Event;
+            var matchingRules = EventRuleMatcherService.ResolveMatches(_config.Rules, streamEvent);
             if (matchingRules.Length == 0)
             {
-                if (twitchEvent.Kind != TwitchEventKind.ChatCommand)
+                if (streamEvent.Kind != StreamEventKind.ChatCommand)
                 {
-                    AddLog(twitchEvent.Title, ActivityLogKind.Event);
+                    AddLog(streamEvent.Title, logKind);
                     AddLog("El evento no coincide con alertas activas.");
                 }
 
                 return;
             }
 
-            if (await TrySuppressOfflineTwitchAlertAsync(twitchEvent))
+            if (streamEvent.Platform == StreamingPlatform.Twitch
+                && await TrySuppressOfflineTwitchAlertAsync(alertEvent))
             {
                 return;
             }
 
-            AddLog(twitchEvent.Title, ActivityLogKind.Event);
+            AddLog(streamEvent.Title, logKind);
             RegisterDashboardMatchedRules(matchingRules.Length);
 
             foreach (var rule in matchingRules)
             {
-                await QueueAndRunRuleAsync(rule, twitchEvent);
+                await QueueAndRunRuleAsync(rule, alertEvent);
             }
         }
         catch (Exception ex)
         {
-            CrashReporter.Log(ex, $"No se pudo procesar evento Twitch '{twitchEvent.Title}'.");
-            AddLog($"Twitch evento: {ex.Message}", ActivityLogKind.Important);
+            CrashReporter.Log(ex, $"No se pudo procesar evento {streamEvent.Platform} '{streamEvent.Title}'.");
+            AddLog($"{streamEvent.Platform} evento: {ex.Message}", ActivityLogKind.Important);
         }
     }
 
@@ -80,11 +85,6 @@ public partial class MainWindow
         }
 
         await RunRuleAsync(rule, twitchEvent, queueSlot: slot);
-    }
-
-    private EventRule[] ResolveMatchingRules(TwitchEvent twitchEvent)
-    {
-        return EventRuleMatcherService.ResolveMatches(_config.Rules, twitchEvent);
     }
 
     private async Task<bool> TrySuppressOfflineTwitchAlertAsync(TwitchEvent twitchEvent)

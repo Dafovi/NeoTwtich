@@ -64,6 +64,19 @@
                                            Foreground="{Binding Foreground, RelativeSource={RelativeSource AncestorType=ToggleButton}}" />
                             </StackPanel>
                         </ToggleButton>
+                        <ToggleButton x:Name="ActivityFilterYouTubeButton"
+                                      Tag="YOUTUBE"
+                                      IsChecked="{Binding YouTubeFilterEnabled, Mode=TwoWay}"
+                                      Style="{StaticResource ActivityFilterButton}">
+                            <StackPanel Orientation="Horizontal">
+                                <Image Source="/Assets/Icons/service_youtube.png"
+                                       Width="16"
+                                       Height="16"
+                                       Margin="0,0,7,0" />
+                                <TextBlock Text="YouTube"
+                                           Foreground="{Binding Foreground, RelativeSource={RelativeSource AncestorType=ToggleButton}}" />
+                            </StackPanel>
+                        </ToggleButton>
                         <ToggleButton x:Name="ActivityFilterArduinoButton"
                                       Tag="ARDUINO"
                                       IsChecked="{Binding ArduinoFilterEnabled, Mode=TwoWay}"

@@ -1,4 +1,5 @@
 using NeoTwitch.Models;
+using NeoTwitch.Services.Streaming;
 
 namespace NeoTwitch;
 
@@ -25,6 +26,18 @@ public partial class MainWindow
         }
 
         _dashboardSummary.RegisterTwitchEvent(twitchEvent);
+        UpdateDashboardSummary();
+    }
+
+    private void RegisterDashboardStreamEvent(StreamEvent streamEvent)
+    {
+        if (!Dispatcher.CheckAccess())
+        {
+            _ = Dispatcher.InvokeAsync(() => RegisterDashboardStreamEvent(streamEvent));
+            return;
+        }
+
+        _dashboardSummary.RegisterStreamEvent(streamEvent);
         UpdateDashboardSummary();
     }
 

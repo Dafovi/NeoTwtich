@@ -39,6 +39,8 @@ public sealed class ConnectionsViewModel : ObservableObject
     private string _twitchClientId = "";
     private string _twitchClientSecret = "";
     private string _youTubeClientSecret = "";
+    private string _youTubeChannelDisplay = "Autoriza tu canal de YouTube desde el navegador.";
+    private string _youTubeChannelThumbnailUrl = "";
     private bool _arduinoEnabled;
     private string _serialPort = "";
     private string _baudRateText = "115200";
@@ -205,6 +207,18 @@ public sealed class ConnectionsViewModel : ObservableObject
         set => SetProperty(ref _youTubeClientSecret, value ?? "");
     }
 
+    public string YouTubeChannelDisplay
+    {
+        get => _youTubeChannelDisplay;
+        private set => SetProperty(ref _youTubeChannelDisplay, value);
+    }
+
+    public string YouTubeChannelThumbnailUrl
+    {
+        get => _youTubeChannelThumbnailUrl;
+        private set => SetProperty(ref _youTubeChannelThumbnailUrl, value);
+    }
+
     public bool ArduinoEnabled
     {
         get => _arduinoEnabled;
@@ -270,6 +284,15 @@ public sealed class ConnectionsViewModel : ObservableObject
         TwitchClientId = config.TwitchClientId;
         TwitchClientSecret = config.TwitchClientSecret;
         YouTubeClientSecret = config.YouTubeClientSecret;
+        UpdateYouTubeChannel(config.YouTubeChannel);
+    }
+
+    public void UpdateYouTubeChannel(YouTubeChannelInfo channel)
+    {
+        YouTubeChannelDisplay = channel.IsReady
+            ? $"Canal conectado: {channel.DisplayName} ({channel.ChannelId})"
+            : "Autoriza tu canal de YouTube desde el navegador.";
+        YouTubeChannelThumbnailUrl = channel.ThumbnailUrl;
     }
 
     public void UpdateYouTubeConnection(ConnectionStateVisual badge, ConnectionButtonState button)
@@ -302,11 +325,13 @@ public sealed class ConnectionsViewModel : ObservableObject
 
     public void UpdateBadges(
         ConnectionStateVisual twitch,
+        ConnectionStateVisual youTube,
         ConnectionStateVisual arduino,
         ConnectionStateVisual alexa,
         ConnectionStateVisual obs)
     {
         TwitchBadge = ConnectionBadgeViewModel.From(twitch);
+        YouTubeBadge = ConnectionBadgeViewModel.From(youTube);
         ArduinoBadge = ConnectionBadgeViewModel.From(arduino);
         AlexaBadge = ConnectionBadgeViewModel.From(alexa);
         ObsBadge = ConnectionBadgeViewModel.From(obs);

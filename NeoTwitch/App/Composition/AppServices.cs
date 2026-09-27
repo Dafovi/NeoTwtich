@@ -21,6 +21,8 @@ public sealed class AppServices : IAsyncDisposable
         TwitchAuthService authService,
         YouTubeAuthService youTubeAuthService,
         YouTubeLiveService youTubeLiveService,
+        YouTubeChannelService youTubeChannelService,
+        YouTubeLiveChatService youTubeLiveChatService,
         TwitchChatService chatService,
         AlexaRelayService alexaRelayService,
         ObsWebSocketService obsService,
@@ -53,6 +55,8 @@ public sealed class AppServices : IAsyncDisposable
         AuthService = authService;
         YouTubeAuthService = youTubeAuthService;
         YouTubeLiveService = youTubeLiveService;
+        YouTubeChannelService = youTubeChannelService;
+        YouTubeLiveChatService = youTubeLiveChatService;
         ChatService = chatService;
         AlexaRelayService = alexaRelayService;
         ObsService = obsService;
@@ -89,6 +93,10 @@ public sealed class AppServices : IAsyncDisposable
     public YouTubeAuthService YouTubeAuthService { get; }
 
     public YouTubeLiveService YouTubeLiveService { get; }
+
+    public YouTubeChannelService YouTubeChannelService { get; }
+
+    public YouTubeLiveChatService YouTubeLiveChatService { get; }
 
     public TwitchChatService ChatService { get; }
 
@@ -159,6 +167,8 @@ public sealed class AppServices : IAsyncDisposable
         var authService = new TwitchAuthService(text, externalLauncher, timeProvider);
         var youTubeAuthService = new YouTubeAuthService(externalLauncher, timeProvider);
         var youTubeLiveService = new YouTubeLiveService();
+        var youTubeChannelService = new YouTubeChannelService();
+        var youTubeLiveChatService = new YouTubeLiveChatService();
         var chatService = new TwitchChatService(text);
         var alexaRelayService = new AlexaRelayService(text, timeProvider);
         var obsService = new ObsWebSocketService(text);
@@ -177,6 +187,8 @@ public sealed class AppServices : IAsyncDisposable
         resourceOwner.Register("Twitch authentication", ApplicationShutdownOrder.NetworkClients, authService);
         resourceOwner.Register("YouTube authentication", ApplicationShutdownOrder.NetworkClients, youTubeAuthService);
         resourceOwner.Register("YouTube live", ApplicationShutdownOrder.NetworkClients, youTubeLiveService);
+        resourceOwner.Register("YouTube channel", ApplicationShutdownOrder.NetworkClients, youTubeChannelService);
+        resourceOwner.Register("YouTube chat", ApplicationShutdownOrder.NetworkClients, youTubeLiveChatService);
         resourceOwner.Register("Alexa relay", ApplicationShutdownOrder.NetworkClients, alexaRelayService);
         resourceOwner.Register("Updates", ApplicationShutdownOrder.NetworkClients, updateService);
         resourceOwner.Register("Settings", ApplicationShutdownOrder.Persistence, settingsStore);
@@ -188,6 +200,8 @@ public sealed class AppServices : IAsyncDisposable
             authService,
             youTubeAuthService,
             youTubeLiveService,
+            youTubeChannelService,
+            youTubeLiveChatService,
             chatService,
             alexaRelayService,
             obsService,

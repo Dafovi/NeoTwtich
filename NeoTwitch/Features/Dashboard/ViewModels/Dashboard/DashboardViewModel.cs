@@ -16,6 +16,7 @@ public sealed class DashboardViewModel : ObservableObject
     private DashboardSummaryMetricViewModel _chatMessages = DashboardSummaryMetricViewModel.From("0", "#22C55E");
     private DashboardSummaryMetricViewModel _events = DashboardSummaryMetricViewModel.From("0", "#84CC16");
     private DashboardConnectionCardViewModel _twitchState = DashboardConnectionCardViewModel.From("Desconectado", "#F43F5E", "Assets/Icons/status_error.png");
+    private DashboardConnectionCardViewModel _youTubeState = DashboardConnectionCardViewModel.From("Desconectado", "#F43F5E", "Assets/Icons/status_error.png");
     private DashboardConnectionCardViewModel _arduinoState = DashboardConnectionCardViewModel.From("Desconectado", "#F43F5E", "Assets/Icons/status_error.png");
     private DashboardConnectionCardViewModel _alexaState = DashboardConnectionCardViewModel.From("Desconectado", "#F43F5E", "Assets/Icons/status_error.png");
     private DashboardConnectionCardViewModel _obsState = DashboardConnectionCardViewModel.From("Desconectado", "#F43F5E", "Assets/Icons/status_error.png");
@@ -72,6 +73,12 @@ public sealed class DashboardViewModel : ObservableObject
         private set => SetProperty(ref _arduinoState, value);
     }
 
+    public DashboardConnectionCardViewModel YouTubeState
+    {
+        get => _youTubeState;
+        private set => SetProperty(ref _youTubeState, value);
+    }
+
     public DashboardConnectionCardViewModel AlexaState
     {
         get => _alexaState;
@@ -95,11 +102,13 @@ public sealed class DashboardViewModel : ObservableObject
 
     public void UpdateConnectionStates(
         ConnectionStateVisual twitch,
+        ConnectionStateVisual youTube,
         ConnectionStateVisual arduino,
         ConnectionStateVisual alexa,
         ConnectionStateVisual obs)
     {
         TwitchState = DashboardConnectionCardViewModel.From(twitch);
+        YouTubeState = DashboardConnectionCardViewModel.From(youTube);
         ArduinoState = DashboardConnectionCardViewModel.From(arduino);
         AlexaState = DashboardConnectionCardViewModel.From(alexa);
         ObsState = DashboardConnectionCardViewModel.From(obs);

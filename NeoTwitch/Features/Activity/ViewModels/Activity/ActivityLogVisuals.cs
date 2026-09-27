@@ -10,6 +10,7 @@ internal static class ActivityLogVisuals
         return filter.ToUpperInvariant() switch
         {
             "TWITCH" => "#9146FF",
+            "YOUTUBE" => "#FF0000",
             "ARDUINO" => "#00878F",
             "ALEXA" => "#2FB4E9",
             "AUDIO" => "#B56CFF",

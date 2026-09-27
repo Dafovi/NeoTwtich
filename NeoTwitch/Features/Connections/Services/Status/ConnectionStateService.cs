@@ -39,6 +39,11 @@ public static class ConnectionStateService
             : ConnectionVisualState.Disconnected;
     }
 
+    public static ConnectionVisualState ResolveYouTube(
+        bool isAuthorizing,
+        bool hasConnectionError,
+        bool hasToken) => ResolveTwitch(isAuthorizing, false, hasConnectionError, hasToken);
+
     public static ConnectionVisualState ResolveArduino(
         bool enabled,
         bool isConnecting,

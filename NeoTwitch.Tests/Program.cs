@@ -118,6 +118,8 @@ private static readonly (string Name, Action Body)[] Tests =
     ("YouTube OAuth exchanges and refreshes public-client tokens", YouTubeIntegrationTests.ExchangesAndRefreshesTokens),
     ("YouTube OAuth loopback listener receives the local callback", YouTubeIntegrationTests.ReceivesLoopbackCallback),
     ("YouTube live service resolves the active broadcast", YouTubeIntegrationTests.ResolvesActiveBroadcast),
+    ("YouTube channel service resolves the authorized channel", YouTubeIntegrationTests.ResolvesCurrentChannel),
+    ("YouTube live chat maps supported alert events", YouTubeIntegrationTests.ReadsAndMapsLiveChatEvents),
     ("EventSub dedup accepts first message", TwitchReliabilityTests.DedupAcceptsFirstMessage),
     ("EventSub dedup ignores duplicate message ID", TwitchReliabilityTests.DedupIgnoresDuplicateMessageId),
     ("EventSub dedup accepts identical payload with different IDs", TwitchReliabilityTests.DedupAcceptsDifferentIds),
@@ -5192,6 +5194,8 @@ static class ActivityLogClassifierTests
         TestAssert.Equal("AUDIO", ActivityLogClassifier.ResolveSourceKey("Sonido reproducido", ActivityLogKind.Info));
         TestAssert.Equal("SISTEMA", ActivityLogClassifier.ResolveSourceKey("Configuracion guardada", ActivityLogKind.Info));
         TestAssert.Equal(ActivityLogKind.Twitch, ActivityLogClassifier.Classify("Twitch: conectado"));
+        TestAssert.Equal("YOUTUBE", ActivityLogClassifier.ResolveSourceKey("YouTube: conectado", ActivityLogKind.Info));
+        TestAssert.Equal(ActivityLogKind.YouTube, ActivityLogClassifier.Classify("YouTube: conectado"));
         TestAssert.Equal(ActivityLogKind.Arduino, ActivityLogClassifier.Classify("Puertos COM actualizados"));
         TestAssert.Equal(ActivityLogKind.Event, ActivityLogClassifier.Classify("Juan envio 100 bits"));
         TestAssert.Equal(ActivityLogKind.Important, ActivityLogClassifier.Classify("No se pudo leer configuracion"));
@@ -5221,6 +5225,12 @@ static class ActivityViewModelTests
 
         TestAssert.True(viewModel.TwitchFilterEnabled);
         TestAssert.True(activity.Matches(twitch));
+
+        var youTube = activity.Add("YouTube: conectado", ActivityLogKind.YouTube);
+        viewModel.YouTubeFilterEnabled = false;
+
+        TestAssert.False(activity.Matches(youTube));
+        TestAssert.False(viewModel.IsFilterEnabled("YOUTUBE"));
     }
 
     public static void FiltersEntriesView()
@@ -5265,6 +5275,9 @@ static class DashboardConnectionStateTests
             TwitchConnecting: true,
             TwitchHasConnectionError: false,
             TwitchHasToken: false,
+            YouTubeAuthorizing: false,
+            YouTubeHasConnectionError: false,
+            YouTubeHasToken: true,
             ArduinoEnabled: true,
             ArduinoConnecting: false,
             ArduinoHasConfirmedAck: true,
@@ -5280,6 +5293,7 @@ static class DashboardConnectionStateTests
             ObsHasConnectionError: false));
 
         TestAssert.Equal(ConnectionVisualState.Connecting, states.Twitch);
+        TestAssert.Equal(ConnectionVisualState.Connected, states.YouTube);
         TestAssert.Equal(ConnectionVisualState.Connected, states.Arduino);
         TestAssert.Equal(ConnectionVisualState.Warning, states.Alexa);
         TestAssert.Equal(ConnectionVisualState.Disabled, states.Obs);
@@ -5363,11 +5377,13 @@ static class DashboardViewModelTests
 
         viewModel.UpdateConnectionStates(
             new ConnectionStateVisual("Twitch listo", "#22C55E", "Assets/Icons/status_ok.png"),
+            new ConnectionStateVisual("YouTube listo", "#22C55E", "Assets/Icons/status_ok.png"),
             new ConnectionStateVisual("Arduino apagado", "#94A3B8", "Assets/Icons/status_empty.png"),
             new ConnectionStateVisual("Alexa revisar", "#FFB020", "Assets/Icons/status_warning.png"),
             new ConnectionStateVisual("OBS error", "#F43F5E", "Assets/Icons/status_error.png"));
 
         TestAssert.Equal("Twitch listo", viewModel.TwitchState.Text);
+        TestAssert.Equal("YouTube listo", viewModel.YouTubeState.Text);
         TestAssert.Equal("Arduino apagado", viewModel.ArduinoState.ToolTip);
         TestAssert.Equal("Alexa revisar", viewModel.AlexaState.Text);
         TestAssert.Equal("OBS error", viewModel.ObsState.Text);
@@ -5383,6 +5399,7 @@ static class ConnectionsViewModelTests
 
         viewModel.UpdateBadges(
             new ConnectionStateVisual("Twitch listo", "#22C55E", "Assets/Icons/status_ok.png"),
+            new ConnectionStateVisual("YouTube listo", "#22C55E", "Assets/Icons/status_ok.png"),
             new ConnectionStateVisual("Arduino off", "#94A3B8", "Assets/Icons/status_empty.png"),
             new ConnectionStateVisual("Alexa revisar", "#FFB020", "Assets/Icons/status_warning.png"),
             new ConnectionStateVisual("OBS error", "#F43F5E", "Assets/Icons/status_error.png"));
@@ -5409,6 +5426,7 @@ static class ConnectionsViewModelTests
         viewModel.UpdatePortChoices(portChoices);
 
         TestAssert.Equal("Twitch listo", viewModel.TwitchBadge.Text);
+        TestAssert.Equal("YouTube listo", viewModel.YouTubeBadge.Text);
         TestAssert.Equal("Arduino off", viewModel.ArduinoBadge.Text);
         TestAssert.Equal("client-id", viewModel.TwitchClientId);
         TestAssert.Equal("secret", viewModel.TwitchClientSecret);

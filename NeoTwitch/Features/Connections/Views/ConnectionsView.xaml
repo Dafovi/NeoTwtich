@@ -673,20 +673,21 @@
                                         CornerRadius="14"
                                         Background="#1AFF0000"
                                         HorizontalAlignment="Left">
-                                    <Path Data="M10,6 L10,18 L20,12 Z"
-                                          Stroke="#FF4B4B"
-                                          StrokeThickness="2"
-                                          StrokeLineJoin="Round"
-                                          Fill="Transparent"
-                                          Stretch="Uniform"
-                                          Margin="13" />
+                                    <Grid>
+                                        <Image Source="/Assets/Icons/service_youtube.png"
+                                               Stretch="Uniform"
+                                               Margin="8" />
+                                        <Image Source="{Binding YouTubeChannelThumbnailUrl}"
+                                               Stretch="UniformToFill"
+                                               ClipToBounds="True" />
+                                    </Grid>
                                 </Border>
                                 <StackPanel Grid.Column="1" VerticalAlignment="Center">
                                     <TextBlock Text="Conectar YouTube"
                                                FontSize="18"
                                                Style="{StaticResource TitleText}"
                                                FontWeight="SemiBold" />
-                                    <TextBlock Text="Autoriza tu canal de YouTube desde el navegador. El secreto se guarda cifrado solo en este equipo."
+                                    <TextBlock Text="{Binding YouTubeChannelDisplay}"
                                                Style="{StaticResource MutedText}"
                                                Margin="0,4,0,0"
                                                TextWrapping="Wrap" />

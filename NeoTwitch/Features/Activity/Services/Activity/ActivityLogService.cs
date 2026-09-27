@@ -11,6 +11,7 @@ public sealed class ActivityLogService
     public static readonly IReadOnlyList<string> DefaultFilters =
     [
         "TWITCH",
+        "YOUTUBE",
         "ARDUINO",
         "ALEXA",
         "AUDIO",

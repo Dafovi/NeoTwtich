@@ -46,6 +46,11 @@ public static class ActivityLogPresentationService
             return kind == ActivityLogKind.Important ? "Aviso de Twitch" : "Twitch";
         }
 
+        if (ActivityLogClassifier.IsYouTubeMessage(text, kind))
+        {
+            return kind == ActivityLogKind.Important ? "Aviso de YouTube" : "YouTube";
+        }
+
         if (ActivityLogClassifier.IsArduinoMessage(text, kind))
         {
             return kind == ActivityLogKind.Important ? "Aviso de Arduino" : "Arduino";
@@ -105,6 +110,7 @@ public static class ActivityLogPresentationService
             var prefix = clean[..separator].Trim();
             if (string.Equals(prefix, title, StringComparison.OrdinalIgnoreCase)
                 || string.Equals(prefix, "Twitch", StringComparison.OrdinalIgnoreCase)
+                || string.Equals(prefix, "YouTube", StringComparison.OrdinalIgnoreCase)
                 || string.Equals(prefix, "Alexa", StringComparison.OrdinalIgnoreCase)
                 || string.Equals(prefix, "Arduino", StringComparison.OrdinalIgnoreCase)
                 || string.Equals(prefix, "Audio", StringComparison.OrdinalIgnoreCase)
@@ -137,6 +143,11 @@ public static class ActivityLogPresentationService
         if (ActivityLogClassifier.IsTwitchMessage(text, kind))
         {
             return "#9146FF";
+        }
+
+        if (ActivityLogClassifier.IsYouTubeMessage(text, kind))
+        {
+            return "#FF0000";
         }
 
         if (ActivityLogClassifier.IsArduinoMessage(text, kind))

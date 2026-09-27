@@ -51,13 +51,15 @@
                                    FontSize="30"
                                    Style="{StaticResource TitleText}"
                                    FontWeight="SemiBold" />
-                        <TextBlock Text="Estado general, resumen de Twitch y actividad reciente."
+                        <TextBlock Text="Estado general, resumen de Twitch y YouTube, y actividad reciente."
                                    Style="{StaticResource MutedText}"
                                    Margin="0,4,0,0" />
                     </StackPanel>
 
                     <Grid Grid.Row="1" Margin="0,0,0,18">
                         <Grid.ColumnDefinitions>
+                            <ColumnDefinition Width="*" />
+                            <ColumnDefinition Width="12" />
                             <ColumnDefinition Width="*" />
                             <ColumnDefinition Width="12" />
                             <ColumnDefinition Width="*" />
@@ -227,6 +229,46 @@
                                            Fill="{Binding ObsState.Brush}"
                                            OpacityMask="{Binding ObsState.IconMask}"
                                            ToolTip="{Binding ObsState.ToolTip}"
+                                           VerticalAlignment="Top" />
+                            </Grid>
+                        </Border>
+
+                        <Border Grid.Column="8"
+                                Style="{StaticResource Card}"
+                                Padding="20"
+                                MinHeight="96">
+                            <Grid>
+                                <Grid.ColumnDefinitions>
+                                    <ColumnDefinition Width="58" />
+                                    <ColumnDefinition Width="*" />
+                                    <ColumnDefinition Width="30" />
+                                </Grid.ColumnDefinitions>
+                                <Border Width="48"
+                                        Height="48"
+                                        CornerRadius="14"
+                                        Background="#1AFF0000"
+                                        HorizontalAlignment="Left">
+                                    <Image Source="/Assets/Icons/service_youtube.png"
+                                           Stretch="Uniform"
+                                           Margin="8" />
+                                </Border>
+                                <StackPanel Grid.Column="1" VerticalAlignment="Center">
+                                    <TextBlock Text="YouTube"
+                                               FontSize="17"
+                                               Style="{StaticResource TitleText}"
+                                               FontWeight="SemiBold" />
+                                    <TextBlock Text="{Binding YouTubeState.Text}"
+                                               Style="{StaticResource DashboardConnectionStateText}"
+                                               Foreground="{Binding YouTubeState.Brush}"
+                                               Tag="StaticBrush"
+                                               Margin="0,5,0,0" />
+                                </StackPanel>
+                                <Rectangle Grid.Column="2"
+                                           Width="24"
+                                           Height="24"
+                                           Fill="{Binding YouTubeState.Brush}"
+                                           OpacityMask="{Binding YouTubeState.IconMask}"
+                                           ToolTip="{Binding YouTubeState.ToolTip}"
                                            VerticalAlignment="Top" />
                             </Grid>
                         </Border>

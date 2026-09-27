@@ -1,5 +1,7 @@
 using System.Windows;
+using NeoTwitch.Models;
 using NeoTwitch.Services;
+using NeoTwitch.Services.Streaming;
 using NeoTwitch.Services.Text;
 using NeoTwitch.ViewModels.Activity;
 
@@ -56,6 +58,7 @@ public partial class MainWindow
         {
             await AutoConnectArduinoAtStartupAsync();
             await AutoConnectTwitchAtStartupAsync();
+            await AutoConnectYouTubeAtStartupAsync();
             await AutoConnectObsAtStartupAsync();
             InitializeAlexaRelayStatusAtStartup();
         }
@@ -110,6 +113,36 @@ public partial class MainWindow
         {
             AddLog(_text.Format(UiTextKeys.StartupTwitchAutoConnectFailureLog, ex.Message), ActivityLogKind.Important);
             UpdateStatusText();
+        }
+    }
+
+    private async Task AutoConnectYouTubeAtStartupAsync()
+    {
+        var connection = StreamingPlatformConfigurationService.GetOrCreate(_config.StreamingPlatforms, StreamingPlatform.YouTube);
+        if (!connection.IsEnabled || !_config.YouTubeToken.HasToken)
+        {
+            return;
+        }
+
+        try
+        {
+            await _youTubeAuthService.EnsureValidTokenAsync(_config, CancellationToken.None);
+            if (!_config.YouTubeChannel.IsReady)
+            {
+                _config.YouTubeChannel = await _youTubeChannelService.GetCurrentChannelAsync(_config.YouTubeToken, CancellationToken.None);
+                _connectionsViewModel.UpdateYouTubeChannel(_config.YouTubeChannel);
+            }
+
+            SaveConfig();
+            _youTubeConnectionError = "";
+            await _youTubePlatformProvider.StartAsync(CancellationToken.None);
+            UpdateYouTubeConnectionUi();
+        }
+        catch (Exception ex)
+        {
+            _youTubeConnectionError = ex.Message;
+            AddLog($"YouTube: no se pudo iniciar el lector de chat: {ex.Message}", ActivityLogKind.YouTube);
+            UpdateYouTubeConnectionUi();
         }
     }
 

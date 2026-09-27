@@ -40,10 +40,23 @@ public partial class MainWindow
                 request,
                 code,
                 CancellationToken.None);
-            _config.YouTubeChannel = new YouTubeChannelInfo();
+            _connectionsViewModel.UpdateYouTubeChannel(_config.YouTubeChannel);
             StreamingPlatformConfigurationService.GetOrCreate(_config.StreamingPlatforms, StreamingPlatform.YouTube).IsEnabled = true;
             SaveConfig();
             _youTubeConnectionError = "";
+
+            try
+            {
+                _config.YouTubeChannel = await _youTubeChannelService.GetCurrentChannelAsync(_config.YouTubeToken, CancellationToken.None);
+                _connectionsViewModel.UpdateYouTubeChannel(_config.YouTubeChannel);
+                SaveConfig();
+            }
+            catch (Exception ex)
+            {
+                AddLog($"YouTube: cuenta autorizada, pero no se pudo leer el perfil todavía: {ex.Message}", ActivityLogKind.YouTube);
+            }
+
+            await _youTubePlatformProvider.StartAsync(CancellationToken.None);
 
             YouTubeLiveBroadcastStatus status;
             try
@@ -53,17 +66,17 @@ public partial class MainWindow
             catch (Exception ex)
             {
                 status = YouTubeLiveBroadcastStatus.Offline;
-                AddLog($"YouTube: cuenta autorizada, pero no se pudo consultar el directo todavía: {ex.Message}", ActivityLogKind.Important);
+                AddLog($"YouTube: cuenta autorizada, pero no se pudo consultar el directo todavía: {ex.Message}", ActivityLogKind.YouTube);
             }
 
             AddLog(status.IsLive
-                ? $"YouTube: cuenta autorizada. Directo activo: {status.Title}."
-                : "YouTube: cuenta autorizada. No hay un directo activo ahora.", ActivityLogKind.Important);
+                ? $"YouTube: cuenta autorizada para {_config.YouTubeChannel.DisplayName}. Directo activo: {status.Title}."
+                : $"YouTube: cuenta autorizada para {_config.YouTubeChannel.DisplayName}. No hay un directo activo ahora.", ActivityLogKind.YouTube);
         }
         catch (Exception ex)
         {
             _youTubeConnectionError = ex.Message;
-            AddLog($"YouTube: {ex.Message}", ActivityLogKind.Important);
+            AddLog($"YouTube: {ex.Message}", ActivityLogKind.YouTube);
             _dialog.ShowWarning("YouTube", ex.Message);
         }
         finally
@@ -88,5 +101,6 @@ public partial class MainWindow
             _isYouTubeAuthorizing ? "Autorizando..." : _config.YouTubeToken.HasToken ? "Reconectar YouTube" : "Conectar YouTube",
             "Plug");
         _connectionsViewModel.UpdateYouTubeConnection(ConnectionStateService.GetVisual(state, labels), button);
+        RefreshDashboardConnectionStates();
     }
 }

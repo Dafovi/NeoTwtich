@@ -15,6 +15,7 @@ public static class ActivityLogClassifier
         return ResolveSourceKey(message, ActivityLogKind.Info) switch
         {
             "TWITCH" => ActivityLogKind.Twitch,
+            "YOUTUBE" => ActivityLogKind.YouTube,
             "ARDUINO" => ActivityLogKind.Arduino,
             "ALEXA" => ActivityLogKind.Alexa,
             "AUDIO" => ActivityLogKind.Audio,
@@ -38,6 +39,11 @@ public static class ActivityLogClassifier
             || text.Contains("escuchando eventos", StringComparison.Ordinal))
         {
             return "TWITCH";
+        }
+
+        if (IsYouTubeMessage(text, kind))
+        {
+            return "YOUTUBE";
         }
 
         if (IsArduinoMessage(text, kind)
@@ -79,6 +85,11 @@ public static class ActivityLogClassifier
             return "TWITCH";
         }
 
+        if (IsYouTubeMessage(text, kind))
+        {
+            return "YOUTUBE";
+        }
+
         if (IsArduinoMessage(text, kind))
         {
             return "ARDUINO";
@@ -110,6 +121,11 @@ public static class ActivityLogClassifier
     public static bool IsTwitchMessage(string normalizedText, ActivityLogKind kind)
     {
         return kind == ActivityLogKind.Twitch || normalizedText.StartsWith("twitch", StringComparison.Ordinal);
+    }
+
+    public static bool IsYouTubeMessage(string normalizedText, ActivityLogKind kind)
+    {
+        return kind == ActivityLogKind.YouTube || normalizedText.StartsWith("youtube", StringComparison.Ordinal);
     }
 
     public static bool IsArduinoMessage(string normalizedText, ActivityLogKind kind)

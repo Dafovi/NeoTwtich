@@ -57,5 +57,6 @@ Neo Twitch usa iconos y logos de terceros. Esta pagina recopila las atribuciones
 ## Logos y marcas
 
 - Twitch: [Iconos de Twitch](https://iconos8.es/icons/set/twitch) - Icons8.
+- YouTube: [Youtube icons](https://www.flaticon.com/free-icons/youtube), creados por Md Tanvirul Haque - Flaticon.
 - Arduino: [Arduino icon](https://uxwing.com/arduino-icon/) - UXWing.
 - Alexa: [Iconos de Alexa](https://iconos8.es/icons/set/alexa) - Icons8.

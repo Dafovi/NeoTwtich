@@ -14,6 +14,7 @@ public sealed class ActivityViewModel : ObservableObject
     private readonly CollectionViewSource _entriesViewSource = new();
     private string _searchText = "";
     private bool _twitchFilterEnabled = true;
+    private bool _youTubeFilterEnabled = true;
     private bool _arduinoFilterEnabled = true;
     private bool _alexaFilterEnabled = true;
     private bool _audioFilterEnabled = true;
@@ -152,6 +153,12 @@ public sealed class ActivityViewModel : ObservableObject
         e.Accepted = _activityLog.Matches(entry);
     }
 
+    public bool YouTubeFilterEnabled
+    {
+        get => _youTubeFilterEnabled;
+        set => SetFilterProperty(ref _youTubeFilterEnabled, value, "YOUTUBE");
+    }
+
     private void Entries_CollectionChanged(object? sender, NotifyCollectionChangedEventArgs e)
     {
         UpdateLatestConsoleText();
@@ -184,6 +191,9 @@ public sealed class ActivityViewModel : ObservableObject
             {
                 case "TWITCH":
                     TwitchFilterEnabled = enabled;
+                    break;
+                case "YOUTUBE":
+                    YouTubeFilterEnabled = enabled;
                     break;
                 case "ARDUINO":
                     ArduinoFilterEnabled = enabled;
@@ -220,6 +230,7 @@ public sealed class ActivityViewModel : ObservableObject
         try
         {
             TwitchFilterEnabled = enabled;
+            YouTubeFilterEnabled = enabled;
             ArduinoFilterEnabled = enabled;
             AlexaFilterEnabled = enabled;
             AudioFilterEnabled = enabled;

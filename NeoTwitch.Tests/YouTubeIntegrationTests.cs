@@ -4,6 +4,7 @@ using System.Net.Sockets;
 using System.Text;
 using NeoTwitch.Models;
 using NeoTwitch.Services.Ui;
+using NeoTwitch.Services.Streaming;
 using NeoTwitch.Services.YouTube;
 
 static class YouTubeIntegrationTests
@@ -76,6 +77,52 @@ static class YouTubeIntegrationTests
         TestAssert.Equal("broadcast-123", status.BroadcastId);
         TestAssert.Equal("Mi directo", status.Title);
         TestAssert.Equal("chat-789", status.LiveChatId);
+    }
+
+    public static void ResolvesCurrentChannel()
+    {
+        const string response = """
+            {"items":[{"id":"channel-123","snippet":{"title":"Neo Streamer","thumbnails":{"medium":{"url":"https://example.test/avatar.png"}}}}]}
+            """;
+        using var http = new HttpClient(new JsonHandler(response));
+        using var service = new YouTubeChannelService(http);
+
+        var channel = service.GetCurrentChannelAsync(new YouTubeTokenInfo { AccessToken = "access" }, CancellationToken.None)
+            .GetAwaiter().GetResult();
+
+        TestAssert.Equal("channel-123", channel.ChannelId);
+        TestAssert.Equal("Neo Streamer", channel.DisplayName);
+        TestAssert.Equal("https://example.test/avatar.png", channel.ThumbnailUrl);
+    }
+
+    public static void ReadsAndMapsLiveChatEvents()
+    {
+        const string response = """
+            {"nextPageToken":"next-page","pollingIntervalMillis":2500,"items":[
+              {"id":"message-1","authorDetails":{"displayName":"Ana"},"snippet":{"type":"textMessageEvent","publishedAt":"2026-09-26T12:00:00Z","textMessageDetails":{"messageText":"!hola"}}},
+              {"id":"message-2","authorDetails":{"displayName":"Beto"},"snippet":{"type":"superChatEvent","publishedAt":"2026-09-26T12:00:01Z","superChatDetails":{"tier":3,"amountDisplayString":"$5.00","currency":"USD","amountMicros":"5000000"}}},
+              {"id":"message-3","authorDetails":{"displayName":"Cami"},"snippet":{"type":"newSponsorEvent","publishedAt":"2026-09-26T12:00:02Z","newSponsorDetails":{"memberLevelName":"Nivel oro"}}}
+            ]}
+            """;
+        using var http = new HttpClient(new JsonHandler(response));
+        using var service = new YouTubeLiveChatService(http);
+
+        var page = service.GetMessagesAsync(new YouTubeTokenInfo { AccessToken = "access" }, "chat-123", "previous-page", CancellationToken.None)
+            .GetAwaiter().GetResult();
+
+        TestAssert.Equal("next-page", page.NextPageToken);
+        TestAssert.Equal(TimeSpan.FromMilliseconds(2500), page.PollingInterval);
+        TestAssert.Equal(3, page.Messages.Count);
+
+        var chat = YouTubeStreamEventAdapter.FromLiveChatMessage(page.Messages[0]);
+        var superChat = YouTubeStreamEventAdapter.FromLiveChatMessage(page.Messages[1]);
+        var membership = YouTubeStreamEventAdapter.FromLiveChatMessage(page.Messages[2]);
+        TestAssert.Equal(StreamEventKind.ChatCommand, chat!.Kind);
+        TestAssert.Equal("!hola", chat.Message!);
+        TestAssert.Equal(StreamEventKind.PlatformCurrency, superChat!.Kind);
+        TestAssert.Equal(3, superChat.ContributionUnits!.Value);
+        TestAssert.Equal(StreamEventKind.Subscription, membership!.Kind);
+        TestAssert.Equal("Nivel oro", membership.RewardTitle!);
     }
 
     public static void ReceivesLoopbackCallback()

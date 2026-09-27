@@ -444,6 +444,13 @@
                                                                    TextTrimming="CharacterEllipsis"
                                                                    ToolTip="{Binding DisplayLabel}"
                                                                    Margin="0,2,0,0" />
+                                                        <TextBlock Text="{Binding SourcePlatformsLabel}"
+                                                                   Foreground="{DynamicResource ThemeSelectionBrush}"
+                                                                   FontSize="11"
+                                                                   FontWeight="SemiBold"
+                                                                   TextTrimming="CharacterEllipsis"
+                                                                   ToolTip="{Binding SourcePlatformsLabel}"
+                                                                   Margin="0,3,0,0" />
                                                         <WrapPanel Margin="0,6,0,0">
                                                             <Image Source="/Assets/Icons/nav_lights.png"
                                                                    Width="16"
@@ -599,6 +606,47 @@
                                                           Unchecked="RuleFieldChanged" />
                                             </StackPanel>
                                         </Grid>
+
+                                        <Border Margin="0,10,0,10"
+                                                Padding="12"
+                                                BorderBrush="{DynamicResource ThemeBorderBrush}"
+                                                BorderThickness="1"
+                                                CornerRadius="8"
+                                                Background="{DynamicResource ThemeInputBrush}">
+                                            <StackPanel>
+                                                <TextBlock Text="Origen de la alerta"
+                                                           Style="{StaticResource MutedText}" />
+                                                <WrapPanel Margin="0,8,0,0">
+                                                    <StackPanel Orientation="Horizontal"
+                                                                VerticalAlignment="Center"
+                                                                Margin="0,0,20,0">
+                                                        <Image Source="/Assets/Icons/service_twitch.png"
+                                                               Width="18"
+                                                               Height="18"
+                                                               Stretch="Uniform"
+                                                               Margin="0,0,6,0" />
+                                                        <CheckBox Content="Twitch"
+                                                                  IsChecked="{Binding Editor.UseTwitchSource, Mode=TwoWay, UpdateSourceTrigger=PropertyChanged}"
+                                                                  Checked="RuleFieldChanged"
+                                                                  Unchecked="RuleFieldChanged" />
+                                                    </StackPanel>
+                                                    <StackPanel Orientation="Horizontal"
+                                                                VerticalAlignment="Center">
+                                                        <Image Source="/Assets/Icons/service_youtube.png"
+                                                               Width="18"
+                                                               Height="18"
+                                                               Stretch="Uniform"
+                                                               Margin="0,0,6,0" />
+                                                        <CheckBox Content="YouTube"
+                                                                  IsEnabled="{Binding Editor.IsYouTubeEventSupported}"
+                                                                  IsChecked="{Binding Editor.UseYouTubeSource, Mode=TwoWay, UpdateSourceTrigger=PropertyChanged}"
+                                                                  Checked="RuleFieldChanged"
+                                                                  Unchecked="RuleFieldChanged"
+                                                                  ToolTip="YouTube admite membresias, Super Chats y comandos de chat." />
+                                                    </StackPanel>
+                                                </WrapPanel>
+                                            </StackPanel>
+                                        </Border>
 
                                         <ComboBox x:Name="EventKindBox"
                                                   ItemsSource="{Binding EventKindChoices}"

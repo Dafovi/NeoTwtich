@@ -1,4 +1,5 @@
 using NeoTwitch.Models;
+using NeoTwitch.Services.Streaming;
 using NeoTwitch.Services.Text;
 using NeoTwitch.Services.Ui;
 
@@ -6,6 +7,14 @@ namespace NeoTwitch.Services.Alerts;
 
 public static class EventRulePresentationService
 {
+    public static string BuildSourcePlatformsLabel(EventRule rule)
+    {
+        return string.Join(
+            " + ",
+            RulePlatformSelectionService.Normalize(rule.SourcePlatforms)
+                .Select(platform => StreamingPlatformCatalog.Get(platform).DisplayName));
+    }
+
     public static string BuildDisplayLabel(EventRule rule, IUiTextService text)
     {
         var eventName = DisplayNameService.For(rule.EventKind, text);

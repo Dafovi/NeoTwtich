@@ -27,7 +27,7 @@ public static class StreamingPlatformCatalog
                 | StreamingPlatformCapabilities.ChatMessages
                 | StreamingPlatformCapabilities.ChatCommands
                 | StreamingPlatformCapabilities.LiveStatus,
-                StreamingPlatformAvailability.Planned),
+                StreamingPlatformAvailability.BuiltIn),
             [StreamingPlatform.Kick] = new(
                 StreamingPlatform.Kick,
                 "Kick",

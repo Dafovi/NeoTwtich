@@ -82,7 +82,7 @@ public partial class MainWindow
                 editor.CycleMs,
                 editor.StepMs)
             {
-                SourcePlatforms = rule.SourcePlatforms
+                SourcePlatforms = editor.GetSourcePlatforms()
             },
             _config.AudioLibrary,
             _text);

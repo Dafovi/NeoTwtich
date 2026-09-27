@@ -8,6 +8,8 @@ public sealed class RuleEditorViewModel : ObservableObject
     private const double BrightnessMaximum = 255d;
 
     private bool _isEnabled = true;
+    private bool _useTwitchSource = true;
+    private bool _useYouTubeSource;
     private string _ruleNameText = "";
     private TwitchEventKind _eventKind = TwitchEventKind.Follow;
     private string _customRewardTitle = "";
@@ -81,7 +83,69 @@ public sealed class RuleEditorViewModel : ObservableObject
     public TwitchEventKind EventKind
     {
         get => _eventKind;
-        set => SetProperty(ref _eventKind, value);
+        set
+        {
+            if (!SetProperty(ref _eventKind, value))
+            {
+                return;
+            }
+
+            OnPropertyChanged(nameof(IsYouTubeEventSupported));
+            if (!IsYouTubeEventSupported)
+            {
+                UseYouTubeSource = false;
+            }
+        }
+    }
+
+    public bool UseTwitchSource
+    {
+        get => _useTwitchSource;
+        set
+        {
+            if (!value && !_useYouTubeSource)
+            {
+                return;
+            }
+
+            SetProperty(ref _useTwitchSource, value);
+        }
+    }
+
+    public bool UseYouTubeSource
+    {
+        get => _useYouTubeSource;
+        set
+        {
+            var resolvedValue = value && IsYouTubeEventSupported;
+            if (!resolvedValue && !_useTwitchSource)
+            {
+                UseTwitchSource = true;
+            }
+
+            SetProperty(ref _useYouTubeSource, resolvedValue);
+        }
+    }
+
+    public bool IsYouTubeEventSupported => EventKind is TwitchEventKind.Subscription
+        or TwitchEventKind.Cheer
+        or TwitchEventKind.ChatCommand
+        or TwitchEventKind.Test;
+
+    public IReadOnlyCollection<StreamingPlatform> GetSourcePlatforms()
+    {
+        var platforms = new List<StreamingPlatform>(2);
+        if (UseTwitchSource)
+        {
+            platforms.Add(StreamingPlatform.Twitch);
+        }
+
+        if (UseYouTubeSource)
+        {
+            platforms.Add(StreamingPlatform.YouTube);
+        }
+
+        return platforms;
     }
 
     public string CustomRewardTitle
@@ -445,6 +509,9 @@ public sealed class RuleEditorViewModel : ObservableObject
         IsEnabled = rule.IsEnabled;
         RuleNameText = rule.Name;
         EventKind = rule.EventKind;
+        UseYouTubeSource = IsYouTubeEventSupported
+            && rule.SourcePlatforms.Contains(StreamingPlatform.YouTube);
+        UseTwitchSource = rule.SourcePlatforms.Contains(StreamingPlatform.Twitch);
         CustomRewardTitle = rule.CustomRewardTitle;
         ChatCommand = rule.ChatCommand;
         MinimumBitsText = rule.MinimumBits.ToString();
@@ -505,6 +572,8 @@ public sealed class RuleEditorViewModel : ObservableObject
     public void Clear()
     {
         IsEnabled = true;
+        UseTwitchSource = true;
+        UseYouTubeSource = false;
         RuleNameText = "";
         EventKind = TwitchEventKind.Follow;
         CustomRewardTitle = "";

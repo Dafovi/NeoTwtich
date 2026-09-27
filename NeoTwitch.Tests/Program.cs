@@ -1372,10 +1372,14 @@ static class EventRulePresentationTests
         };
 
         TestAssert.Equal("Bits cien - Bits >= 100 bits", EventRulePresentationService.BuildDisplayLabel(rule, text));
+        TestAssert.Equal("Twitch", EventRulePresentationService.BuildSourcePlatformsLabel(rule));
         TestAssert.Equal("Inactiva", EventRulePresentationService.BuildStatusText(rule, text));
         TestAssert.Equal("#37C7F3", EventRulePresentationService.BuildEventAccentColor(rule));
         TestAssert.Equal("Luces / Audio / OBS", EventRulePresentationService.BuildActionsSummary(rule, text));
         TestAssert.Equal("OBS configurado, pero esta desactivado o incompleto", EventRulePresentationService.BuildObsToolTip(rule, text));
+
+        rule.SourcePlatforms = new([StreamingPlatform.Twitch, StreamingPlatform.YouTube]);
+        TestAssert.Equal("Twitch + YouTube", EventRulePresentationService.BuildSourcePlatformsLabel(rule));
     }
 }
 
@@ -1558,13 +1562,18 @@ static class RuleEditorFormTests
                 Brightness: 50.6,
                 DurationMs: 1234.4,
                 CycleMs: 88.8,
-                StepMs: 9.2),
+                StepMs: 9.2)
+            {
+                SourcePlatforms = [StreamingPlatform.Twitch, StreamingPlatform.YouTube]
+            },
             library,
             UiTextService.CreateDefault());
 
         TestAssert.True(rule.IsEnabled);
         TestAssert.Equal("Existente", rule.Name);
         TestAssert.Equal(TwitchEventKind.Cheer, rule.EventKind);
+        TestAssert.True(rule.SourcePlatforms.Contains(StreamingPlatform.Twitch));
+        TestAssert.True(rule.SourcePlatforms.Contains(StreamingPlatform.YouTube));
         TestAssert.Equal(1, rule.MinimumBits);
         TestAssert.Equal("Recortes", rule.ObsSceneName);
         TestAssert.Equal(0, rule.ObsSceneDelayMs);
@@ -5677,6 +5686,9 @@ static class RuleEditorViewModelTests
         TestAssert.False(viewModel.IsEnabled);
         TestAssert.Equal("Comando rave", viewModel.RuleNameText);
         TestAssert.Equal(TwitchEventKind.ChatCommand, viewModel.EventKind);
+        TestAssert.True(viewModel.UseTwitchSource);
+        TestAssert.False(viewModel.UseYouTubeSource);
+        TestAssert.True(viewModel.IsYouTubeEventSupported);
         TestAssert.Equal("Canje raro", viewModel.CustomRewardTitle);
         TestAssert.Equal("!rave", viewModel.ChatCommand);
         TestAssert.Equal("250", viewModel.MinimumBitsText);
@@ -5718,9 +5730,21 @@ static class RuleEditorViewModelTests
         TestAssert.Equal(120d, viewModel.CycleMs);
         TestAssert.Equal(450d, viewModel.StepMs);
 
+        viewModel.UseYouTubeSource = true;
+        viewModel.UseTwitchSource = false;
+        TestAssert.Equal(1, viewModel.GetSourcePlatforms().Count);
+        TestAssert.Equal(StreamingPlatform.YouTube, viewModel.GetSourcePlatforms().Single());
+
+        viewModel.EventKind = TwitchEventKind.Follow;
+        TestAssert.False(viewModel.IsYouTubeEventSupported);
+        TestAssert.False(viewModel.UseYouTubeSource);
+        TestAssert.True(viewModel.UseTwitchSource);
+
         viewModel.Clear();
 
         TestAssert.True(viewModel.IsEnabled);
+        TestAssert.True(viewModel.UseTwitchSource);
+        TestAssert.False(viewModel.UseYouTubeSource);
         TestAssert.Equal("", viewModel.RuleNameText);
         TestAssert.Equal(TwitchEventKind.Follow, viewModel.EventKind);
         TestAssert.Equal("", viewModel.CustomRewardTitle);

@@ -24,6 +24,8 @@ public sealed class EventRuleRowViewModel : ObservableObject, IDisposable
 
     public string DisplayLabel => EventRulePresentationService.BuildDisplayLabel(Rule, _text);
 
+    public string SourcePlatformsLabel => EventRulePresentationService.BuildSourcePlatformsLabel(Rule);
+
     public string StatusText => EventRulePresentationService.BuildStatusText(Rule, _text);
 
     public string StatusColor => EventRulePresentationService.BuildStatusColor(Rule);
@@ -90,6 +92,7 @@ public sealed class EventRuleRowViewModel : ObservableObject, IDisposable
     {
         OnPropertyChanged(nameof(Name));
         OnPropertyChanged(nameof(DisplayLabel));
+        OnPropertyChanged(nameof(SourcePlatformsLabel));
         OnPropertyChanged(nameof(StatusText));
         OnPropertyChanged(nameof(StatusColor));
         OnPropertyChanged(nameof(EventIconPath));

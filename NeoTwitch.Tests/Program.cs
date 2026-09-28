@@ -4353,7 +4353,7 @@ static class DiagnosticReportServiceTests
             LightAckStatusText: "",
             RuleHasValidAudio: _ => true)).GetAwaiter().GetResult();
 
-        TestAssert.Contains("Diagnostico Neo Twitch", result.Report);
+        TestAssert.Contains("Diagnostico Neo Stream", result.Report);
         TestAssert.Contains("Twitch", result.Report);
         TestAssert.True(result.WarningCount > 0);
     }

@@ -81,7 +81,7 @@ internal sealed class InstallerProcessWaiter
             catch (Exception ex)
             {
                 throw new InvalidOperationException(
-                    "No se pudo comprobar si Neo Twitch sigue abierto; la instalación se canceló de forma segura.",
+                    "No se pudo comprobar si Neo Stream sigue abierto; la instalación se canceló de forma segura.",
                     ex);
             }
 
@@ -90,7 +90,7 @@ internal sealed class InstallerProcessWaiter
                 return;
             }
 
-            progress.Report(new InstallProgress(48, "Esperando a que Neo Twitch se cierre"));
+            progress.Report(new InstallProgress(48, "Esperando a que Neo Stream se cierre"));
             if (attempt + 1 < attempts)
             {
                 await _delayAsync(interval, cancellationToken);
@@ -98,7 +98,7 @@ internal sealed class InstallerProcessWaiter
         }
 
         throw new InvalidOperationException(
-            $"Neo Twitch sigue abierto después de {maximumWait.TotalSeconds:0} segundos. "
+            $"Neo Stream sigue abierto después de {maximumWait.TotalSeconds:0} segundos. "
             + "Cierra la aplicación y vuelve a intentar la instalación.");
     }
 }

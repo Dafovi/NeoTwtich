@@ -195,13 +195,13 @@ internal sealed class InstallerService
         {
             throw new InvalidOperationException(
                 $"No se puede instalar en '{options.InstallPath}'. {classification.Reason} "
-                + "Elige una carpeta nueva o vacía, o la carpeta de una instalación válida de Neo Twitch.");
+                + "Elige una carpeta nueva o vacía, o la carpeta de una instalación válida de Neo Stream.");
         }
 
         if (options.IsUpdate && classification.Kind != InstallTargetKind.ExistingNeoTwitchInstallation)
         {
             throw new InvalidOperationException(
-                $"No se puede actualizar '{options.InstallPath}' porque no es una instalación verificada de Neo Twitch. "
+                $"No se puede actualizar '{options.InstallPath}' porque no es una instalación verificada de Neo Stream. "
                 + "Inicia una instalación nueva sin --update o selecciona la carpeta de instalación existente.");
         }
 
@@ -285,10 +285,12 @@ internal sealed class InstallerService
         if (enabled)
         {
             runKey?.SetValue(NeoTwitchProduct.StartupValueName, $"\"{appExePath}\"");
+            runKey?.DeleteValue(NeoTwitchProduct.LegacyStartupValueName, throwOnMissingValue: false);
         }
         else
         {
             runKey?.DeleteValue(NeoTwitchProduct.StartupValueName, throwOnMissingValue: false);
+            runKey?.DeleteValue(NeoTwitchProduct.LegacyStartupValueName, throwOnMissingValue: false);
         }
     }
 

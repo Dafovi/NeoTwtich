@@ -66,7 +66,7 @@ internal sealed class GitHubReleaseClient : IReleaseClient, IDisposable
         }
 
         var asset = PickBestAsset(release.Assets)
-            ?? throw new InvalidOperationException("El último release no tiene un asset instalable de Neo Twitch.");
+            ?? throw new InvalidOperationException("El último release no tiene un asset instalable de Neo Stream.");
         if (!string.Equals(asset.Name, Path.GetFileName(asset.Name), StringComparison.Ordinal))
         {
             throw new ReleaseIntegrityException(

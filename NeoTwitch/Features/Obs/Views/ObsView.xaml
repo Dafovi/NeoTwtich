@@ -17,7 +17,7 @@
                                    FontSize="28"
                                    Style="{StaticResource TitleText}"
                                    FontWeight="SemiBold" />
-                        <TextBlock Text="Conecta Neo Twitch con OBS Studio y controla escenas desde tus alertas."
+                        <TextBlock Text="Conecta Neo Stream con OBS Studio y controla escenas desde tus alertas."
                                    Style="{StaticResource MutedText}"
                                    Margin="0,4,0,0" />
                     </StackPanel>

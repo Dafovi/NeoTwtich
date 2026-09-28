@@ -4,7 +4,8 @@ namespace NeoTwitch.Shared;
 
 public static class NeoTwitchProduct
 {
-    public const string DisplayName = "Neo Twitch";
+    public const string DisplayName = "Neo Stream";
+    public const string LegacyDisplayName = "Neo Twitch";
     public const string AppDataFolderName = "NeoTwitch";
     public const string LegacyAppDataFolderName = "LucesCanjeTwitch";
     public const string AppExecutableName = "NeoTwitch.exe";
@@ -19,6 +20,7 @@ public static class NeoTwitchProduct
     public const string ReleaseIntegrityManifestFileName = "neo-twitch-release.json";
     public const string ReleaseIntegritySignatureFileName = "neo-twitch-release.json.sig";
     public const string StartupValueName = DisplayName;
+    public const string LegacyStartupValueName = LegacyDisplayName;
     public const string SingleInstanceMutexName = "NeoTwitch.SingleInstance";
     public const string ShortcutExtension = ".lnk";
 
@@ -62,7 +64,7 @@ public static class NeoTwitchProduct
         public const string VirtualLightsSourceName = "Neo Twitch - Luces virtuales";
         public const string PreviewImageSourceName = "Neo Twitch - Prueba imagen";
         public const string PreviewVideoSourceName = "Neo Twitch - Prueba video";
-        public const string OverlayWindowTitle = "Neo Twitch OBS Overlay";
+        public const string OverlayWindowTitle = "Neo Stream OBS Overlay";
         public const string OverlayStateAppName = "NeoTwitch";
     }
 

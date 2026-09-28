@@ -30,10 +30,10 @@ public partial class MainWindow : Window
 
         if (_options.IsUpdate)
         {
-            WelcomeTitleText.Text = "Actualización de Neo Twitch";
-            InstallingTitleText.Text = "Actualizando Neo Twitch";
+            WelcomeTitleText.Text = "Actualización de Neo Stream";
+            InstallingTitleText.Text = "Actualizando Neo Stream";
             CompleteTitleText.Text = "¡Actualización completada!";
-            CompleteDescriptionText.Text = "Neo Twitch quedó actualizado y listo para abrirse de nuevo.";
+            CompleteDescriptionText.Text = "Neo Stream quedó actualizado y listo para abrirse de nuevo.";
             WelcomeInstallButton.Content = "Actualizar →";
         }
     }
@@ -82,7 +82,7 @@ public partial class MainWindow : Window
     {
         using var dialog = new Forms.FolderBrowserDialog
         {
-            Description = "Selecciona la carpeta donde se instalará Neo Twitch",
+            Description = "Selecciona la carpeta donde se instalará Neo Stream",
             UseDescriptionForTitle = true,
             SelectedPath = Directory.Exists(InstallPathBox.Text) ? InstallPathBox.Text : InstallerOptions.DefaultInstallPath
         };
@@ -170,7 +170,7 @@ public partial class MainWindow : Window
         {
             _isInstalling = false;
             StatusText.Text = ex.Message;
-            System.Windows.MessageBox.Show(this, ex.Message, "Instalador Neo Twitch", MessageBoxButton.OK, MessageBoxImage.Warning);
+            System.Windows.MessageBox.Show(this, ex.Message, "Instalador Neo Stream", MessageBoxButton.OK, MessageBoxImage.Warning);
             _step = _options.IsUpdate ? 0 : 1;
             ShowStep();
         }

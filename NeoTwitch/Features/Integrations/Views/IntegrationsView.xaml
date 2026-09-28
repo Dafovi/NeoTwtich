@@ -14,9 +14,9 @@
                     <TextBlock Text="Memes de gatos que reaccionan a tus manos y expresiones. Muestra el gato, la cámara o ambos en OBS."
                                TextWrapping="Wrap" />
                     <Button Content="Ver proyecto y creador ↗" HorizontalAlignment="Left" Click="Project_Click" Margin="0,10,0,16" />
-                    <TextBlock Text="Al instalar, Neo Twitch descarga la aplicación original y un Python privado con sus dependencias. No necesitas instalar Python por tu cuenta. Requiere internet y Windows x64."
+                    <TextBlock Text="Al instalar, Neo Stream descarga la aplicación original y un Python privado con sus dependencias. No necesitas instalar Python por tu cuenta. Requiere internet y Windows x64."
                                Style="{StaticResource MutedText}" TextWrapping="Wrap" />
-                    <TextBlock Text="El proyecto y sus recursos pertenecen a sus respectivos autores. Descarga directa desde GitHub; no se incluyen en Neo Twitch."
+                    <TextBlock Text="El proyecto y sus recursos pertenecen a sus respectivos autores. Descarga directa desde GitHub; no se incluyen en Neo Stream."
                                Style="{StaticResource MutedText}" TextWrapping="Wrap" Margin="0,8,0,16" />
                     <WrapPanel x:Name="SetupActions">
                         <Button x:Name="InstallButton" Content="Instalar" Click="Install_Click" />

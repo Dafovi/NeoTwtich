@@ -1,7 +1,7 @@
 <Window x:Class="NeoTwitch.Views.DiagnosticsReportWindow"
         xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
         xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
-        Title="Neo Twitch"
+        Title="Neo Stream"
         Width="780"
         Height="620"
         MinWidth="560"

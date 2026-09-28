@@ -4,8 +4,8 @@
     <OutputType>WinExe</OutputType>
     <TargetFramework>net10.0-windows</TargetFramework>
     <AssemblyName>NeoTwitch.Installer</AssemblyName>
-    <Product>Neo Twitch Installer</Product>
-    <FileDescription>Neo Twitch Installer</FileDescription>
+    <Product>Neo Stream Installer</Product>
+    <FileDescription>Neo Stream Installer</FileDescription>
     <Nullable>enable</Nullable>
     <ImplicitUsings>enable</ImplicitUsings>
     <UseWPF>true</UseWPF>

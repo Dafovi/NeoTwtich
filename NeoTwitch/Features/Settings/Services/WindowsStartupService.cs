@@ -32,9 +32,11 @@ public sealed class WindowsStartupService
             }
 
             runKey.SetValue(NeoTwitchProduct.StartupValueName, $"\"{executablePath}\"");
+            runKey.DeleteValue(NeoTwitchProduct.LegacyStartupValueName, throwOnMissingValue: false);
             return;
         }
 
         runKey.DeleteValue(NeoTwitchProduct.StartupValueName, throwOnMissingValue: false);
+        runKey.DeleteValue(NeoTwitchProduct.LegacyStartupValueName, throwOnMissingValue: false);
     }
 }

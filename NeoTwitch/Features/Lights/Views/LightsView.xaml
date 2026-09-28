@@ -787,7 +787,7 @@
                                                 <TextBlock Text="Sketch"
                                                            FontWeight="SemiBold"
                                                            FontSize="15" />
-                                                <TextBlock Text="Tu Arduino necesita el sketch instalado para funcionar con Neo Twitch."
+                                                <TextBlock Text="Tu Arduino necesita el sketch instalado para funcionar con Neo Stream."
                                                            Style="{StaticResource MutedText}"
                                                            TextWrapping="Wrap"
                                                            FontSize="12"

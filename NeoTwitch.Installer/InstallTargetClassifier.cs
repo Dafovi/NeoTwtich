@@ -75,8 +75,8 @@ internal static class InstallTargetClassifier
             }
 
             return HasValidProductMarker(normalizedPath)
-                ? Existing(normalizedPath, "Se verificó el marcador de instalación de Neo Twitch.")
-                : Unsafe(normalizedPath, "La carpeta contiene archivos pero no es una instalación verificada de Neo Twitch.");
+                ? Existing(normalizedPath, "Se verificó el marcador de instalación de Neo Stream.")
+                : Unsafe(normalizedPath, "La carpeta contiene archivos pero no es una instalación verificada de Neo Stream.");
         }
         catch (Exception ex) when (ex is IOException or UnauthorizedAccessException)
         {

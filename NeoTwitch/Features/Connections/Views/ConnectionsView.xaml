@@ -79,7 +79,7 @@
                                        FontSize="28"
                                        Style="{StaticResource TitleText}"
                                        FontWeight="SemiBold" />
-                            <TextBlock Text="Conecta tus servicios y dispositivos para que Neo Twitch pueda reaccionar al stream."
+                            <TextBlock Text="Conecta tus servicios y dispositivos para que Neo Stream pueda reaccionar al stream."
                                        Style="{StaticResource MutedText}"
                                        Margin="0,4,0,0" />
                         </StackPanel>
@@ -391,7 +391,7 @@
                                                    FontSize="18"
                                                    Style="{StaticResource TitleText}"
                                                    FontWeight="SemiBold" />
-                                        <TextBlock Text="Activa el relay para enviar eventos desde Neo Twitch a Alexa."
+                                        <TextBlock Text="Activa el relay para enviar eventos desde Neo Stream a Alexa."
                                                    Style="{StaticResource MutedText}"
                                                    Margin="0,4,0,0" />
                                     </StackPanel>
@@ -436,7 +436,7 @@
                                                      Padding="10,6,76,6"
                                                      Text="{Binding AlexaRelayUrl, Mode=TwoWay, UpdateSourceTrigger=PropertyChanged}"
                                                      TextChanged="AlexaSettingsChanged"
-                                                     ToolTip="Endpoint HTTPS que recibe eventos de Neo Twitch y los envia a Alexa." />
+                                                     ToolTip="Endpoint HTTPS que recibe eventos de Neo Stream y los envia a Alexa." />
                                             <TextBlock x:Name="AlexaRelayUrlMaskText"
                                                        Margin="1,1,72,1"
                                                        Padding="9,6"

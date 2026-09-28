@@ -92,7 +92,7 @@ internal sealed class ReleaseIntegrityVerifier
 
         if (!string.Equals(manifest.Product, NeoTwitchProduct.ProductIdentifier, StringComparison.Ordinal))
         {
-            throw Failure(ReleaseIntegrityFailure.WrongProduct, "El manifiesto no pertenece a Neo Twitch.");
+            throw Failure(ReleaseIntegrityFailure.WrongProduct, "El manifiesto no pertenece a Neo Stream.");
         }
 
         var trustedVersion = NeoTwitchProduct.NormalizeVersionText(manifest.Version);

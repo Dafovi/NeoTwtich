@@ -34,7 +34,7 @@
      <StackPanel x:Name="ChatOptions">
       <TextBlock Text="Usuarios ignorados (separados por comas)"/><TextBox x:Name="IgnoreBox" Margin="0,6,0,12"/>
       <CheckBox x:Name="PublishBox" Content="Publicar también las traducciones en mi chat de Twitch" Margin="0,0,0,8"/>
-      <TextBlock Text="Si lo activas, se enviarán mensajes desde la cuenta conectada a Neo Twitch. Los comandos y las traducciones del propio bot se ignoran para evitar bucles." TextWrapping="Wrap" Style="{StaticResource MutedText}" Margin="0,0,0,12" />
+      <TextBlock Text="Si lo activas, se enviarán mensajes desde la cuenta conectada a Neo Stream. Los comandos y las traducciones del propio bot se ignoran para evitar bucles." TextWrapping="Wrap" Style="{StaticResource MutedText}" Margin="0,0,0,12" />
      </StackPanel>
     </StackPanel>
     <WrapPanel>

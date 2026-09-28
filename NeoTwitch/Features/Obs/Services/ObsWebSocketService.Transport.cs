@@ -138,7 +138,7 @@ public sealed partial class ObsWebSocketService
             if (_socket.State == WebSocketState.Open)
             {
                 using var cts = new CancellationTokenSource(TimeSpan.FromSeconds(1));
-                await _socket.CloseAsync(WebSocketCloseStatus.NormalClosure, "Neo Twitch", cts.Token);
+                await _socket.CloseAsync(WebSocketCloseStatus.NormalClosure, "Neo Stream", cts.Token);
             }
         }
         catch

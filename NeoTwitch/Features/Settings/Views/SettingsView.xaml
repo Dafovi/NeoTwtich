@@ -16,7 +16,7 @@
                                    FontSize="28"
                                    Style="{StaticResource TitleText}"
                                    FontWeight="SemiBold" />
-                        <TextBlock Text="Personaliza Neo Twitch a tu estilo."
+                        <TextBlock Text="Personaliza Neo Stream a tu estilo."
                                    Style="{StaticResource MutedText}"
                                    Margin="0,4,0,0" />
                     </StackPanel>
@@ -76,7 +76,7 @@
                                                 VerticalAlignment="Center">
                                         <TextBlock Text="Abrir minimizada"
                                                    FontWeight="SemiBold" />
-                                        <TextBlock Text="Abrir Neo Twitch en segundo plano al iniciar la app."
+                                        <TextBlock Text="Abrir Neo Stream en segundo plano al iniciar la app."
                                                    Style="{StaticResource MutedText}"
                                                    FontSize="12" />
                                     </StackPanel>
@@ -116,7 +116,7 @@
                                                 VerticalAlignment="Center">
                                         <TextBlock Text="Iniciar con Windows"
                                                    FontWeight="SemiBold" />
-                                        <TextBlock Text="Abre Neo Twitch automáticamente al iniciar sesión."
+                                        <TextBlock Text="Abre Neo Stream automáticamente al iniciar sesión."
                                                    Style="{StaticResource MutedText}"
                                                    FontSize="12" />
                                     </StackPanel>
@@ -320,7 +320,7 @@
                                                            FontWeight="SemiBold"
                                                            FontSize="12"
                                                            Margin="0,8,0,4" />
-                                                <TextBlock Text="Finaliza completamente Neo Twitch."
+                                                <TextBlock Text="Finaliza completamente Neo Stream."
                                                            Style="{StaticResource MutedText}"
                                                            FontSize="11"
                                                            TextWrapping="Wrap" />
@@ -350,7 +350,7 @@
                                                FontSize="12"
                                                HorizontalAlignment="Center"
                                                Margin="0,14,0,4" />
-                                    <TextBlock Text="Neo Twitch está actualizado."
+                                    <TextBlock Text="Neo Stream está actualizado."
                                                Style="{StaticResource MutedText}"
                                                FontSize="12"
                                                HorizontalAlignment="Center" />
@@ -454,7 +454,7 @@
                                               IsChecked="{Binding ObsAutoReconnect, Mode=TwoWay, UpdateSourceTrigger=PropertyChanged}"
                                               Checked="GlobalSettingsChanged"
                                               Unchecked="GlobalSettingsChanged" />
-                                    <TextBlock Text="Estas opciones intentan conectar los servicios apenas abre Neo Twitch."
+                                    <TextBlock Text="Estas opciones intentan conectar los servicios apenas abre Neo Stream."
                                                Style="{StaticResource MutedText}"
                                                FontSize="12"
                                                TextWrapping="Wrap"

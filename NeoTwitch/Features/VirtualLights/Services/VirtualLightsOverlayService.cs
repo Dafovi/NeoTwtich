@@ -128,7 +128,7 @@ public sealed class VirtualLightsOverlayService
 <head>
   <meta charset="utf-8">
   <meta name="viewport" content="width=device-width,initial-scale=1">
-  <title>Neo Twitch - Luces virtuales</title>
+  <title>Neo Stream - Luces virtuales</title>
   <style>
     html, body { width: 100%; height: 100%; margin: 0; overflow: hidden; background: rgba(0,0,0,0); }
     canvas { width: 100vw; height: 100vh; display: block; background: rgba(0,0,0,0); opacity: 0; transition: opacity 160ms ease; }

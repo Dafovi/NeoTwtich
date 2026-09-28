@@ -37,7 +37,7 @@ public partial class SubtitleIntegrationView : NeoTwitchView
         Description.Text = CaptionMode ? "Subtítulos de tu micrófono en OBS con jimakuChan. Se activa de forma independiente del traductor del chat."
             : "Traduce mensajes de Twitch con twitchTransFreeNext y muéstralos en OBS. Se activa de forma independiente del micrófono.";
         Requirements.Text = CaptionMode ? "Necesita Google Chrome. Al activar se abre una ventana para permitir e iniciar el micrófono. El reconocimiento envía audio al servicio de voz de Google; la traducción usa modelos locales de Chrome."
-            : "Instala automáticamente un Python privado. Usa la conexión de Twitch de Neo Twitch. El texto se envía al servicio de traducción de Google y el proyecto conserva una caché local. No necesitas otro bot ni copiar tokens.";
+            : "Instala automáticamente un Python privado. Usa la conexión de Twitch de Neo Stream. El texto se envía al servicio de traducción de Google y el proyecto conserva una caché local. No necesitas otro bot ni copiar tokens.";
         SourceLabel.Text = CaptionMode ? "Idioma hablado" : "Idioma principal del canal";
         TranslateBox.Visibility = CaptionMode ? Visibility.Visible : Visibility.Collapsed;
         ChatOptions.Visibility = CaptionMode ? Visibility.Collapsed : Visibility.Visible;

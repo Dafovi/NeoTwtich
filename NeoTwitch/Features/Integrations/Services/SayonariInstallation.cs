@@ -64,7 +64,7 @@ public sealed class SayonariInstallation
             if (!File.Exists(Path.Combine(project, "LICENSE"))) throw new IOException("Falta la licencia del proyecto original.");
             File.Delete(Path.Combine(stage, "source.zip"));
             await File.WriteAllTextAsync(Path.Combine(stage, "CREDITS.txt"),
-                $"{Repository} — さぁたん & さよなりω (sayonari / Ryota Nishimura)\nhttps://github.com/sayonari/{Repository}\nMIT: source/{Repository}-{Revision}/LICENSE\nIntegración para Neo Twitch por Dafovi.\n", token);
+                $"{Repository} — さぁたん & さよなりω (sayonari / Ryota Nishimura)\nhttps://github.com/sayonari/{Repository}\nMIT: source/{Repository}-{Revision}/LICENSE\nIntegración para Neo Stream por Dafovi.\n", token);
             await File.WriteAllTextAsync(Path.Combine(stage, "ready"), Revision, token);
             token.ThrowIfCancellationRequested();
             DeleteManaged(previous);

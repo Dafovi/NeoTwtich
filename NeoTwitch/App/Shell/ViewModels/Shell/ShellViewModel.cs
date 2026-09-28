@@ -77,6 +77,8 @@ public sealed class ShellViewModel : ObservableObject
 
     public ObservableCollection<NavigationItemViewModel> Items { get; }
 
+    public ObservableCollection<StreamingProfileViewModel> ActiveProfiles { get; } = [];
+
     public ICommand NavigateCommand { get; }
 
     public string VersionText { get; }
@@ -221,6 +223,15 @@ public sealed class ShellViewModel : ObservableObject
         ChannelLogin = login;
     }
 
+    public void UpdateActiveProfiles(IEnumerable<StreamingProfileViewModel> profiles)
+    {
+        ActiveProfiles.Clear();
+        foreach (var profile in profiles)
+        {
+            ActiveProfiles.Add(profile);
+        }
+    }
+
     public void UpdateServiceStatusText(
         string? twitchConnection = null,
         string? twitchStatus = null,
@@ -316,3 +327,12 @@ public sealed class ShellViewModel : ObservableObject
         }
     }
 }
+
+public sealed record StreamingProfileViewModel(
+    string PlatformName,
+    string PlatformIconPath,
+    string ChannelName,
+    string ChannelLogin,
+    string AvatarSource,
+    string StatusText,
+    SolidColorBrush StatusBrush);

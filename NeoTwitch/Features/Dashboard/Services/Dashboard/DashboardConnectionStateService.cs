@@ -4,10 +4,12 @@ using NeoTwitch.ViewModels.Status;
 namespace NeoTwitch.Services.Dashboard;
 
 public sealed record DashboardConnectionStateInput(
+    bool TwitchEnabled,
     bool TwitchAuthorizing,
     bool TwitchConnecting,
     bool TwitchHasConnectionError,
     bool TwitchHasToken,
+    bool YouTubeEnabled,
     bool YouTubeAuthorizing,
     bool YouTubeHasConnectionError,
     bool YouTubeHasToken,
@@ -38,11 +40,13 @@ public static class DashboardConnectionStateService
     {
         return new DashboardConnectionStates(
             ConnectionStateService.ResolveTwitch(
+                input.TwitchEnabled,
                 input.TwitchAuthorizing,
                 input.TwitchConnecting,
                 input.TwitchHasConnectionError,
                 input.TwitchHasToken),
             ConnectionStateService.ResolveYouTube(
+                input.YouTubeEnabled,
                 input.YouTubeAuthorizing,
                 input.YouTubeHasConnectionError,
                 input.YouTubeHasToken),

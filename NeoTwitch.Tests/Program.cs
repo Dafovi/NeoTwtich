@@ -4077,9 +4077,10 @@ static class ConnectionStateTests
 {
     public static void ResolvesServiceStates()
     {
-        TestAssert.Equal(ConnectionVisualState.Connecting, ConnectionStateService.ResolveTwitch(false, true, false, false));
-        TestAssert.Equal(ConnectionVisualState.Warning, ConnectionStateService.ResolveTwitch(false, false, true, true));
-        TestAssert.Equal(ConnectionVisualState.Connected, ConnectionStateService.ResolveTwitch(false, false, false, true));
+        TestAssert.Equal(ConnectionVisualState.Connecting, ConnectionStateService.ResolveTwitch(true, false, true, false, false));
+        TestAssert.Equal(ConnectionVisualState.Warning, ConnectionStateService.ResolveTwitch(true, false, false, true, true));
+        TestAssert.Equal(ConnectionVisualState.Connected, ConnectionStateService.ResolveTwitch(true, false, false, false, true));
+        TestAssert.Equal(ConnectionVisualState.Disabled, ConnectionStateService.ResolveTwitch(false, false, false, false, true));
         TestAssert.Equal(ConnectionVisualState.Disabled, ConnectionStateService.ResolveArduino(false, false, false, false, false));
         TestAssert.Equal(ConnectionVisualState.Connecting, ConnectionStateService.ResolveArduino(true, false, false, false, true));
         TestAssert.Equal(ConnectionVisualState.Connected, ConnectionStateService.ResolveArduino(true, false, true, false, false));
@@ -5280,10 +5281,12 @@ static class DashboardConnectionStateTests
     public static void ResolvesAllServices()
     {
         var states = DashboardConnectionStateService.Resolve(new DashboardConnectionStateInput(
+            TwitchEnabled: true,
             TwitchAuthorizing: false,
             TwitchConnecting: true,
             TwitchHasConnectionError: false,
             TwitchHasToken: false,
+            YouTubeEnabled: true,
             YouTubeAuthorizing: false,
             YouTubeHasConnectionError: false,
             YouTubeHasToken: true,

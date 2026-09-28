@@ -27,4 +27,6 @@ public partial class ConnectionsView : NeoTwitchView
 
     private void ObsSettingsChanged(object sender, TextChangedEventArgs e) => Host?.ObsSettingsChanged(sender, e);
 
+    private void StreamingPlatformEnabledChanged(object sender, RoutedEventArgs e) => Host?.StreamingPlatformEnabledChanged(sender, e);
+
 }

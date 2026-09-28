@@ -1,6 +1,7 @@
 using System.Collections;
 using NeoTwitch.Models;
 using NeoTwitch.Services.Status;
+using NeoTwitch.Services.Streaming;
 using NeoTwitch.ViewModels.Core;
 
 namespace NeoTwitch.ViewModels.Connections;
@@ -40,7 +41,8 @@ public sealed class ConnectionsViewModel : ObservableObject
     private string _twitchClientSecret = "";
     private string _youTubeClientSecret = "";
     private string _youTubeChannelDisplay = "Autoriza tu canal de YouTube desde el navegador.";
-    private string _youTubeChannelThumbnailUrl = "";
+    private bool _twitchEnabled = true;
+    private bool _youTubeEnabled;
     private bool _arduinoEnabled;
     private string _serialPort = "";
     private string _baudRateText = "115200";
@@ -213,10 +215,16 @@ public sealed class ConnectionsViewModel : ObservableObject
         private set => SetProperty(ref _youTubeChannelDisplay, value);
     }
 
-    public string YouTubeChannelThumbnailUrl
+    public bool TwitchEnabled
     {
-        get => _youTubeChannelThumbnailUrl;
-        private set => SetProperty(ref _youTubeChannelThumbnailUrl, value);
+        get => _twitchEnabled;
+        set => SetProperty(ref _twitchEnabled, value);
+    }
+
+    public bool YouTubeEnabled
+    {
+        get => _youTubeEnabled;
+        set => SetProperty(ref _youTubeEnabled, value);
     }
 
     public bool ArduinoEnabled
@@ -284,15 +292,20 @@ public sealed class ConnectionsViewModel : ObservableObject
         TwitchClientId = config.TwitchClientId;
         TwitchClientSecret = config.TwitchClientSecret;
         YouTubeClientSecret = config.YouTubeClientSecret;
+        TwitchEnabled = StreamingPlatformConfigurationService
+            .GetOrCreate(config.StreamingPlatforms, StreamingPlatform.Twitch)
+            .IsEnabled;
+        YouTubeEnabled = StreamingPlatformConfigurationService
+            .GetOrCreate(config.StreamingPlatforms, StreamingPlatform.YouTube)
+            .IsEnabled;
         UpdateYouTubeChannel(config.YouTubeChannel);
     }
 
     public void UpdateYouTubeChannel(YouTubeChannelInfo channel)
     {
         YouTubeChannelDisplay = channel.IsReady
-            ? $"Canal conectado: {channel.DisplayName} ({channel.ChannelId})"
+            ? "Cuenta autorizada. El canal aparece en la barra lateral."
             : "Autoriza tu canal de YouTube desde el navegador.";
-        YouTubeChannelThumbnailUrl = channel.ThumbnailUrl;
     }
 
     public void UpdateYouTubeConnection(ConnectionStateVisual badge, ConnectionButtonState button)

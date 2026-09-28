@@ -93,7 +93,8 @@ public partial class MainWindow
 
     private async Task AutoConnectTwitchAtStartupAsync()
     {
-        if (!_config.AutoConnectTwitch)
+        var connection = StreamingPlatformConfigurationService.GetOrCreate(_config.StreamingPlatforms, StreamingPlatform.Twitch);
+        if (!connection.IsEnabled || !_config.AutoConnectTwitch)
         {
             return;
         }

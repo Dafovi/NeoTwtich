@@ -1,6 +1,7 @@
 using System.Windows;
 using NeoTwitch.Models;
 using NeoTwitch.Services;
+using NeoTwitch.Services.Streaming;
 using NeoTwitch.Services.Text;
 using NeoTwitch.ViewModels.Activity;
 
@@ -34,6 +35,9 @@ public partial class MainWindow
         try
         {
             SaveGlobalSettingsFromFields();
+            StreamingPlatformConfigurationService.GetOrCreate(_config.StreamingPlatforms, StreamingPlatform.Twitch).IsEnabled = true;
+            _connectionsViewModel.TwitchEnabled = true;
+            SaveConfig();
 
             if (_eventSubClient.IsRunning)
             {

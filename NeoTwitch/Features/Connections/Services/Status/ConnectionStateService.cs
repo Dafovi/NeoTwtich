@@ -19,11 +19,17 @@ public readonly record struct AppStateLabels(
 public static class ConnectionStateService
 {
     public static ConnectionVisualState ResolveTwitch(
+        bool enabled,
         bool isAuthorizing,
         bool isConnecting,
         bool hasConnectionError,
         bool hasToken)
     {
+        if (!enabled)
+        {
+            return ConnectionVisualState.Disabled;
+        }
+
         if (isAuthorizing || isConnecting)
         {
             return ConnectionVisualState.Connecting;
@@ -40,9 +46,10 @@ public static class ConnectionStateService
     }
 
     public static ConnectionVisualState ResolveYouTube(
+        bool enabled,
         bool isAuthorizing,
         bool hasConnectionError,
-        bool hasToken) => ResolveTwitch(isAuthorizing, false, hasConnectionError, hasToken);
+        bool hasToken) => ResolveTwitch(enabled, isAuthorizing, false, hasConnectionError, hasToken);
 
     public static ConnectionVisualState ResolveArduino(
         bool enabled,

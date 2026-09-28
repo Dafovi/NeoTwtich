@@ -36,7 +36,7 @@ public partial class MainWindow
                 _eventSubClient.IsHealthy,
                 labels));
         UpdateTwitchLiveIndicator();
-        UpdateChannelAvatar();
+        UpdateStreamingProfiles();
 
         var totalLeds = _config.LedStrips.Sum(strip => strip.LedCount);
         _shellViewModel.UpdateServiceStatusText(

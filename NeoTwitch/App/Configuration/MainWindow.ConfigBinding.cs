@@ -2,6 +2,7 @@ using NeoTwitch.Models;
 using NeoTwitch.Services;
 using NeoTwitch.Services.Configuration;
 using NeoTwitch.Services.Lights;
+using NeoTwitch.Services.Streaming;
 using NeoTwitch.Shared;
 using NeoTwitch.ViewModels.Activity;
 using NeoTwitch.ViewModels.Library;
@@ -88,6 +89,10 @@ public partial class MainWindow
                 _obsViewModel.OverlayYText));
         _config.YouTubeClientId = NeoTwitchProduct.YouTubeClientId;
         _config.YouTubeClientSecret = _connectionsViewModel.YouTubeClientSecret;
+        StreamingPlatformConfigurationService.GetOrCreate(_config.StreamingPlatforms, StreamingPlatform.Twitch).IsEnabled =
+            _connectionsViewModel.TwitchEnabled;
+        StreamingPlatformConfigurationService.GetOrCreate(_config.StreamingPlatforms, StreamingPlatform.YouTube).IsEnabled =
+            _connectionsViewModel.YouTubeEnabled;
     }
 
     private void ApplyStartWithWindowsRegistration()

@@ -209,48 +209,63 @@
                     <Rectangle Height="1"
                                Fill="#331A0B2E"
                                Margin="0,0,0,12" />
-                    <Border BorderBrush="{DynamicResource ThemeBorderBrush}"
-                            BorderThickness="1"
-                            CornerRadius="12"
-                            Padding="10"
-                            Margin="0,0,0,8">
-                        <Grid>
-                            <Grid.ColumnDefinitions>
-                                <ColumnDefinition Width="42" />
-                                <ColumnDefinition Width="*" />
-                            </Grid.ColumnDefinitions>
-                            <Border Width="34"
-                                    Height="34"
-                                    CornerRadius="17"
-                                    ClipToBounds="True"
-                                    HorizontalAlignment="Left">
-                                <Image x:Name="ChannelAvatarImage"
-                                       Source="Assets/AppIcon.png"
-                                       Stretch="UniformToFill" />
-                            </Border>
-                            <StackPanel Grid.Column="1">
-                                <TextBlock Text="{Binding ChannelName}"
-                                           FontWeight="SemiBold"
-                                           TextTrimming="CharacterEllipsis" />
-                                <TextBlock Text="{Binding ChannelLogin}"
-                                           Style="{StaticResource MutedText}"
-                                           FontSize="11"
-                                           TextTrimming="CharacterEllipsis" />
-                                <StackPanel Orientation="Horizontal" Margin="0,5,0,0">
-                                    <Ellipse Width="9"
-                                             Height="9"
-                                             Fill="{Binding LiveDotFill}"
-                                             Stroke="{Binding LiveDotStroke}"
-                                             StrokeThickness="1.5"
-                                             Margin="0,2,6,0"
-                                             ToolTip="Estado del directo" />
-                                    <TextBlock Text="{Binding LiveStateText}"
-                                               Foreground="{Binding LiveStateBrush}"
-                                               FontSize="11" />
-                                </StackPanel>
-                            </StackPanel>
-                        </Grid>
-                    </Border>
+                    <ItemsControl ItemsSource="{Binding ActiveProfiles}"
+                                  Margin="0,0,0,8">
+                        <ItemsControl.ItemTemplate>
+                            <DataTemplate>
+                                <Border BorderBrush="{DynamicResource ThemeBorderBrush}"
+                                        BorderThickness="1"
+                                        CornerRadius="12"
+                                        Padding="10"
+                                        Margin="0,0,0,8">
+                                    <Grid>
+                                        <Grid.ColumnDefinitions>
+                                            <ColumnDefinition Width="42" />
+                                            <ColumnDefinition Width="*" />
+                                        </Grid.ColumnDefinitions>
+                                        <Grid Width="34" Height="34" HorizontalAlignment="Left">
+                                            <Border CornerRadius="17" ClipToBounds="True">
+                                                <Image Source="{Binding AvatarSource}"
+                                                       Stretch="UniformToFill" />
+                                            </Border>
+                                            <Border Width="15"
+                                                    Height="15"
+                                                    CornerRadius="7.5"
+                                                    Background="{DynamicResource ThemeSidebarBrush}"
+                                                    BorderBrush="{DynamicResource ThemeBorderBrush}"
+                                                    BorderThickness="1"
+                                                    HorizontalAlignment="Right"
+                                                    VerticalAlignment="Bottom">
+                                                <Image Source="{Binding PlatformIconPath}"
+                                                       Margin="3"
+                                                       Stretch="Uniform" />
+                                            </Border>
+                                        </Grid>
+                                        <StackPanel Grid.Column="1">
+                                            <TextBlock Text="{Binding ChannelName}"
+                                                       FontWeight="SemiBold"
+                                                       TextTrimming="CharacterEllipsis" />
+                                            <TextBlock Text="{Binding ChannelLogin}"
+                                                       Style="{StaticResource MutedText}"
+                                                       FontSize="11"
+                                                       TextTrimming="CharacterEllipsis" />
+                                            <StackPanel Orientation="Horizontal" Margin="0,5,0,0">
+                                                <Ellipse Width="9"
+                                                         Height="9"
+                                                         Fill="{Binding StatusBrush}"
+                                                         Stroke="{Binding StatusBrush}"
+                                                         StrokeThickness="1.5"
+                                                         Margin="0,2,6,0" />
+                                                <TextBlock Text="{Binding StatusText}"
+                                                           Foreground="{Binding StatusBrush}"
+                                                           FontSize="11" />
+                                            </StackPanel>
+                                        </StackPanel>
+                                    </Grid>
+                                </Border>
+                            </DataTemplate>
+                        </ItemsControl.ItemTemplate>
+                    </ItemsControl>
                     <TextBlock Text="{Binding VersionText}"
                                FontSize="11"
                                Foreground="{DynamicResource ThemeSidebarMutedTextBrush}"

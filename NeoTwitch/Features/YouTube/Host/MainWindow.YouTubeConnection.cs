@@ -42,6 +42,7 @@ public partial class MainWindow
                 CancellationToken.None);
             _connectionsViewModel.UpdateYouTubeChannel(_config.YouTubeChannel);
             StreamingPlatformConfigurationService.GetOrCreate(_config.StreamingPlatforms, StreamingPlatform.YouTube).IsEnabled = true;
+            _connectionsViewModel.YouTubeEnabled = true;
             SaveConfig();
             _youTubeConnectionError = "";
 
@@ -83,12 +84,18 @@ public partial class MainWindow
         {
             _isYouTubeAuthorizing = false;
             UpdateYouTubeConnectionUi();
+            UpdateStatusText();
         }
     }
 
     private void UpdateYouTubeConnectionUi()
     {
-        var state = _isYouTubeAuthorizing
+        var isEnabled = StreamingPlatformConfigurationService
+            .GetOrCreate(_config.StreamingPlatforms, StreamingPlatform.YouTube)
+            .IsEnabled;
+        var state = !isEnabled
+            ? ConnectionVisualState.Disabled
+            : _isYouTubeAuthorizing
             ? ConnectionVisualState.Connecting
             : !string.IsNullOrWhiteSpace(_youTubeConnectionError)
                 ? ConnectionVisualState.Warning

@@ -229,6 +229,15 @@
                                 </Grid>
 
                                 <WrapPanel Grid.Row="2"
+                                           HorizontalAlignment="Left"
+                                           Margin="0,18,0,0">
+                                    <CheckBox Content="Activar Twitch"
+                                              IsChecked="{Binding TwitchEnabled, Mode=TwoWay, UpdateSourceTrigger=PropertyChanged}"
+                                              Checked="StreamingPlatformEnabledChanged"
+                                              Unchecked="StreamingPlatformEnabledChanged" />
+                                </WrapPanel>
+
+                                <WrapPanel Grid.Row="2"
                                            HorizontalAlignment="Right"
                                            Margin="0,18,0,0">
                                     <Button Content="Abrir Twitch Console"
@@ -673,14 +682,9 @@
                                         CornerRadius="14"
                                         Background="#1AFF0000"
                                         HorizontalAlignment="Left">
-                                    <Grid>
-                                        <Image Source="/Assets/Icons/service_youtube.png"
-                                               Stretch="Uniform"
-                                               Margin="8" />
-                                        <Image Source="{Binding YouTubeChannelThumbnailUrl}"
-                                               Stretch="UniformToFill"
-                                               ClipToBounds="True" />
-                                    </Grid>
+                                    <Image Source="/Assets/Icons/service_youtube.png"
+                                           Stretch="Uniform"
+                                           Margin="8" />
                                 </Border>
                                 <StackPanel Grid.Column="1" VerticalAlignment="Center">
                                     <TextBlock Text="Conectar YouTube"
@@ -693,6 +697,7 @@
                                                TextWrapping="Wrap" />
                                 </StackPanel>
                                 <Border Grid.Column="2"
+                                        Tag="StaticBrush"
                                         CornerRadius="14"
                                         Padding="11,5"
                                         HorizontalAlignment="Right"
@@ -702,10 +707,16 @@
                                         BorderThickness="1">
                                     <TextBlock Text="{Binding YouTubeBadge.Text}"
                                                Style="{StaticResource ConnectionStateBadgeText}"
-                                               Foreground="{Binding YouTubeBadge.ForegroundBrush}" />
+                                               Foreground="{Binding YouTubeBadge.ForegroundBrush}"
+                                               Tag="StaticBrush" />
                                 </Border>
                             </Grid>
                             <StackPanel Grid.Row="1" Margin="0,16,0,0">
+                                <CheckBox Content="Activar YouTube"
+                                          IsChecked="{Binding YouTubeEnabled, Mode=TwoWay, UpdateSourceTrigger=PropertyChanged}"
+                                          Checked="StreamingPlatformEnabledChanged"
+                                          Unchecked="StreamingPlatformEnabledChanged"
+                                          Margin="0,0,0,14" />
                                 <TextBlock Text="Secreto del cliente de escritorio"
                                            Style="{StaticResource MutedText}" />
                                 <TextBox Text="{Binding YouTubeClientSecret, Mode=TwoWay, UpdateSourceTrigger=PropertyChanged}"

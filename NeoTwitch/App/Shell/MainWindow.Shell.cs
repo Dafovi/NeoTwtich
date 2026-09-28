@@ -7,15 +7,16 @@ using System.Windows.Controls;
 using System.Windows.Input;
 using System.Windows.Interop;
 using System.Windows.Media;
-using System.Windows.Media.Imaging;
 using NeoTwitch.Models;
 using NeoTwitch.Services.Dashboard;
 using NeoTwitch.Services;
 using NeoTwitch.Services.Status;
+using NeoTwitch.Services.Streaming;
 using NeoTwitch.Services.Text;
 using NeoTwitch.Services.Ui;
 using NeoTwitch.Shared;
 using NeoTwitch.ViewModels.Activity;
+using NeoTwitch.ViewModels.Shell;
 using Forms = System.Windows.Forms;
 using DrawingIcon = System.Drawing.Icon;
 using static NeoTwitch.Services.Text.UiTextFormatter;
@@ -85,22 +86,51 @@ public partial class MainWindow
             _text.Get(UiTextKeys.TwitchProfile));
     }
 
-    private void UpdateChannelAvatar()
+    private void UpdateStreamingProfiles()
     {
-        try
+        var profiles = new List<StreamingProfileViewModel>();
+        var twitchEnabled = StreamingPlatformConfigurationService
+            .GetOrCreate(_config.StreamingPlatforms, StreamingPlatform.Twitch)
+            .IsEnabled;
+
+        if (twitchEnabled && _config.Channel.IsReady)
         {
-            if (!string.IsNullOrWhiteSpace(_config.Channel.ProfileImageUrl))
-            {
-                ChannelAvatarImage.Source = new BitmapImage(new Uri(_config.Channel.ProfileImageUrl, UriKind.Absolute));
-                return;
-            }
-        }
-        catch
-        {
-            // Use the bundled app icon when Twitch has no image available.
+            var isLive = _streamStatus is { IsLive: true };
+            profiles.Add(new StreamingProfileViewModel(
+                "Twitch",
+                "Assets/Icons/service_twitch.png",
+                _config.Channel.DisplayName,
+                string.IsNullOrWhiteSpace(_config.Channel.Login) ? "Twitch" : $"@{_config.Channel.Login.TrimStart('@')}",
+                string.IsNullOrWhiteSpace(_config.Channel.ProfileImageUrl) ? "Assets/Icons/service_twitch.png" : _config.Channel.ProfileImageUrl,
+                isLive ? _text.Get(UiTextKeys.TwitchLive) : _eventSubClient.IsHealthy ? "Conectado" : "Revisar",
+                isLive
+                    ? FrozenBrushFrom("#FF2D55")
+                    : _eventSubClient.IsHealthy
+                        ? FrozenBrushFrom("#22C55E")
+                        : FrozenBrushFrom("#FFB020")));
         }
 
-        ChannelAvatarImage.Source = new BitmapImage(new Uri(NeoTwitchProduct.AppIconPackUri, UriKind.Absolute));
+        var youTubeEnabled = StreamingPlatformConfigurationService
+            .GetOrCreate(_config.StreamingPlatforms, StreamingPlatform.YouTube)
+            .IsEnabled;
+        if (youTubeEnabled && _config.YouTubeToken.HasToken && _config.YouTubeChannel.IsReady)
+        {
+            profiles.Add(new StreamingProfileViewModel(
+                "YouTube",
+                "Assets/Icons/service_youtube.png",
+                _config.YouTubeChannel.DisplayName,
+                "Canal de YouTube",
+                string.IsNullOrWhiteSpace(_config.YouTubeChannel.ThumbnailUrl) ? "Assets/Icons/service_youtube.png" : _config.YouTubeChannel.ThumbnailUrl,
+                _youTubePlatformProvider.IsRunning ? "Conectado" : "Revisar",
+                _youTubePlatformProvider.IsRunning
+                    ? FrozenBrushFrom("#22C55E")
+                    : FrozenBrushFrom("#FFB020")));
+        }
+
+        _shellViewModel.UpdateActiveProfiles(profiles);
+        TopProfileButton.Visibility = twitchEnabled && _config.Channel.IsReady
+            ? Visibility.Visible
+            : Visibility.Collapsed;
     }
 
     private void UpdateSliderLabels()

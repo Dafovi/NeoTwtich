@@ -1,5 +1,7 @@
+using NeoTwitch.Models;
 using NeoTwitch.Services.Dashboard;
 using NeoTwitch.Services.Status;
+using NeoTwitch.Services.Streaming;
 using NeoTwitch.Services.Text;
 
 namespace NeoTwitch;
@@ -9,10 +11,12 @@ public partial class MainWindow
     private void RefreshDashboardConnectionStates()
     {
         var states = DashboardConnectionStateService.Resolve(new DashboardConnectionStateInput(
+            StreamingPlatformConfigurationService.GetOrCreate(_config.StreamingPlatforms, StreamingPlatform.Twitch).IsEnabled,
             _isTwitchAuthorizing,
             _isTwitchConnecting,
             !string.IsNullOrWhiteSpace(_twitchConnectionError),
             _config.Token.HasToken,
+            StreamingPlatformConfigurationService.GetOrCreate(_config.StreamingPlatforms, StreamingPlatform.YouTube).IsEnabled,
             _isYouTubeAuthorizing,
             !string.IsNullOrWhiteSpace(_youTubeConnectionError),
             _config.YouTubeToken.HasToken,

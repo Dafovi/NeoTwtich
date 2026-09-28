@@ -10,6 +10,8 @@ public sealed class RuleEditorViewModel : ObservableObject
     private bool _isEnabled = true;
     private bool _useTwitchSource = true;
     private bool _useYouTubeSource;
+    private bool _isTwitchSourceAvailable = true;
+    private bool _isYouTubeSourceAvailable;
     private string _ruleNameText = "";
     private TwitchEventKind _eventKind = TwitchEventKind.Follow;
     private string _customRewardTitle = "";
@@ -91,6 +93,8 @@ public sealed class RuleEditorViewModel : ObservableObject
             }
 
             OnPropertyChanged(nameof(IsYouTubeEventSupported));
+            OnPropertyChanged(nameof(IsYouTubeSourceAvailable));
+            OnPropertyChanged(nameof(SourcePlatformHint));
             if (!IsYouTubeEventSupported)
             {
                 UseYouTubeSource = false;
@@ -131,6 +135,48 @@ public sealed class RuleEditorViewModel : ObservableObject
         or TwitchEventKind.Cheer
         or TwitchEventKind.ChatCommand
         or TwitchEventKind.Test;
+
+    public bool IsTwitchSourceAvailable => _isTwitchSourceAvailable;
+
+    public bool IsYouTubeSourceAvailable => _isYouTubeSourceAvailable && IsYouTubeEventSupported;
+
+    public string SourcePlatformHint
+    {
+        get
+        {
+            if (!_isTwitchSourceAvailable && !_isYouTubeSourceAvailable)
+            {
+                return "Activa Twitch o YouTube en Conexiones para recibir alertas.";
+            }
+
+            if (!_isTwitchSourceAvailable)
+            {
+                return IsYouTubeEventSupported
+                    ? "Twitch está desactivado. Esta alerta recibirá eventos de YouTube."
+                    : "Este tipo de alerta requiere Twitch, que está desactivado.";
+            }
+
+            if (!_isYouTubeSourceAvailable)
+            {
+                return "YouTube está desactivado. Esta alerta recibirá eventos de Twitch.";
+            }
+
+            return IsYouTubeEventSupported
+                ? "YouTube admite membresías, Super Chats y comandos de chat."
+                : "Este tipo de alerta está disponible solo en Twitch.";
+        }
+    }
+
+    public void UpdateSourceAvailability(bool twitchAvailable, bool youTubeAvailable)
+    {
+        var twitchChanged = SetProperty(ref _isTwitchSourceAvailable, twitchAvailable, nameof(IsTwitchSourceAvailable));
+        var youTubeChanged = SetProperty(ref _isYouTubeSourceAvailable, youTubeAvailable, nameof(IsYouTubeSourceAvailable));
+        if (twitchChanged || youTubeChanged)
+        {
+            OnPropertyChanged(nameof(SourcePlatformHint));
+            OnPropertyChanged(nameof(IsYouTubeSourceAvailable));
+        }
+    }
 
     public IReadOnlyCollection<StreamingPlatform> GetSourcePlatforms()
     {

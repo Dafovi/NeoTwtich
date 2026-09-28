@@ -626,6 +626,7 @@
                                                                Stretch="Uniform"
                                                                Margin="0,0,6,0" />
                                                         <CheckBox Content="Twitch"
+                                                                  IsEnabled="{Binding Editor.IsTwitchSourceAvailable}"
                                                                   IsChecked="{Binding Editor.UseTwitchSource, Mode=TwoWay, UpdateSourceTrigger=PropertyChanged}"
                                                                   Checked="RuleFieldChanged"
                                                                   Unchecked="RuleFieldChanged" />
@@ -638,13 +639,18 @@
                                                                Stretch="Uniform"
                                                                Margin="0,0,6,0" />
                                                         <CheckBox Content="YouTube"
-                                                                  IsEnabled="{Binding Editor.IsYouTubeEventSupported}"
+                                                                  IsEnabled="{Binding Editor.IsYouTubeSourceAvailable}"
                                                                   IsChecked="{Binding Editor.UseYouTubeSource, Mode=TwoWay, UpdateSourceTrigger=PropertyChanged}"
                                                                   Checked="RuleFieldChanged"
                                                                   Unchecked="RuleFieldChanged"
                                                                   ToolTip="YouTube admite membresias, Super Chats y comandos de chat." />
                                                     </StackPanel>
                                                 </WrapPanel>
+                                                <TextBlock Text="{Binding Editor.SourcePlatformHint}"
+                                                           Style="{StaticResource MutedText}"
+                                                           FontSize="11"
+                                                           TextWrapping="Wrap"
+                                                           Margin="0,8,0,0" />
                                             </StackPanel>
                                         </Border>
 

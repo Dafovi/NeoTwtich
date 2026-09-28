@@ -36,7 +36,7 @@ public partial class MainWindow
             RegisterDashboardStreamEvent(streamEvent);
             var logKind = streamEvent.Platform == StreamingPlatform.YouTube
                 ? ActivityLogKind.YouTube
-                : ActivityLogKind.Event;
+                : ActivityLogKind.Twitch;
             var matchingRules = EventRuleMatcherService.ResolveMatches(_config.Rules, streamEvent);
             if (matchingRules.Length == 0)
             {
@@ -99,7 +99,7 @@ public partial class MainWindow
             return false;
         }
 
-        AddLog(twitchEvent.Title, ActivityLogKind.Event);
+        AddLog(twitchEvent.Title, ActivityLogKind.Twitch);
         AddLog(_text.Format(UiTextKeys.AlertOfflineSuppressedLogFormat, twitchEvent.Title), ActivityLogKind.Important);
         ShowOfflineTwitchAlertNotification(twitchEvent);
         return true;

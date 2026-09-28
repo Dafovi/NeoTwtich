@@ -37,6 +37,7 @@ public partial class MainWindow
                 labels));
         UpdateTwitchLiveIndicator();
         UpdateStreamingProfiles();
+        UpdateRulePlatformAvailability();
 
         var totalLeds = _config.LedStrips.Sum(strip => strip.LedCount);
         _shellViewModel.UpdateServiceStatusText(

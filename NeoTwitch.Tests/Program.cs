@@ -5692,6 +5692,14 @@ static class RuleEditorViewModelTests
         TestAssert.True(viewModel.UseTwitchSource);
         TestAssert.False(viewModel.UseYouTubeSource);
         TestAssert.True(viewModel.IsYouTubeEventSupported);
+        viewModel.UpdateSourceAvailability(twitchAvailable: false, youTubeAvailable: true);
+        TestAssert.False(viewModel.IsTwitchSourceAvailable);
+        TestAssert.True(viewModel.IsYouTubeSourceAvailable);
+        TestAssert.Contains("Twitch está desactivado", viewModel.SourcePlatformHint);
+        viewModel.UpdateSourceAvailability(twitchAvailable: true, youTubeAvailable: false);
+        TestAssert.True(viewModel.IsTwitchSourceAvailable);
+        TestAssert.False(viewModel.IsYouTubeSourceAvailable);
+        TestAssert.Contains("YouTube está desactivado", viewModel.SourcePlatformHint);
         TestAssert.Equal("Canje raro", viewModel.CustomRewardTitle);
         TestAssert.Equal("!rave", viewModel.ChatCommand);
         TestAssert.Equal("250", viewModel.MinimumBitsText);

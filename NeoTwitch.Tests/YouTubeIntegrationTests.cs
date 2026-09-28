@@ -125,6 +125,27 @@ static class YouTubeIntegrationTests
         TestAssert.Equal("Nivel oro", membership.RewardTitle!);
     }
 
+    public static void SendsMessagesToTheActiveLiveChat()
+    {
+        var handler = new CapturingJsonHandler();
+        using var http = new HttpClient(handler);
+        using var service = new YouTubeLiveChatService(http);
+
+        service.SendMessageAsync(
+                new YouTubeTokenInfo { AccessToken = "access" },
+                "chat-123",
+                "  Gracias por apoyar  ",
+                CancellationToken.None)
+            .GetAwaiter()
+            .GetResult();
+
+        TestAssert.Equal(HttpMethod.Post, handler.Method);
+        TestAssert.Equal("Bearer", handler.AuthorizationScheme);
+        TestAssert.Equal("access", handler.AuthorizationParameter);
+        TestAssert.Contains("\"liveChatId\":\"chat-123\"", handler.RequestBody);
+        TestAssert.Contains("\"messageText\":\"Gracias por apoyar\"", handler.RequestBody);
+    }
+
     public static void ReceivesLoopbackCallback()
     {
         using var cancellation = new CancellationTokenSource(TimeSpan.FromSeconds(5));
@@ -170,6 +191,23 @@ static class YouTubeIntegrationTests
     {
         protected override Task<HttpResponseMessage> SendAsync(HttpRequestMessage request, CancellationToken cancellationToken) =>
             Task.FromResult(new HttpResponseMessage(HttpStatusCode.OK) { Content = new StringContent(json) });
+    }
+
+    private sealed class CapturingJsonHandler : HttpMessageHandler
+    {
+        public HttpMethod? Method { get; private set; }
+        public string AuthorizationScheme { get; private set; } = "";
+        public string AuthorizationParameter { get; private set; } = "";
+        public string RequestBody { get; private set; } = "";
+
+        protected override async Task<HttpResponseMessage> SendAsync(HttpRequestMessage request, CancellationToken cancellationToken)
+        {
+            Method = request.Method;
+            AuthorizationScheme = request.Headers.Authorization?.Scheme ?? "";
+            AuthorizationParameter = request.Headers.Authorization?.Parameter ?? "";
+            RequestBody = request.Content is null ? "" : await request.Content.ReadAsStringAsync(cancellationToken);
+            return new HttpResponseMessage(HttpStatusCode.OK) { Content = new StringContent("{}") };
+        }
     }
 
     private sealed class NullExternalLauncher : IExternalLauncherService

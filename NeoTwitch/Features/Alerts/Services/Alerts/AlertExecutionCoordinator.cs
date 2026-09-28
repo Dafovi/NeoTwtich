@@ -7,7 +7,8 @@ public sealed record AlertExecutionRequest(
     AlertTriggerSnapshot Trigger,
     QueuedAlertSlot? QueueSlot,
     bool SendChatMessage,
-    bool SendAlexaEvent);
+    bool SendAlexaEvent,
+    StreamingPlatform TriggerPlatform = StreamingPlatform.Twitch);
 
 public sealed record AlertExecutionResult(
     string ExecutionId,
@@ -109,9 +110,9 @@ public sealed class AlertExecutionCoordinator : IDisposable
             {
                 startedTasks.Add(RunOptionalActionAsync(
                     execution,
-                    "TwitchChat",
+                    "PlatformChat",
                     token => capabilities.ExecuteChatAsync(request, token),
-                    "Twitch chat request failed"));
+                    "Platform chat request failed"));
             }
 
             if (request.SendAlexaEvent && request.Rule.Alexa.Enabled)

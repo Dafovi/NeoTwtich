@@ -120,6 +120,7 @@ private static readonly (string Name, Action Body)[] Tests =
     ("YouTube live service resolves the active broadcast", YouTubeIntegrationTests.ResolvesActiveBroadcast),
     ("YouTube channel service resolves the authorized channel", YouTubeIntegrationTests.ResolvesCurrentChannel),
     ("YouTube live chat maps supported alert events", YouTubeIntegrationTests.ReadsAndMapsLiveChatEvents),
+    ("YouTube live chat sends replies to the active broadcast", YouTubeIntegrationTests.SendsMessagesToTheActiveLiveChat),
     ("EventSub dedup accepts first message", TwitchReliabilityTests.DedupAcceptsFirstMessage),
     ("EventSub dedup ignores duplicate message ID", TwitchReliabilityTests.DedupIgnoresDuplicateMessageId),
     ("EventSub dedup accepts identical payload with different IDs", TwitchReliabilityTests.DedupAcceptsDifferentIds),

@@ -60,7 +60,7 @@ public partial class MainWindow
 
             foreach (var rule in matchingRules)
             {
-                await QueueAndRunRuleAsync(rule, alertEvent);
+                await QueueAndRunRuleAsync(rule, alertEvent, streamEvent.Platform);
             }
         }
         catch (Exception ex)
@@ -70,7 +70,10 @@ public partial class MainWindow
         }
     }
 
-    private async Task QueueAndRunRuleAsync(EventRule rule, TwitchEvent twitchEvent)
+    private async Task QueueAndRunRuleAsync(
+        EventRule rule,
+        TwitchEvent twitchEvent,
+        StreamingPlatform triggerPlatform)
     {
         var slot = _alertQueue.TryReserve(
             rule,
@@ -84,7 +87,7 @@ public partial class MainWindow
             return;
         }
 
-        await RunRuleAsync(rule, twitchEvent, queueSlot: slot);
+        await RunRuleAsync(rule, twitchEvent, queueSlot: slot, triggerPlatform: triggerPlatform);
     }
 
     private async Task<bool> TrySuppressOfflineTwitchAlertAsync(TwitchEvent twitchEvent)

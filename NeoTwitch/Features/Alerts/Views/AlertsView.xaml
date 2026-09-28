@@ -226,7 +226,7 @@
                                                         CommandParameter="{Binding Tag, RelativeSource={RelativeSource Self}}">
                                                     <StackPanel Orientation="Horizontal" HorizontalAlignment="Center">
                                                         <Image Source="/Assets/Icons/action_bits_blue.png" Width="30" Height="30" Margin="0,0,10,0" />
-                                                        <TextBlock Text="Bits" FontWeight="SemiBold" VerticalAlignment="Center" TextTrimming="CharacterEllipsis" />
+                                                        <TextBlock Text="Bits y apoyos" FontWeight="SemiBold" VerticalAlignment="Center" TextTrimming="CharacterEllipsis" />
                                                     </StackPanel>
                                                 </Button>
                                                 <Button x:Name="EventChatCommandTileButton"
@@ -672,12 +672,12 @@
                                                      ToolTip="Dejalo vacio para aceptar cualquier canje personalizado." />
 
                                             <TextBlock x:Name="MinimumBitsLabel"
-                                                       Text="Bits minimos"
+                                                       Text="Minimo de Bits o apoyo"
                                                        Style="{StaticResource MutedText}" />
                                             <TextBox x:Name="MinimumBitsBox"
                                                      Text="{Binding Editor.MinimumBitsText, Mode=TwoWay, UpdateSourceTrigger=PropertyChanged}"
                                                      TextChanged="RuleFieldChanged"
-                                                     ToolTip="Para bits, usa el mayor umbral que sea menor o igual a la cantidad recibida." />
+                                                     ToolTip="Para Bits o apoyos de plataforma, usa el mayor umbral que sea menor o igual a la cantidad recibida." />
                                         </StackPanel>
 
                                         <TextBlock x:Name="ChatCommandLabel"
@@ -2092,7 +2092,7 @@
                                                                     VerticalAlignment="Center">
                                                             <TextBlock Text="Mensaje de chat"
                                                                        FontWeight="SemiBold" />
-                                                            <TextBlock Text="Envia respuesta automatica."
+                                                            <TextBlock Text="Responde en el chat que activo la alerta."
                                                                        Style="{StaticResource MutedText}"
                                                                        FontSize="12"
                                                                        TextWrapping="Wrap" />

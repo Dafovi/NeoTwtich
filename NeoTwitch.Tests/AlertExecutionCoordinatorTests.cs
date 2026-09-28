@@ -88,7 +88,7 @@ public sealed class AlertExecutionCoordinatorTests
 
         Assert.IsTrue(result.IsFailed);
         Assert.AreEqual(1, capabilities.EffectsCalls);
-        Assert.AreEqual(AlertActionState.Failed, result.Trace.Actions.Single(action => action.ActionType == "TwitchChat").State);
+        Assert.AreEqual(AlertActionState.Failed, result.Trace.Actions.Single(action => action.ActionType == "PlatformChat").State);
     }
 
     [TestMethod]

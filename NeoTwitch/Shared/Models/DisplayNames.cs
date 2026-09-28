@@ -7,7 +7,7 @@ public static class DisplayNames
         TwitchEventKind.Follow => "Nuevo seguidor",
         TwitchEventKind.Subscription => "Nueva suscripcion",
         TwitchEventKind.Raid => "Raid recibida",
-        TwitchEventKind.Cheer => "Bits",
+        TwitchEventKind.Cheer => "Bits y apoyos",
         TwitchEventKind.ChatCommand => "Comando de chat",
         TwitchEventKind.ChannelPointRedemption => "Canje de puntos",
         TwitchEventKind.Test => "Prueba manual",

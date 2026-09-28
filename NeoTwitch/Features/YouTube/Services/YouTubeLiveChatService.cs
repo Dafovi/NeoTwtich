@@ -1,5 +1,6 @@
 using System.Net.Http.Headers;
 using System.Net.Http;
+using System.Net.Http.Json;
 using System.Text.Json;
 using NeoTwitch.Models;
 
@@ -58,6 +59,45 @@ public sealed class YouTubeLiveChatService : IDisposable
             nextPageToken,
             TimeSpan.FromMilliseconds(Math.Clamp(pollingMilliseconds, 1_000, 30_000)),
             root.TryGetProperty("offlineAt", out _));
+    }
+
+    public async Task SendMessageAsync(
+        YouTubeTokenInfo token,
+        string liveChatId,
+        string message,
+        CancellationToken cancellationToken)
+    {
+        if (!token.HasToken)
+        {
+            throw new InvalidOperationException("La cuenta de YouTube necesita autorizarse de nuevo.");
+        }
+
+        if (string.IsNullOrWhiteSpace(liveChatId))
+        {
+            throw new ArgumentException("Falta el identificador del chat en vivo de YouTube.", nameof(liveChatId));
+        }
+
+        if (string.IsNullOrWhiteSpace(message))
+        {
+            return;
+        }
+
+        using var request = new HttpRequestMessage(HttpMethod.Post, MessagesUrl);
+        request.Headers.Authorization = new AuthenticationHeaderValue("Bearer", token.AccessToken);
+        request.Content = JsonContent.Create(new
+        {
+            snippet = new
+            {
+                liveChatId,
+                type = "textMessageEvent",
+                textMessageDetails = new { messageText = message.Trim() }
+            }
+        });
+        using var response = await _http.SendAsync(request, cancellationToken);
+        if (!response.IsSuccessStatusCode)
+        {
+            throw new InvalidOperationException($"No fue posible enviar el mensaje al chat de YouTube (HTTP {(int)response.StatusCode}).");
+        }
     }
 
     public void Dispose()

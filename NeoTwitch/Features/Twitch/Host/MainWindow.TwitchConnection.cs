@@ -87,7 +87,7 @@ public partial class MainWindow
 
             _config.Token = await _authService.PollForTokenAsync(_config.TwitchClientId, session, AddLog, CancellationToken.None);
             _config.Channel = await _authService.GetCurrentUserAsync(_config, CancellationToken.None);
-            SaveConfig();
+            SaveTwitchSession();
             AddLog(_text.Format(UiTextKeys.TwitchAuthorizedLog, _config.Channel.DisplayName));
         }
         finally
@@ -120,14 +120,14 @@ public partial class MainWindow
                 AddLog(_text.Get(UiTextKeys.TwitchReauthRequiredLog), ActivityLogKind.Twitch);
                 _config.Token = new TwitchTokenInfo();
                 _config.Channel = new TwitchChannelInfo();
-                SaveConfig();
+                SaveTwitchSession();
                 await SignInToTwitchAsync();
             }
 
             if (!_config.Channel.IsReady)
             {
                 _config.Channel = await _authService.GetCurrentUserAsync(_config, CancellationToken.None);
-                SaveConfig();
+                SaveTwitchSession();
             }
 
             await _eventSubClient.StartAsync();

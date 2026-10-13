@@ -2,6 +2,7 @@ using System.IO;
 using System.Text;
 using System.Text.Json;
 using System.Text.Json.Serialization;
+using System.Text.Json.Nodes;
 using NeoTwitch.Models;
 using NeoTwitch.Services.Configuration;
 using NeoTwitch.Services.Configuration.Migrations;
@@ -20,6 +21,10 @@ public sealed record SettingsStorePaths(string SettingsPath, string BackupDirect
 
 public sealed class SettingsStore : IDisposable
 {
+    // Schemas 3 and 4 were introduced by the in-progress Neo Stream branch.
+    // Main can safely consume the fields it already understands, but must never
+    // perform a full save because it would discard the newer branch's fields.
+    private const int MaximumForwardCompatibleSchemaVersion = 4;
     private readonly JsonSerializerOptions _jsonOptions = new(JsonSerializerDefaults.Web) { WriteIndented = true };
     private readonly IUiTextService _text;
     private readonly TimeProvider _timeProvider;
@@ -79,6 +84,27 @@ public sealed class SettingsStore : IDisposable
             catch (UnsupportedConfigurationSchemaException ex)
             {
                 _writesBlockedByIncompatibleSchema = true;
+                if (ex.SchemaVersion <= MaximumForwardCompatibleSchemaVersion)
+                {
+                    try
+                    {
+                        loaded = LoadForwardCompatibleCandidate(candidate.Path, ex.SchemaVersion);
+                        LastIntegrityWarnings = loaded.IntegrityReport.AmbiguousReferences;
+                        LastSecretFailures = loaded.SecretResult.FailedPurposes;
+                        LastLoadError =
+                            $"La configuración usa el esquema {ex.SchemaVersion} de Neo Stream; se cargó en modo compatible de solo lectura para no perder sus ajustes nuevos.";
+                        return loaded.Config;
+                    }
+                    catch (Exception compatibleLoadException)
+                    {
+                        LastLoadError = ex.Message;
+                        CrashReporter.Log(
+                            compatibleLoadException,
+                            _text.Format(UiTextKeys.SettingsStoreLoadFailureCrash, candidate.Path));
+                        return DefaultAppConfigFactory.Create(_text);
+                    }
+                }
+
                 LastLoadError = ex.Message;
                 CrashReporter.Log(ex, _text.Format(UiTextKeys.SettingsStoreLoadFailureCrash, candidate.Path));
                 return DefaultAppConfigFactory.Create(_text);
@@ -141,6 +167,8 @@ public sealed class SettingsStore : IDisposable
 
     public void Save(AppConfig config) => RunSynchronously(() => SaveAsync(config));
 
+    public void SaveTwitchSession(AppConfig config) => RunSynchronously(() => SaveTwitchSessionAsync(config));
+
     public async Task SaveAsync(AppConfig config, CancellationToken cancellationToken = default)
     {
         ArgumentNullException.ThrowIfNull(config);
@@ -155,6 +183,33 @@ public sealed class SettingsStore : IDisposable
         var sequence = Interlocked.Increment(ref _nextSaveSequence);
         var snapshot = CreateSnapshot(config, includeProtectedSecrets: true);
         await SaveSnapshotAsync(snapshot, sequence, cancellationToken);
+        LastSecretFailures = [];
+    }
+
+    public async Task SaveTwitchSessionAsync(AppConfig config, CancellationToken cancellationToken = default)
+    {
+        ArgumentNullException.ThrowIfNull(config);
+        if (!_writesBlockedByIncompatibleSchema)
+        {
+            await SaveAsync(config, cancellationToken);
+            return;
+        }
+
+        EnsureFailedSecretsHaveReplacements(config);
+        var snapshot = CreateSnapshot(config, includeProtectedSecrets: true);
+        await _writeGate.WaitAsync(cancellationToken);
+        try
+        {
+            var root = JsonNode.Parse(File.ReadAllText(SettingsPath)) as JsonObject
+                ?? throw new JsonException("La raíz de la configuración debe ser un objeto JSON.");
+            PatchTwitchSession(root, snapshot);
+            await WriteForwardCompatibleJsonAtomicallyAsync(root.ToJsonString(_jsonOptions), cancellationToken);
+        }
+        finally
+        {
+            _writeGate.Release();
+        }
+
         LastSecretFailures = [];
     }
 
@@ -318,6 +373,49 @@ public sealed class SettingsStore : IDisposable
         }
     }
 
+    private async Task WriteForwardCompatibleJsonAtomicallyAsync(string json, CancellationToken cancellationToken)
+    {
+        var directory = Path.GetDirectoryName(SettingsPath)!;
+        Directory.CreateDirectory(directory);
+        var stagingPath = Path.Combine(directory, $".{Path.GetFileName(SettingsPath)}.staging.{_stagingIdFactory()}");
+        try
+        {
+            var bytes = Encoding.UTF8.GetBytes(json);
+            try
+            {
+                await using var stream = new FileStream(
+                    stagingPath,
+                    FileMode.CreateNew,
+                    FileAccess.Write,
+                    FileShare.None,
+                    16 * 1024,
+                    FileOptions.Asynchronous | FileOptions.WriteThrough);
+                await stream.WriteAsync(bytes, cancellationToken);
+                await stream.FlushAsync(cancellationToken);
+                stream.Flush(flushToDisk: true);
+            }
+            finally
+            {
+                Array.Clear(bytes);
+            }
+
+            using var document = JsonDocument.Parse(File.ReadAllText(stagingPath));
+            if (document.RootElement.ValueKind != JsonValueKind.Object)
+            {
+                throw new JsonException("La raíz de la configuración temporal debe ser un objeto JSON.");
+            }
+
+            CommitStagedFile(stagingPath, SettingsPath);
+        }
+        finally
+        {
+            if (File.Exists(stagingPath))
+            {
+                File.Delete(stagingPath);
+            }
+        }
+    }
+
     private void ValidateStagedFile(string stagingPath, bool validateSecrets)
     {
         var migration = AppConfigMigrationService.DeserializeAndMigrate(File.ReadAllText(stagingPath), _jsonOptions);
@@ -343,6 +441,48 @@ public sealed class SettingsStore : IDisposable
         var normalized = AppConfigNormalizer.NormalizeWithReport(migration.Config, _text);
         var secretResult = _secretService.RestoreForRuntime(normalized.Config);
         return new LoadCandidateResult(normalized.Config, migration, normalized.IntegrityReport, secretResult);
+    }
+
+    private LoadCandidateResult LoadForwardCompatibleCandidate(string path, int sourceSchemaVersion)
+    {
+        var config = JsonSerializer.Deserialize<AppConfig>(File.ReadAllText(path), _jsonOptions)
+            ?? throw new JsonException("La configuración está vacía.");
+        var normalized = AppConfigNormalizer.NormalizeWithReport(config, _text);
+        var secretResult = _secretService.RestoreForRuntime(normalized.Config);
+        var migration = new AppConfigMigrationResult(normalized.Config, sourceSchemaVersion, WasMigrated: false);
+        return new LoadCandidateResult(normalized.Config, migration, normalized.IntegrityReport, secretResult);
+    }
+
+    private static void PatchTwitchSession(JsonObject root, AppConfig snapshot)
+    {
+        var protectedSecrets = GetOrCreateObject(root, "protectedSecrets");
+        protectedSecrets["twitchClientSecret"] = snapshot.ProtectedSecrets.TwitchClientSecret;
+        protectedSecrets["twitchAccessToken"] = snapshot.ProtectedSecrets.TwitchAccessToken;
+        protectedSecrets["twitchRefreshToken"] = snapshot.ProtectedSecrets.TwitchRefreshToken;
+
+        var token = GetOrCreateObject(root, "token");
+        token["accessToken"] = "";
+        token["refreshToken"] = "";
+        token["expiresAt"] = JsonSerializer.SerializeToNode(snapshot.Token.ExpiresAt);
+        token["scopes"] = JsonSerializer.SerializeToNode(snapshot.Token.Scopes);
+
+        var channel = GetOrCreateObject(root, "channel");
+        channel["userId"] = snapshot.Channel.UserId;
+        channel["login"] = snapshot.Channel.Login;
+        channel["displayName"] = snapshot.Channel.DisplayName;
+        channel["profileImageUrl"] = snapshot.Channel.ProfileImageUrl;
+    }
+
+    private static JsonObject GetOrCreateObject(JsonObject root, string propertyName)
+    {
+        if (root[propertyName] is JsonObject existing)
+        {
+            return existing;
+        }
+
+        var created = new JsonObject();
+        root[propertyName] = created;
+        return created;
     }
 
     private AppConfig CreateSnapshot(AppConfig config, bool includeProtectedSecrets)

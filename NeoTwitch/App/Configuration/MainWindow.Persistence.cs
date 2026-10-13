@@ -35,4 +35,16 @@ public partial class MainWindow
             AddLog(_text.Format(UiTextKeys.SettingsSaveFailureLog, ex.Message));
         }
     }
+
+    private void SaveTwitchSession()
+    {
+        try
+        {
+            _settingsStore.SaveTwitchSession(_config);
+        }
+        catch (Exception ex)
+        {
+            AddLog(_text.Format(UiTextKeys.SettingsSaveFailureLog, ex.Message));
+        }
+    }
 }

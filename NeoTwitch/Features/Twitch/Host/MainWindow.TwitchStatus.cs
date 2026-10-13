@@ -16,7 +16,7 @@ public partial class MainWindow
             await _authService.EnsureValidTokenAsync(_config, AddLog, CancellationToken.None);
             _streamStatus = await _authService.GetStreamStatusAsync(_config, CancellationToken.None);
             _twitchConnectionError = "";
-            SaveConfig();
+            SaveTwitchSession();
         }
         catch (Exception ex)
         {

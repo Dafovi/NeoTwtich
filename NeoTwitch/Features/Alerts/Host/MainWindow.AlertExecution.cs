@@ -9,7 +9,13 @@ namespace NeoTwitch;
 
 public partial class MainWindow
 {
-    private async Task RunRuleAsync(EventRule rule, TwitchEvent twitchEvent, bool sendChatMessage = true, bool sendAlexaEvent = true, QueuedAlertSlot? queueSlot = null)
+    private async Task RunRuleAsync(
+        EventRule rule,
+        TwitchEvent twitchEvent,
+        bool sendChatMessage = true,
+        bool sendAlexaEvent = true,
+        QueuedAlertSlot? queueSlot = null,
+        CancellationToken cancellationToken = default)
     {
         var request = new AlertExecutionRequest(
             AlertExecutionSnapshotFactory.Create(rule),
@@ -19,7 +25,7 @@ public partial class MainWindow
             sendAlexaEvent);
 
         UpdateRuleTestButtonState();
-        var result = await _alertExecutionCoordinator.ExecuteAsync(request, this);
+        var result = await _alertExecutionCoordinator.ExecuteAsync(request, this, cancellationToken);
         UpdateRuleTestButtonState();
         foreach (var action in result.Trace.Actions.Where(action => action.State == AlertActionState.Failed))
         {

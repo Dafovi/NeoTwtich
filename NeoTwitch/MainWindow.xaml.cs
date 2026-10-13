@@ -46,7 +46,7 @@ public partial class MainWindow : Window, IAlertExecutionCapabilities
         _shellViewModel = new ShellViewModel(_text, TryNavigateToTab);
         DataContext = _shellViewModel;
 
-        _eventSubClient = new TwitchEventSubClient(_authService, () => _config, SaveConfig, AddLog, _text);
+        _eventSubClient = new TwitchEventSubClient(_authService, () => _config, SaveTwitchSession, AddLog, _text);
         _services.RegisterRuntimeResource(
             "Twitch EventSub",
             ApplicationShutdownOrder.EventIngress,

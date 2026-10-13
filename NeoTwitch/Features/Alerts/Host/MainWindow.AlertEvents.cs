@@ -42,7 +42,7 @@ public partial class MainWindow
 
             foreach (var rule in matchingRules)
             {
-                await QueueAndRunRuleAsync(rule, twitchEvent);
+                BeginQueuedRuleExecution(rule, twitchEvent, cancellationToken);
             }
         }
         catch (Exception ex)
@@ -52,7 +52,34 @@ public partial class MainWindow
         }
     }
 
-    private async Task QueueAndRunRuleAsync(EventRule rule, TwitchEvent twitchEvent)
+    private void BeginQueuedRuleExecution(EventRule rule, TwitchEvent twitchEvent, CancellationToken cancellationToken)
+    {
+        _ = ObserveQueuedRuleExecutionAsync(rule, twitchEvent, cancellationToken);
+    }
+
+    private async Task ObserveQueuedRuleExecutionAsync(
+        EventRule rule,
+        TwitchEvent twitchEvent,
+        CancellationToken cancellationToken)
+    {
+        try
+        {
+            await QueueAndRunRuleAsync(rule, twitchEvent, cancellationToken);
+        }
+        catch (OperationCanceledException) when (cancellationToken.IsCancellationRequested)
+        {
+        }
+        catch (Exception ex)
+        {
+            CrashReporter.Log(ex, $"No se pudo ejecutar la alerta encolada '{rule.Name}'.");
+            AddLog($"Alerta '{rule.Name}': {ex.Message}", ActivityLogKind.Important);
+        }
+    }
+
+    private async Task QueueAndRunRuleAsync(
+        EventRule rule,
+        TwitchEvent twitchEvent,
+        CancellationToken cancellationToken)
     {
         var slot = _alertQueue.TryReserve(
             rule,
@@ -66,7 +93,7 @@ public partial class MainWindow
             return;
         }
 
-        await RunRuleAsync(rule, twitchEvent, queueSlot: slot);
+        await RunRuleAsync(rule, twitchEvent, queueSlot: slot, cancellationToken: cancellationToken);
     }
 
     private EventRule[] ResolveMatchingRules(TwitchEvent twitchEvent)

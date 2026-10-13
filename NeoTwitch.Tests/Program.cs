@@ -70,6 +70,7 @@ private static readonly (string Name, Action Body)[] Tests =
     ("SettingsStore validation failure preserves primary", ConfigurationIntegrityTests.ValidationFailurePreservesPrimary),
     ("Configuration legacy fixture migrates to schema one", ConfigurationIntegrityTests.LegacyFixtureMigratesToCurrentSchema),
     ("Configuration current schema reload is idempotent", ConfigurationIntegrityTests.CurrentSchemaReloadIsIdempotent),
+    ("SettingsStore loads the known Neo Stream schema without overwriting it", ConfigurationIntegrityTests.KnownFutureSchemaLoadsReadOnly),
     ("Configuration future schema is rejected", ConfigurationIntegrityTests.FutureSchemaIsRejected),
     ("Configuration migration preserves user settings", ConfigurationIntegrityTests.MigrationPreservesUserSettings),
     ("Configuration missing IDs are generated", ConfigurationIntegrityTests.MissingIdsAreGenerated),
@@ -719,6 +720,64 @@ static class ConfigurationIntegrityTests
 
         TestAssert.True(saveBlocked);
         TestAssert.Equal(future, File.ReadAllText(fixture.Paths.SettingsPath));
+    }
+
+    public static void KnownFutureSchemaLoadsReadOnly()
+    {
+        using var fixture = new SettingsFixture();
+        Directory.CreateDirectory(fixture.Root);
+        const string future = """
+            {
+              "schemaVersion": 4,
+              "twitchClientId": "known-future-client",
+              "autoConnectTwitch": true,
+              "channel": { "userId": "42", "login": "streamer", "displayName": "Streamer" },
+              "rules": [{ "id": "follow-rule", "name": "Seguidores", "eventKind": "Follow", "enabled": true }],
+              "ledStrips": [],
+              "streamingPlatforms": [{ "platform": "YouTube", "enabled": true }]
+            }
+            """;
+        File.WriteAllText(fixture.Paths.SettingsPath, future);
+        using var store = fixture.CreateStore(new FakeSecretProtector("user"));
+
+        var loaded = store.Load();
+
+        TestAssert.Equal("known-future-client", loaded.TwitchClientId);
+        TestAssert.Equal("streamer", loaded.Channel.Login);
+        TestAssert.Equal("follow-rule", loaded.Rules.Single().Id);
+        TestAssert.Contains("modo compatible de solo lectura", store.LastLoadError);
+        TestAssert.Equal(future, File.ReadAllText(fixture.Paths.SettingsPath));
+
+        loaded.Token.AccessToken = "fresh-access";
+        loaded.Token.RefreshToken = "fresh-refresh";
+        loaded.Token.ExpiresAt = DateTimeOffset.UtcNow.AddHours(1);
+        loaded.Token.Scopes = ["chat:read"];
+        store.SaveTwitchSession(loaded);
+
+        var sessionJson = File.ReadAllText(fixture.Paths.SettingsPath);
+        using var sessionDocument = JsonDocument.Parse(sessionJson);
+        TestAssert.Equal(4, sessionDocument.RootElement.GetProperty("schemaVersion").GetInt32());
+        TestAssert.True(sessionDocument.RootElement.TryGetProperty("streamingPlatforms", out _));
+        TestAssert.False(sessionJson.Contains("fresh-access", StringComparison.Ordinal));
+        TestAssert.False(sessionJson.Contains("fresh-refresh", StringComparison.Ordinal));
+
+        using var reloadedStore = fixture.CreateStore(new FakeSecretProtector("user"));
+        var reloaded = reloadedStore.Load();
+        TestAssert.Equal("fresh-access", reloaded.Token.AccessToken);
+        TestAssert.Equal("fresh-refresh", reloaded.Token.RefreshToken);
+
+        var saveBlocked = false;
+        try
+        {
+            store.Save(loaded);
+        }
+        catch (InvalidOperationException)
+        {
+            saveBlocked = true;
+        }
+
+        TestAssert.True(saveBlocked);
+        TestAssert.Equal(sessionJson, File.ReadAllText(fixture.Paths.SettingsPath));
     }
 
     public static void MigrationPreservesUserSettings()

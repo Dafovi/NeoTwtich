@@ -37,6 +37,20 @@ public sealed class AlertExecutionLifecycleTests
     }
 
     [TestMethod]
+    public async Task GenericActionsReturnTheirResultAndReachCompleted()
+    {
+        var tracker = CreateTracker();
+        var execution = Begin(tracker);
+        execution.MarkRunning();
+
+        var result = await execution.RunActionAsync("OBS.Scene", _ => Task.FromResult("Scene"), "Scene failed");
+        execution.Finish();
+
+        Assert.AreEqual("Scene", result);
+        Assert.AreEqual(AlertActionState.Completed, execution.Trace.Actions.Single().State);
+    }
+
+    [TestMethod]
     public async Task CancellationReachesCancelled()
     {
         var tracker = CreateTracker();

@@ -333,7 +333,10 @@ public sealed class AlertExecutionScope
         T? result = default;
         await RunActionAsync(
             actionType,
-            async cancellationToken => result = await action(cancellationToken),
+            async cancellationToken =>
+            {
+                result = await action(cancellationToken);
+            },
             failureReason);
         return result!;
     }

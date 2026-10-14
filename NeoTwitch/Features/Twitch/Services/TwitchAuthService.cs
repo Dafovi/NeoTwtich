@@ -327,7 +327,25 @@ public sealed class TwitchAuthService : IDisposable
         try
         {
             using var doc = JsonDocument.Parse(json);
-            return doc.RootElement.TryGetProperty(Protocol.Json.Error, out var error) ? error.GetString() : null;
+            foreach (var propertyName in new[]
+                     {
+                         Protocol.Json.Error,
+                         Protocol.Json.ErrorDescription,
+                         Protocol.Json.Message
+                     })
+            {
+                if (doc.RootElement.TryGetProperty(propertyName, out var value)
+                    && value.ValueKind == JsonValueKind.String)
+                {
+                    var error = value.GetString();
+                    if (!string.IsNullOrWhiteSpace(error))
+                    {
+                        return error;
+                    }
+                }
+            }
+
+            return null;
         }
         catch
         {

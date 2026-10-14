@@ -51,6 +51,8 @@ public static class TwitchAuthProtocol
     {
         public const string Data = "data";
         public const string Error = "error";
+        public const string Message = "message";
+        public const string ErrorDescription = "error_description";
         public const string Id = "id";
         public const string Login = "login";
         public const string DisplayName = "display_name";

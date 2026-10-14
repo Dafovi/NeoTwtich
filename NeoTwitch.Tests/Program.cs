@@ -109,6 +109,7 @@ private static readonly (string Name, Action Body)[] Tests =
     ("TwitchEventSubMessageParser parses welcome and events", TwitchEventSubMessageParserTests.ParsesWelcomeAndEvents),
     ("TwitchAuthService refreshes token with injected HTTP", TwitchAuthServiceTests.RefreshesTokenWithInjectedHttp),
     ("TwitchAuthService refreshes a rejected current token", TwitchAuthServiceTests.RefreshesRejectedCurrentToken),
+    ("TwitchAuthService reads Twitch refresh errors from message", TwitchAuthServiceTests.ReadsRefreshErrorFromMessage),
     ("EventSub dedup accepts first message", TwitchReliabilityTests.DedupAcceptsFirstMessage),
     ("EventSub dedup ignores duplicate message ID", TwitchReliabilityTests.DedupIgnoresDuplicateMessageId),
     ("EventSub dedup accepts identical payload with different IDs", TwitchReliabilityTests.DedupAcceptsDifferentIds),
@@ -2001,6 +2002,39 @@ static class TwitchAuthServiceTests
         TestAssert.True(logs.Any(log => log.Contains("rechazó la sesión", StringComparison.OrdinalIgnoreCase)));
     }
 
+    public static void ReadsRefreshErrorFromMessage()
+    {
+        var now = new DateTimeOffset(2026, 10, 13, 12, 0, 0, TimeSpan.Zero);
+        using var http = new HttpClient(new RefreshTokenErrorHttpHandler());
+        using var service = new TwitchAuthService(
+            UiTextService.CreateDefault(),
+            new NullExternalLauncher(),
+            new FixedTimeProvider(now),
+            http);
+        var config = TestConfig.CreateDefault();
+        config.TwitchClientId = "client-id";
+        config.Token = new TwitchTokenInfo
+        {
+            AccessToken = "expired-token",
+            RefreshToken = "expired-refresh",
+            ExpiresAt = now.AddMinutes(-1)
+        };
+
+        InvalidOperationException? exception = null;
+        try
+        {
+            service.EnsureValidTokenAsync(config, _ => { }, CancellationToken.None).GetAwaiter().GetResult();
+        }
+        catch (InvalidOperationException ex)
+        {
+            exception = ex;
+        }
+
+        TestAssert.True(exception is not null);
+        TestAssert.Contains("error Invalidrefreshtoken", exception!.Message);
+        TestAssert.True(TwitchConnectionRecoveryService.IsRecoverableRefreshError(exception));
+    }
+
     private sealed class RefreshTokenHttpHandler : HttpMessageHandler
     {
         public string RequestBody { get; private set; } = "";
@@ -2047,6 +2081,17 @@ static class TwitchAuthServiceTests
                 Content = new StringContent(
                     """{"access_token":"replacement-token","refresh_token":"replacement-refresh","expires_in":3600,"scope":[]}""")
             };
+        }
+    }
+
+    private sealed class RefreshTokenErrorHttpHandler : HttpMessageHandler
+    {
+        protected override Task<HttpResponseMessage> SendAsync(HttpRequestMessage request, CancellationToken cancellationToken)
+        {
+            return Task.FromResult(new HttpResponseMessage(System.Net.HttpStatusCode.BadRequest)
+            {
+                Content = new StringContent("""{"status":400,"message":"Invalid refresh token"}""")
+            });
         }
     }
 
